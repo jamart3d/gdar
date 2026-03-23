@@ -145,6 +145,21 @@ void main() {
       );
     });
 
+    testWidgets(
+      'auto mode explains that it stays hybrid unless capture is already active',
+      (tester) async {
+        await tester.pumpWidget(_buildSection('off', beatDetectorMode: 'auto'));
+        expect(
+          find.textContaining('Auto stays on Hybrid by default'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('Auto will not start Android capture by itself'),
+          findsOneWidget,
+        );
+      },
+    );
+
     testWidgets('bass mode shows bass-specific detector description', (
       tester,
     ) async {

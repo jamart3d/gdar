@@ -173,11 +173,11 @@ Why this matters:
 - users can see the Android capture indicator without actually benefiting from
   PCM timing
 
-### P1: `Auto` detector behavior and UI copy are currently out of sync
+### P1: `Auto` detector behavior and UI copy were out of sync
 
 This is the most important code/UX drift found in this audit.
 
-Current user-facing description says:
+Previous user-facing description said:
 
 - `Auto picks the best available source. It uses Enhanced Audio Capture when available, otherwise Hybrid.`
 
@@ -192,7 +192,7 @@ So on a cold app start:
 - therefore `Auto` behaves like `Hybrid` unless stereo capture is already
   active from an earlier explicit `Enhanced` session
 
-This is not just wording drift. It changes product behavior.
+This was not just wording drift. It changed product behavior.
 
 Recommendation:
 
@@ -203,6 +203,16 @@ Given the product direction from this session, the safer fix is probably:
 
 - keep permission requests explicit to `Enhanced`
 - rewrite `Auto` copy to describe that accurately
+
+Status:
+
+- Fixed on 2026-03-23 at the settings/UI contract level.
+- `Auto` now explains that it stays on `Hybrid` by default and only uses PCM
+  when Enhanced capture is already active in the current app session.
+- The settings panel also explicitly says `Auto` will not start Android capture
+  by itself.
+- Runtime behavior remains intentionally unchanged: only explicit `Enhanced`
+  selection requests `MediaProjection`.
 
 ### P2: App-session `Enhanced` lifetime is now workable, but it is a product choice
 

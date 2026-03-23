@@ -28,7 +28,7 @@ class TvScreensaverSection extends StatefulWidget {
 class _TvScreensaverSectionState extends State<TvScreensaverSection> {
   static const Map<String, String> _beatDetectorDescriptions = {
     'auto':
-        'Auto picks the best available source. It uses Enhanced Audio Capture when available, otherwise Hybrid.',
+        'Auto stays on Hybrid by default. If Enhanced Audio Capture is already active in this app session, Auto can use PCM instead.',
     'hybrid':
         'Hybrid blends low-end hits, mid transients, and broadband changes. Best default for most music.',
     'bass':
@@ -1006,6 +1006,15 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                           _ReactiveHint(
                             message:
                                 'Enhanced Audio Capture uses Android system audio capture and may show a share-audio permission prompt the first time it starts in an app session.',
+                            colorScheme: colorScheme,
+                            textTheme: textTheme,
+                            isFruit: isFruit,
+                          ),
+                        ] else if (settings.oilBeatDetectorMode == 'auto') ...[
+                          const SizedBox(height: 8),
+                          _ReactiveHint(
+                            message:
+                                'Auto will not start Android capture by itself. Choose Enhanced if you want to explicitly turn PCM capture on.',
                             colorScheme: colorScheme,
                             textTheme: textTheme,
                             isFruit: isFruit,

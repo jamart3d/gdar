@@ -4,49 +4,6 @@
     "notes": "Use these as soft priors only. Live audio analysis should override title-based hints quickly.",
     "entries": [
         {
-            "id": "i_cant_get_no_satisfaction",
-            "title": "(I Can't Get No) Satisfaction",
-            "canonical_title": "(I Can't Get No) Satisfaction",
-            "variant": "main",
-            "aliases": [
-                "(I Can't Get No) Satisfaction"
-            ],
-            "match_keys": [
-                "i_cant_get_no_satisfaction"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
             "id": "a_little_light",
             "title": "A Little Light",
             "canonical_title": "A Little Light",
@@ -137,49 +94,6 @@
             "id": "all_along_the_watchtower",
             "title": "All Along The Watchtower",
             "canonical_title": "All Along The Watchtower",
-            "variant": "main",
-            "aliases": [
-                "All Along The Watchtower"
-            ],
-            "match_keys": [
-                "all_along_the_watchtower"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "all_along_the_watchtower",
-            "title": "All Along the Watchtower",
-            "canonical_title": "All Along the Watchtower",
             "variant": "main",
             "aliases": [
                 "All Along the Watchtower"
@@ -485,7 +399,8 @@
             "canonical_title": "Around and Around",
             "variant": "main",
             "aliases": [
-                "Around"
+                "Around",
+                "Around And Around"
             ],
             "match_keys": [
                 "around",
@@ -524,98 +439,13 @@
             }
         },
         {
-            "id": "around_and_around",
-            "title": "Around And Around",
-            "canonical_title": "Around And Around",
-            "variant": "main",
-            "aliases": [
-                "Around And Around"
-            ],
-            "match_keys": [
-                "around_and_around"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
             "id": "attics_of_my_life",
             "title": "Attics of My Life",
             "canonical_title": "attics of my life",
             "variant": "main",
             "aliases": [
+                "Attics Of My Life",
                 "attics of my life"
-            ],
-            "match_keys": [
-                "attics_of_my_life"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "attics_of_my_life",
-            "title": "Attics Of My Life",
-            "canonical_title": "Attics Of My Life",
-            "variant": "main",
-            "aliases": [
-                "Attics Of My Life"
             ],
             "match_keys": [
                 "attics_of_my_life"
@@ -789,49 +619,6 @@
             "canonical_title": "Banter",
             "variant": "main",
             "aliases": [
-                "Banter"
-            ],
-            "match_keys": [
-                "banter"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "banter",
-            "title": "banter",
-            "canonical_title": "banter",
-            "variant": "main",
-            "aliases": [
                 "banter"
             ],
             "match_keys": [
@@ -875,7 +662,10 @@
             "canonical_title": "Beat It On Down the Line",
             "variant": "main",
             "aliases": [
-                "BIODTL"
+                "BIODTL",
+                "Beat It On Down The Line",
+                "Beat it on Down the Line",
+                "beat it on down the line"
             ],
             "match_keys": [
                 "beat_it_on_down_the_line",
@@ -911,92 +701,6 @@
                 "prefer_mid_onsets": true,
                 "phase_lock_strength": 0.95,
                 "refractory_bias": "short"
-            }
-        },
-        {
-            "id": "beat_it_on_down_the_line",
-            "title": "Beat It On Down The Line",
-            "canonical_title": "beat it on down the line",
-            "variant": "main",
-            "aliases": [
-                "beat it on down the line"
-            ],
-            "match_keys": [
-                "beat_it_on_down_the_line"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "beat_it_on_down_the_line",
-            "title": "Beat it on Down the Line",
-            "canonical_title": "Beat it on Down the Line",
-            "variant": "main",
-            "aliases": [
-                "Beat it on Down the Line"
-            ],
-            "match_keys": [
-                "beat_it_on_down_the_line"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
             }
         },
         {
@@ -1697,7 +1401,8 @@
             "canonical_title": "Box of Rain",
             "variant": "main",
             "aliases": [
-                "Box"
+                "Box",
+                "Box Of Rain"
             ],
             "match_keys": [
                 "box",
@@ -1733,49 +1438,6 @@
                 "prefer_low_onsets": true,
                 "prefer_mid_onsets": true,
                 "phase_lock_strength": 0.9,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "box_of_rain",
-            "title": "Box Of Rain",
-            "canonical_title": "Box Of Rain",
-            "variant": "main",
-            "aliases": [
-                "Box Of Rain"
-            ],
-            "match_keys": [
-                "box_of_rain"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
                 "refractory_bias": "normal"
             }
         },
@@ -2086,96 +1748,10 @@
             "canonical_title": "C C Rider",
             "variant": "main",
             "aliases": [
-                "C C Rider"
-            ],
-            "match_keys": [
-                "c_c_rider"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "c_c_rider",
-            "title": "C. C. Rider",
-            "canonical_title": "C. C. Rider",
-            "variant": "main",
-            "aliases": [
                 "C. C. Rider"
             ],
             "match_keys": [
                 "c_c_rider"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "cc_rider",
-            "title": "C.C. Rider",
-            "canonical_title": "C.C. Rider",
-            "variant": "main",
-            "aliases": [
-                "C.C. Rider"
-            ],
-            "match_keys": [
-                "cc_rider"
             ],
             "confidence": 0.8,
             "tempo": {
@@ -2469,8 +2045,8 @@
         },
         {
             "id": "cc_rider",
-            "title": "CC Rider",
-            "canonical_title": "CC Rider",
+            "title": "C.C. Rider",
+            "canonical_title": "C.C. Rider",
             "variant": "main",
             "aliases": [
                 "CC Rider"
@@ -2814,54 +2390,12 @@
             }
         },
         {
-            "id": "cold_rain__snow",
-            "title": "Cold Rain & Snow",
-            "canonical_title": "cold rain & snow",
-            "variant": "main",
-            "aliases": [
-                "cold rain & snow"
-            ],
-            "match_keys": [
-                "cold_rain__snow"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
             "id": "cold_rain_and_snow",
             "title": "Cold Rain and Snow",
             "canonical_title": "Cold Rain and Snow",
             "variant": "main",
             "aliases": [
+                "Cold Rain And Snow",
                 "Rain and Snow"
             ],
             "match_keys": [
@@ -2902,15 +2436,15 @@
             }
         },
         {
-            "id": "cold_rain_and_snow",
-            "title": "Cold Rain And Snow",
-            "canonical_title": "Cold Rain And Snow",
+            "id": "cold_rain_snow",
+            "title": "Cold Rain & Snow",
+            "canonical_title": "cold rain & snow",
             "variant": "main",
             "aliases": [
-                "Cold Rain And Snow"
+                "cold rain & snow"
             ],
             "match_keys": [
-                "cold_rain_and_snow"
+                "cold_rain_snow"
             ],
             "confidence": 0.8,
             "tempo": {
@@ -2950,7 +2484,7 @@
             "canonical_title": "Comes a Time",
             "variant": "main",
             "aliases": [
-                "Comes a Time"
+                "Comes A Time"
             ],
             "match_keys": [
                 "comes_a_time"
@@ -2985,49 +2519,6 @@
                 "prefer_mid_onsets": true,
                 "phase_lock_strength": 0.8,
                 "refractory_bias": "long"
-            }
-        },
-        {
-            "id": "comes_a_time",
-            "title": "Comes A Time",
-            "canonical_title": "Comes A Time",
-            "variant": "main",
-            "aliases": [
-                "Comes A Time"
-            ],
-            "match_keys": [
-                "comes_a_time"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
             }
         },
         {
@@ -3424,49 +2915,6 @@
             "canonical_title": "Dancin' In The Streets",
             "variant": "main",
             "aliases": [
-                "Dancin' In The Streets"
-            ],
-            "match_keys": [
-                "dancin_in_the_streets"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "dancin_in_the_streets",
-            "title": "Dancin' in the Streets",
-            "canonical_title": "Dancin' in the Streets",
-            "variant": "main",
-            "aliases": [
                 "Dancin' in the Streets"
             ],
             "match_keys": [
@@ -3551,49 +2999,6 @@
             "id": "dancing_in_the_streets",
             "title": "Dancing In The Streets",
             "canonical_title": "Dancing In The Streets",
-            "variant": "main",
-            "aliases": [
-                "Dancing In The Streets"
-            ],
-            "match_keys": [
-                "dancing_in_the_streets"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "dancing_in_the_streets",
-            "title": "Dancing in the Streets",
-            "canonical_title": "Dancing in the Streets",
             "variant": "main",
             "aliases": [
                 "Dancing in the Streets"
@@ -3683,6 +3088,7 @@
             "canonical_title": "dark star",
             "variant": "main",
             "aliases": [
+                "Dark Star*",
                 "dark star"
             ],
             "match_keys": [
@@ -3730,49 +3136,6 @@
             ],
             "match_keys": [
                 "dark_star_jam"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "dark_star",
-            "title": "Dark Star*",
-            "canonical_title": "Dark Star*",
-            "variant": "main",
-            "aliases": [
-                "Dark Star*"
-            ],
-            "match_keys": [
-                "dark_star"
             ],
             "confidence": 0.8,
             "tempo": {
@@ -4460,102 +3823,17 @@
         },
         {
             "id": "drums",
-            "title": "Drums",
-            "canonical_title": "Drums",
+            "title": "drums",
+            "canonical_title": "drums",
             "variant": "main",
             "aliases": [
+                "Drums",
+                "Drums*",
                 "Rhythm Devils"
             ],
             "match_keys": [
                 "drums",
                 "rhythm_devils"
-            ],
-            "confidence": 0.6,
-            "tempo": {
-                "bpm_min": 60,
-                "bpm_max": 220,
-                "feel": "polyrhythmic-chaos",
-                "swing": 0.1
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "16th",
-                "beat_strength": "extreme"
-            },
-            "rhythm": {
-                "density": "very_high",
-                "transient_profile": "various_percussion",
-                "notes": "Phase-locking impossible; focus on transient density rather than steady BPM.",
-                "density_source": "extreme"
-            },
-            "sections": [
-                {
-                    "name": "main",
-                    "tempo_bias": "fluid",
-                    "pulse_confidence": 0.4
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.2,
-                "refractory_bias": "short"
-            }
-        },
-        {
-            "id": "drums",
-            "title": "drums",
-            "canonical_title": "drums",
-            "variant": "main",
-            "aliases": [
-                "drums"
-            ],
-            "match_keys": [
-                "drums"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "drums",
-            "title": "Drums*",
-            "canonical_title": "Drums*",
-            "variant": "main",
-            "aliases": [
-                "Drums*"
-            ],
-            "match_keys": [
-                "drums"
             ],
             "confidence": 0.8,
             "tempo": {
@@ -4769,6 +4047,7 @@
             "canonical_title": "Easy to Love You",
             "variant": "main",
             "aliases": [
+                "Easy To Love You",
                 "Easy to Love"
             ],
             "match_keys": [
@@ -4805,49 +4084,6 @@
                 "prefer_low_onsets": true,
                 "prefer_mid_onsets": true,
                 "phase_lock_strength": 0.9,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "easy_to_love_you",
-            "title": "Easy To Love You",
-            "canonical_title": "Easy To Love You",
-            "variant": "main",
-            "aliases": [
-                "Easy To Love You"
-            ],
-            "match_keys": [
-                "easy_to_love_you"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
                 "refractory_bias": "normal"
             }
         },
@@ -5033,50 +4269,8 @@
             "canonical_title": "Eyes of The World",
             "variant": "main",
             "aliases": [
+                "Eyes Of The World",
                 "Eyes of The World"
-            ],
-            "match_keys": [
-                "eyes_of_the_world"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "eyes_of_the_world",
-            "title": "Eyes Of The World",
-            "canonical_title": "Eyes Of The World",
-            "variant": "main",
-            "aliases": [
-                "Eyes Of The World"
             ],
             "match_keys": [
                 "eyes_of_the_world"
@@ -5205,50 +4399,8 @@
             "canonical_title": "feel like a stranger",
             "variant": "main",
             "aliases": [
+                "Feel Like a Stranger",
                 "feel like a stranger"
-            ],
-            "match_keys": [
-                "feel_like_a_stranger"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "feel_like_a_stranger",
-            "title": "Feel Like a Stranger",
-            "canonical_title": "Feel Like a Stranger",
-            "variant": "main",
-            "aliases": [
-                "Feel Like a Stranger"
             ],
             "match_keys": [
                 "feel_like_a_stranger"
@@ -5334,7 +4486,9 @@
             "canonical_title": "Fire on the Mountain",
             "variant": "main",
             "aliases": [
-                "Fire"
+                "Fire",
+                "Fire On The Mountain",
+                "Fire On the Mountain"
             ],
             "match_keys": [
                 "fire",
@@ -5369,92 +4523,6 @@
                 "prefer_low_onsets": true,
                 "prefer_mid_onsets": true,
                 "phase_lock_strength": 0.9,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "fire_on_the_mountain",
-            "title": "Fire On The Mountain",
-            "canonical_title": "Fire On The Mountain",
-            "variant": "main",
-            "aliases": [
-                "Fire On The Mountain"
-            ],
-            "match_keys": [
-                "fire_on_the_mountain"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "fire_on_the_mountain",
-            "title": "Fire On the Mountain",
-            "canonical_title": "Fire On the Mountain",
-            "variant": "main",
-            "aliases": [
-                "Fire On the Mountain"
-            ],
-            "match_keys": [
-                "fire_on_the_mountain"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
                 "refractory_bias": "normal"
             }
         },
@@ -5551,50 +4619,8 @@
             "canonical_title": "friend of the devil",
             "variant": "main",
             "aliases": [
+                "Friend of the Devil",
                 "friend of the devil"
-            ],
-            "match_keys": [
-                "friend_of_the_devil"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "friend_of_the_devil",
-            "title": "Friend of the Devil",
-            "canonical_title": "Friend of the Devil",
-            "variant": "main",
-            "aliases": [
-                "Friend of the Devil"
             ],
             "match_keys": [
                 "friend_of_the_devil"
@@ -5852,92 +4878,7 @@
             "canonical_title": "Goin' Down the Road Feelin' Bad",
             "variant": "main",
             "aliases": [
-                "Goin' Down the Road Feelin' Bad"
-            ],
-            "match_keys": [
-                "goin_down_the_road_feelin_bad"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "goin_down_the_road_feelin_bad",
-            "title": "Goin' Down The Road Feelin' Bad",
-            "canonical_title": "Goin' Down The Road Feelin' Bad",
-            "variant": "main",
-            "aliases": [
-                "Goin' Down The Road Feelin' Bad"
-            ],
-            "match_keys": [
-                "goin_down_the_road_feelin_bad"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "goin_down_the_road_feelin_bad",
-            "title": "Goin' Down The Road Feelin' Bad*",
-            "canonical_title": "Goin' Down The Road Feelin' Bad*",
-            "variant": "main",
-            "aliases": [
+                "Goin' Down The Road Feelin' Bad",
                 "Goin' Down The Road Feelin' Bad*"
             ],
             "match_keys": [
@@ -5979,49 +4920,6 @@
             "id": "goin_down_the_road_feeling_bad",
             "title": "Goin' Down The Road Feeling Bad",
             "canonical_title": "Goin' Down The Road Feeling Bad",
-            "variant": "main",
-            "aliases": [
-                "Goin' Down The Road Feeling Bad"
-            ],
-            "match_keys": [
-                "goin_down_the_road_feeling_bad"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "goin_down_the_road_feeling_bad",
-            "title": "Goin' Down the Road Feeling Bad",
-            "canonical_title": "Goin' Down the Road Feeling Bad",
             "variant": "main",
             "aliases": [
                 "Goin' Down the Road Feeling Bad"
@@ -6067,49 +4965,7 @@
             "canonical_title": "Going Down The Road Feeling Bad",
             "variant": "main",
             "aliases": [
-                "Going Down The Road Feeling Bad"
-            ],
-            "match_keys": [
-                "going_down_the_road_feeling_bad"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "going_down_the_road_feeling_bad",
-            "title": "Going Down the Road Feeling Bad",
-            "canonical_title": "going down the road feeling bad",
-            "variant": "main",
-            "aliases": [
+                "Going Down the Road Feeling Bad",
                 "going down the road feeling bad"
             ],
             "match_keys": [
@@ -6196,49 +5052,7 @@
             "canonical_title": "Good Lovin",
             "variant": "main",
             "aliases": [
-                "Good Lovin"
-            ],
-            "match_keys": [
-                "good_lovin"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "good_lovin",
-            "title": "Good Lovin'",
-            "canonical_title": "good lovin'",
-            "variant": "main",
-            "aliases": [
+                "Good Lovin'",
                 "good lovin'"
             ],
             "match_keys": [
@@ -6325,6 +5139,7 @@
             "canonical_title": "Good Morning Little Schoolgirl",
             "variant": "main",
             "aliases": [
+                "Good Morning, Little Schoolgirl",
                 "Schoolgirl"
             ],
             "match_keys": [
@@ -6361,49 +5176,6 @@
                 "prefer_low_onsets": true,
                 "prefer_mid_onsets": true,
                 "phase_lock_strength": 0.9,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "good_morning_little_schoolgirl",
-            "title": "Good Morning, Little Schoolgirl",
-            "canonical_title": "Good Morning, Little Schoolgirl",
-            "variant": "main",
-            "aliases": [
-                "Good Morning, Little Schoolgirl"
-            ],
-            "match_keys": [
-                "good_morning_little_schoolgirl"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
                 "refractory_bias": "normal"
             }
         },
@@ -6628,7 +5400,7 @@
             "canonical_title": "Hard to Handle",
             "variant": "main",
             "aliases": [
-                "Hard to Handle"
+                "Hard To Handle"
             ],
             "match_keys": [
                 "hard_to_handle"
@@ -6662,92 +5434,6 @@
                 "prefer_low_onsets": true,
                 "prefer_mid_onsets": true,
                 "phase_lock_strength": 0.9,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "hard_to_handle",
-            "title": "Hard To Handle",
-            "canonical_title": "Hard To Handle",
-            "variant": "main",
-            "aliases": [
-                "Hard To Handle"
-            ],
-            "match_keys": [
-                "hard_to_handle"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "he_was_a_friend_of_mine",
-            "title": "He Was A Friend Of Mine",
-            "canonical_title": "He Was a Friend of Mine",
-            "variant": "main",
-            "aliases": [
-                "He Was a Friend of Mine"
-            ],
-            "match_keys": [
-                "he_was_a_friend_of_mine"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
                 "refractory_bias": "normal"
             }
         },
@@ -6793,6 +5479,49 @@
                 "prefer_mid_onsets": true,
                 "phase_lock_strength": 0.9,
                 "refractory_bias": "long"
+            }
+        },
+        {
+            "id": "he_was_a_friend_of_mine",
+            "title": "He Was A Friend Of Mine",
+            "canonical_title": "He Was a Friend of Mine",
+            "variant": "main",
+            "aliases": [
+                "He Was a Friend of Mine"
+            ],
+            "match_keys": [
+                "he_was_a_friend_of_mine"
+            ],
+            "confidence": 0.8,
+            "tempo": {
+                "bpm_min": 70,
+                "bpm_max": 140,
+                "feel": "standard-rock",
+                "swing": 0.0
+            },
+            "pulse": {
+                "beats_per_bar": 4,
+                "subdivision": "8th",
+                "beat_strength": "medium"
+            },
+            "rhythm": {
+                "density": "medium",
+                "transient_profile": "snare",
+                "notes": "Synchronized from production database."
+            },
+            "sections": [
+                {
+                    "name": "verse",
+                    "tempo_bias": "stable",
+                    "pulse_confidence": 0.85
+                }
+            ],
+            "detector_hints": {
+                "prefer_pcm": false,
+                "prefer_low_onsets": true,
+                "prefer_mid_onsets": true,
+                "phase_lock_strength": 0.7,
+                "refractory_bias": "normal"
             }
         },
         {
@@ -6844,7 +5573,9 @@
             "canonical_title": "Hell in a Bucket",
             "variant": "main",
             "aliases": [
-                "Bucket"
+                "Bucket",
+                "Hell In A Bucket",
+                "Hell in A Bucket"
             ],
             "match_keys": [
                 "bucket",
@@ -6883,55 +5614,15 @@
             }
         },
         {
-            "id": "hell_in_a_bucket",
-            "title": "Hell In A Bucket",
-            "canonical_title": "Hell in A Bucket",
-            "variant": "main",
-            "aliases": [
-                "Hell in A Bucket"
-            ],
-            "match_keys": [
-                "hell_in_a_bucket"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
             "id": "help_on_the_way",
             "title": "Help on the Way",
             "canonical_title": "Help on the Way",
             "variant": "main",
             "aliases": [
-                "Help"
+                "Help",
+                "Help On The Way",
+                "Help On the Way",
+                "help on the way"
             ],
             "match_keys": [
                 "help",
@@ -6966,92 +5657,6 @@
                 "prefer_low_onsets": true,
                 "prefer_mid_onsets": true,
                 "phase_lock_strength": 0.85,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "help_on_the_way",
-            "title": "Help On The Way",
-            "canonical_title": "help on the way",
-            "variant": "main",
-            "aliases": [
-                "help on the way"
-            ],
-            "match_keys": [
-                "help_on_the_way"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "help_on_the_way",
-            "title": "Help On the Way",
-            "canonical_title": "Help On the Way",
-            "variant": "main",
-            "aliases": [
-                "Help On the Way"
-            ],
-            "match_keys": [
-                "help_on_the_way"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
                 "refractory_bias": "normal"
             }
         },
@@ -7443,6 +6048,49 @@
             }
         },
         {
+            "id": "i_cant_get_no_satisfaction",
+            "title": "(I Can't Get No) Satisfaction",
+            "canonical_title": "(I Can't Get No) Satisfaction",
+            "variant": "main",
+            "aliases": [
+                "(I Can't Get No) Satisfaction"
+            ],
+            "match_keys": [
+                "i_cant_get_no_satisfaction"
+            ],
+            "confidence": 0.8,
+            "tempo": {
+                "bpm_min": 70,
+                "bpm_max": 140,
+                "feel": "standard-rock",
+                "swing": 0.0
+            },
+            "pulse": {
+                "beats_per_bar": 4,
+                "subdivision": "8th",
+                "beat_strength": "medium"
+            },
+            "rhythm": {
+                "density": "medium",
+                "transient_profile": "snare",
+                "notes": "Synchronized from production database."
+            },
+            "sections": [
+                {
+                    "name": "verse",
+                    "tempo_bias": "stable",
+                    "pulse_confidence": 0.85
+                }
+            ],
+            "detector_hints": {
+                "prefer_pcm": false,
+                "prefer_low_onsets": true,
+                "prefer_mid_onsets": true,
+                "phase_lock_strength": 0.7,
+                "refractory_bias": "normal"
+            }
+        },
+        {
             "id": "i_dont_know_you",
             "title": "I Don't Know You",
             "canonical_title": "I Don't Know You",
@@ -7489,49 +6137,6 @@
             "id": "i_fought_the_law",
             "title": "I Fought The Law",
             "canonical_title": "I Fought The Law",
-            "variant": "main",
-            "aliases": [
-                "I Fought The Law"
-            ],
-            "match_keys": [
-                "i_fought_the_law"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "i_fought_the_law",
-            "title": "I Fought the Law",
-            "canonical_title": "I Fought the Law",
             "variant": "main",
             "aliases": [
                 "I Fought the Law"
@@ -7663,49 +6268,6 @@
             "canonical_title": "I Need A Miracle",
             "variant": "main",
             "aliases": [
-                "I Need A Miracle"
-            ],
-            "match_keys": [
-                "i_need_a_miracle"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "i_need_a_miracle",
-            "title": "I Need a Miracle",
-            "canonical_title": "I Need a Miracle",
-            "variant": "main",
-            "aliases": [
                 "I Need a Miracle"
             ],
             "match_keys": [
@@ -7753,49 +6315,6 @@
             ],
             "match_keys": [
                 "i_second_that_emotion"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "im_a_king_bee",
-            "title": "I'm A King Bee",
-            "canonical_title": "I'm a King Bee",
-            "variant": "main",
-            "aliases": [
-                "I'm a King Bee"
-            ],
-            "match_keys": [
-                "im_a_king_bee"
             ],
             "confidence": 0.8,
             "tempo": {
@@ -7966,7 +6485,7 @@
             "canonical_title": "Iko Iko",
             "variant": "main",
             "aliases": [
-                "Iko Iko"
+                "Iko Iko*"
             ],
             "match_keys": [
                 "iko_iko"
@@ -8047,15 +6566,15 @@
             }
         },
         {
-            "id": "iko_iko",
-            "title": "Iko Iko*",
-            "canonical_title": "Iko Iko*",
+            "id": "im_a_king_bee",
+            "title": "I'm A King Bee",
+            "canonical_title": "I'm a King Bee",
             "variant": "main",
             "aliases": [
-                "Iko Iko*"
+                "I'm a King Bee"
             ],
             "match_keys": [
-                "iko_iko"
+                "im_a_king_bee"
             ],
             "confidence": 0.8,
             "tempo": {
@@ -8093,49 +6612,6 @@
             "id": "in_the_midnight_hour",
             "title": "In The Midnight Hour",
             "canonical_title": "In The Midnight Hour",
-            "variant": "main",
-            "aliases": [
-                "In The Midnight Hour"
-            ],
-            "match_keys": [
-                "in_the_midnight_hour"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "in_the_midnight_hour",
-            "title": "In the Midnight Hour",
-            "canonical_title": "In the Midnight Hour",
             "variant": "main",
             "aliases": [
                 "In the Midnight Hour"
@@ -8224,50 +6700,8 @@
             "canonical_title": "it must have been the roses",
             "variant": "main",
             "aliases": [
+                "It Must Have Been the Roses",
                 "it must have been the roses"
-            ],
-            "match_keys": [
-                "it_must_have_been_the_roses"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "it_must_have_been_the_roses",
-            "title": "It Must Have Been the Roses",
-            "canonical_title": "It Must Have Been the Roses",
-            "variant": "main",
-            "aliases": [
-                "It Must Have Been the Roses"
             ],
             "match_keys": [
                 "it_must_have_been_the_roses"
@@ -8439,50 +6873,8 @@
             "canonical_title": "it's all over now baby blue",
             "variant": "main",
             "aliases": [
+                "It's All Over Now, Baby Blue",
                 "it's all over now baby blue"
-            ],
-            "match_keys": [
-                "its_all_over_now_baby_blue"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "its_all_over_now_baby_blue",
-            "title": "It's All Over Now, Baby Blue",
-            "canonical_title": "It's All Over Now, Baby Blue",
-            "variant": "main",
-            "aliases": [
-                "It's All Over Now, Baby Blue"
             ],
             "match_keys": [
                 "its_all_over_now_baby_blue"
@@ -8824,49 +7216,6 @@
             "id": "johnny_b_goode",
             "title": "Johnny B. Goode",
             "canonical_title": "Johnny B. Goode",
-            "variant": "main",
-            "aliases": [
-                "Johnny B. Goode"
-            ],
-            "match_keys": [
-                "johnny_b_goode"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "johnny_b_goode",
-            "title": "Johnny B. Goode*",
-            "canonical_title": "Johnny B. Goode*",
             "variant": "main",
             "aliases": [
                 "Johnny B. Goode*"
@@ -9473,49 +7822,7 @@
             "canonical_title": "Let It Grow",
             "variant": "main",
             "aliases": [
-                "Let It Grow"
-            ],
-            "match_keys": [
-                "let_it_grow"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "let_it_grow",
-            "title": "Let it Grow",
-            "canonical_title": "let it grow",
-            "variant": "main",
-            "aliases": [
+                "Let it Grow",
                 "let it grow"
             ],
             "match_keys": [
@@ -9600,49 +7907,6 @@
             "id": "let_the_good_times_roll",
             "title": "Let The Good Times Roll",
             "canonical_title": "Let The Good Times Roll",
-            "variant": "main",
-            "aliases": [
-                "Let The Good Times Roll"
-            ],
-            "match_keys": [
-                "let_the_good_times_roll"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "let_the_good_times_roll",
-            "title": "Let the Good Times Roll",
-            "canonical_title": "Let the Good Times Roll",
             "variant": "main",
             "aliases": [
                 "Let the Good Times Roll"
@@ -10379,49 +8643,6 @@
             "canonical_title": "Man Smart Woman Smarter",
             "variant": "main",
             "aliases": [
-                "Man Smart Woman Smarter"
-            ],
-            "match_keys": [
-                "man_smart_woman_smarter"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "man_smart_woman_smarter",
-            "title": "Man Smart, Woman Smarter",
-            "canonical_title": "Man Smart, Woman Smarter",
-            "variant": "main",
-            "aliases": [
                 "Man Smart, Woman Smarter"
             ],
             "match_keys": [
@@ -10723,50 +8944,8 @@
             "canonical_title": "Me and Bobby Mcgee",
             "variant": "main",
             "aliases": [
+                "Me and Bobby McGee",
                 "Me and Bobby Mcgee"
-            ],
-            "match_keys": [
-                "me_and_bobby_mcgee"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "me_and_bobby_mcgee",
-            "title": "Me and Bobby McGee",
-            "canonical_title": "Me and Bobby McGee",
-            "variant": "main",
-            "aliases": [
-                "Me and Bobby McGee"
             ],
             "match_keys": [
                 "me_and_bobby_mcgee"
@@ -10809,49 +8988,7 @@
             "canonical_title": "Me And My Uncle",
             "variant": "main",
             "aliases": [
-                "Me And My Uncle"
-            ],
-            "match_keys": [
-                "me_and_my_uncle"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "me_and_my_uncle",
-            "title": "Me and My Uncle",
-            "canonical_title": "me and my uncle",
-            "variant": "main",
-            "aliases": [
+                "Me and My Uncle",
                 "me and my uncle"
             ],
             "match_keys": [
@@ -11067,7 +9204,7 @@
             "canonical_title": "Might as Well",
             "variant": "main",
             "aliases": [
-                "Might as Well"
+                "Might As Well"
             ],
             "match_keys": [
                 "might_as_well"
@@ -11102,49 +9239,6 @@
                 "prefer_mid_onsets": true,
                 "phase_lock_strength": 0.9,
                 "refractory_bias": "short"
-            }
-        },
-        {
-            "id": "might_as_well",
-            "title": "Might As Well",
-            "canonical_title": "Might As Well",
-            "variant": "main",
-            "aliases": [
-                "Might As Well"
-            ],
-            "match_keys": [
-                "might_as_well"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
             }
         },
         {
@@ -11799,49 +9893,6 @@
             "canonical_title": "Never Trust A Woman",
             "variant": "main",
             "aliases": [
-                "Never Trust A Woman"
-            ],
-            "match_keys": [
-                "never_trust_a_woman"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "never_trust_a_woman",
-            "title": "Never Trust a Woman",
-            "canonical_title": "Never Trust a Woman",
-            "variant": "main",
-            "aliases": [
                 "Never Trust a Woman"
             ],
             "match_keys": [
@@ -12187,50 +10238,8 @@
             "canonical_title": "not fade away",
             "variant": "main",
             "aliases": [
+                "Not Fade Away*",
                 "not fade away"
-            ],
-            "match_keys": [
-                "not_fade_away"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "not_fade_away",
-            "title": "Not Fade Away*",
-            "canonical_title": "Not Fade Away*",
-            "variant": "main",
-            "aliases": [
-                "Not Fade Away*"
             ],
             "match_keys": [
                 "not_fade_away"
@@ -12359,6 +10368,7 @@
             "canonical_title": "On the Road Again",
             "variant": "main",
             "aliases": [
+                "On The Road Again",
                 "Road Again"
             ],
             "match_keys": [
@@ -12398,98 +10408,13 @@
             }
         },
         {
-            "id": "on_the_road_again",
-            "title": "On The Road Again",
-            "canonical_title": "On The Road Again",
-            "variant": "main",
-            "aliases": [
-                "On The Road Again"
-            ],
-            "match_keys": [
-                "on_the_road_again"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
             "id": "one_more_saturday_night",
             "title": "One More Saturday Night",
             "canonical_title": "One More Saturday night",
             "variant": "main",
             "aliases": [
+                "One More Saturday Night*",
                 "One More Saturday night"
-            ],
-            "match_keys": [
-                "one_more_saturday_night"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "one_more_saturday_night",
-            "title": "One More Saturday Night*",
-            "canonical_title": "One More Saturday Night*",
-            "variant": "main",
-            "aliases": [
-                "One More Saturday Night*"
             ],
             "match_keys": [
                 "one_more_saturday_night"
@@ -12785,49 +10710,6 @@
             }
         },
         {
-            "id": "playin_in_the_band",
-            "title": "Playin in the Band",
-            "canonical_title": "Playin in the Band",
-            "variant": "main",
-            "aliases": [
-                "Playin in the Band"
-            ],
-            "match_keys": [
-                "playin_in_the_band"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
             "id": "playin",
             "title": "Playin'",
             "canonical_title": "Playin'",
@@ -12872,97 +10754,14 @@
         },
         {
             "id": "playin_in_the_band",
-            "title": "Playin' In The Band",
-            "canonical_title": "Playin' In The Band",
+            "title": "Playin in the Band",
+            "canonical_title": "Playin in the Band",
             "variant": "main",
             "aliases": [
-                "Playin' In The Band"
-            ],
-            "match_keys": [
-                "playin_in_the_band"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "playin_in_the_band",
-            "title": "Playin' In the Band",
-            "canonical_title": "playin' in the band",
-            "variant": "main",
-            "aliases": [
+                "Playin' In The Band",
+                "Playin' In the Band",
+                "Playin' in the Band",
                 "playin' in the band"
-            ],
-            "match_keys": [
-                "playin_in_the_band"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "playin_in_the_band",
-            "title": "Playin' in the Band",
-            "canonical_title": "Playin' in the Band",
-            "variant": "main",
-            "aliases": [
-                "Playin' in the Band"
             ],
             "match_keys": [
                 "playin_in_the_band"
@@ -13003,49 +10802,6 @@
             "id": "playin_in_the_band_reprise",
             "title": "Playin' In The Band Reprise",
             "canonical_title": "Playin' In The Band Reprise",
-            "variant": "main",
-            "aliases": [
-                "Playin' In The Band Reprise"
-            ],
-            "match_keys": [
-                "playin_in_the_band_reprise"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "playin_in_the_band_reprise",
-            "title": "Playin' in the Band Reprise",
-            "canonical_title": "Playin' in the Band Reprise",
             "variant": "main",
             "aliases": [
                 "Playin' in the Band Reprise"
@@ -13177,50 +10933,8 @@
             "canonical_title": "playing in the band",
             "variant": "main",
             "aliases": [
+                "Playing in the Band",
                 "playing in the band"
-            ],
-            "match_keys": [
-                "playing_in_the_band"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "playing_in_the_band",
-            "title": "Playing in the Band",
-            "canonical_title": "Playing in the Band",
-            "variant": "main",
-            "aliases": [
-                "Playing in the Band"
             ],
             "match_keys": [
                 "playing_in_the_band"
@@ -13564,49 +11278,7 @@
             "canonical_title": "Ramble On Rose",
             "variant": "main",
             "aliases": [
-                "Ramble On Rose"
-            ],
-            "match_keys": [
-                "ramble_on_rose"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "ramble_on_rose",
-            "title": "Ramble on Rose",
-            "canonical_title": "ramble on rose",
-            "variant": "main",
-            "aliases": [
+                "Ramble on Rose",
                 "ramble on rose"
             ],
             "match_keys": [
@@ -13865,49 +11537,7 @@
             "canonical_title": "Saint Of Circumstance",
             "variant": "main",
             "aliases": [
-                "Saint Of Circumstance"
-            ],
-            "match_keys": [
-                "saint_of_circumstance"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "saint_of_circumstance",
-            "title": "Saint of Circumstance",
-            "canonical_title": "saint of circumstance",
-            "variant": "main",
-            "aliases": [
+                "Saint of Circumstance",
                 "saint of circumstance"
             ],
             "match_keys": [
@@ -14078,49 +11708,6 @@
             "id": "samson_and_delilah",
             "title": "Samson And Delilah",
             "canonical_title": "Samson And Delilah",
-            "variant": "main",
-            "aliases": [
-                "Samson And Delilah"
-            ],
-            "match_keys": [
-                "samson_and_delilah"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "samson_and_delilah",
-            "title": "Samson and Delilah",
-            "canonical_title": "Samson and Delilah",
             "variant": "main",
             "aliases": [
                 "Samson and Delilah"
@@ -14381,49 +11968,6 @@
             "canonical_title": "Ship Of Fools",
             "variant": "main",
             "aliases": [
-                "Ship Of Fools"
-            ],
-            "match_keys": [
-                "ship_of_fools"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "ship_of_fools",
-            "title": "Ship of Fools",
-            "canonical_title": "Ship of Fools",
-            "variant": "main",
-            "aliases": [
                 "Ship of Fools"
             ],
             "match_keys": [
@@ -14596,49 +12140,7 @@
             "canonical_title": "Sittin On Top Of The World",
             "variant": "main",
             "aliases": [
-                "Sittin On Top Of The World"
-            ],
-            "match_keys": [
-                "sittin_on_top_of_the_world"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "sittin_on_top_of_the_world",
-            "title": "Sittin' On Top Of The World",
-            "canonical_title": "sittin' on top of the world",
-            "variant": "main",
-            "aliases": [
+                "Sittin' On Top Of The World",
                 "sittin' on top of the world"
             ],
             "match_keys": [
@@ -14682,49 +12184,7 @@
             "canonical_title": "Sitting On Top of the World",
             "variant": "main",
             "aliases": [
-                "Sitting On Top of the World"
-            ],
-            "match_keys": [
-                "sitting_on_top_of_the_world"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "sitting_on_top_of_the_world",
-            "title": "Sitting on Top of the World",
-            "canonical_title": "Sitting on Top of the World",
-            "variant": "main",
-            "aliases": [
+                "Sitting On Top of the World",
                 "Sitting on Top of the World"
             ],
             "match_keys": [
@@ -14811,50 +12271,8 @@
             "canonical_title": "slipknot",
             "variant": "main",
             "aliases": [
+                "Slipknot!",
                 "slipknot"
-            ],
-            "match_keys": [
-                "slipknot"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "slipknot",
-            "title": "Slipknot!",
-            "canonical_title": "Slipknot!",
-            "variant": "main",
-            "aliases": [
-                "Slipknot!"
             ],
             "match_keys": [
                 "slipknot"
@@ -15026,49 +12444,6 @@
             "canonical_title": "Space",
             "variant": "main",
             "aliases": [
-                "Space"
-            ],
-            "match_keys": [
-                "space"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "space",
-            "title": "space",
-            "canonical_title": "space",
-            "variant": "main",
-            "aliases": [
                 "space"
             ],
             "match_keys": [
@@ -15155,49 +12530,6 @@
             "canonical_title": "Spoonful",
             "variant": "main",
             "aliases": [
-                "Spoonful"
-            ],
-            "match_keys": [
-                "spoonful"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "spoonful",
-            "title": "Spoonful*",
-            "canonical_title": "Spoonful*",
-            "variant": "main",
-            "aliases": [
                 "Spoonful*"
             ],
             "match_keys": [
@@ -15239,49 +12571,6 @@
             "id": "st_stephen",
             "title": "St Stephen",
             "canonical_title": "St Stephen",
-            "variant": "main",
-            "aliases": [
-                "St Stephen"
-            ],
-            "match_keys": [
-                "st_stephen"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "st_stephen",
-            "title": "St. Stephen",
-            "canonical_title": "St. Stephen",
             "variant": "main",
             "aliases": [
                 "St. Stephen"
@@ -15370,49 +12659,6 @@
             "canonical_title": "Stage Banter",
             "variant": "main",
             "aliases": [
-                "Stage Banter"
-            ],
-            "match_keys": [
-                "stage_banter"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "stage_banter",
-            "title": "stage banter",
-            "canonical_title": "stage banter",
-            "variant": "main",
-            "aliases": [
                 "stage banter"
             ],
             "match_keys": [
@@ -15499,92 +12745,7 @@
             "canonical_title": "Standing On The Moon",
             "variant": "main",
             "aliases": [
-                "Standing On The Moon"
-            ],
-            "match_keys": [
-                "standing_on_the_moon"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "standing_on_the_moon",
-            "title": "Standing On the Moon",
-            "canonical_title": "Standing On the Moon",
-            "variant": "main",
-            "aliases": [
-                "Standing On the Moon"
-            ],
-            "match_keys": [
-                "standing_on_the_moon"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "standing_on_the_moon",
-            "title": "Standing on the Moon",
-            "canonical_title": "Standing on the Moon",
-            "variant": "main",
-            "aliases": [
+                "Standing On the Moon",
                 "Standing on the Moon"
             ],
             "match_keys": [
@@ -15757,93 +12918,9 @@
             "canonical_title": "Stuck Inside Of Mobile With The Memphis Blues Again",
             "variant": "main",
             "aliases": [
-                "Stuck Inside Of Mobile With The Memphis Blues Again"
-            ],
-            "match_keys": [
-                "stuck_inside_of_mobile_with_the_memphis_blues_again"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "stuck_inside_of_mobile_with_the_memphis_blues_again",
-            "title": "Stuck Inside of Mobile With The Memphis Blues Again",
-            "canonical_title": "Stuck inside of Mobile with the Memphis Blues Again",
-            "variant": "main",
-            "aliases": [
+                "Stuck Inside of Mobile With The Memphis Blues Again",
+                "Stuck Inside of Mobile with the Memphis Blues Again",
                 "Stuck inside of Mobile with the Memphis Blues Again"
-            ],
-            "match_keys": [
-                "stuck_inside_of_mobile_with_the_memphis_blues_again"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "stuck_inside_of_mobile_with_the_memphis_blues_again",
-            "title": "Stuck Inside of Mobile with the Memphis Blues Again",
-            "canonical_title": "Stuck Inside of Mobile with the Memphis Blues Again",
-            "variant": "main",
-            "aliases": [
-                "Stuck Inside of Mobile with the Memphis Blues Again"
             ],
             "match_keys": [
                 "stuck_inside_of_mobile_with_the_memphis_blues_again"
@@ -15972,50 +13049,8 @@
             "canonical_title": "sugaree",
             "variant": "main",
             "aliases": [
+                "Sugaree*",
                 "sugaree"
-            ],
-            "match_keys": [
-                "sugaree"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "sugaree",
-            "title": "Sugaree*",
-            "canonical_title": "Sugaree*",
-            "variant": "main",
-            "aliases": [
-                "Sugaree*"
             ],
             "match_keys": [
                 "sugaree"
@@ -16746,7 +13781,7 @@
             "canonical_title": "The Other One",
             "variant": "main",
             "aliases": [
-                "The Other One"
+                "The Other One*"
             ],
             "match_keys": [
                 "the_other_one"
@@ -16827,49 +13862,6 @@
             }
         },
         {
-            "id": "the_other_one",
-            "title": "The Other One*",
-            "canonical_title": "The Other One*",
-            "variant": "main",
-            "aliases": [
-                "The Other One*"
-            ],
-            "match_keys": [
-                "the_other_one"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
             "id": "the_promised_land",
             "title": "The Promised Land",
             "canonical_title": "the promised land",
@@ -16916,49 +13908,6 @@
             "id": "the_race_is_on",
             "title": "The Race Is On",
             "canonical_title": "The Race Is On",
-            "variant": "main",
-            "aliases": [
-                "The Race Is On"
-            ],
-            "match_keys": [
-                "the_race_is_on"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "the_race_is_on",
-            "title": "The Race is On",
-            "canonical_title": "The Race is On",
             "variant": "main",
             "aliases": [
                 "The Race is On"
@@ -17434,49 +14383,6 @@
             "canonical_title": "Tons Of Steel",
             "variant": "main",
             "aliases": [
-                "Tons Of Steel"
-            ],
-            "match_keys": [
-                "tons_of_steel"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "tons_of_steel",
-            "title": "Tons of Steel",
-            "canonical_title": "Tons of Steel",
-            "variant": "main",
-            "aliases": [
                 "Tons of Steel"
             ],
             "match_keys": [
@@ -17563,49 +14469,6 @@
             "canonical_title": "Touch Of Grey",
             "variant": "main",
             "aliases": [
-                "Touch Of Grey"
-            ],
-            "match_keys": [
-                "touch_of_grey"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "touch_of_grey",
-            "title": "Touch of Grey",
-            "canonical_title": "Touch of Grey",
-            "variant": "main",
-            "aliases": [
                 "Touch of Grey"
             ],
             "match_keys": [
@@ -17649,49 +14512,8 @@
             "canonical_title": "truckin",
             "variant": "main",
             "aliases": [
-                "truckin"
-            ],
-            "match_keys": [
-                "truckin"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "truckin",
-            "title": "Truckin'",
-            "canonical_title": "truckin'",
-            "variant": "main",
-            "aliases": [
+                "Truckin'",
+                "truckin",
                 "truckin'"
             ],
             "match_keys": [
@@ -17778,93 +14600,8 @@
             "canonical_title": "Turn On Your Love Light",
             "variant": "main",
             "aliases": [
-                "Turn On Your Love Light"
-            ],
-            "match_keys": [
-                "turn_on_your_love_light"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "turn_on_your_love_light",
-            "title": "Turn on Your Love Light",
-            "canonical_title": "Turn on Your Love Light",
-            "variant": "main",
-            "aliases": [
+                "Turn On Your Love Light*",
                 "Turn on Your Love Light"
-            ],
-            "match_keys": [
-                "turn_on_your_love_light"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "turn_on_your_love_light",
-            "title": "Turn On Your Love Light*",
-            "canonical_title": "Turn On Your Love Light*",
-            "variant": "main",
-            "aliases": [
-                "Turn On Your Love Light*"
             ],
             "match_keys": [
                 "turn_on_your_love_light"
@@ -17905,49 +14642,6 @@
             "id": "turn_on_your_lovelight",
             "title": "Turn on Your Lovelight",
             "canonical_title": "Turn on Your Lovelight",
-            "variant": "main",
-            "aliases": [
-                "Turn on Your Lovelight"
-            ],
-            "match_keys": [
-                "turn_on_your_lovelight"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "turn_on_your_lovelight",
-            "title": "Turn On Your Lovelight",
-            "canonical_title": "Turn On Your Lovelight",
             "variant": "main",
             "aliases": [
                 "Turn On Your Lovelight"
@@ -18117,49 +14811,6 @@
             }
         },
         {
-            "id": "us_blues",
-            "title": "U.S. Blues",
-            "canonical_title": "U.S. Blues",
-            "variant": "main",
-            "aliases": [
-                "U.S. Blues"
-            ],
-            "match_keys": [
-                "us_blues"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
             "id": "unbroken_chain",
             "title": "Unbroken Chain",
             "canonical_title": "Unbroken Chain",
@@ -18247,8 +14898,8 @@
         },
         {
             "id": "us_blues",
-            "title": "US Blues",
-            "canonical_title": "US Blues",
+            "title": "U.S. Blues",
+            "canonical_title": "U.S. Blues",
             "variant": "main",
             "aliases": [
                 "US Blues"
@@ -18337,49 +14988,7 @@
             "canonical_title": "Victim or The Crime",
             "variant": "main",
             "aliases": [
-                "Victim or The Crime"
-            ],
-            "match_keys": [
-                "victim_or_the_crime"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "victim_or_the_crime",
-            "title": "Victim or the Crime",
-            "canonical_title": "Victim or the Crime",
-            "variant": "main",
-            "aliases": [
+                "Victim or The Crime",
                 "Victim or the Crime"
             ],
             "match_keys": [
@@ -18507,49 +15116,6 @@
             "id": "walkin_blues",
             "title": "Walkin Blues",
             "canonical_title": "Walkin Blues",
-            "variant": "main",
-            "aliases": [
-                "Walkin Blues"
-            ],
-            "match_keys": [
-                "walkin_blues"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "walkin_blues",
-            "title": "Walkin' Blues",
-            "canonical_title": "Walkin' Blues",
             "variant": "main",
             "aliases": [
                 "Walkin' Blues"
@@ -18724,49 +15290,6 @@
             "canonical_title": "Wave To The Wind",
             "variant": "main",
             "aliases": [
-                "Wave To The Wind"
-            ],
-            "match_keys": [
-                "wave_to_the_wind"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "wave_to_the_wind",
-            "title": "Wave to the Wind",
-            "canonical_title": "Wave to the Wind",
-            "variant": "main",
-            "aliases": [
                 "Wave to the Wind"
             ],
             "match_keys": [
@@ -18810,50 +15333,8 @@
             "canonical_title": "Way to go Home",
             "variant": "main",
             "aliases": [
+                "Way to Go Home",
                 "Way to go Home"
-            ],
-            "match_keys": [
-                "way_to_go_home"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "way_to_go_home",
-            "title": "Way to Go Home",
-            "canonical_title": "Way to Go Home",
-            "variant": "main",
-            "aliases": [
-                "Way to Go Home"
             ],
             "match_keys": [
                 "way_to_go_home"
@@ -19197,49 +15678,6 @@
             "canonical_title": "Werewolves Of London",
             "variant": "main",
             "aliases": [
-                "Werewolves Of London"
-            ],
-            "match_keys": [
-                "werewolves_of_london"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "werewolves_of_london",
-            "title": "Werewolves of London",
-            "canonical_title": "Werewolves of London",
-            "variant": "main",
-            "aliases": [
                 "Werewolves of London"
             ],
             "match_keys": [
@@ -19283,49 +15721,7 @@
             "canonical_title": "West L.A. Fadeaway",
             "variant": "main",
             "aliases": [
-                "West L.A. Fadeaway"
-            ],
-            "match_keys": [
-                "west_la_fadeaway"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "west_la_fadeaway",
-            "title": "West LA Fadeaway",
-            "canonical_title": "west la fadeaway",
-            "variant": "main",
-            "aliases": [
+                "West LA Fadeaway",
                 "west la fadeaway"
             ],
             "match_keys": [
@@ -19453,49 +15849,6 @@
             "id": "when_push_comes_to_shove",
             "title": "When Push Comes To Shove",
             "canonical_title": "When Push Comes To Shove",
-            "variant": "main",
-            "aliases": [
-                "When Push Comes To Shove"
-            ],
-            "match_keys": [
-                "when_push_comes_to_shove"
-            ],
-            "confidence": 0.8,
-            "tempo": {
-                "bpm_min": 70,
-                "bpm_max": 140,
-                "feel": "standard-rock",
-                "swing": 0.0
-            },
-            "pulse": {
-                "beats_per_bar": 4,
-                "subdivision": "8th",
-                "beat_strength": "medium"
-            },
-            "rhythm": {
-                "density": "medium",
-                "transient_profile": "snare",
-                "notes": "Synchronized from production database."
-            },
-            "sections": [
-                {
-                    "name": "verse",
-                    "tempo_bias": "stable",
-                    "pulse_confidence": 0.85
-                }
-            ],
-            "detector_hints": {
-                "prefer_pcm": false,
-                "prefer_low_onsets": true,
-                "prefer_mid_onsets": true,
-                "phase_lock_strength": 0.7,
-                "refractory_bias": "normal"
-            }
-        },
-        {
-            "id": "when_push_comes_to_shove",
-            "title": "When Push Comes to Shove",
-            "canonical_title": "When Push Comes to Shove",
             "variant": "main",
             "aliases": [
                 "When Push Comes to Shove"

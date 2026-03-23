@@ -50,6 +50,18 @@ void main() {
     CatalogService.setMock(MockCatalogService());
   });
 
+  void prepareSettings(SettingsProvider settingsProvider) {
+    if (!settingsProvider.useDynamicColor) {
+      settingsProvider.toggleUseDynamicColor();
+    }
+    if (settingsProvider.performanceMode) {
+      settingsProvider.togglePerformanceMode();
+    }
+    if (!settingsProvider.useTrueBlack) {
+      settingsProvider.toggleUseTrueBlack();
+    }
+  }
+
   // Helper function to create a dummy show
   Show createDummyShow(String name, String date) {
     return Show(
@@ -98,27 +110,20 @@ void main() {
     WidgetTester tester,
   ) async {
     final settingsProvider = SettingsProvider(prefs);
+    prepareSettings(settingsProvider);
     final mockAudio = MockAudioProvider();
 
     // Stub properties used by AnimatedGradientBorder build method
     when(mockAudio.isPlaying).thenReturn(false);
-    // SettingsProvider is a real instance here, so we only need to mock the AudioProvider.
 
-    // Simulate "True Black and Half Glow" configuration:
-    // 1. Dark Mode (set in createTestableWidget via Theme)
-    // 2. Dynamic Color = TRUE (required for half glow logic branch)
-    // Defaults to true, so we just calculate.
-    if (!settingsProvider.useDynamicColor) {
-      settingsProvider.toggleUseDynamicColor();
-    }
-    // Disable performance mode which blocks glow
-    if (settingsProvider.performanceMode) {
-      settingsProvider.togglePerformanceMode();
-    }
-    // 3. Set Glow Mode to HALF (2)
+    // Set Glow Mode to HALF (2)
     settingsProvider.setGlowMode(2);
 
     expect(settingsProvider.glowMode, equals(2));
+
+    tester.view.physicalSize = const Size(1000, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
 
     await tester.pumpWidget(
       createTestableWidget(
@@ -155,18 +160,17 @@ void main() {
     WidgetTester tester,
   ) async {
     final settingsProvider = SettingsProvider(prefs);
-    if (!settingsProvider.useDynamicColor) {
-      settingsProvider.toggleUseDynamicColor();
-    }
-    if (settingsProvider.performanceMode) {
-      settingsProvider.togglePerformanceMode();
-    }
+    prepareSettings(settingsProvider);
     // Set Glow Mode to HALF (2) to test reduced opacity
     settingsProvider.setGlowMode(2);
     // Disable RGB highlighting to ensure we get the non-RGB multiplier (0.2)
     if (settingsProvider.highlightPlayingWithRgb) {
       settingsProvider.toggleHighlightPlayingWithRgb();
     }
+
+    tester.view.physicalSize = const Size(1000, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
 
     final show = createDummyShow('Test Venue', '2025-01-01');
 

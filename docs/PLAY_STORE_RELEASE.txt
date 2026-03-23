@@ -1,3 +1,10 @@
+What's new in v1.3.12+222
+- TV UI Testing: Hardened dual-pane layout stability and automated choice selection.
+- Testing Resilience: Fixed layout overlaps in AMOLED "True Black" visual verification.
+- Data Quality: Improved track metadata accuracy for Grateful Dead song hints.
+
+---
+
 What's new in v1.3.11+221
 - TV UI: Refined visual highlights—now ONLY the active cursor has the rainbow RGB border for maximum clarity.
 - TV UI: Added focus memory to the track list; it now remembers your last selected item when returning to the library.

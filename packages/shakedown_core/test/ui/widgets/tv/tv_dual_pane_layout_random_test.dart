@@ -22,6 +22,7 @@ import '../../../helpers/test_helpers.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_dual_pane_layout.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_header.dart';
 import 'package:hive_ce/hive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
   final _randomShowRequestController =
@@ -155,12 +156,41 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
 
 class FakeShowListProvider extends ChangeNotifier implements ShowListProvider {
   bool _isChoosingRandomShow = false;
+  late final List<Show> _shows;
+
+  FakeShowListProvider() {
+    _shows = [
+      Show(
+        date: '1977-05-08',
+        venue: 'Cornell',
+        name: 'Cornell 77',
+        artist: 'Grateful Dead',
+        sources: [
+          Source(
+            id: '123',
+            tracks: [
+              Track(
+                trackNumber: 1,
+                title: 'Track 1',
+                duration: 180,
+                url: 'http://example.com/track.mp3',
+                setName: 'Set 1',
+              ),
+            ],
+          ),
+        ],
+      ),
+    ];
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 
   @override
   bool get isChoosingRandomShow => _isChoosingRandomShow;
+  
+  @override
+  String? get expandedShowKey => null;
 
   @override
   void setIsChoosingRandomShow(bool value) {
@@ -168,16 +198,22 @@ class FakeShowListProvider extends ChangeNotifier implements ShowListProvider {
   }
 
   @override
-  List<Show> get allShows => [];
+  List<Show> get allShows => _shows;
 
   @override
-  List<Show> get filteredShows => [];
+  List<Show> get filteredShows => _shows;
 
   @override
-  bool get isSearchVisible => false;
+  String getShowKey(Show show) => show.key;
 
   @override
-  bool get hasUsedRandomButton => false;
+  Show? getShow(String key) {
+    try {
+      return _shows.firstWhere((s) => s.key == key);
+    } catch (e) {
+      return null;
+    }
+  }
 
   @override
   bool get isLoading => false;
@@ -186,10 +222,76 @@ class FakeShowListProvider extends ChangeNotifier implements ShowListProvider {
   String? get error => null;
 
   @override
+  bool get isSearchVisible => false;
+
+  @override
+  bool get hasUsedRandomButton => false;
+
+  @override
   bool get hasCheckedArchive => true;
 
   @override
   bool get isArchiveReachable => true;
+
+  @override
+  bool isShowExpanded(String key) => false;
+
+  @override
+  bool isShowLoading(String key) => false;
+
+  @override
+  void expandShow(String key) {}
+
+  @override
+  void collapseCurrentShow() {}
+
+  @override
+  void toggleShowExpansion(String key) {}
+
+  @override
+  void dismissShow(Show show) {}
+
+  @override
+  void dismissSource(Show show, String sourceId) {}
+
+  @override
+  void setLoadingShow(String? key) {}
+
+  @override
+  String? get loadingShowKey => null;
+
+  @override
+  void setSearchVisible(bool visible) {}
+
+  @override
+  void toggleSearchVisible() {}
+
+  @override
+  void setSearchQuery(String query) {}
+
+  @override
+  String get searchQuery => '';
+
+  @override
+  void markRandomButtonUsed() {}
+
+  @override
+  Future<void> fetchShows(SharedPreferences prefs) async {}
+
+  @override
+  int get totalShnids => 0;
+
+  @override
+  Set<String> get availableCategories => {};
+
+  @override
+  void update(SettingsProvider settings) {}
+
+  @override
+  void setPlayingShow(String? showName, String? sourceId) {}
+
+  @override
+  Future<void> get initializationComplete => Future.value();
 }
 
 class FakeCatalogService extends CatalogService {

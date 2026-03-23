@@ -20,7 +20,8 @@ class AudioEnergy {
   /// Final detector confidence, normalized to 0.0..1.0.
   final double beatConfidence;
 
-  /// Final timing source for [isBeat], typically `VIS` or `PCM` on TV.
+  /// Final timing source for [isBeat], such as `HYBRID`, `PCM`, `BASS`,
+  /// `MID`, or `BROAD` on the TV path.
   final String? beatSource;
 
   /// Estimated pulse-grid tempo in beats per minute, when tracking is stable.

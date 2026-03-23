@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.12+222] - 2026-03-23
+
+### Fixed
+- **Testing**: Re-stabilized the `true_black_glow_test.dart` by increasing the viewport size to prevent layout overflows and ensuring strict "True Black" settings on initialization.
+- **TV UI Testing**: Hardened `tv_dual_pane_layout_random_test.dart` by fully implementing the `FakeShowListProvider` interface, eliminating `noSuchMethod` flukes during automated random show selection tests.
+- **Data (Song Hints)**: Fixed a track ID mapping error for "Cold Rain & Snow" to ensure correct metadata linking.
+
 ## [1.3.11+221] - 2026-03-23
 
 ### Added
