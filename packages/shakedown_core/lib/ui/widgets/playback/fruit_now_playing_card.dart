@@ -296,8 +296,7 @@ class FruitNowPlayingCard extends StatelessWidget {
   }) {
     final pos = audioProvider.audioPlayer.position;
     final dur = audioProvider.audioPlayer.duration ?? Duration.zero;
-    final isUnknown = dur.inMilliseconds == 0 &&
-        pos.inMilliseconds == 0;
+    final isUnknown = dur.inMilliseconds == 0 && pos.inMilliseconds == 0;
     final elapsed = isUnknown ? '--:--' : formatDuration(pos);
     final total = isUnknown ? '--:--' : formatDuration(dur);
 

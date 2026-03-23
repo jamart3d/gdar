@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.8+218] - 2026-03-22
+
+### Added
+- **Agent Architecture**: Implemented "Smart Verification Receipts" for the `shipit` workflow, eliminating redundant analyzer and test runs for identical worktree states.
+- **Workflow**: Integrated verification receipts into the `/checkup` workflow to ensure cross-workflow hygiene persistence.
+
 ## [1.2.7+207] - 2026-03-22
 
 ### Fixed

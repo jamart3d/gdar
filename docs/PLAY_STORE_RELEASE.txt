@@ -1,3 +1,9 @@
+What's new in v1.3.8+218
+- Agent Architecture: Implemented "Smart Verification Receipts" for the shipit workflow, eliminating redundant analyzer and test runs.
+- Workflow: Integrated verification receipts into the /checkup workflow to ensure cross-workflow health check persistence.
+
+---
+
 What's new in v1.3.7+217
 - TV Enhancement: New InactivityService for more reliable screensaver triggering.
 - TV Enhancement: Improved Android Manifest for better Google TV compatibility.

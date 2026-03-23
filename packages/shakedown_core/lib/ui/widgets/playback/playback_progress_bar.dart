@@ -83,8 +83,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
           builder: (context, durationSnapshot) {
             final totalDuration = durationSnapshot.data ?? Duration.zero;
             final hasKnownDuration = totalDuration.inSeconds > 0;
-            final isUnknown = !hasKnownDuration &&
-                position.inMilliseconds == 0;
+            final isUnknown = !hasKnownDuration && position.inMilliseconds == 0;
             const unknownLabel = '--:--';
 
             return SizedBox(
@@ -94,9 +93,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                   // 1. ELAPSED TIME
                   _buildTimeBadge(
                     context: context,
-                    text: isUnknown
-                        ? unknownLabel
-                        : formatDuration(position),
+                    text: isUnknown ? unknownLabel : formatDuration(position),
                     scaleFactor: scaleFactor,
                     alignRight: false,
                     isSimple: isSimple,
@@ -326,16 +323,14 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                     initialData: audioProvider.audioPlayer.bufferedPosition,
                     builder: (context, bufferedSnapshot) {
                       final buffered = bufferedSnapshot.data ?? Duration.zero;
-                      final totalUnknown = isUnknown &&
-                          buffered.inMilliseconds == 0;
+                      final totalUnknown =
+                          isUnknown && buffered.inMilliseconds == 0;
                       return _buildTimeBadge(
                         context: context,
                         text: totalUnknown
                             ? unknownLabel
                             : formatDuration(
-                                hasKnownDuration
-                                    ? totalDuration
-                                    : buffered,
+                                hasKnownDuration ? totalDuration : buffered,
                               ),
                         scaleFactor: scaleFactor,
                         alignRight: true,

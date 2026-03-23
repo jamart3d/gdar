@@ -855,7 +855,10 @@ class _TrackListScreenState extends State<TrackListScreen> {
             Container(
               width: 5,
               height: 5,
-              decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: dotColor,
+                shape: BoxShape.circle,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -864,7 +867,9 @@ class _TrackListScreenState extends State<TrackListScreen> {
                 child: Text(
                   track.title,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: isCurrentTrack ? FontWeight.w900 : FontWeight.w700,
+                    fontWeight: isCurrentTrack
+                        ? FontWeight.w900
+                        : FontWeight.w700,
                     fontFamily: 'Inter',
                     color: isCurrentTrack
                         ? colorScheme.primary

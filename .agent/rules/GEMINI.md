@@ -38,3 +38,4 @@ trigger: always_on
 * **Task Artifacts:** When completing a significant feature or fix, provide
   a brief Task List, Implementation Plan, Testing suggestions (unit/widget),
   and a Walkthrough of the results.
+* **Smart Receipts:** When `melos run analyze`, `melos run test`, or `melos run format` pass successfully, the agent MUST update `.agent/notes/verification_status.json` with the current `git rev-parse HEAD` and results. This allows the `/shipit` workflow to skip redundant runs on an identical worktree state.

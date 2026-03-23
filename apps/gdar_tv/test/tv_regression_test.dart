@@ -86,6 +86,10 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   @override
   Stream<void> get playbackFocusRequestStream => const Stream.empty();
   @override
+  Duration? get nextTrackBuffered => null;
+  @override
+  String get engineState => 'idle';
+  @override
   int get cachedTrackCount => 0;
   @override
   String? get error => null;

@@ -39,14 +39,17 @@ GDAR is a Dart workspace monorepo. Build targets live under `apps/`:
 
 ## Workflow
 
-### 1. Preflight
+### 1. Preflight (Smart Check)
 1. Review `git status`.
 2. Confirm release-related changes are isolated and intentional.
-3. Run workspace verification:
+3. Check for recently passed verification runs in `.agent/notes/verification_status.json`:
+   - If `git rev-parse HEAD` and current worktree matches the recorded success in the JSON, skip the redundant `melos run` call.
+4. If missing, stale, or SHA mismatch:
    - `melos run format`
    - `melos run analyze`
    - `melos run test`
-4. Abort on failures.
+   - On success, update `.agent/notes/verification_status.json` with the current SHA and results.
+5. Abort on failures.
 
 ### 2. Version Bump
 1. Read current versions from:

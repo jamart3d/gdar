@@ -499,12 +499,11 @@ class TrackListView extends StatelessWidget {
         );
       } else if (isFruit) {
         // Fruit: track state dot — played / next (buffered) / queued
-        final activeIdx = activeTrackIndex ??
-            audioProvider.audioPlayer.currentIndex ?? -1;
+        final activeIdx =
+            activeTrackIndex ?? audioProvider.audioPlayer.currentIndex ?? -1;
         const dotSize = 32.0;
         final isPlayed = activeIdx >= 0 && trackIndex < activeIdx;
-        final isNext = activeIdx >= 0 &&
-            trackIndex == activeIdx + 1;
+        final isNext = activeIdx >= 0 && trackIndex == activeIdx + 1;
 
         final Color dotColor;
         if (isPlayed) {
@@ -512,18 +511,17 @@ class TrackListView extends StatelessWidget {
         } else if (isNext) {
           final buffered = audioProvider.audioPlayer.nextTrackBuffered;
           final nextTotal = audioProvider.audioPlayer.nextTrackTotal;
-          final hasBuffer = buffered != null &&
-              buffered.inMilliseconds > 0;
-          final isFullyBuffered = hasBuffer &&
+          final hasBuffer = buffered != null && buffered.inMilliseconds > 0;
+          final isFullyBuffered =
+              hasBuffer &&
               nextTotal != null &&
               nextTotal.inMilliseconds > 0 &&
-              buffered.inMilliseconds >=
-                  nextTotal.inMilliseconds - 500;
+              buffered.inMilliseconds >= nextTotal.inMilliseconds - 500;
           dotColor = isFullyBuffered
               ? Colors.green
               : hasBuffer
-                  ? Colors.green.withValues(alpha: 0.6)
-                  : Colors.amber;
+              ? Colors.green.withValues(alpha: 0.6)
+              : Colors.amber;
         } else {
           dotColor = isDarkMode
               ? Colors.white.withValues(alpha: 0.15)
