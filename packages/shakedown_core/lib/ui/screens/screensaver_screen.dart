@@ -48,7 +48,11 @@ class ScreensaverScreen extends StatefulWidget {
 
 class _ScreensaverScreenState extends State<ScreensaverScreen> {
   AudioReactor? _audioReactor;
+  int? _debugAudioSessionId;
   bool _isInitializingAudioReactor = false;
+  Timer? _sessionRetryTimer;
+  int _sessionRetryCount = 0;
+  static const int _maxSessionRetries = 10;
   WakelockService? _wakelockService;
   bool _isStereoCapturePending = false;
   bool _isStereoCaptureActive = false;
@@ -236,8 +240,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     return false;
   }
 
-  Future<void> _initAudioReactor() async {
-    if (_isInitializingAudioReactor || _audioReactor != null) return;
+  Future<void> _initAudioReactor({bool isRetry = false}) async {
+    if (_isInitializingAudioReactor) return;
+    if (_audioReactor != null && !isRetry) return;
     _isInitializingAudioReactor = true;
 
     try {
@@ -270,6 +275,32 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
           listen: false,
         );
         sessionId = audioProvider.audioPlayer.androidAudioSessionId;
+        _debugAudioSessionId = sessionId;
+      }
+
+      // If session ID is null or 0, schedule a retry — audio may not have
+      // started yet. Retry up to 10 times with 2s intervals.
+      if ((sessionId == null || sessionId == 0) &&
+          _sessionRetryCount < _maxSessionRetries) {
+        _sessionRetryCount++;
+        debugPrint(
+          'Screensaver: Session ID is $sessionId, scheduling retry '
+          '$_sessionRetryCount/$_maxSessionRetries',
+        );
+        _sessionRetryTimer?.cancel();
+        _sessionRetryTimer = Timer(const Duration(seconds: 2), () {
+          if (mounted) _initAudioReactor(isRetry: true);
+        });
+        // Still initialize with 0 on first attempt so we get *something*
+        if (_audioReactor != null) return;
+      }
+
+      // Dispose previous reactor if reinitializing with a better session ID.
+      if (isRetry && _audioReactor != null) {
+        unawaited(_stopStereoCapture(resetAttempt: true));
+        _audioReactor?.dispose();
+        _audioReactor = null;
+        _clearPushedAudioConfig();
       }
 
       // Factory only returns a real reactor when isTv == true AND on Android.
@@ -334,6 +365,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
   @override
   void dispose() {
+    _sessionRetryTimer?.cancel();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
     _wakelockService?.disable();
     unawaited(_stopStereoCapture(resetAttempt: true));
@@ -350,6 +382,20 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final songHint = _bestSongHintForTitle(audioProvider.currentTrack?.title);
 
     _ensureAudioReactorState(settings);
+
+    // Re-check session ID: if we initialized with null/0 but now have a real
+    // one, reinitialize the reactor to tap the correct audio output.
+    if (_audioReactor != null &&
+        defaultTargetPlatform == TargetPlatform.android) {
+      final freshId = audioProvider.audioPlayer.androidAudioSessionId;
+      if (freshId != null &&
+          freshId > 0 &&
+          (_debugAudioSessionId == null || _debugAudioSessionId == 0)) {
+        _debugAudioSessionId = freshId;
+        _initAudioReactor(isRetry: true);
+      }
+    }
+
     if (_audioReactor != null) {
       _pushAudioConfig(settings);
       unawaited(_syncStereoCapture(settings));
@@ -427,6 +473,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       config: config,
       audioReactor: _audioReactor,
       onExit: () => Navigator.of(context).pop(),
+      debugAudioSessionId: _debugAudioSessionId,
     );
 
     if (limit4k) {

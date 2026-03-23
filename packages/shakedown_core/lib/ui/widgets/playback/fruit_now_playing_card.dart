@@ -254,6 +254,7 @@ class FruitNowPlayingCard extends StatelessWidget {
                 ),
               },
               child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
                 onTap: activate,
                 child: Container(
                   width: 36 * scaleFactor,

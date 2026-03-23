@@ -537,6 +537,7 @@
     let _onTrackChange = null;
     let _onError = null;
     let _lastIndex = -1;
+    let _backgroundMode = 'heartbeat';
 
     function _translateState(track) {
         if (!track) return {
@@ -550,6 +551,7 @@
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: 'idle',
             heartbeatActive: (function () {
+                if (_backgroundMode === 'none') return false;
                 if (document.visibilityState === 'visible') return true;
                 return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
             })(),
@@ -582,6 +584,7 @@
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: 'ready',
             heartbeatActive: (function () {
+                if (_backgroundMode === 'none') return false;
                 if (document.visibilityState === 'visible' && !track.isPaused) return true;
                 return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
             })(),
@@ -682,6 +685,14 @@
         seekToIndex: function (index) {
             _log.log(`[html5] seekToIndex: ${index}`);
             if (_queue) _queue.gotoTrack(index, true);
+        },
+
+        setHybridBackgroundMode: function (mode) {
+            const normalized = (mode || '').toLowerCase();
+            const mapped = normalized === 'relisten' ? 'html5' : normalized;
+            if (['html5', 'heartbeat', 'video', 'none'].includes(mapped)) {
+                _backgroundMode = mapped;
+            }
         },
 
         setPrefetchSeconds: function (s) { /* No-op */ },

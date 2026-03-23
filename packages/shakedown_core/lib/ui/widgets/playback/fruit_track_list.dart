@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown_core/models/show.dart';
@@ -154,8 +155,6 @@ class _FruitTrackListState extends State<FruitTrackList> {
             ),
             itemCount: tracks.length,
             itemBuilder: (context, i) {
-              final isPlayed = i <= currentTrackIndex;
-              final opacity = isPlayed ? 1.0 : 0.6;
               final isCurrent =
                   i == currentTrackIndex && audioProvider.currentTrack != null;
 
@@ -181,16 +180,14 @@ class _FruitTrackListState extends State<FruitTrackList> {
 
               // If it's the current track but sticky is OFF, render as a regular item
               // but tagged with the key so we can still track its position if needed
-              return Opacity(
-                opacity: opacity,
-                child: _buildTrackItem(
-                  context: context,
-                  track: tracks[i],
-                  index: i,
-                  isActive: isCurrent,
-                  audioProvider: audioProvider,
-                  key: isCurrent ? _nowPlayingKey : null,
-                ),
+              return _buildTrackItem(
+                context: context,
+                track: tracks[i],
+                index: i,
+                isActive: isCurrent,
+                currentTrackIndex: currentTrackIndex,
+                audioProvider: audioProvider,
+                key: isCurrent ? _nowPlayingKey : null,
               );
             },
           ),
@@ -246,6 +243,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
     required Track track,
     required int index,
     required bool isActive,
+    required int currentTrackIndex,
     required AudioProvider audioProvider,
     Key? key,
   }) {
@@ -256,6 +254,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
       audioProvider: audioProvider,
       scaleFactor: widget.scaleFactor,
       isActive: isActive,
+      currentTrackIndex: currentTrackIndex,
     );
   }
 }
@@ -266,6 +265,7 @@ class _FruitTrackRow extends StatefulWidget {
   final AudioProvider audioProvider;
   final double scaleFactor;
   final bool isActive;
+  final int currentTrackIndex;
 
   const _FruitTrackRow({
     super.key,
@@ -273,6 +273,7 @@ class _FruitTrackRow extends StatefulWidget {
     required this.index,
     required this.audioProvider,
     required this.scaleFactor,
+    required this.currentTrackIndex,
     this.isActive = false,
   });
 
@@ -290,6 +291,33 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
     final settingsProvider = context.watch<SettingsProvider>();
     final showTrackNumbers = settingsProvider.showTrackNumbers;
     final hideDuration = settingsProvider.hideTrackDuration;
+
+    final audioProvider = context.watch<AudioProvider>();
+    final isUpcoming = widget.index > widget.currentTrackIndex;
+    final isNext = widget.index == widget.currentTrackIndex + 1;
+
+    Color dotColor = colorScheme.primary;
+
+    if (widget.isActive) {
+      final processingState = audioProvider.audioPlayer.processingState;
+      if (processingState == ProcessingState.loading ||
+          processingState == ProcessingState.buffering) {
+        dotColor = Colors.orange;
+      } else {
+        dotColor = const Color(0xFF2E7D32); // Darker Green
+      }
+    } else if (isNext) {
+      final nextBuffered = audioProvider.nextTrackBuffered;
+      final engineState = audioProvider.engineState;
+
+      if (nextBuffered != null && nextBuffered > Duration.zero) {
+        dotColor = Colors.green;
+      } else if (engineState == 'prefetching' || engineState == 'fetching') {
+        dotColor = Colors.orange;
+      }
+    }
+
+    final double contentOpacity = isUpcoming ? 0.6 : 1.0;
 
     void activate() {
       AppHaptics.lightImpact(context.read<DeviceService>());
@@ -332,33 +360,35 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                 duration: const Duration(milliseconds: 140),
                 curve: Curves.easeOutCubic,
                 scale: _isPressed ? 0.992 : 1.0,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 100),
-                  opacity: _isPressed ? 0.76 : (_isFocused ? 0.85 : 1.0),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 8.0 * widget.scaleFactor, // px-2
-                      vertical:
-                          (settingsProvider.fruitDenseList ? 8.0 : 16.0) *
-                          widget.scaleFactor, // RESPECT DENSE TOGGLE
-                    ),
-                    decoration: BoxDecoration(
-                      color: widget.isActive
-                          ? colorScheme.primary.withValues(alpha: 0.05)
-                          : Colors.transparent,
-                      border: Border(
-                        bottom: BorderSide(
-                          color: widget.isActive
-                              ? colorScheme.primary.withValues(alpha: 0.2)
-                              : colorScheme.onSurface.withValues(alpha: 0.08),
-                          width: 1.0,
-                        ),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 8.0 * widget.scaleFactor, // px-2
+                    vertical:
+                        (settingsProvider.fruitDenseList ? 8.0 : 16.0) *
+                        widget.scaleFactor, // RESPECT DENSE TOGGLE
+                  ),
+                  decoration: BoxDecoration(
+                    color: widget.isActive
+                        ? colorScheme.primary.withValues(alpha: 0.05)
+                        : Colors.transparent,
+                    border: Border(
+                      bottom: BorderSide(
+                        color: widget.isActive
+                            ? colorScheme.primary.withValues(alpha: 0.2)
+                            : colorScheme.onSurface.withValues(alpha: 0.08),
+                        width: 1.0,
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        if (showTrackNumbers) ...[
-                          SizedBox(
+                  ),
+                  child: Row(
+                    children: [
+                      if (showTrackNumbers) ...[
+                        AnimatedOpacity(
+                          duration: const Duration(milliseconds: 100),
+                          opacity: _isPressed
+                              ? 0.76
+                              : (_isFocused ? 0.85 : contentOpacity),
+                          child: SizedBox(
                             width: 20 * widget.scaleFactor, // w-5
                             child: Text(
                               (widget.index + 1).toString().padLeft(2, '0'),
@@ -373,21 +403,27 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                               ),
                             ),
                           ),
-                          SizedBox(width: 16 * widget.scaleFactor), // gap-4
-                        ],
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 5 * widget.scaleFactor,
-                                height: 5 * widget.scaleFactor,
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primary,
-                                  shape: BoxShape.circle,
-                                ),
+                        ),
+                        SizedBox(width: 16 * widget.scaleFactor), // gap-4
+                      ],
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 5 * widget.scaleFactor,
+                              height: 5 * widget.scaleFactor,
+                              decoration: BoxDecoration(
+                                color: dotColor,
+                                shape: BoxShape.circle,
                               ),
-                              SizedBox(width: 10 * widget.scaleFactor),
-                              Expanded(
+                            ),
+                            SizedBox(width: 10 * widget.scaleFactor),
+                            Expanded(
+                              child: AnimatedOpacity(
+                                duration: const Duration(milliseconds: 100),
+                                opacity: _isPressed
+                                    ? 0.76
+                                    : (_isFocused ? 0.85 : contentOpacity),
                                 child: Text(
                                   widget.track.title,
                                   maxLines: 1,
@@ -408,11 +444,17 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        if (!hideDuration)
-                          Text(
+                      ),
+                      if (!hideDuration)
+                        AnimatedOpacity(
+                          duration: const Duration(milliseconds: 100),
+                          opacity: _isPressed
+                              ? 0.76
+                              : (_isFocused ? 0.85 : contentOpacity),
+                          child: Text(
                             _formatDuration(widget.track.duration),
                             style: TextStyle(
                               fontFamily: 'Roboto',
@@ -426,8 +468,8 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                               ],
                             ),
                           ),
-                      ],
-                    ),
+                        ),
+                    ],
                   ),
                 ),
               ),

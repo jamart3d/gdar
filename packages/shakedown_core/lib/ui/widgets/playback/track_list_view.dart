@@ -499,84 +499,50 @@ class TrackListView extends StatelessWidget {
         );
       } else if (isFruit) {
         // Fruit: track state dot — played / next (buffered) / queued
-        final activeIdx = activeTrackIndex ?? -1;
+        final activeIdx = activeTrackIndex ??
+            audioProvider.audioPlayer.currentIndex ?? -1;
         const dotSize = 32.0;
         final isPlayed = activeIdx >= 0 && trackIndex < activeIdx;
         final isNext = activeIdx >= 0 &&
             trackIndex == activeIdx + 1;
 
+        final Color dotColor;
         if (isPlayed) {
-          // Played: small muted filled dot
-          leadingWidget = SizedBox(
-            width: dotSize,
-            height: dotSize,
-            child: Center(
-              child: Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colorScheme.primary.withValues(alpha: 0.3),
-                ),
-              ),
-            ),
-          );
+          dotColor = colorScheme.primary.withValues(alpha: 0.3);
         } else if (isNext) {
-          // Next track: green if buffered, amber if loading
-          leadingWidget = StreamBuilder<Duration?>(
-            stream: audioProvider.nextTrackBufferedStream,
-            builder: (context, bufSnapshot) {
-              final buffered = bufSnapshot.data;
-              final nextTotal = audioProvider.audioPlayer.nextTrackTotal;
-              final hasBuffer = buffered != null &&
-                  buffered.inMilliseconds > 0;
-              final isFullyBuffered = hasBuffer &&
-                  nextTotal != null &&
-                  nextTotal.inMilliseconds > 0 &&
-                  buffered.inMilliseconds >=
-                      nextTotal.inMilliseconds - 500;
-              return SizedBox(
-                width: dotSize,
-                height: dotSize,
-                child: Center(
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isFullyBuffered
-                          ? Colors.green
-                          : hasBuffer
-                              ? Colors.green.withValues(alpha: 0.5)
-                              : Colors.amber.withValues(alpha: 0.7),
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
+          final buffered = audioProvider.audioPlayer.nextTrackBuffered;
+          final nextTotal = audioProvider.audioPlayer.nextTrackTotal;
+          final hasBuffer = buffered != null &&
+              buffered.inMilliseconds > 0;
+          final isFullyBuffered = hasBuffer &&
+              nextTotal != null &&
+              nextTotal.inMilliseconds > 0 &&
+              buffered.inMilliseconds >=
+                  nextTotal.inMilliseconds - 500;
+          dotColor = isFullyBuffered
+              ? Colors.green
+              : hasBuffer
+                  ? Colors.green.withValues(alpha: 0.6)
+                  : Colors.amber;
         } else {
-          // Future: subtle hollow ring
-          leadingWidget = SizedBox(
-            width: dotSize,
-            height: dotSize,
-            child: Center(
-              child: Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isDarkMode
-                        ? Colors.white.withValues(alpha: 0.15)
-                        : Colors.black.withValues(alpha: 0.15),
-                    width: 1,
-                  ),
-                ),
+          dotColor = isDarkMode
+              ? Colors.white.withValues(alpha: 0.15)
+              : Colors.black.withValues(alpha: 0.15);
+        }
+        leadingWidget = SizedBox(
+          width: dotSize,
+          height: dotSize,
+          child: Center(
+            child: Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: dotColor,
               ),
             ),
-          );
-        }
+          ),
+        );
       } else {
         // TV/non-Fruit: plain spacer for alignment
         leadingWidget = const SizedBox(width: 24, height: 24);

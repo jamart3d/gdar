@@ -73,11 +73,20 @@ class VisualizerPlugin(
 
         // Noise gate: energy below this is treated as silence (0.01 = 1% volume)
         private const val SILENCE_THRESHOLD = 0.01
+
+        // Zero-FFT watchdog threshold: ~2s at 20 Hz capture rate
+        private const val ZERO_FRAME_THRESHOLD = 40
     }
 
     private var visualizer: Visualizer? = null
     private var eventSink: EventChannel.EventSink? = null
     private var isRunning = false
+    private var currentAudioSessionId = 0
+
+    // Zero-FFT watchdog: if we get ~2s of silence while supposedly running,
+    // try reinitializing with session 0 (global mix) as fallback.
+    private var consecutiveZeroFrames = 0
+    private var hasTriedFallbackSession = false
 
     // Smoothed values carried between frames (3-band legacy)
     private var smoothBass = 0.0
@@ -180,6 +189,9 @@ class VisualizerPlugin(
     private fun initialize(audioSessionId: Int): Boolean {
         return try {
             release()
+            currentAudioSessionId = audioSessionId
+            consecutiveZeroFrames = 0
+            hasTriedFallbackSession = false
             visualizer = Visualizer(audioSessionId).apply {
                 captureSize = Visualizer.getCaptureSizeRange()[1]
                 val maxRate = Visualizer.getMaxCaptureRate() // millihertz, typically 20000 mHz = 20 Hz
@@ -315,6 +327,43 @@ class VisualizerPlugin(
         val detectorRawBass = if (bassCount > 0) sqrt(bassSum / bassCount) / 128.0 else 0.0
         val rawMid = if (midCount > 0) sqrt(midSum / midCount) / 128.0 else 0.0
         val rawTreble = if (trebleCount > 0) sqrt(trebleSum / trebleCount) / 128.0 else 0.0
+
+        // ── Zero-FFT watchdog ──────────────────────────────────────────
+        if (detectorRawBass < SILENCE_THRESHOLD && rawMid < SILENCE_THRESHOLD && rawTreble < SILENCE_THRESHOLD) {
+            consecutiveZeroFrames++
+            if (consecutiveZeroFrames == ZERO_FRAME_THRESHOLD && !hasTriedFallbackSession && currentAudioSessionId != 0) {
+                hasTriedFallbackSession = true
+                Log.w(TAG, "Watchdog: $ZERO_FRAME_THRESHOLD consecutive zero-FFT frames with session $currentAudioSessionId. Retrying with session 0 (global mix).")
+                try {
+                    visualizer?.enabled = false
+                    visualizer?.release()
+                    visualizer = Visualizer(0).apply {
+                        captureSize = Visualizer.getCaptureSizeRange()[1]
+                        val maxRate = Visualizer.getMaxCaptureRate()
+                        setDataCaptureListener(
+                            object : Visualizer.OnDataCaptureListener {
+                                override fun onWaveFormDataCapture(v: Visualizer?, wf: ByteArray?, sr: Int) {
+                                    wf?.let { pendingWaveform = downsampleWaveform(it) }
+                                }
+                                override fun onFftDataCapture(v: Visualizer?, fft: ByteArray?, sr: Int) {
+                                    fft?.let { processFftData(it, sr) }
+                                }
+                            },
+                            maxRate, true, true
+                        )
+                        enabled = true
+                    }
+                    currentAudioSessionId = 0
+                    consecutiveZeroFrames = 0
+                    Log.d(TAG, "Watchdog: Reinitialized with session 0")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Watchdog: Failed to reinitialize: ${e.message}")
+                }
+                return
+            }
+        } else {
+            consecutiveZeroFrames = 0
+        }
 
         // Visual-only bass gain. Beat detection must stay on pre-boost bass energy.
         val visualRawBass = (detectorRawBass * bassBoost).coerceIn(0.0, 2.0)

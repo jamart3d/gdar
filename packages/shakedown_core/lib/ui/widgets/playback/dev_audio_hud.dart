@@ -806,7 +806,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
       } else if (key == 'AE') {
         final isSurvival = value.contains('+');
         if (value.startsWith('WA')) {
-          finalBaseTextColor = Colors.cyanAccent;
+          finalBaseTextColor = Colors.cyan.shade700;
         } else if (value.startsWith('H5')) {
           finalBaseTextColor = Colors.lightBlueAccent;
         }
@@ -1249,7 +1249,7 @@ class _DevAudioHudState extends State<DevAudioHud> {
         String aeDesc = 'Unknown';
         if (value.startsWith('WA')) {
           aeDesc =
-              'Web Audio API — low-latency, gapless, needs full buffer decoded. Shown in cyan.';
+              'Web Audio API — low-latency, gapless, needs full buffer decoded. Shown in dark cyan.';
         }
         if (value.startsWith('H5')) {
           aeDesc =
@@ -1270,17 +1270,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
           aeDesc = 'Generic foreground engine.';
         }
         String aeSuffix = '';
-        if (value.contains('-New')) {
-          aeSuffix +=
-              ' | -New: heartbeat required (mobile — WebAudio will stop without it).';
-        }
-        if (value.contains('-Opt')) {
-          aeSuffix +=
-              ' | -Opt: heartbeat optional (desktop — WebAudio can run unassisted).';
-        }
         if (value.endsWith('+')) {
-          aeSuffix +=
-              ' | +: heartbeat-capable build active (indigo = survival mode).';
+          aeSuffix =
+              ' | +: survival mode active (indigo chip).';
         }
         return 'Active Engine: $aeDesc$aeSuffix';
       case 'V':

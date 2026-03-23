@@ -85,10 +85,13 @@ class StealGame extends FlameGame {
     return result;
   }
 
+  int? debugAudioSessionId;
+
   StealGame({
     required this.config,
     required this.deviceService,
     AudioReactor? audioReactor,
+    this.debugAudioSessionId,
   }) : _audioReactor = audioReactor;
 
   @override
@@ -151,7 +154,11 @@ class StealGame extends FlameGame {
   void update(double dt) {
     // Push current energy to graph BEFORE super.update() so StealGraph.update()
     // receives fresh data for this frame rather than being one frame behind.
-    if (_graph != null) _graph!.energy = _currentEnergy;
+    if (_graph != null) {
+      _graph!.energy = _currentEnergy;
+      _graph!.debugSessionId = debugAudioSessionId;
+      _graph!.debugReactorConnected = _audioReactor != null;
+    }
 
     super.update(dt);
     // Cap dt for the position-curve clock so dropped frames don't cause the

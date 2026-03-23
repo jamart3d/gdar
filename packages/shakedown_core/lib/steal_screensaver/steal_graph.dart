@@ -27,6 +27,10 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   /// Display mode: 'corner', 'circular', 'ekg', 'circular_ekg', 'beat_debug', or 'off'.
   String graphMode = 'off';
 
+  /// Diagnostic fields for beat_debug overlay.
+  int? debugSessionId;
+  bool debugReactorConnected = false;
+
   /// Number of FFT bands rendered.
   static const int _bandCount = 8;
 
@@ -1561,9 +1565,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     final panelRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(
         startX - panelPad,
-        baseY - maxH - 40,
+        baseY - maxH - 52,
         totalW + panelPad * 2,
-        maxH + labelH + 48,
+        maxH + labelH + 60,
       ),
       const Radius.circular(12),
     );
@@ -1579,6 +1583,33 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         ..color = Colors.white.withValues(alpha: 0.20)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0,
+    );
+
+    // Diagnostic: session ID, reactor status, raw band levels
+    final sessionStr = debugSessionId?.toString() ?? 'null';
+    final reactorStr = debugReactorConnected ? 'YES' : 'NO';
+    final rawBass = (energy.bass * 100).toStringAsFixed(0);
+    final rawMid = (energy.mid * 100).toStringAsFixed(0);
+    final rawTreb = (energy.treble * 100).toStringAsFixed(0);
+    _textPainter.text = TextSpan(
+      text:
+          'SID:$sessionStr  '
+          'REACTOR:$reactorStr  '
+          'BASS:$rawBass%  MID:$rawMid%  TREB:$rawTreb%',
+      style: TextStyle(
+        color: debugReactorConnected
+            ? const Color(0xFF55FF88).withValues(alpha: 0.7)
+            : const Color(0xFFFF5555).withValues(alpha: 0.7),
+        fontSize: 9,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.8,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout();
+    _textPainter.paint(
+      canvas,
+      Offset(startX + (totalW - _textPainter.width) / 2, baseY - maxH - 44),
     );
 
     // Title + energy readout (proves data is flowing even before beats fire)

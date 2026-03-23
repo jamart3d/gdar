@@ -43,6 +43,7 @@
     let _onError = null;
 
     let _lastTimeUpdate = 0;
+    let _backgroundMode = 'heartbeat';
 
     /** Tracker for the currently active play() promise to avoid interruptions. */
     let _playPromise = null;
@@ -274,7 +275,7 @@
                 nextTrackTotal: nextTrackTotal,
                 playlistLength: _playlist.length,
                 processingState: ps,
-                heartbeatActive: (document.visibilityState === 'visible') || !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
+                heartbeatActive: (_backgroundMode !== 'none') && ((document.visibilityState === 'visible') || !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive())),
                 heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
                 contextState: 'passive (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb'
             });
@@ -425,6 +426,14 @@
             _prefetchSeconds = Math.max(5, Math.min(120, s));
         },
 
+        setHybridBackgroundMode: function (mode) {
+            const normalized = (mode || '').toLowerCase();
+            const mapped = normalized === 'relisten' ? 'html5' : normalized;
+            if (['html5', 'heartbeat', 'video', 'none'].includes(mapped)) {
+                _backgroundMode = mapped;
+            }
+        },
+
         getState: function () {
             const pos = _audio ? (_audio.currentTime || 0) : 0;
             const dur = _audio ? (isNaN(_audio.duration) ? 0 : (_audio.duration || 0)) : 0;
@@ -445,7 +454,7 @@
                 playlistLength: _playlist.length,
                 processingState: _loadingState,
                 contextState: 'passive' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb',
-                heartbeatActive: (document.visibilityState === 'visible') || !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
+                heartbeatActive: (_backgroundMode !== 'none') && ((document.visibilityState === 'visible') || !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive())),
                 heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
             };
         },

@@ -67,6 +67,7 @@
   let _fetchStartMs = 0;
   let _fetchInFlight = false;
   let _lastFetchTtfbMs = null;
+  let _backgroundMode = 'heartbeat';
 
   // Track transition gap measurement (LG chip).
   let _trackEndedAtMs = 0;
@@ -673,6 +674,7 @@
           processingState: ps,
           heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
           heartbeatActive: (function () {
+            if (_backgroundMode === 'none') return false;
             if (document.visibilityState === 'visible' && _playing) return true;
             return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
           })(),
@@ -925,6 +927,14 @@
       _prefetchSeconds = Math.max(5, Math.min(120, s));
     },
 
+    setHybridBackgroundMode: function (mode) {
+      const normalized = (mode || '').toLowerCase();
+      const mapped = normalized === 'relisten' ? 'html5' : normalized;
+      if (['html5', 'heartbeat', 'video', 'none'].includes(mapped)) {
+          _backgroundMode = mapped;
+      }
+    },
+
     setVolume: function (v) {
       const next = Math.max(0, Math.min(1, Number(v) || 0));
       _volume = next;
@@ -944,6 +954,7 @@
         playlistLength: _playlist.length,
         processingState: ps,
         heartbeatActive: (function () {
+          if (_backgroundMode === 'none') return false;
           if (document.visibilityState === 'visible' && _playing) return true;
           return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
         })(),

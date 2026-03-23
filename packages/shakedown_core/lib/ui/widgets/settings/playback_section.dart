@@ -757,7 +757,7 @@ class PlaybackSection extends StatelessWidget {
                       ),
                       _Segment(
                         value: HybridHandoffMode.none,
-                        label: 'Disabled',
+                        label: 'Off',
                         tooltip: 'Stay on HTML5 (no Web Audio handoff)',
                         icon: isFruit ? LucideIcons.ban : Icons.block_rounded,
                       ),
@@ -804,7 +804,7 @@ class PlaybackSection extends StatelessWidget {
                       ),
                       _Segment(
                         value: HybridBackgroundMode.heartbeat,
-                        label: 'Heartbeat',
+                        label: 'HBeat',
                         tooltip: 'Silent Audio Clock (Web Audio)',
                         icon: isFruit
                             ? LucideIcons.heart
@@ -812,7 +812,7 @@ class PlaybackSection extends StatelessWidget {
                       ),
                       _Segment(
                         value: HybridBackgroundMode.video,
-                        label: 'Video Trick',
+                        label: 'Video',
                         tooltip: 'Silent Video Hack (Web Audio)',
                         icon: isFruit
                             ? LucideIcons.video
@@ -820,7 +820,7 @@ class PlaybackSection extends StatelessWidget {
                       ),
                       _Segment(
                         value: HybridBackgroundMode.none,
-                        label: 'None',
+                        label: 'Off',
                         tooltip: 'No survival tricks (May throttle)',
                         icon: isFruit
                             ? LucideIcons.power
@@ -968,7 +968,7 @@ class _SegmentedWrap<T> extends StatelessWidget {
             for (int i = 0; i < segments.length; i++) ...[
               if (i > 0)
                 VerticalDivider(width: 1, thickness: 1, color: dividerColor),
-              _buildSegment(context, theme, segments[i]),
+              Flexible(child: _buildSegment(context, theme, segments[i])),
             ],
           ],
         ),
@@ -993,11 +993,12 @@ class _SegmentedWrap<T> extends StatelessWidget {
           onTap: () => onSelectionChanged(segment.value),
           child: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: 14 * scaleFactor,
+              horizontal: 10 * scaleFactor,
               vertical: 8 * scaleFactor,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (segment.icon != null) ...[
                   Icon(
@@ -1007,16 +1008,21 @@ class _SegmentedWrap<T> extends StatelessWidget {
                         ? theme.colorScheme.onPrimaryContainer
                         : theme.colorScheme.onSurfaceVariant,
                   ),
-                  SizedBox(width: 6 * scaleFactor),
+                  SizedBox(width: 4 * scaleFactor),
                 ],
-                Text(
-                  segment.label,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    fontSize: 12 * scaleFactor,
-                    color: isSelected
-                        ? theme.colorScheme.onPrimaryContainer
-                        : theme.colorScheme.onSurfaceVariant,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                Flexible(
+                  child: Text(
+                    segment.label,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontSize: 12 * scaleFactor,
+                      color: isSelected
+                          ? theme.colorScheme.onPrimaryContainer
+                          : theme.colorScheme.onSurfaceVariant,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.w500,
+                    ),
                   ),
                 ),
               ],

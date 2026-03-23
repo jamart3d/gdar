@@ -1,11 +1,26 @@
 # Changelog
 
-All notable changes to the GDAR project will be documented in this file.
+All notable changes to this project will be documented in this file.
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.2.7+207] - 2026-03-22
 
+### Fixed
+- **Web UI HUD**: Resolved issue where `AE` (Active Engine) chip showed `WA` instead of `H5` at the start of Track 1 in Hybrid mode by correctly defaulting to the background engine for "Instant Start".
+- **Web UI HUD**: Fixed missing `LG` (Last Gap) reports in Hybrid/HTML5 modes by implementing track transition gap tracking in the HTML5 audio engine.
+- **Web UI HUD**: Resolved issue where `AE` chip showed a `+` suffix even when background survival was disabled by syncing background mode status to all underlying JS engines.
+- **Background Survival**: Optimized low-power detection heuristics to align Dart and JS thresholds.
+
+### Changed
+- **Web Audio**: Updated default background survival for high-performance devices to use escalated heartbeat (audio then video after 60s).
+- **Web Audio**: Updated default background survival for low-power devices to use immediate video heartbeat for maximum stability.
+
+### Added
+- **Docs**: Added comprehensive Web/PWA Audio Engine & Survival Analysis documentation.
+
+## [1.2.6+206] - 2026-03-18
 ## [1.3.7+217] - 2026-03-22
 
 ### Added

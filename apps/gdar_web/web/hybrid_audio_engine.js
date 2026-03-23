@@ -66,7 +66,7 @@
     let _handoffCrossfadeMs = 0;
 
     // Mode state
-    let _activeEngine = _fgEngine; // Default to Web Audio API
+    let _activeEngine = _bgEngine; // Default to HTML5 (Background Engine) for Instant Start
     let _stallTimer = null;
     let _fenceTimer = null; // Bounds the desktop fence so hidden WA doesn't run indefinitely
     let _heartbeatEscalateTimer = null; // Escalates heartbeat → video after 60s on mobile
@@ -191,6 +191,7 @@
 
         let __tech = '??';
         if (_activeEngine === _fgEngine) { __tech = '(WA)'; }
+        else if (_activeEngine === _bgEngine) { __tech = '(H5)'; }
         else if (_backgroundMode === 'html5') { __tech = '(H5)'; }
         else if (_backgroundMode === 'video') { __tech = '(VI)'; }
         else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
@@ -200,8 +201,9 @@
         state.heartbeatNeeded = hbNeeded;
         state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
 
-        state.heartbeatActive = !!(document.visibilityState === 'visible' && _playing) ||
-            !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive());
+        const survivalDisabled = _backgroundMode === 'none';
+        state.heartbeatActive = !survivalDisabled && (!!(document.visibilityState === 'visible' && _playing) ||
+            !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()));
         _onStateChange(state);
     }
 
@@ -793,6 +795,7 @@
             state.playing = _playing;
             let __tech = '??';
             if (_activeEngine === _fgEngine) { __tech = '(WA)'; }
+            else if (_activeEngine === _bgEngine) { __tech = '(H5)'; }
             else if (_backgroundMode === 'html5') { __tech = '(H5)'; }
             else if (_backgroundMode === 'video') { __tech = '(VI)'; }
             else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
@@ -801,8 +804,10 @@
             const hbNeeded = window._gdarIsHeartbeatNeeded();
             state.heartbeatNeeded = hbNeeded;
             state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
-            state.heartbeatActive = !!(document.visibilityState === 'visible' && _playing) ||
-                !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive());
+
+            const survivalDisabled = _backgroundMode === 'none';
+            state.heartbeatActive = !survivalDisabled && (!!(document.visibilityState === 'visible' && _playing) ||
+                !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()));
             return state;
         },
 

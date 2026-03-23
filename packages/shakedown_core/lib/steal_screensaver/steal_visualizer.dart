@@ -11,12 +11,14 @@ class StealVisualizer extends StatefulWidget {
   final StealConfig config;
   final AudioReactor? audioReactor;
   final VoidCallback? onExit;
+  final int? debugAudioSessionId;
 
   const StealVisualizer({
     super.key,
     required this.config,
     this.audioReactor,
     this.onExit,
+    this.debugAudioSessionId,
   });
 
   @override
@@ -34,6 +36,7 @@ class _StealVisualizerState extends State<StealVisualizer> {
       config: widget.config,
       audioReactor: widget.audioReactor,
       deviceService: Provider.of<DeviceService>(context, listen: false),
+      debugAudioSessionId: widget.debugAudioSessionId,
     );
 
     _easterEggDetector = EasterEggDetector(

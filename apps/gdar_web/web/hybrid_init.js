@@ -130,17 +130,34 @@
         window._gdarAudio = selectedEngine;
         _log.log(`[Shakedown] FINAL STRATEGY: ${strategy}. (Selected: ${selectedEngine.engineType || 'Unknown'}). Override: ${override}`);
 
-        // Advanced Hybrid Settings Sync
-        if (selectedEngine === window._hybridAudio) {
-            try {
-                const bgMode = localStorage.getItem('flutter.hybrid_background_mode') || '"heartbeat"';
-                const handoffMode = localStorage.getItem('flutter.hybrid_handoff_mode') || '"buffered"';
+        // Advanced Hybrid Settings Sync - Universal across all JS engines
+        try {
+            const bgMode = localStorage.getItem('flutter.hybrid_background_mode') || '"heartbeat"';
+            const handoffMode = localStorage.getItem('flutter.hybrid_handoff_mode') || '"buffered"';
+            const cleanBgMode = bgMode.replace(/"/g, '').toLowerCase();
+            const cleanHandoffMode = handoffMode.replace(/"/g, '').toLowerCase();
 
-                selectedEngine.setHybridBackgroundMode(bgMode.replace(/"/g, '').toLowerCase());
-                selectedEngine.setHybridHandoffMode(handoffMode.replace(/"/g, '').toLowerCase());
-            } catch (e) {
-                _log.error('[Shakedown] Failed to sync advanced hybrid settings:', e.message);
+            // Sync to the primary selected engine
+            if (selectedEngine.setHybridBackgroundMode) {
+                selectedEngine.setHybridBackgroundMode(cleanBgMode);
             }
+            if (selectedEngine.setHybridHandoffMode) {
+                selectedEngine.setHybridHandoffMode(cleanHandoffMode);
+            }
+
+            // Sync to underlying engines if they are globally available but not selected
+            // (e.g. gapless engine needs to know it's in survival mode even if orchestrator is driving it)
+            if (window._hybridAudio && window._hybridAudio !== selectedEngine) {
+                window._hybridAudio.setHybridBackgroundMode(cleanBgMode);
+            }
+            if (window._gdarAudio && window._gdarAudio !== selectedEngine) {
+                if (window._gdarAudio.setHybridBackgroundMode) window._gdarAudio.setHybridBackgroundMode(cleanBgMode);
+            }
+            if (window._html5Audio && window._html5Audio !== selectedEngine) {
+                if (window._html5Audio.setHybridBackgroundMode) window._html5Audio.setHybridBackgroundMode(cleanBgMode);
+            }
+        } catch (e) {
+            _log.error('[Shakedown] Failed to sync advanced hybrid settings:', e.message);
         }
 
         console.log('[Shakedown] window._gdarAudio is now configured:', window._gdarAudio.engineType);

@@ -71,11 +71,13 @@ class AudioProvider with ChangeNotifier {
   String? _lastIssueMessage;
   DateTime? _lastIssueAt;
   Timer? _notificationTimeoutTimer;
+  Timer? _issueTimeoutTimer;
   StreamController<DngSnapshot>? _diagnosticsController;
   Timer? _diagnosticsTimer;
   StreamController<HudSnapshot>? _hudSnapshotController;
 
   void clearLastIssue() {
+    _issueTimeoutTimer?.cancel();
     _lastIssueMessage = null;
     _lastIssueAt = null;
     notifyListeners();
@@ -125,6 +127,9 @@ class AudioProvider with ChangeNotifier {
 
     return null;
   }
+
+  Duration? get nextTrackBuffered => _audioPlayer.nextTrackBuffered;
+  String get engineState => _audioPlayer.engineStateString;
 
   Stream<PlayerState> get playerStateStream => _audioPlayer.playerStateStream;
   Stream<int?> get currentIndexStream => _audioPlayer.currentIndexStream;
@@ -241,21 +246,30 @@ class AudioProvider with ChangeNotifier {
 
   void _setAgentMessage(String msg) {
     _lastAgentMessage = msg;
-    _lastIssueMessage = msg;
-    _lastIssueAt = DateTime.now();
+    _startIssueClearTimer(msg);
     notifyListeners();
   }
 
   void _setNotificationMessage(String msg) {
     _lastNotificationMessage = msg;
-    _lastIssueMessage = msg;
-    _lastIssueAt = DateTime.now();
+    _startIssueClearTimer(msg);
     _notificationTimeoutTimer?.cancel();
     _notificationTimeoutTimer = Timer(const Duration(seconds: 4), () {
       _lastNotificationMessage = null;
       notifyListeners();
     });
     notifyListeners();
+  }
+
+  void _startIssueClearTimer(String msg) {
+    _issueTimeoutTimer?.cancel();
+    _lastIssueMessage = msg;
+    _lastIssueAt = DateTime.now();
+    _issueTimeoutTimer = Timer(const Duration(seconds: 8), () {
+      _lastIssueMessage = null;
+      _lastIssueAt = null;
+      notifyListeners();
+    });
   }
 
   void _startDiagnosticsTimer() {
@@ -359,7 +373,11 @@ class AudioProvider with ChangeNotifier {
           : sp.hiddenSessionPreset == HiddenSessionPreset.balanced
           ? 'BAL'
           : 'MAX',
-      activeEngine: _shortActiveEngine(dng.engineContextState, effectiveMode),
+      activeEngine: _shortActiveEngine(
+        dng.engineContextState,
+        effectiveMode,
+        dng.hbActive,
+      ),
       heartbeat: dng.hbActive ? 'ON' : (dng.hbNeeded ? 'ND' : 'OFF'),
       visibility: dng.visibility,
       drift: dng.drift == 0.0 ? '--' : '${dng.drift.toStringAsFixed(2)}s',
@@ -456,7 +474,11 @@ class AudioProvider with ChangeNotifier {
     }
   }
 
-  String _shortActiveEngine(String? contextState, AudioEngineMode mode) {
+  String _shortActiveEngine(
+    String? contextState,
+    AudioEngineMode mode,
+    bool hbActive,
+  ) {
     if (contextState == null || contextState.isEmpty) return '?';
     String tech = '?';
     if (contextState.contains('(WA)')) {
@@ -473,11 +495,8 @@ class AudioProvider with ChangeNotifier {
       tech = 'FG';
     }
 
-    if (contextState.contains('[HBN]')) tech += '-New';
-    if (contextState.contains('[HBO]')) tech += '-Opt';
-
-    // Add version marker if present (e.g. .hb)
-    if (contextState.contains('.hb')) {
+    // Add version marker if background survival is actually active
+    if (hbActive) {
       tech += '+';
     }
 
@@ -744,6 +763,7 @@ class AudioProvider with ChangeNotifier {
     _diagnosticsController?.close();
     _hudSnapshotController?.close();
     _notificationTimeoutTimer?.cancel();
+    _issueTimeoutTimer?.cancel();
     _audioPlayer.dispose();
     _wakelockService.disable(); // Ensure we don't leave it on
     super.dispose();

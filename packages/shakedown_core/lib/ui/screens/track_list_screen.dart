@@ -19,6 +19,7 @@ import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:shakedown_core/ui/widgets/rating_control.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/utils/utils.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/ui/styles/app_typography.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
@@ -812,6 +813,41 @@ class _TrackListScreenState extends State<TrackListScreen> {
     final isFruit = tp.themeStyle == ThemeStyle.fruit;
 
     if (isFruit) {
+      final audioProvider = context.watch<AudioProvider>();
+      final currentTrackIndex = audioProvider.audioPlayer.currentIndex ?? -1;
+
+      final isCurrentTrack =
+          audioProvider.currentTrack != null &&
+          audioProvider.currentTrack!.title == track.title &&
+          audioProvider.currentSource?.id == source.id;
+
+      final bool sameSource = audioProvider.currentSource?.id == source.id;
+      final isUpcoming = sameSource && index > currentTrackIndex;
+      final isNext = sameSource && index == currentTrackIndex + 1;
+
+      Color dotColor = colorScheme.primary;
+
+      if (isCurrentTrack) {
+        final processingState = audioProvider.audioPlayer.processingState;
+        if (processingState == ProcessingState.loading ||
+            processingState == ProcessingState.buffering) {
+          dotColor = Colors.orange;
+        } else {
+          dotColor = const Color(0xFF2E7D32); // Darker Green
+        }
+      } else if (isNext) {
+        final nextBuffered = audioProvider.nextTrackBuffered;
+        final engineState = audioProvider.engineState;
+
+        if (nextBuffered != null && nextBuffered > Duration.zero) {
+          dotColor = Colors.green;
+        } else if (engineState == 'prefetching' || engineState == 'fetching') {
+          dotColor = Colors.orange;
+        }
+      }
+
+      final double contentOpacity = isUpcoming ? 0.6 : 1.0;
+
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
         child: Row(
@@ -819,31 +855,36 @@ class _TrackListScreenState extends State<TrackListScreen> {
             Container(
               width: 5,
               height: 5,
-              decoration: BoxDecoration(
-                color: colorScheme.primary,
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                track.title,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'Inter',
-                  color: colorScheme.onSurface.withValues(alpha: 0.9),
+              child: Opacity(
+                opacity: contentOpacity,
+                child: Text(
+                  track.title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: isCurrentTrack ? FontWeight.w900 : FontWeight.w700,
+                    fontFamily: 'Inter',
+                    color: isCurrentTrack
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withValues(alpha: 0.9),
+                  ),
                 ),
               ),
             ),
             const SizedBox(width: 12),
-            Text(
-              Duration(
-                seconds: track.duration,
-              ).toString().split('.').first.padLeft(8, '0').substring(3),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                fontWeight: FontWeight.w700,
-                fontFamily: 'Inter',
+            Opacity(
+              opacity: contentOpacity,
+              child: Text(
+                Duration(
+                  seconds: track.duration,
+                ).toString().split('.').first.padLeft(8, '0').substring(3),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                  fontWeight: FontWeight.w700,
+                  fontFamily: 'Inter',
+                ),
               ),
             ),
           ],

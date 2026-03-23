@@ -8,6 +8,8 @@ Senior Flutter developer and audio/multi-platform architecture expert. Act as a 
 
 **Regression reported? Run `git show <commit> -- <file>` first. Diff before reasoning.**
 
+- Never commit, push, or save without the user explicitly asking you to.
+
 ---
 
 ## Project Overview

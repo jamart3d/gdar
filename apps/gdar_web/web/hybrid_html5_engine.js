@@ -168,6 +168,13 @@
                         this.webAudioPausedAt = 0; // Fix ordering bug here
                     }
                     if (this.currentTime !== 0) this.seek(this.currentTime);
+
+                    // Track gap for automatic transitions (gapless handoff)
+                    if (_trackEndedAtMs > 0) {
+                        _lastGapMs = performance.now() - _trackEndedAtMs;
+                        _trackEndedAtMs = 0;
+                    }
+
                     this.connectGainNode();
                     this.bufferSourceNode.playbackRate.value = 1;
                     if (!this.bufferSourceNode.onended) {
@@ -179,6 +186,13 @@
                 this.queue.loadTrack(this.idx + 1);
             } else {
                 this.audio.preload = 'auto';
+
+                // Track gap for automatic transitions (streaming handoff)
+                if (_trackEndedAtMs > 0) {
+                    _lastGapMs = performance.now() - _trackEndedAtMs;
+                    _trackEndedAtMs = 0;
+                }
+
                 const playPromise = this.audio.play();
                 if (playPromise && typeof playPromise.catch === 'function') {
                     playPromise.catch((err) => {
@@ -207,6 +221,8 @@
         }
 
         seek(to = 0) {
+            _trackEndedAtMs = 0;
+            _lastGapMs = null;
             if (this.isUsingWebAudio) this.seekBufferSourceNode(to);
             else this.audio.currentTime = to;
             this.onProgress();
@@ -242,12 +258,15 @@
 
         onEnded(from) {
             _log.log(`[html5] Track ended (source: ${from || 'unknown'})`);
+            _trackEndedAtMs = performance.now();
 
             // Critical Race Condition Guard:
             // Only trigger "Next" if this track is STILL the active track of its queue
             // AND the queue is still the primary window._html5Audio queue.
             if (!this.isActiveTrack || this.queue !== _queue) {
                 _log.warn(`[html5] Ignoring onEnded for zombie track (idx: ${this.idx}). Skip Next.`);
+                return;
+            }
                 return;
             }
 
@@ -530,6 +549,8 @@
     let _queue = null;
     let _onStateChange = null;
     let _lastStateEmitMs = 0;
+    let _trackEndedAtMs = 0;
+    let _lastGapMs = null;
 
     function _emitStateThrottled(track) {
         if (!_onStateChange) return;
@@ -541,6 +562,7 @@
     let _onTrackChange = null;
     let _onError = null;
     let _lastIndex = -1;
+    let _backgroundMode = 'heartbeat';
 
     function _translateState(track) {
         if (!track) return {
@@ -553,7 +575,8 @@
             nextTrackTotal: 0,
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: 'idle',
-            contextState: 'html5'
+            contextState: 'html5',
+            lastGapMs: _lastGapMs
         };
 
         const currentTime = track.currentTime || 0;
@@ -581,8 +604,9 @@
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: (track.currentTime > 0 && track.duration > 0 && currentTime >= (duration - 0.1) && track.idx >= _queue.tracks.length - 1) ? 'completed' : 'ready',
             contextState: 'html5 (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb',
-            heartbeatActive: (document.visibilityState === 'visible') || !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
-            heartbeatNeeded: window._gdarIsHeartbeatNeeded()
+            heartbeatActive: (_backgroundMode !== 'none') && ((document.visibilityState === 'visible') || !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive())),
+            heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
+            lastGapMs: _lastGapMs
         };
     }
 
@@ -670,6 +694,14 @@
         seekToIndex: function (index) {
             _log.log(`[html5] seekToIndex: ${index}`);
             if (_queue) _queue.gotoTrack(index, true);
+        },
+
+        setHybridBackgroundMode: function (mode) {
+            const normalized = (mode || '').toLowerCase();
+            const mapped = normalized === 'relisten' ? 'html5' : normalized;
+            if (['html5', 'heartbeat', 'video', 'none'].includes(mapped)) {
+                _backgroundMode = mapped;
+            }
         },
 
         setPrefetchSeconds: function (s) { /* No-op */ },
