@@ -72,11 +72,16 @@ class TvStepperRow extends StatelessWidget {
                     color: colorScheme.onSurface,
                   ),
                 ),
-                Text(
-                  valueFormatter?.call(value) ?? value.toStringAsFixed(2),
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.bold,
+                SizedBox(
+                  width: 88,
+                  child: Text(
+                    valueFormatter?.call(value) ?? value.toStringAsFixed(2),
+                    textAlign: TextAlign.right,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
                   ),
                 ),
               ],

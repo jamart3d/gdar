@@ -154,17 +154,19 @@ class DefaultSettings {
 
   /// Beat detection sensitivity for the TV visualizer (0.0 = gentler,
   /// 1.0 = more aggressive / easier to trigger).
+  /// Detector mode: 'auto', 'hybrid', 'bass', 'mid', 'broad', or 'pcm'.
+  static const String oilBeatDetectorMode = 'auto';
   static const double oilBeatSensitivity = 0.80;
   static const double oilBeatImpact = 0.25;
 
   /// Audio Reactivity Isolation
-  /// -1 = Overall/Default, 0-7 = FFT Bands
+  /// -2 = None, -1 = Default, 0-7 = FFT Bands
   static const int oilScaleSource = -1;
   static const double oilScaleMultiplier = 1.0;
   static const bool oilScaleSineEnabled = false;
   static const double oilScaleSineFreq = 0.5;
   static const double oilScaleSineAmp = 0.2;
-  static const int oilColorSource = 6; // Treble/Brilliance default
+  static const int oilColorSource = -1; // Default treble/brilliance mapping
   static const double oilColorMultiplier = 1.0;
   static const bool oilWoodstockEveryHour = true;
 

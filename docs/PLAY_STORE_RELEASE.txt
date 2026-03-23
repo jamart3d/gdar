@@ -1,3 +1,11 @@
+What's new in v1.3.9+219
+- TV UI: Refined visual highlights—now ONLY the active cursor has the rainbow RGB border for maximum clarity.
+- TV UI: Added focus memory to the track list; it now remembers your last selected item when returning to the library.
+- Web UI: Added a "Crossfade Play/Pause" setting for smooth audio transitions on the Fruit theme.
+- Data: Conducted a major cleanup of the Grateful Dead song structural hints, removing JGB and non-GD side projects for accuracy.
+
+---
+
 What's new in v1.3.8+218
 - Agent Architecture: Implemented "Smart Verification Receipts" for the shipit workflow, eliminating redundant analyzer and test runs.
 - Workflow: Integrated verification receipts into the /checkup workflow to ensure cross-workflow health check persistence.

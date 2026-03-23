@@ -147,6 +147,35 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     textDirection: TextDirection.ltr,
   );
 
+  String _padRightField(String value, int width) {
+    if (value.length >= width) return value;
+    return value.padRight(width);
+  }
+
+  String _padLeftField(String value, int width) {
+    if (value.length >= width) return value;
+    return value.padLeft(width);
+  }
+
+  void _paintDebugText(
+    Canvas canvas,
+    String text,
+    TextStyle style,
+    double x,
+    double y, {
+    double? maxWidth,
+    int? maxLines,
+    String? ellipsis,
+  }) {
+    _textPainter.text = TextSpan(text: text, style: style);
+    _textPainter.maxLines = maxLines;
+    _textPainter.ellipsis = ellipsis;
+    _textPainter.layout(maxWidth: maxWidth ?? double.infinity);
+    _textPainter.paint(canvas, Offset(x, y));
+    _textPainter.maxLines = null;
+    _textPainter.ellipsis = null;
+  }
+
   static const List<Color> _bandColors = [
     Color(0xFF34E7FF),
     Color(0xFF33D1FF),
@@ -1551,7 +1580,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     String formatTelemetry(double? value, {int digits = 2}) =>
         value == null ? '--' : value.toStringAsFixed(digits);
     final hasHint = hintId.isNotEmpty;
-    final hintSummary = hasHint
+    final metaSummary = hasHint
         ? 'META:${hintTitle.isNotEmpty ? hintTitle : hintId}  '
               'VAR:${hintVariant.isEmpty ? "main" : hintVariant}  '
               'SEED:$hintSeedSource'
@@ -1560,14 +1589,27 @@ class StealGraph extends Component with HasGameReference<StealGame> {
         'PH:${formatTelemetry(energy.beatPhase)}  '
         'NXT:${formatTelemetry(energy.nextBeatMs, digits: 0)}  '
         'GRID:${formatTelemetry(energy.beatGridConfidence)}';
+    final panelTextLeft = startX - panelPad + 12.0;
+    const panelTextWidth = totalW + panelPad * 2 - 24.0;
+    final panelTop = baseY - maxH - 84.0;
+    final statusLineY = panelTop + 10.0;
+    final debugLine1Y = panelTop + 24.0;
+    final debugLine2Y = panelTop + 38.0;
+    final metaLineY = panelTop + 54.0;
+    final trackingLineY = panelTop + 66.0;
+    final col1 = panelTextLeft;
+    final col2 = panelTextLeft + 94.0;
+    final col3 = panelTextLeft + 220.0;
+    final col4 = panelTextLeft + 320.0;
+    final col5 = panelTextLeft + 412.0;
 
     // Background panel
     final panelRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(
         startX - panelPad,
-        baseY - maxH - 52,
+        baseY - maxH - 84,
         totalW + panelPad * 2,
-        maxH + labelH + 60,
+        maxH + labelH + 96,
       ),
       const Radius.circular(12),
     );
@@ -1588,80 +1630,204 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     // Diagnostic: session ID, reactor status, raw band levels
     final sessionStr = debugSessionId?.toString() ?? 'null';
     final reactorStr = debugReactorConnected ? 'YES' : 'NO';
-    final rawBass = (energy.bass * 100).toStringAsFixed(0);
-    final rawMid = (energy.mid * 100).toStringAsFixed(0);
-    final rawTreb = (energy.treble * 100).toStringAsFixed(0);
-    _textPainter.text = TextSpan(
-      text:
-          'SID:$sessionStr  '
-          'REACTOR:$reactorStr  '
-          'BASS:$rawBass%  MID:$rawMid%  TREB:$rawTreb%',
-      style: TextStyle(
-        color: debugReactorConnected
-            ? const Color(0xFF55FF88).withValues(alpha: 0.7)
-            : const Color(0xFFFF5555).withValues(alpha: 0.7),
-        fontSize: 9,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.8,
-        fontFamily: 'RobotoMono',
-      ),
+    final rawBass = _padLeftField((energy.bass * 100).toStringAsFixed(0), 3);
+    final rawMid = _padLeftField((energy.mid * 100).toStringAsFixed(0), 3);
+    final rawTreb = _padLeftField((energy.treble * 100).toStringAsFixed(0), 3);
+    final statusStyle = TextStyle(
+      color: debugReactorConnected
+          ? const Color(0xFF55FF88).withValues(alpha: 0.7)
+          : const Color(0xFFFF5555).withValues(alpha: 0.7),
+      fontSize: 9,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 1.5,
+      fontFamily: 'RobotoMono',
+      fontFeatures: const [FontFeature.tabularFigures()],
     );
-    _textPainter.layout();
-    _textPainter.paint(
+    _paintDebugText(
       canvas,
-      Offset(startX + (totalW - _textPainter.width) / 2, baseY - maxH - 44),
+      'SID:${_padRightField(sessionStr, 4)}',
+      statusStyle,
+      col1,
+      statusLineY,
+      maxWidth: 88,
+    );
+    _paintDebugText(
+      canvas,
+      'REACTOR:${_padRightField(reactorStr, 3)}',
+      statusStyle,
+      col2,
+      statusLineY,
+      maxWidth: 120,
+    );
+    _paintDebugText(
+      canvas,
+      'BASS:$rawBass%',
+      statusStyle,
+      col3,
+      statusLineY,
+      maxWidth: 88,
+    );
+    _paintDebugText(
+      canvas,
+      'MID:$rawMid%',
+      statusStyle,
+      col4,
+      statusLineY,
+      maxWidth: 82,
+    );
+    _paintDebugText(
+      canvas,
+      'TREB:$rawTreb%',
+      statusStyle,
+      col5,
+      statusLineY,
+      maxWidth: 90,
     );
 
     // Title + energy readout (proves data is flowing even before beats fire)
-    _textPainter.text = TextSpan(
-      text:
-          'BEAT DEBUG  '
-          'SENS:${beatSensitivity.toStringAsFixed(2)}  '
-          'OVR:${(energy.overall * 100).toStringAsFixed(0).padLeft(3)}%  '
-          'SCR:${energy.beatScore.toStringAsFixed(2)}  '
-          'THR:${energy.beatThreshold.toStringAsFixed(2)}  '
-          'CNF:${energy.beatConfidence.toStringAsFixed(2)}  '
-          'SRC:$beatSource  '
-          'WIN:$winningLabel  '
-          'BPM:${formatTelemetry(energy.beatBpm, digits: 1)}  '
-          'IBI:${formatTelemetry(energy.beatIbiMs, digits: 0)}',
-      style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.5),
-        fontSize: 9,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.8,
-        fontFamily: 'RobotoMono',
-      ),
+    final beatSourceField = _padRightField(beatSource, 6);
+    final winningField = _padRightField(winningLabel, 5);
+    final bpmField = _padLeftField(
+      formatTelemetry(energy.beatBpm, digits: 1),
+      5,
     );
-    _textPainter.layout();
-    _textPainter.paint(
+    final ibiField = _padLeftField(
+      formatTelemetry(energy.beatIbiMs, digits: 0),
+      4,
+    );
+    final debugLineStyle = TextStyle(
+      color: Colors.white.withValues(alpha: 0.5),
+      fontSize: 9,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 1.6,
+      fontFamily: 'RobotoMono',
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    _paintDebugText(
       canvas,
-      Offset(startX + (totalW - _textPainter.width) / 2, baseY - maxH - 32),
+      'BEAT DEBUG',
+      debugLineStyle,
+      col1,
+      debugLine1Y,
+      maxWidth: 108,
+    );
+    _paintDebugText(
+      canvas,
+      'SENS:${beatSensitivity.toStringAsFixed(2)}',
+      debugLineStyle,
+      col2,
+      debugLine1Y,
+      maxWidth: 96,
+    );
+    _paintDebugText(
+      canvas,
+      'OVR:${(energy.overall * 100).toStringAsFixed(0).padLeft(3)}%',
+      debugLineStyle,
+      col3,
+      debugLine1Y,
+      maxWidth: 92,
+    );
+    _paintDebugText(
+      canvas,
+      'SCR:${energy.beatScore.toStringAsFixed(2)}',
+      debugLineStyle,
+      col4,
+      debugLine1Y,
+      maxWidth: 86,
+    );
+    _paintDebugText(
+      canvas,
+      'THR:${energy.beatThreshold.toStringAsFixed(2)}',
+      debugLineStyle,
+      col5,
+      debugLine1Y,
+      maxWidth: 90,
+    );
+    _paintDebugText(
+      canvas,
+      'SRC:$beatSourceField',
+      debugLineStyle,
+      col1,
+      debugLine2Y,
+      maxWidth: 110,
+    );
+    _paintDebugText(
+      canvas,
+      'WIN:$winningField',
+      debugLineStyle,
+      col2,
+      debugLine2Y,
+      maxWidth: 96,
+    );
+    _paintDebugText(
+      canvas,
+      'BPM:$bpmField',
+      debugLineStyle,
+      col3,
+      debugLine2Y,
+      maxWidth: 96,
+    );
+    _paintDebugText(
+      canvas,
+      'IBI:$ibiField',
+      debugLineStyle,
+      col4,
+      debugLine2Y,
+      maxWidth: 82,
+    );
+    _paintDebugText(
+      canvas,
+      'CNF:${energy.beatConfidence.toStringAsFixed(2)}',
+      debugLineStyle,
+      col5,
+      debugLine2Y,
+      maxWidth: 90,
     );
 
-    _textPainter.text = TextSpan(
-      text: '$hintSummary  $trackingSummary',
-      style: TextStyle(
-        color: hasHint
-            ? const Color(0xFF7FD8FF).withValues(alpha: 0.72)
-            : Colors.white.withValues(alpha: 0.35),
-        fontSize: 8,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.2,
-        fontFamily: 'RobotoMono',
-      ),
+    final metaStyle = TextStyle(
+      color: hasHint
+          ? const Color(0xFF7FD8FF).withValues(alpha: 0.72)
+          : Colors.white.withValues(alpha: 0.35),
+      fontSize: 8,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 1.0,
+      fontFamily: 'RobotoMono',
+      fontFeatures: const [FontFeature.tabularFigures()],
     );
-    _textPainter.layout(maxWidth: totalW + panelPad * 2 - 24);
-    _textPainter.paint(
+    final trackingStyle = TextStyle(
+      color: Colors.white.withValues(alpha: 0.46),
+      fontSize: 8,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 1.0,
+      fontFamily: 'RobotoMono',
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    _paintDebugText(
       canvas,
-      Offset(startX + (totalW - _textPainter.width) / 2, baseY - maxH - 20),
+      metaSummary,
+      metaStyle,
+      col1,
+      metaLineY,
+      maxWidth: panelTextWidth,
+      maxLines: 1,
+      ellipsis: '...',
+    );
+    _paintDebugText(
+      canvas,
+      trackingSummary,
+      trackingStyle,
+      col1,
+      trackingLineY,
+      maxWidth: 220,
+      maxLines: 1,
+      ellipsis: '...',
     );
 
     final finalRatio = energy.beatThreshold > 0.0
         ? (energy.beatScore / energy.beatThreshold).clamp(0.0, 2.0)
         : 0.0;
     final finalMeterLeft = startX - panelPad + 8;
-    final finalMeterTop = baseY - maxH - 8;
+    final finalMeterTop = panelTop + 112.0;
     const finalMeterWidth = totalW + panelPad * 2 - 16;
     const finalMeterHeight = 10.0;
     final finalColor = beatSource == 'PCM'

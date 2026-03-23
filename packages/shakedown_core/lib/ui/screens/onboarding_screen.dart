@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -96,9 +97,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     final isTv = context.read<DeviceService>().isTv;
     final nextScreen = isTv ? const TvDualPaneLayout() : const ShowListScreen();
+    final routeName = isTv
+        ? ShakedownRouteNames.tvHome
+        : ShakedownRouteNames.showList;
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
+        settings: RouteSettings(name: routeName),
         pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           final curvedAnimation = CurvedAnimation(

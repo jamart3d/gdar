@@ -52,13 +52,53 @@ class PlaybackSection extends StatelessWidget {
       lucideIcon: LucideIcons.playCircle,
       initiallyExpanded: initiallyExpanded,
       children: [
-        if (kIsWeb)
+        if (kIsWeb) ...[
           ..._buildWebGaplessSection(
             context,
             settingsProvider,
             scaleFactor,
             isFruit,
           ),
+          HighlightableSetting(
+            key: ValueKey(
+              'play_pause_fade_${highlightTriggerCount}_${activeHighlightKey == 'play_pause_fade'}',
+            ),
+            startWithHighlight: activeHighlightKey == 'play_pause_fade',
+            settingKey: settingKeys['play_pause_fade'],
+            child: TvSwitchListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Play/Pause Fade Transition',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+                ),
+              ),
+              subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Quickly fades audio in and out to prevent pops (Web)',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                ),
+              ),
+              value: settingsProvider.usePlayPauseFade,
+              onChanged: (value) {
+                AppHaptics.lightImpact(context.read<DeviceService>());
+                context.read<SettingsProvider>().togglePlayPauseFade();
+              },
+              secondary: Icon(
+                isFruit ? LucideIcons.sliders : Icons.tune_rounded,
+              ),
+            ),
+          ),
+        ],
 
         // Screensaver settings moved to Screensaver section for Google TV
         HighlightableSetting(

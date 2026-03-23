@@ -131,6 +131,10 @@ void main() {
     test('oilBeatSensitivity defaults to 0.80', () {
       expect(provider.oilBeatSensitivity, 0.80);
     });
+
+    test('oilBeatDetectorMode defaults to auto', () {
+      expect(provider.oilBeatDetectorMode, 'auto');
+    });
   });
 
   group('SettingsProvider platform defaults — user override wins', () {

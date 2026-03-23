@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shakedown_core/utils/app_reload/app_reload.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -121,13 +122,18 @@ void showRestartMessage(BuildContext context, String message) {
     return;
   }
 
+  void saveAndRestart() {
+    _savePlaybackSessionBeforeRestart(context);
+    restartApp();
+  }
+
   final bool isFruit = _isFruitTheme(context);
   if (isFruit) {
     _showFruitIssueOverlay(
       context,
       message,
       actionLabel: 'Restart',
-      onAction: () => restartApp(),
+      onAction: saveAndRestart,
     );
     return;
   }
@@ -136,8 +142,40 @@ void showRestartMessage(BuildContext context, String message) {
     context,
     message,
     actionLabel: 'Restart',
-    onAction: () => restartApp(),
+    onAction: saveAndRestart,
   );
+}
+
+/// Captures the current playback position and saves it to
+/// SharedPreferences so the session can resume after a browser reload.
+void _savePlaybackSessionBeforeRestart(BuildContext context) {
+  try {
+    final audio = context.read<AudioProvider>();
+    final sp = context.read<SettingsProvider>();
+    final sourceId = audio.currentSource?.id;
+    if (sourceId == null) return;
+
+    final player = audio.audioPlayer;
+    final index = player.currentIndex;
+    final sequence = player.sequence;
+    if (index == null || index < 0 || index >= sequence.length) return;
+
+    // Resolve local track index from MediaItem extras
+    int localIndex = index;
+    final tag = sequence[index].tag;
+    if (tag is MediaItem) {
+      localIndex = (tag.extras?['track_index'] as int?) ?? index;
+    }
+
+    final positionMs = player.position.inMilliseconds;
+    sp.saveResumeSession(sourceId, localIndex, positionMs);
+    logger.i(
+      'Saved resume session: source=$sourceId, '
+      'track=$localIndex, pos=${positionMs}ms',
+    );
+  } catch (e) {
+    logger.w('Failed to save resume session: $e');
+  }
 }
 
 // restartApp() is now imported from app_reload.dart

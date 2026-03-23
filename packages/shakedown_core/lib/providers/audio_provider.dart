@@ -1254,11 +1254,66 @@ class AudioProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> play() => _audioPlayer.play();
+  int _fadeId = 0;
 
-  Future<void> resume() => _audioPlayer.play();
+  Future<void> _fadeVolume({
+    required double from,
+    required double to,
+    required Duration duration,
+  }) async {
+    _fadeId++;
+    final currentFadeId = _fadeId;
+    const steps = 15;
+    final stepDurationMs = duration.inMilliseconds ~/ steps;
+    final diff = to - from;
 
-  Future<void> pause() => _audioPlayer.pause();
+    if (stepDurationMs <= 0) {
+      await _audioPlayer.setVolume(to);
+      return;
+    }
+
+    for (int i = 1; i <= steps; i++) {
+      await Future.delayed(Duration(milliseconds: stepDurationMs));
+      if (_fadeId != currentFadeId) return; // Abort if superseded
+      final vol = from + (diff * (i / steps));
+      await _audioPlayer.setVolume(vol);
+    }
+
+    if (_fadeId == currentFadeId) {
+      await _audioPlayer.setVolume(to);
+    }
+  }
+
+  Future<void> play() async {
+    if (kIsWeb && (_settingsProvider?.usePlayPauseFade ?? true)) {
+      await _audioPlayer.setVolume(0.0);
+      unawaited(_audioPlayer.play());
+      await _fadeVolume(
+        from: 0.0,
+        to: 1.0,
+        duration: const Duration(milliseconds: 150),
+      );
+    } else {
+      await _audioPlayer.play();
+    }
+  }
+
+  Future<void> resume() => play();
+
+  Future<void> pause() async {
+    if (kIsWeb && (_settingsProvider?.usePlayPauseFade ?? true)) {
+      await _fadeVolume(
+        from: 1.0,
+        to: 0.0,
+        duration: const Duration(milliseconds: 150),
+      );
+      await _audioPlayer.pause();
+      // Reset volume for next play or auto-advance
+      await _audioPlayer.setVolume(1.0);
+    } else {
+      await _audioPlayer.pause();
+    }
+  }
 
   Future<void> stop() => _audioPlayer.stop();
 

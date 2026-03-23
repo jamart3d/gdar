@@ -299,9 +299,8 @@ class TrackListView extends StatelessWidget {
             // We rely purely on the crisp border for selection to avoid
             // BoxShadows filling the hollow transparent center of the item.
             showGlow: false,
-            // Prevent the active track from stealing the Premium neon pink/blue glow.
-            // That glow is strictly reserved for the item the user is actively focused on.
-            overridePremiumHighlight: isPlaying && !isFruit ? false : null,
+            // Preserve the Premium highlight on focus even if it is the currently playing track.
+            overridePremiumHighlight: null,
             onFocusChange: (focused) {
               if (focused) onTrackFocused?.call(listIndex);
             },

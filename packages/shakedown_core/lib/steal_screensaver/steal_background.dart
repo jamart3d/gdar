@@ -10,6 +10,11 @@ import 'package:shakedown_core/utils/asset_constants.dart';
 
 class StealBackground extends PositionComponent
     with HasGameReference<StealGame> {
+  static const double _beatDebugBottomPad = 100.0;
+  static const double _beatDebugMaxHeight = 140.0;
+  static const double _beatDebugHeaderReserve = 84.0;
+  static const double _beatDebugAvoidMargin = 20.0;
+
   StealConfig config;
   ui.FragmentShader? _shader;
   ui.Image? _logoTexture;
@@ -83,7 +88,7 @@ class StealBackground extends PositionComponent
           0.5 +
           0.25 * drift * math.cos(t * _freqNudgeY1) +
           0.1 * drift * math.cos(t * _freqNudgeY2);
-      _smoothedPos = ui.Offset(startX, startY);
+      _smoothedPos = _applyLogoSafeArea(ui.Offset(startX, startY));
     } catch (_) {}
   }
 
@@ -153,6 +158,31 @@ class StealBackground extends PositionComponent
     return result;
   }
 
+  ui.Offset _applyLogoSafeArea(ui.Offset rawPos) {
+    if (config.audioGraphMode != 'beat_debug' || size.y <= 0 || size.x <= 0) {
+      return rawPos;
+    }
+
+    final basePulse = _sharedBeatPulseBoost;
+    final logoHalfSize =
+        ((config.logoScale + basePulse).clamp(0.05, 1.1) * 110.0) / 2.0;
+    final panelTopPx =
+        size.y -
+        _beatDebugBottomPad -
+        _beatDebugMaxHeight -
+        _beatDebugHeaderReserve;
+    final maxCenterYPx = (panelTopPx - logoHalfSize - _beatDebugAvoidMargin)
+        .clamp(logoHalfSize, size.y - logoHalfSize);
+    final minCenterYPx = logoHalfSize + 12.0;
+    final minCenterXPx = logoHalfSize + 12.0;
+    final maxCenterXPx = size.x - logoHalfSize - 12.0;
+
+    return ui.Offset(
+      (rawPos.dx * size.x).clamp(minCenterXPx, maxCenterXPx) / size.x,
+      (rawPos.dy * size.y).clamp(minCenterYPx, maxCenterYPx) / size.y,
+    );
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
@@ -188,6 +218,7 @@ class StealBackground extends PositionComponent
         0.5 + 0.25 * drift * math.sin(argX1) + 0.1 * drift * math.sin(argX2);
     final rawY =
         0.5 + 0.25 * drift * math.cos(argY1) + 0.1 * drift * math.cos(argY2);
+    final safeRawPos = _applyLogoSafeArea(ui.Offset(rawX, rawY));
 
     // Lerp smoothedPos toward raw pos using time-based decay
     final s = config.translationSmoothing.clamp(0.0, 1.0);
@@ -199,8 +230,8 @@ class StealBackground extends PositionComponent
 
     final oldPos = _smoothedPos;
     _smoothedPos = ui.Offset(
-      _smoothedPos.dx + (rawX - _smoothedPos.dx) * posAlpha,
-      _smoothedPos.dy + (rawY - _smoothedPos.dy) * posAlpha,
+      _smoothedPos.dx + (safeRawPos.dx - _smoothedPos.dx) * posAlpha,
+      _smoothedPos.dy + (safeRawPos.dy - _smoothedPos.dy) * posAlpha,
     );
 
     // Track smoothed velocity for dynamic trail scaling
@@ -246,6 +277,16 @@ class StealBackground extends PositionComponent
     }
   }
 
+  double get _sharedBeatPulseBoost => game.beatPulse * 0.08;
+
+  bool get _hasExplicitLogoScaleDriver =>
+      config.scaleSource != -2 || config.scaleSineEnabled;
+
+  bool get _hasExplicitLogoColorDriver => config.colorSource != -2;
+
+  bool get _useSecondaryLogoAudioMotion =>
+      _hasExplicitLogoScaleDriver || _hasExplicitLogoColorDriver;
+
   // -- Trail rendering --------------------------------------------------------
 
   void _renderTrail(ui.Canvas canvas) {
@@ -272,7 +313,7 @@ class StealBackground extends PositionComponent
     final w = size.x;
     final h = size.y;
 
-    final basePulse = game.beatPulse * 0.08;
+    final basePulse = _sharedBeatPulseBoost;
     final logoRenderSize = (config.logoScale + basePulse) * 110.0;
 
     // Use palette color desaturated - but keep it bright enough to see
@@ -367,11 +408,9 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, config.pulseIntensity.clamp(0.0, 5.0));
     _shader!.setFloat(idx++, config.heatDrift.clamp(0.0, 5.0));
     // Beat boost now respects Pulse Intensity so low-reactivity settings stay calm.
-    final beatBoostStrength = config.enableAudioReactivity
-        ? config.pulseIntensity.clamp(0.0, 1.5)
+    final beatBoost = config.enableAudioReactivity
+        ? _sharedBeatPulseBoost
         : 0.0;
-    final beatBoost =
-        game.beatPulse * 0.08 * beatBoostStrength * config.beatImpact;
     _shader!.setFloat(idx++, (config.logoScale + beatBoost).clamp(0.05, 1.1));
     _shader!.setFloat(idx++, config.blurAmount.clamp(0.0, 1.0));
     _shader!.setFloat(idx++, config.flatColor ? 1.0 : 0.0);
@@ -390,9 +429,11 @@ class StealBackground extends PositionComponent
     // Scale Energy (Slot 14, historically ebass)
     double sE = 0.0;
     if (react) {
-      sE = config.scaleSource == -1
-          ? energy.bass
-          : energy.bands[config.scaleSource.clamp(0, 7)];
+      sE = switch (config.scaleSource) {
+        -2 => 0.0,
+        -1 => energy.bass,
+        _ => energy.bands[config.scaleSource.clamp(0, 7)],
+      };
       sE *= config.scaleMultiplier;
     }
 
@@ -405,20 +446,28 @@ class StealBackground extends PositionComponent
     _shader!.setFloat(idx++, sE.clamp(0.0, 5.0));
 
     // Mid Energy (Slot 15, historically emid)
-    _shader!.setFloat(idx++, react ? energy.mid.clamp(0.0, 5.0) : 0.0);
+    final midEnergy = react && _useSecondaryLogoAudioMotion
+        ? energy.mid.clamp(0.0, 5.0)
+        : 0.0;
+    _shader!.setFloat(idx++, midEnergy);
 
     // Color Energy (Slot 16, historically etreble)
     double cE = 0.0;
     if (react) {
-      cE = config.colorSource == -1
-          ? energy.treble
-          : energy.bands[config.colorSource.clamp(0, 7)];
+      cE = switch (config.colorSource) {
+        -2 => 0.0,
+        -1 => energy.treble,
+        _ => energy.bands[config.colorSource.clamp(0, 7)],
+      };
       cE *= config.colorMultiplier;
     }
     _shader!.setFloat(idx++, cE.clamp(0.0, 5.0));
 
     // Overall Energy (Slot 17)
-    _shader!.setFloat(idx++, react ? energy.overall.clamp(0.0, 5.0) : 0.0);
+    final overallEnergy = react && _useSecondaryLogoAudioMotion
+        ? energy.overall.clamp(0.0, 5.0)
+        : 0.0;
+    _shader!.setFloat(idx++, overallEnergy);
 
     // Always write exactly 4 colors - shader always expects uColor1-uColor4
     final colors = _currentColors.length == _colorCount

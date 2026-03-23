@@ -126,10 +126,13 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
         _isFocused;
     final showPremium = isPremium;
 
-    // The playing track gets an RGB border.
-    // If it is ALSO focused and premium is ON, showPremium takes precedence below.
+    // The playing track gets an RGB border on mobile. On TV, we suppress it
+    // to keep the D-Pad focus clear and exclusive to the selected item.
     final showPlayingRgb =
-        widget.isPlaying && sp.highlightPlayingWithRgb && !showPremium;
+        !sp.isTv &&
+        widget.isPlaying &&
+        sp.highlightPlayingWithRgb &&
+        !showPremium;
 
     // Merge base visuals with selection decorations
     BoxDecoration activeDecoration;

@@ -12,7 +12,7 @@ enum NeumorphicStyle { convex, concave }
 
 enum FruitColorOption { sophisticate, minimalist, creative }
 
-class ThemeProvider with ChangeNotifier {
+class ThemeProvider with ChangeNotifier, WidgetsBindingObserver {
   static ThemeProvider? _instance;
   static ThemeProvider? get getInstance => _instance;
 
@@ -75,7 +75,14 @@ class ThemeProvider with ChangeNotifier {
   bool get isDarkMode {
     if (_themeModeIndex == 2) return true;
     if (_themeModeIndex == 1) return false;
-    return isTv; // Fallback for System mode if context isn't available
+    // System mode (0)
+    try {
+      final brightness =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      return brightness == Brightness.dark;
+    } catch (_) {
+      return isTv; // Fallback for System mode if context isn't available
+    }
   }
 
   ThemeProvider({this.isTv = false})
@@ -83,7 +90,22 @@ class ThemeProvider with ChangeNotifier {
       _themeStyleIndex = 0, // Default to Android on all platforms
       _fruitColorOptionIndex = 0 {
     _instance = this;
+    WidgetsBinding.instance.addObserver(this);
     _init();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangePlatformBrightness() {
+    if (_themeModeIndex == 0) {
+      _syncPwaBranding();
+      notifyListeners();
+    }
   }
 
   Future<void> _init() async {

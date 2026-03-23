@@ -60,6 +60,7 @@ class VisualizerAudioReactor implements AudioReactor {
     double? peakDecay,
     double? bassBoost,
     double? reactivityStrength,
+    String? beatDetectorMode,
     double? beatSensitivity,
   }) {
     if (!_isRunning || _isDisposed) return;
@@ -68,6 +69,7 @@ class VisualizerAudioReactor implements AudioReactor {
         'peakDecay': ?peakDecay,
         'bassBoost': ?bassBoost,
         'reactivityStrength': ?reactivityStrength,
+        'beatDetectorMode': ?beatDetectorMode,
         'beatSensitivity': ?beatSensitivity,
       }),
     );
@@ -221,6 +223,11 @@ class VisualizerAudioReactor implements AudioReactor {
       final winningAlgoId = rawWinningAlgoId is num && rawWinningAlgoId >= 0
           ? rawWinningAlgoId.toInt()
           : null;
+      final rawDebugAudioSessionId = data['debugAudioSessionId'];
+      final debugAudioSessionId =
+          rawDebugAudioSessionId is num && rawDebugAudioSessionId >= 0
+          ? rawDebugAudioSessionId.toInt()
+          : null;
 
       _safeAdd(
         AudioEnergy(
@@ -248,6 +255,7 @@ class VisualizerAudioReactor implements AudioReactor {
           algoBaselines: algoBaselines,
           algoThresholds: algoThresholds,
           winningAlgoId: winningAlgoId,
+          debugAudioSessionId: debugAudioSessionId,
         ),
       );
     }

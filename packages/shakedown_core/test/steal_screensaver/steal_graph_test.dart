@@ -22,6 +22,7 @@ class FakeAudioReactor implements AudioReactor {
     double? peakDecay,
     double? bassBoost,
     double? reactivityStrength,
+    String? beatDetectorMode,
     double? beatSensitivity,
   }) {}
   @override

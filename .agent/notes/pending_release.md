@@ -1,14 +1,15 @@
 # Pending Release Notes
 
 ### Status
-- **Current Version**: `1.3.7+217`
-- **Git State**: LIVE
+- **Current Version**: `1.3.9+219`
+- **Git State**: BUMPED
 - **Goal**: Monitoring release success and preparing for next cycle.
 
 ### What's In This Release
-- **TV Enhancement**: New `InactivityService` for reliable screensaver triggering.
-- **TV Enhancement**: Improved Android Manifest for better Google TV compatibility.
-- **Testing**: Added regression tests for TV inactivity and screensaver flow.
+- **TV UI**: Refined visual highlights—now ONLY the active cursor has the rainbow RGB border for maximum clarity.
+- **TV UI**: Added focus memory to the track list; it now remembers your last selected item when returning to the library.
+- **Web UI**: Added a "Crossfade Play/Pause" setting for smooth audio transitions on the Fruit theme.
+- **Data**: Conducted a major cleanup of the Grateful Dead song structural hints, removing JGB and non-GD side projects for accuracy.
 
 ### Next Commands
 Use PowerShell.

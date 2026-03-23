@@ -258,8 +258,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   String get oilAudioGraphMode => 'off';
   @override
-  @override
   Future<void> setOilAudioGraphMode(String mode) async {}
+  @override
+  String get oilBeatDetectorMode => 'auto';
+  @override
+  Future<void> setOilBeatDetectorMode(String mode) async {}
   @override
   Future<void> setOilColorSource(int value) async {}
   @override
@@ -582,6 +585,18 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get fruitDenseList => false;
   @override
   void toggleFruitDenseList() {}
+
+  @override
+  void saveResumeSession(String sourceId, int trackIndex, int positionMs) {}
+
+  @override
+  ({String sourceId, int trackIndex, int positionMs})? consumeResumeSession() =>
+      null;
+
+  @override
+  bool get usePlayPauseFade => true;
+  @override
+  void togglePlayPauseFade() {}
 
   @override
   bool get hasListeners => super.hasListeners;

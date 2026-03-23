@@ -51,6 +51,7 @@ extension type _GdarAudioEngine(JSObject _) {
   external void setHybridBackgroundMode(JSString mode);
   external void setHybridHandoffMode(JSString mode);
   external void setHybridAllowHiddenWebAudio(JSBoolean enabled);
+  external void setVolume(JSNumber volume);
 }
 
 /// Snapshot of engine state returned by [_GdarAudioEngine.getState].
@@ -774,6 +775,15 @@ class GaplessPlayer {
         e.seek((position.inMilliseconds / 1000.0).toJS);
       }
     });
+  }
+
+  /// Sets the volume (0.0 to 1.0).
+  Future<void> setVolume(double volume) async {
+    if (!_useJsEngine) {
+      await _fallbackPlayer?.setVolume(volume);
+    } else {
+      _callEngine((e) => e.setVolume(volume.toJS));
+    }
   }
 
   /// Seeks to the next track.

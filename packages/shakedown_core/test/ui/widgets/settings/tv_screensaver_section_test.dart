@@ -48,21 +48,25 @@ class _FakeDeviceService extends ChangeNotifier implements DeviceService {
 }
 
 class _FakeSettings extends FakeSettingsProvider {
-  _FakeSettings(this._graphMode) {
+  _FakeSettings(this._graphMode, {this.beatDetectorMode = 'auto'}) {
     isTv = true;
   }
 
   final String _graphMode;
+  final String beatDetectorMode;
 
   @override
   String get oilAudioGraphMode => _graphMode;
+
+  @override
+  String get oilBeatDetectorMode => beatDetectorMode;
 }
 
-Widget _buildSection(String graphMode) {
+Widget _buildSection(String graphMode, {String beatDetectorMode = 'auto'}) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<SettingsProvider>.value(
-        value: _FakeSettings(graphMode),
+        value: _FakeSettings(graphMode, beatDetectorMode: beatDetectorMode),
       ),
       ChangeNotifierProvider<ThemeProvider>.value(value: _FakeThemeProvider()),
       ChangeNotifierProvider<DeviceService>.value(value: _FakeDeviceService()),
@@ -124,6 +128,37 @@ void main() {
       expect(find.text('Radius'), findsNothing);
       expect(find.text('Line Replication'), findsNothing);
       expect(find.text('Line Spread'), findsNothing);
+      expect(find.text('NONE'), findsNWidgets(2));
+      expect(find.text('DEF'), findsNWidgets(2));
+    });
+
+    testWidgets('pcm mode shows enhanced audio capture hint', (tester) async {
+      await tester.pumpWidget(_buildSection('off', beatDetectorMode: 'pcm'));
+      expect(find.text('Enhanced'), findsOneWidget);
+      expect(
+        find.textContaining('Android system audio capture for cleaner onset'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Enhanced Audio Capture uses Android system audio'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('bass mode shows bass-specific detector description', (
+      tester,
+    ) async {
+      await tester.pumpWidget(_buildSection('off', beatDetectorMode: 'bass'));
+      expect(
+        find.textContaining('Bass listens for kick and low-end thump'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining(
+          'This stays reactive only and does not BPM-lock the screensaver.',
+        ),
+        findsOneWidget,
+      );
     });
   });
 }

@@ -97,6 +97,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _hybridHandoffModeKey = 'hybrid_handoff_mode';
   static const String _hybridBackgroundModeKey = 'hybrid_background_mode';
   static const String _allowHiddenWebAudioKey = 'allow_hidden_web_audio';
+  static const String _usePlayPauseFadeKey = 'use_play_pause_fade';
   static const String _handoffCrossfadeMsKey = 'handoff_crossfade_ms';
   static const String _hiddenSessionPresetKey = 'hidden_session_preset';
   static const String _webEngineProfileInitKey = 'web_engine_profile_init_v1';
@@ -156,6 +157,7 @@ class SettingsProvider with ChangeNotifier {
   static const String _oilEkgRadiusKey = 'oil_ekg_radius';
   static const String _oilEkgReplicationKey = 'oil_ekg_replication';
   static const String _oilEkgSpreadKey = 'oil_ekg_spread';
+  static const String _oilBeatDetectorModeKey = 'oil_beat_detector_mode';
   static const String _oilBeatSensitivityKey = 'oil_beat_sensitivity';
   static const String _oilBeatImpactKey = 'oil_beat_impact';
   static const String _oilShowInfoBannerKey = 'oil_show_info_banner';
@@ -200,6 +202,12 @@ class SettingsProvider with ChangeNotifier {
   static const String _showSplashScreenKey = 'show_splash_screen';
   static const String _forceTvKey = 'force_tv';
   static const String _enableHapticsKey = 'enable_haptics';
+
+  // Ephemeral engine-restart resume keys (not loaded in _init)
+  static const String _resumeSourceIdKey = 'resume_source_id';
+  static const String _resumeTrackIndexKey = 'resume_track_index';
+  static const String _resumePositionMsKey = 'resume_position_ms';
+
   late bool _showSplashScreen;
   bool get showSplashScreen => _showSplashScreen;
   bool get isFirstRun => _isFirstRun;
@@ -277,6 +285,7 @@ class SettingsProvider with ChangeNotifier {
   late HybridHandoffMode _hybridHandoffMode;
   late HybridBackgroundMode _hybridBackgroundMode;
   late bool _allowHiddenWebAudio;
+  late bool _usePlayPauseFade;
   late int _handoffCrossfadeMs;
   late HiddenSessionPreset _hiddenSessionPreset;
   late WebEngineProfile _webEngineProfile;
@@ -322,6 +331,7 @@ class SettingsProvider with ChangeNotifier {
   late double _oilAudioBassBoost;
   late double _oilAudioReactivityStrength;
   late String _oilAudioGraphMode;
+  late String _oilBeatDetectorMode;
   late double _oilBeatSensitivity;
   late double _oilBeatImpact;
   late bool _oilShowInfoBanner;
@@ -490,6 +500,12 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  bool get usePlayPauseFade => _usePlayPauseFade;
+  void togglePlayPauseFade() {
+    _usePlayPauseFade = !_usePlayPauseFade;
+    _updatePreference(_usePlayPauseFadeKey, _usePlayPauseFade);
+  }
+
   int get handoffCrossfadeMs => _handoffCrossfadeMs;
   void setHandoffCrossfadeMs(int ms) {
     _handoffCrossfadeMs = ms.clamp(0, 200);
@@ -619,6 +635,7 @@ class SettingsProvider with ChangeNotifier {
   double get oilEkgRadius => _oilEkgRadius;
   int get oilEkgReplication => _oilEkgReplication;
   double get oilEkgSpread => _oilEkgSpread;
+  String get oilBeatDetectorMode => _oilBeatDetectorMode;
   double get oilBeatSensitivity => _oilBeatSensitivity;
   double get oilBeatImpact => _oilBeatImpact;
   bool get oilShowInfoBanner => _oilShowInfoBanner;
@@ -666,6 +683,31 @@ class SettingsProvider with ChangeNotifier {
   void markAdvancedCacheSuggestionShown() {
     _hasShownAdvancedCacheSuggestion = true;
     notifyListeners();
+  }
+
+  /// Saves playback position before an engine-restart browser reload.
+  void saveResumeSession(String sourceId, int trackIndex, int positionMs) {
+    _prefs.setString(_resumeSourceIdKey, sourceId);
+    _prefs.setInt(_resumeTrackIndexKey, trackIndex);
+    _prefs.setInt(_resumePositionMsKey, positionMs);
+  }
+
+  /// Reads and removes the saved resume session (one-shot).
+  /// Returns `null` if no session was saved.
+  ({String sourceId, int trackIndex, int positionMs})? consumeResumeSession() {
+    final sourceId = _prefs.getString(_resumeSourceIdKey);
+    final trackIndex = _prefs.getInt(_resumeTrackIndexKey);
+    final positionMs = _prefs.getInt(_resumePositionMsKey);
+
+    // Clean up regardless
+    _prefs.remove(_resumeSourceIdKey);
+    _prefs.remove(_resumeTrackIndexKey);
+    _prefs.remove(_resumePositionMsKey);
+
+    if (sourceId == null || trackIndex == null || positionMs == null) {
+      return null;
+    }
+    return (sourceId: sourceId, trackIndex: trackIndex, positionMs: positionMs);
   }
 
   static const String _showDebugLayoutKey = 'show_debug_layout';
@@ -1086,6 +1128,7 @@ class SettingsProvider with ChangeNotifier {
       _prefs.getString(_hiddenSessionPresetKey) ?? 'balanced',
     );
     _allowHiddenWebAudio = _prefs.getBool(_allowHiddenWebAudioKey) ?? false;
+    _usePlayPauseFade = _prefs.getBool(_usePlayPauseFadeKey) ?? true;
     _handoffCrossfadeMs =
         _prefs.getInt(_handoffCrossfadeMsKey) ??
         DefaultSettings.handoffCrossfadeMs;
@@ -1227,6 +1270,9 @@ class SettingsProvider with ChangeNotifier {
     _oilAudioGraphMode =
         _prefs.getString(_oilAudioGraphModeKey) ??
         DefaultSettings.oilAudioGraphMode;
+    _oilBeatDetectorMode =
+        _prefs.getString(_oilBeatDetectorModeKey) ??
+        DefaultSettings.oilBeatDetectorMode;
     _oilBeatSensitivity =
         _prefs.getDouble(_oilBeatSensitivityKey) ??
         DefaultSettings.oilBeatSensitivity;
@@ -1747,6 +1793,10 @@ class SettingsProvider with ChangeNotifier {
       );
   Future<void> setOilAudioGraphMode(String mode) =>
       _updateStringPreference(_oilAudioGraphModeKey, _oilAudioGraphMode = mode);
+  Future<void> setOilBeatDetectorMode(String mode) => _updateStringPreference(
+    _oilBeatDetectorModeKey,
+    _oilBeatDetectorMode = mode,
+  );
   Future<void> setOilBeatSensitivity(double value) => _updateDoublePreference(
     _oilBeatSensitivityKey,
     _oilBeatSensitivity = value.clamp(0.0, 1.0),

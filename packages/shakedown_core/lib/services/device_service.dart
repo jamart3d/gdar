@@ -7,6 +7,7 @@ import 'device_service_pwa_stub.dart'
 
 class DeviceService extends ChangeNotifier {
   static const _deviceChannel = MethodChannel('com.jamart3d.shakedown/device');
+  final bool _lockIsTv;
 
   bool _isTv = false;
   bool get isTv => _isTv;
@@ -32,7 +33,8 @@ class DeviceService extends ChangeNotifier {
       defaultTargetPlatform == TargetPlatform.macOS ||
       defaultTargetPlatform == TargetPlatform.linux;
 
-  DeviceService({bool? initialIsTv}) {
+  DeviceService({bool? initialIsTv, bool lockIsTv = false})
+    : _lockIsTv = lockIsTv {
     if (initialIsTv != null) {
       _isTv = initialIsTv;
     }
@@ -75,33 +77,36 @@ class DeviceService extends ChangeNotifier {
       }
 
       if (defaultTargetPlatform == TargetPlatform.android) {
-        // Source of truth for Android TV
-        final bool? result = await _deviceChannel.invokeMethod<bool>('isTv');
-        _isTv = result ?? false;
+        if (!_lockIsTv) {
+          // Source of truth for Android TV unless this shell pins TV mode.
+          final bool? result = await _deviceChannel.invokeMethod<bool>('isTv');
+          _isTv = result ?? false;
 
-        // Check for manual override
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          if (prefs.getBool('force_tv') == true ||
-              const bool.fromEnvironment('FORCE_TV', defaultValue: false)) {
-            _isTv = true;
+          // Check for manual override
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            if (prefs.getBool('force_tv') == true ||
+                const bool.fromEnvironment('FORCE_TV', defaultValue: false)) {
+              _isTv = true;
+            }
+          } catch (e) {
+            // Ignore pref errors here
           }
-        } catch (e) {
-          // Ignore pref errors here
         }
 
         final androidInfo = await deviceInfo.androidInfo;
         _deviceName = '${androidInfo.brand} ${androidInfo.model}';
       } else if (defaultTargetPlatform == TargetPlatform.iOS) {
         final iosInfo = await deviceInfo.iosInfo;
-        _isTv = iosInfo.model.toLowerCase().contains('appletv');
+        if (!_lockIsTv) {
+          _isTv = iosInfo.model.toLowerCase().contains('appletv');
+        }
         _deviceName = iosInfo.name;
       }
     } catch (e) {
       debugPrint('Error initializing DeviceService: $e');
       if (kIsWeb) _deviceName = 'Web Browser';
     }
-
     notifyListeners();
   }
 

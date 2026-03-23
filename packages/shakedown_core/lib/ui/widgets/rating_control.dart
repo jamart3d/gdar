@@ -692,15 +692,13 @@ class _RatingDialogState extends State<RatingDialog> {
             width: 1,
           ),
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: content,
-          ),
-        ),
+        child: Material(color: Colors.transparent, child: content),
       );
     } else if (isFruitNeumorphic) {
+      final bool isGlassDisabled =
+          settingsProvider.performanceMode ||
+          !settingsProvider.fruitEnableLiquidGlass;
+
       content = LiquidGlassWrapper(
         enabled: !isTv && !settingsProvider.performanceMode,
         showBorder: false, // Seamless Vapor feel
@@ -709,15 +707,13 @@ class _RatingDialogState extends State<RatingDialog> {
         blur: 30, // Deeper blur for the dialog back-plate
         child: NeumorphicWrapper(
           enabled: !isTv && !settingsProvider.performanceMode,
-          color: settingsProvider.performanceMode
-              ? colorScheme.surface
-              : Colors.transparent,
-          borderRadius: 16,
+          color: isGlassDisabled ? colorScheme.surface : Colors.transparent,
+          borderRadius: 24,
           intensity: 1.1,
           child: Material(
-            color: settingsProvider.performanceMode
-                ? colorScheme.surface
-                : Colors.transparent,
+            color: isGlassDisabled ? colorScheme.surface : Colors.transparent,
+            borderRadius: BorderRadius.circular(24),
+            clipBehavior: Clip.antiAlias,
             child: content,
           ),
         ),
@@ -727,13 +723,13 @@ class _RatingDialogState extends State<RatingDialog> {
     return Dialog(
       elevation: (isFruitNeumorphic || isTv) ? 0 : null,
       backgroundColor: (isFruitNeumorphic || isTv) ? Colors.transparent : null,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: (isFruitNeumorphic || isTv)
-          ? content
-          : ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: content,
-            ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(isFruitNeumorphic ? 24 : 16),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 400),
+        child: content,
+      ),
     );
   }
 
@@ -802,6 +798,10 @@ class _RatingDialogState extends State<RatingDialog> {
         !settingsProvider.useTrueBlack &&
         !isTv;
 
+    final bool isGlassDisabled =
+        settingsProvider.performanceMode ||
+        !settingsProvider.fruitEnableLiquidGlass;
+
     return showDialog<bool>(
       context: context,
       builder: (context) => MediaQuery(
@@ -820,7 +820,7 @@ class _RatingDialogState extends State<RatingDialog> {
                   child: NeumorphicWrapper(
                     enabled: !settingsProvider.performanceMode,
                     borderRadius: 24,
-                    color: settingsProvider.performanceMode
+                    color: isGlassDisabled
                         ? colorScheme.surface
                         : Colors.transparent,
                     child: Container(

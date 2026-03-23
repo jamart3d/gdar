@@ -82,6 +82,9 @@ class AudioEnergy {
   /// has a meaningful score yet.
   final int? winningAlgoId;
 
+  /// Native Android audio session currently driving the visualizer, when known.
+  final int? debugAudioSessionId;
+
   const AudioEnergy({
     required this.bass,
     required this.mid,
@@ -107,6 +110,7 @@ class AudioEnergy {
     this.algoBaselines = const [],
     this.algoThresholds = const [],
     this.winningAlgoId,
+    this.debugAudioSessionId,
   });
 
   /// Create an AudioEnergy with all values set to zero (silence)
@@ -134,7 +138,8 @@ class AudioEnergy {
       algoSignals = const [],
       algoBaselines = const [],
       algoThresholds = const [],
-      winningAlgoId = null;
+      winningAlgoId = null,
+      debugAudioSessionId = null;
 
   @override
   String toString() {
@@ -167,6 +172,7 @@ abstract class AudioReactor {
     double? peakDecay,
     double? bassBoost,
     double? reactivityStrength,
+    String? beatDetectorMode,
     double? beatSensitivity,
   });
 

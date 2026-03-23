@@ -84,6 +84,7 @@ class MainActivity: FlutterActivity() {
                 }
                 "stopCapture" -> {
                     stereoCapture.stop()
+                    MediaProjectionForegroundService.stop(this)
                     result.success(true)
                 }
                 else -> result.notImplemented()
@@ -99,17 +100,35 @@ class MainActivity: FlutterActivity() {
             val result = pendingStereoResult
             pendingStereoResult = null
             if (resultCode == Activity.RESULT_OK && data != null) {
-                val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                val projection = mgr.getMediaProjection(resultCode, data)
-                if (projection != null) {
-                    val ok = stereoCapture.start(projection)
-                    result?.success(ok)
-                    Log.d(TAG, "Stereo capture started: $ok")
-                } else {
-                    result?.success(false)
-                    Log.w(TAG, "getMediaProjection returned null")
+                MediaProjectionForegroundService.start(this)
+                MediaProjectionForegroundService.runWhenReady {
+                    try {
+                        val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                        val projection = mgr.getMediaProjection(resultCode, data)
+                        if (projection != null) {
+                            val ok = stereoCapture.start(projection)
+                            if (!ok) {
+                                MediaProjectionForegroundService.stop(this)
+                            }
+                            result?.success(ok)
+                            Log.d(TAG, "Stereo capture started: $ok")
+                        } else {
+                            MediaProjectionForegroundService.stop(this)
+                            result?.success(false)
+                            Log.w(TAG, "getMediaProjection returned null")
+                        }
+                    } catch (e: SecurityException) {
+                        MediaProjectionForegroundService.stop(this)
+                        result?.success(false)
+                        Log.w(TAG, "Stereo capture unavailable on this device: ${e.message}")
+                    } catch (e: Exception) {
+                        MediaProjectionForegroundService.stop(this)
+                        result?.success(false)
+                        Log.e(TAG, "Failed to start stereo capture", e)
+                    }
                 }
             } else {
+                MediaProjectionForegroundService.stop(this)
                 result?.success(false)
                 Log.d(TAG, "Stereo capture permission denied")
             }

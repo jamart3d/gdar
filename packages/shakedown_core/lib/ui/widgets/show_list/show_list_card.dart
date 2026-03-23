@@ -246,9 +246,8 @@ class _ShowListCardState extends State<ShowListCard> {
         onFocusChange: _onHover,
         isPlaying: widget.isPlaying,
         showGlow: true,
-        // Prevent the playing show from stealing the premium glow —
-        // that glow is strictly reserved for the actively focused item.
-        overridePremiumHighlight: widget.isPlaying ? false : null,
+        // Allow the Premium highlight on focus even if it is currently playing.
+        overridePremiumHighlight: null,
         child: content,
       );
     }

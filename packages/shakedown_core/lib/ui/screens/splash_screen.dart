@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
 import 'package:shakedown_core/ui/screens/onboarding_screen.dart';
 
@@ -149,9 +150,15 @@ class _SplashScreenState extends State<SplashScreen>
             : (settingsProvider.showOnboarding
                   ? const OnboardingScreen()
                   : const ShowListScreen());
+        final routeName = isTv
+            ? ShakedownRouteNames.tvHome
+            : (settingsProvider.showOnboarding
+                  ? ShakedownRouteNames.onboarding
+                  : ShakedownRouteNames.showList);
 
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
+            settings: RouteSettings(name: routeName),
             pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
             transitionsBuilder: useSimpleTransition
                 ? (context, animation, secondaryAnimation, child) => child

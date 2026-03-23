@@ -108,7 +108,7 @@ class StealConfig {
   /// Whether to apply fwidth-based anti-aliasing on the logo alpha edge.
   final bool logoAntiAlias;
 
-  /// Source for logo scale reactivity (-1 = overall, 0-7 = bands).
+  /// Source for logo scale reactivity (-2 = none, -1 = default, 0-7 = bands).
   final int scaleSource;
   final double scaleMultiplier;
 
@@ -121,7 +121,7 @@ class StealConfig {
   /// Amplitude of the logo scale sine wave (0.0 to 1.0).
   final double scaleSineAmp;
 
-  /// Source for logo color reactivity (-1 = overall, 0-7 = bands).
+  /// Source for logo color reactivity (-2 = none, -1 = default, 0-7 = bands).
   final int colorSource;
   final double colorMultiplier;
 

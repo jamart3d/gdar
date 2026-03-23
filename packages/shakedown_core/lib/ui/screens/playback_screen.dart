@@ -559,7 +559,12 @@ class PlaybackScreenState extends State<PlaybackScreen>
                         ),
                       ),
                     ),
-                    SizedBox(width: 6 * scaleFactor),
+                  ],
+                ),
+                SizedBox(height: 8 * scaleFactor),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                     _buildFruitCopyButton(
                       context,
                       scaleFactor,
@@ -567,12 +572,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
                       currentSource,
                       dateText,
                     ),
-                  ],
-                ),
-                SizedBox(height: 8 * scaleFactor),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
+                    SizedBox(width: 8 * scaleFactor),
                     RatingControl(
                       rating: rating,
                       isPlayed: isPlayed,
@@ -793,18 +793,18 @@ class PlaybackScreenState extends State<PlaybackScreen>
           showMessage(context, 'Details copied to clipboard');
         },
         child: Container(
-          width: 16 * scaleFactor,
-          height: 16 * scaleFactor,
+          width: 20 * scaleFactor,
+          height: 20 * scaleFactor,
           decoration: BoxDecoration(
             color: colorScheme.onSurface.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(5 * scaleFactor),
+            borderRadius: BorderRadius.circular(6 * scaleFactor),
             border: Border.all(
               color: colorScheme.onSurface.withValues(alpha: 0.08),
             ),
           ),
           child: Icon(
             LucideIcons.copy,
-            size: 9 * scaleFactor,
+            size: 12 * scaleFactor,
             color: colorScheme.onSurfaceVariant.withValues(alpha: 0.65),
           ),
         ),

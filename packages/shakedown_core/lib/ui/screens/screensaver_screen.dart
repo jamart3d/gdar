@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/song_structure_hints.dart';
 import 'package:shakedown_core/steal_screensaver/steal_config.dart';
 import 'package:shakedown_core/steal_screensaver/steal_visualizer.dart';
+import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/visualizer/audio_reactor.dart';
 import 'package:shakedown_core/visualizer/audio_reactor_factory.dart';
 import 'package:shakedown_core/visualizer/visualizer_audio_reactor.dart';
@@ -24,22 +25,27 @@ class ScreensaverScreen extends StatefulWidget {
 
   final SongStructureHintCatalog? songHintCatalogOverride;
 
-  static Future<void> show(BuildContext context) {
-    return Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: false,
-        transitionDuration: const Duration(milliseconds: 800),
-        reverseTransitionDuration: const Duration(milliseconds: 400),
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const ScreensaverScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(
-            opacity: CurvedAnimation(parent: animation, curve: Curves.easeIn),
-            child: child,
-          );
-        },
-      ),
+  static Route<void> route({
+    SongStructureHintCatalog? songHintCatalogOverride,
+  }) {
+    return PageRouteBuilder(
+      settings: const RouteSettings(name: ShakedownRouteNames.screensaver),
+      opaque: false,
+      transitionDuration: const Duration(milliseconds: 800),
+      reverseTransitionDuration: const Duration(milliseconds: 400),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          ScreensaverScreen(songHintCatalogOverride: songHintCatalogOverride),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: CurvedAnimation(parent: animation, curve: Curves.easeIn),
+          child: child,
+        );
+      },
     );
+  }
+
+  static Future<void> show(BuildContext context) {
+    return Navigator.of(context).push(route());
   }
 
   @override
@@ -64,6 +70,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   double? _lastPushedPeakDecay;
   double? _lastPushedBassBoost;
   double? _lastPushedReactivityStrength;
+  String? _lastPushedBeatDetectorMode;
   double? _lastPushedBeatSensitivity;
 
   @override
@@ -100,11 +107,13 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final peakDecay = settings.oilAudioPeakDecay;
     final bassBoost = settings.oilAudioBassBoost;
     final reactivityStrength = settings.oilAudioReactivityStrength;
+    final beatDetectorMode = settings.oilBeatDetectorMode;
     final beatSensitivity = settings.oilBeatSensitivity;
     final unchanged =
         _lastPushedPeakDecay == peakDecay &&
         _lastPushedBassBoost == bassBoost &&
         _lastPushedReactivityStrength == reactivityStrength &&
+        _lastPushedBeatDetectorMode == beatDetectorMode &&
         _lastPushedBeatSensitivity == beatSensitivity;
     if (unchanged) return;
 
@@ -112,12 +121,14 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       peakDecay: peakDecay,
       bassBoost: bassBoost,
       reactivityStrength: reactivityStrength,
+      beatDetectorMode: beatDetectorMode,
       beatSensitivity: beatSensitivity,
     );
 
     _lastPushedPeakDecay = peakDecay;
     _lastPushedBassBoost = bassBoost;
     _lastPushedReactivityStrength = reactivityStrength;
+    _lastPushedBeatDetectorMode = beatDetectorMode;
     _lastPushedBeatSensitivity = beatSensitivity;
   }
 
@@ -131,9 +142,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     if (_audioReactor is! VisualizerAudioReactor) {
       return false;
     }
-    // Keep stereo PCM alive for the whole reactive screensaver session so the
-    // PCM beat detector can contribute regardless of the current graph mode.
-    return true;
+    // Request MediaProjection only when the user explicitly selects the
+    // enhanced PCM detector mode. All other modes stay on the FFT path and
+    // avoid the system share-screen permission prompt.
+    return settings.oilBeatDetectorMode == 'pcm';
   }
 
   Future<void> _syncStereoCapture(SettingsProvider settings) async {
@@ -329,6 +341,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _lastPushedPeakDecay = null;
     _lastPushedBassBoost = null;
     _lastPushedReactivityStrength = null;
+    _lastPushedBeatDetectorMode = null;
     _lastPushedBeatSensitivity = null;
   }
 

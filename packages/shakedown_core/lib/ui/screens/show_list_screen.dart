@@ -246,7 +246,13 @@ class ShowListScreenState extends State<ShowListScreen>
     });
 
     final settingsProvider = context.read<SettingsProvider>();
-    if (settingsProvider.playRandomOnStartup && !widget.skipStartupRandom) {
+
+    // Check for a saved engine-restart resume session first
+    final resumeSession = settingsProvider.consumeResumeSession();
+    if (resumeSession != null) {
+      _handleResumeSession(resumeSession, _showListProvider, _audioProvider);
+    } else if (settingsProvider.playRandomOnStartup &&
+        !widget.skipStartupRandom) {
       _handleStartupRandomPlay(_showListProvider, _audioProvider);
     }
 
@@ -271,6 +277,53 @@ class ShowListScreenState extends State<ShowListScreen>
     _playerStateSubscription = _audioProvider.playerStateStream.listen((state) {
       _onPlayerStateChange(state);
     });
+  }
+
+  // Resume a session saved before an engine-restart browser reload.
+  void _handleResumeSession(
+    ({String sourceId, int trackIndex, int positionMs}) session,
+    ShowListProvider showListProvider,
+    AudioProvider audioProvider,
+  ) {
+    void resumeWhenReady() {
+      if (showListProvider.isLoading) return;
+      showListProvider.removeListener(resumeWhenReady);
+
+      for (final show in showListProvider.allShows) {
+        for (final source in show.sources) {
+          if (source.id == session.sourceId) {
+            logger.i(
+              'Resuming session: ${show.name} '
+              'track=${session.trackIndex} '
+              'pos=${session.positionMs}ms',
+            );
+            audioProvider.playSource(
+              show,
+              source,
+              initialIndex: session.trackIndex,
+              initialPosition: Duration(milliseconds: session.positionMs),
+            );
+            // Navigate to playback screen after resume
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) openPlaybackScreen();
+            });
+            return;
+          }
+        }
+      }
+      logger.w(
+        'Resume session: source ${session.sourceId} '
+        'not found, skipping.',
+      );
+    }
+
+    if (!showListProvider.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        resumeWhenReady();
+      });
+    } else {
+      showListProvider.addListener(resumeWhenReady);
+    }
   }
 
   // Refactored helper to handling startup play to keep init clean

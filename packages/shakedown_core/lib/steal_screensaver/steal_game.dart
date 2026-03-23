@@ -156,7 +156,8 @@ class StealGame extends FlameGame {
     // receives fresh data for this frame rather than being one frame behind.
     if (_graph != null) {
       _graph!.energy = _currentEnergy;
-      _graph!.debugSessionId = debugAudioSessionId;
+      _graph!.debugSessionId =
+          _currentEnergy.debugAudioSessionId ?? debugAudioSessionId;
       _graph!.debugReactorConnected = _audioReactor != null;
     }
 
@@ -370,9 +371,11 @@ class StealGame extends FlameGame {
       return 1.0;
     }
 
-    final energy = config.scaleSource == -1
-        ? (_currentEnergy.bands.isEmpty ? 0.0 : _currentEnergy.bands[0])
-        : _currentEnergy.bands[config.scaleSource.clamp(0, 7)];
+    final energy = switch (config.scaleSource) {
+      -2 => 0.0,
+      -1 => _currentEnergy.bass,
+      _ => _currentEnergy.bands[config.scaleSource.clamp(0, 7)],
+    };
 
     return (1.0 +
         energy * 0.2 * config.pulseIntensity * config.scaleMultiplier);

@@ -8,6 +8,7 @@ import android.media.projection.MediaProjection
 import android.os.Build
 import android.os.SystemClock
 import android.util.Log
+import androidx.annotation.RequiresApi
 import kotlin.math.max
 import kotlin.math.sqrt
 
@@ -66,7 +67,6 @@ class StereoCapture {
         private set
 
     private var audioRecord: AudioRecord? = null
-    private var mediaProjection: MediaProjection? = null
     private var captureThread: Thread? = null
     @Volatile private var isRunning = false
     private var monoFastEnv = 0.0
@@ -81,7 +81,6 @@ class StereoCapture {
     fun start(projection: MediaProjection): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             Log.d(TAG, "AudioPlaybackCapture requires API 29+ — skipping stereo capture")
-            projection.stop()
             return false
         }
         stop() // release any previous session
@@ -113,12 +112,10 @@ class StereoCapture {
             if (record.state != AudioRecord.STATE_INITIALIZED) {
                 Log.e(TAG, "AudioRecord failed to initialise for stereo capture")
                 record.release()
-                projection.stop()
                 return false
             }
 
             audioRecord = record
-            mediaProjection = projection
             record.startRecording()
             isRunning = true
             isActive = true
@@ -139,7 +136,6 @@ class StereoCapture {
             true
         } catch (e: Exception) {
             Log.e(TAG, "StereoCapture start failed: ${e.message}")
-            projection.stop()
             false
         }
     }
@@ -202,12 +198,6 @@ class StereoCapture {
             Log.w(TAG, "Error stopping AudioRecord: ${e.message}")
         }
         audioRecord = null
-        try {
-            mediaProjection?.stop()
-        } catch (e: Exception) {
-            Log.w(TAG, "Error stopping MediaProjection: ${e.message}")
-        }
-        mediaProjection = null
         waveformL = emptyList()
         waveformR = emptyList()
         monoLevelRms = 0.0

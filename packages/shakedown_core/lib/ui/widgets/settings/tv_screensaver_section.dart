@@ -26,6 +26,21 @@ class TvScreensaverSection extends StatefulWidget {
 }
 
 class _TvScreensaverSectionState extends State<TvScreensaverSection> {
+  static const Map<String, String> _beatDetectorDescriptions = {
+    'auto':
+        'Auto picks the best available source. It uses Enhanced Audio Capture when available, otherwise Hybrid.',
+    'hybrid':
+        'Hybrid blends low-end hits, mid transients, and broadband changes. Best default for most music.',
+    'bass':
+        'Bass listens for kick and low-end thump. Good when you want the pulse to follow the rhythm section.',
+    'mid':
+        'Mid listens more to snare, guitar, and vocal attack. Often better for live recordings and thinner mixes.',
+    'broad':
+        'Broad reacts to overall band energy instead of one narrow range. A safer choice when Bass or Mid feels too picky.',
+    'pcm':
+        'Enhanced uses Android system audio capture for cleaner onset timing and stereo waveforms. Best when you want the richest detector.',
+  };
+
   final FocusNode _firstFocusNode = FocusNode();
   final FocusNode _lastFocusNode = FocusNode();
   int _wrapKey = 0;
@@ -947,6 +962,59 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
                 if (settings.oilEnableAudioReactivity) ...[
                   const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Beat Detector',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: _BeatDetectorSegmentedButton(
+                            selected: settings.oilBeatDetectorMode,
+                            onSelect: (mode) =>
+                                settings.setOilBeatDetectorMode(mode),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _ReactiveHint(
+                          message:
+                              _beatDetectorDescriptions[settings
+                                  .oilBeatDetectorMode] ??
+                              'Chooses what kind of hit fires the pulse. This stays reactive only and does not BPM-lock the screensaver.',
+                          colorScheme: colorScheme,
+                          textTheme: textTheme,
+                          isFruit: isFruit,
+                        ),
+                        const SizedBox(height: 8),
+                        _ReactiveHint(
+                          message:
+                              'This stays reactive only and does not BPM-lock the screensaver.',
+                          colorScheme: colorScheme,
+                          textTheme: textTheme,
+                          isFruit: isFruit,
+                        ),
+                        if (settings.oilBeatDetectorMode == 'pcm') ...[
+                          const SizedBox(height: 8),
+                          _ReactiveHint(
+                            message:
+                                'Enhanced Audio Capture uses Android system audio capture and may show a one-time share-audio permission prompt.',
+                            colorScheme: colorScheme,
+                            textTheme: textTheme,
+                            isFruit: isFruit,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   TvStepperRow(
                     label: 'Beat Sensitivity',
                     value: settings.oilBeatSensitivity,
@@ -1124,6 +1192,14 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                     colorScheme: colorScheme,
                   ),
                 ),
+                const SizedBox(height: 8),
+                _ReactiveHint(
+                  message:
+                      'Default follows the usual logo motion driver. None disables audio-driven logo scaling so only the base size and beat bump remain.',
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
+                  isFruit: isFruit,
+                ),
                 const SizedBox(height: 16),
                 TvStepperRow(
                   label: 'Scale Multiplier',
@@ -1194,6 +1270,14 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
                     onSelect: (val) => settings.setOilColorSource(val),
                     colorScheme: colorScheme,
                   ),
+                ),
+                const SizedBox(height: 8),
+                _ReactiveHint(
+                  message:
+                      'Default uses the normal color-reactive driver. None disables audio color pulsing and leaves the palette steady.',
+                  colorScheme: colorScheme,
+                  textTheme: textTheme,
+                  isFruit: isFruit,
                 ),
                 const SizedBox(height: 16),
                 TvStepperRow(
@@ -1647,8 +1731,8 @@ class _BandSegmentedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // -1 = All, 0-7 = Bands
-    final options = [-1, 0, 1, 2, 3, 4, 5, 6, 7];
+    // -2 = None, -1 = Default, 0-7 = Bands
+    final options = [-2, -1, 0, 1, 2, 3, 4, 5, 6, 7];
 
     return TvFocusWrapper(
       onKeyEvent: (node, event) {
@@ -1668,8 +1752,10 @@ class _BandSegmentedButton extends StatelessWidget {
       child: SegmentedButton<int>(
         segments: options.map((val) {
           String label;
-          if (val == -1) {
-            label = 'ALL';
+          if (val == -2) {
+            label = 'NONE';
+          } else if (val == -1) {
+            label = 'DEF';
           } else if (val == 0) {
             label = '0:SUB';
           } else if (val == 7) {
@@ -1688,6 +1774,68 @@ class _BandSegmentedButton extends StatelessWidget {
         }).toList(),
         selected: {selected},
         onSelectionChanged: (Set<int> s) => onSelect(s.first),
+        showSelectedIcon: false,
+      ),
+    );
+  }
+}
+
+class _BeatDetectorSegmentedButton extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onSelect;
+
+  const _BeatDetectorSegmentedButton({
+    required this.selected,
+    required this.onSelect,
+  });
+
+  static const List<String> _modes = [
+    'auto',
+    'hybrid',
+    'bass',
+    'mid',
+    'broad',
+    'pcm',
+  ];
+
+  static const Map<String, String> _labels = {
+    'auto': 'Auto',
+    'hybrid': 'Hybrid',
+    'bass': 'Bass',
+    'mid': 'Mid',
+    'broad': 'Broad',
+    'pcm': 'Enhanced',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return TvFocusWrapper(
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          final idx = _modes.indexOf(selected);
+          if (event.logicalKey == LogicalKeyboardKey.arrowLeft && idx > 0) {
+            onSelect(_modes[idx - 1]);
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
+              idx >= 0 &&
+              idx < _modes.length - 1) {
+            onSelect(_modes[idx + 1]);
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: SegmentedButton<String>(
+        segments: _modes
+            .map(
+              (mode) => ButtonSegment<String>(
+                value: mode,
+                label: Text(_labels[mode] ?? mode.toUpperCase()),
+              ),
+            )
+            .toList(),
+        selected: {selected},
+        onSelectionChanged: (Set<String> s) => onSelect(s.first),
         showSelectedIcon: false,
       ),
     );

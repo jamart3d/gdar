@@ -203,6 +203,9 @@ class GaplessPlayer {
   /// Stops playback and releases resources.
   Future<void> stop() => _player.stop();
 
+  /// Sets the volume (0.0 to 1.0).
+  Future<void> setVolume(double volume) => _player.setVolume(volume);
+
   /// Seeks to [position] in the current track, or to [index] if provided.
   Future<void> seek(Duration? position, {int? index}) =>
       _player.seek(position, index: index);

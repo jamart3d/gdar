@@ -1,6 +1,8 @@
 package com.jamart3d.shakedown
 
+import android.app.Activity
 import android.content.Intent
+import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -17,10 +19,21 @@ import com.ryanheise.audioservice.AudioServicePlugin
 class MainActivity: FlutterActivity() {
     private val CHANNEL = "com.jamart3d.shakedown/device"
     private val UI_SCALE_CHANNEL = "com.jamart3d.shakedown/ui_scale"
+    private val STEREO_CHANNEL = "shakedown/stereo"
     private val TAG = "MainActivity"
-    
+
+    private companion object {
+        const val REQUEST_CAPTURE = 1001
+    }
+
     private var deviceChannel: MethodChannel? = null
     private var uiScaleChannel: MethodChannel? = null
+    private var stereoMethodChannel: MethodChannel? = null
+
+    // Shared with VisualizerPlugin so it can include L/R waveforms in the FFT event payload.
+    private val stereoCapture = StereoCapture()
+    // Pending Flutter result waiting for activity-result callback.
+    private var pendingStereoResult: MethodChannel.Result? = null
 
     // This is the crucial part.
     // It connects the AudioService plugin to your app's FlutterEngine.
@@ -46,14 +59,61 @@ class MainActivity: FlutterActivity() {
         // Set up MethodChannel for ADB UI scale testing
         uiScaleChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, UI_SCALE_CHANNEL)
         
-        // Register Visualizer plugin
-        val visualizerPlugin = VisualizerPlugin()
+        // Register Visualizer plugin (shares stereoCapture to include L/R waveforms in payload)
+        val visualizerPlugin = VisualizerPlugin(stereoCapture)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "shakedown/visualizer")
             .setMethodCallHandler(visualizerPlugin)
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, "shakedown/visualizer_events")
             .setStreamHandler(visualizerPlugin)
-        
+
+        // Stereo capture control channel
+        stereoMethodChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            STEREO_CHANNEL
+        )
+        stereoMethodChannel?.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "requestCapture" -> {
+                    if (stereoCapture.isActive) {
+                        result.success(true)
+                        return@setMethodCallHandler
+                    }
+                    pendingStereoResult = result
+                    val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                    startActivityForResult(mgr.createScreenCaptureIntent(), REQUEST_CAPTURE)
+                }
+                "stopCapture" -> {
+                    stereoCapture.stop()
+                    result.success(true)
+                }
+                else -> result.notImplemented()
+            }
+        }
+
         Log.d(TAG, "MethodChannels configured")
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CAPTURE) {
+            val result = pendingStereoResult
+            pendingStereoResult = null
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                val projection = mgr.getMediaProjection(resultCode, data)
+                if (projection != null) {
+                    val ok = stereoCapture.start(projection)
+                    result?.success(ok)
+                    Log.d(TAG, "Stereo capture started: $ok")
+                } else {
+                    result?.success(false)
+                    Log.w(TAG, "getMediaProjection returned null")
+                }
+            } else {
+                result?.success(false)
+                Log.d(TAG, "Stereo capture permission denied")
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

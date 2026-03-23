@@ -13,6 +13,7 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/services/inactivity_service.dart';
+import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
@@ -91,7 +92,10 @@ class _GdarTvAppState extends State<GdarTvApp> {
   DeepLinkService? _deepLinkService;
   StreamSubscription? _linkSubscription;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  late final _TvNavigationObserver _navigationObserver;
   bool _isScreensaverActive = false;
+  bool _hasEnteredTvMainUi = false;
+  String? _currentRouteName;
 
   void _setScreensaverActive(bool active) {
     if (!mounted) {
@@ -103,10 +107,33 @@ class _GdarTvAppState extends State<GdarTvApp> {
     });
   }
 
-  Future<void> _showScreensaver(BuildContext context) async {
+  bool get _isInactivityRouteEligible {
+    if (!_hasEnteredTvMainUi) return false;
+    return _currentRouteName != ShakedownRouteNames.onboarding &&
+        _currentRouteName != ShakedownRouteNames.screensaver;
+  }
+
+  void _handleRouteChanged(Route<dynamic>? route) {
+    final name = route?.settings.name;
+    final hasEnteredTvMainUi =
+        _hasEnteredTvMainUi || name == ShakedownRouteNames.tvHome;
+    if (_currentRouteName == name &&
+        _hasEnteredTvMainUi == hasEnteredTvMainUi) {
+      return;
+    }
+
+    _currentRouteName = name;
+    _hasEnteredTvMainUi = hasEnteredTvMainUi;
+
+    if (mounted) {
+      _syncInactivityService(_settingsProvider);
+    }
+  }
+
+  Future<void> _showScreensaver(NavigatorState navigator) async {
     _setScreensaverActive(true);
     try {
-      await ScreensaverScreen.show(context);
+      await navigator.push(ScreensaverScreen.route());
     } finally {
       _setScreensaverActive(false);
       _inactivityService.onUserActivity();
@@ -126,6 +153,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
         minutes: _settingsProvider.oilScreensaverInactivityMinutes,
       ),
     );
+    _navigationObserver = _TvNavigationObserver(_handleRouteChanged);
 
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
 
@@ -150,13 +178,12 @@ class _GdarTvAppState extends State<GdarTvApp> {
       return;
     }
 
-    if (!_settingsProvider.useOilScreensaver) {
+    if (!_settingsProvider.useOilScreensaver || !_isInactivityRouteEligible) {
       return;
     }
 
     final navigator = _navigatorKey.currentState;
-    final navContext = _navigatorKey.currentContext;
-    if (navigator == null || navContext == null) {
+    if (navigator == null) {
       logger.w(
         'TV inactivity timeout fired before navigator was ready; retrying timer',
       );
@@ -165,7 +192,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
     }
 
     logger.i('TV inactivity timeout fired; launching screensaver');
-    await _showScreensaver(navContext);
+    await _showScreensaver(navigator);
   }
 
   void _syncInactivityService(SettingsProvider settingsProvider) {
@@ -173,7 +200,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
       Duration(minutes: settingsProvider.oilScreensaverInactivityMinutes),
     );
 
-    if (settingsProvider.useOilScreensaver) {
+    if (settingsProvider.useOilScreensaver && _isInactivityRouteEligible) {
       _inactivityService.start();
     } else {
       _inactivityService.stop();
@@ -244,8 +271,9 @@ class _GdarTvAppState extends State<GdarTvApp> {
           await settingsProvider.setOilScreensaverMode(value);
         }
       } else if (trimmedStep == 'screensaver') {
-        if (context.mounted) {
-          await _showScreensaver(context);
+        final navigator = _navigatorKey.currentState;
+        if (navigator != null) {
+          await _showScreensaver(navigator);
         }
       }
     }
@@ -288,7 +316,8 @@ class _GdarTvAppState extends State<GdarTvApp> {
         ChangeNotifierProvider(create: (_) => UpdateProvider()),
         ChangeNotifierProvider(
           create: (_) =>
-              widget.deviceService ?? DeviceService(initialIsTv: widget.isTv),
+              widget.deviceService ??
+              DeviceService(initialIsTv: widget.isTv, lockIsTv: widget.isTv),
         ),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
@@ -309,6 +338,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: MaterialApp(
               navigatorKey: _navigatorKey,
+              navigatorObservers: [_navigationObserver],
               title: 'GDAR TV',
               debugShowCheckedModeBanner: false,
               theme: finalTheme,
@@ -327,5 +357,37 @@ class _GdarTvAppState extends State<GdarTvApp> {
         },
       ),
     );
+  }
+}
+
+class _TvNavigationObserver extends NavigatorObserver {
+  _TvNavigationObserver(this.onRouteChanged);
+
+  final ValueChanged<Route<dynamic>?> onRouteChanged;
+
+  void _notify(Route<dynamic>? route) => onRouteChanged(route);
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    _notify(route);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    _notify(previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    _notify(newRoute ?? oldRoute);
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didRemove(route, previousRoute);
+    _notify(previousRoute);
   }
 }

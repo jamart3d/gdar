@@ -305,6 +305,10 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                     if (!sp.useDynamicColor) {
                                       sp.toggleUseDynamicColor();
                                     }
+                                    if (sp.isFirstRun &&
+                                        sp.appFont == 'default') {
+                                      sp.setAppFont('rock_salt');
+                                    }
                                   }
                                 },
                                 labelBuilder: (style) {
@@ -379,6 +383,10 @@ class _AppearanceSectionState extends State<AppearanceSection> {
                                     // Enable dynamic color when switching back to Android
                                     if (!sp.useDynamicColor) {
                                       sp.toggleUseDynamicColor();
+                                    }
+                                    if (sp.isFirstRun &&
+                                        sp.appFont == 'default') {
+                                      sp.setAppFont('rock_salt');
                                     }
                                   }
                                 },

@@ -20,6 +20,7 @@ import kotlin.math.max
  *   peakDecay          (0.990–0.999) How slowly peaks decay. Higher = slower adaptation.
  *   bassBoost          (1.0–3.0)     Visual-only bass gain before display smoothing.
  *   reactivityStrength (0.5–2.0)     Global scale applied to all bands before sending to Flutter.
+ *   beatDetectorMode   (auto/hybrid/bass/mid/broad/pcm) Selects the final beat source.
  *   beatSensitivity    (0.0–1.0)     Beat detector sensitivity. Higher = fires more easily.
  *
  * Beat detection: normalised-band adaptive threshold (6 parallel algorithms).
@@ -111,6 +112,7 @@ class VisualizerPlugin(
     private var peakDecay = 0.998
     private var bassBoost = 1.0
     private var reactivityStrength = 1.0
+    private var beatDetectorMode = "auto"
     private var beatSensitivity = 0.5
 
     // ── Multi-algorithm beat detection state ─────────────────────────────────
@@ -160,6 +162,7 @@ class VisualizerPlugin(
                 peakDecay = call.argument<Double>("peakDecay") ?: peakDecay
                 bassBoost = call.argument<Double>("bassBoost") ?: bassBoost
                 reactivityStrength = call.argument<Double>("reactivityStrength") ?: reactivityStrength
+                beatDetectorMode = call.argument<String>("beatDetectorMode") ?: beatDetectorMode
                 beatSensitivity = call.argument<Double>("beatSensitivity") ?: beatSensitivity
                 result.success(true)
             }
@@ -621,12 +624,119 @@ class VisualizerPlugin(
             pcmFloorVal *= 0.92
         }
 
+        val beats = BooleanArray(NUM_BEAT_ALGOS)
+        // 0 BASS   – pre-boost bass vs 20-frame mean
+        beats[0] = normBeat(sig0, bassHistory, adaptiveMultiplier, 0)
+        // 1 MID    – normalizedMid vs 20-frame mean
+        beats[1] = normBeat(sig1, midHistory, adaptiveMultiplier, 1)
+        // 2 BROAD  – (bass+mid)/2 vs 20-frame mean
+        beats[2] = normBeat(sig3, broadHistory, adaptiveMultiplier, 2)
+        // 3 ALL    – all-band onset vs 20-frame mean
+        beats[3] = normBeat(sig4, allHistory, adaptiveMultiplier, 3)
+        // 4 EMA    – normalizedMid vs its own EMA background (classic onset)
+        beats[4] = midEmaWarmup.size >= 10 &&
+                   midEmaVal > SILENCE_THRESHOLD &&
+                   sig1 > midEmaVal * (1.0 + (1.0 - beatSensitivity) * 0.5) &&
+                   (nowMs - lastBeatMs[4]) > MIN_BEAT_GAP_MS
+        if (beats[4]) lastBeatMs[4] = nowMs
+        // 5 TREB   – normalizedTreble vs 20-frame mean
+        beats[5] = normBeat(sig2, trebleHistory, adaptiveMultiplier, 5)
+
+        val emaThresholdRatio = 1.0 + (1.0 - beatSensitivity) * 0.5
+        val bassScore = scoreVsMean(sig0, bassHistory).coerceIn(0.0, 3.0)
+        val midScore = scoreVsMean(sig1, midHistory).coerceIn(0.0, 3.0)
+        val broadScore = scoreVsMean(sig3, broadHistory).coerceIn(0.0, 3.0)
+        val allScore = scoreVsMean(sig4, allHistory).coerceIn(0.0, 3.0)
+        val emaScore =
+            scoreVsEma(sig1, midEmaVal, midEmaWarmup.size >= 10).coerceIn(0.0, 3.0)
+        val trebleScore = scoreVsMean(sig2, trebleHistory).coerceIn(0.0, 3.0)
+
+        data class DetectorSelection(
+            val isBeat: Boolean,
+            val score: Double,
+            val threshold: Double,
+            val confidence: Double,
+            val source: String,
+        )
+
+        fun scoreConfidence(score: Double, threshold: Double): Double {
+            if (threshold <= 0.0) return 0.0
+            return (score / threshold).coerceIn(0.0, 1.0)
+        }
+
         val preferPcmBeat = pcmWarmupReady && pcmHasSignal
-        val finalBeatScore = if (preferPcmBeat) pcmScore else hybridScore
-        val finalBeatThreshold = if (preferPcmBeat) pcmThreshold else beatThreshold
-        val finalBeatConfidence = if (preferPcmBeat) pcmConfidence else hybridConfidence
-        val finalBeatSource = if (preferPcmBeat) "PCM" else "VIS"
-        val isBeat = if (preferPcmBeat) pcmIsBeat else hybridIsBeat
+        val selectedMode = beatDetectorMode.lowercase()
+        val selection = when (selectedMode) {
+            "bass" -> DetectorSelection(
+                isBeat = beats[0],
+                score = bassScore,
+                threshold = adaptiveMultiplier,
+                confidence = scoreConfidence(bassScore, adaptiveMultiplier),
+                source = "BASS",
+            )
+            "mid" -> DetectorSelection(
+                isBeat = beats[1],
+                score = midScore,
+                threshold = adaptiveMultiplier,
+                confidence = scoreConfidence(midScore, adaptiveMultiplier),
+                source = "MID",
+            )
+            "broad" -> DetectorSelection(
+                isBeat = beats[2],
+                score = broadScore,
+                threshold = adaptiveMultiplier,
+                confidence = scoreConfidence(broadScore, adaptiveMultiplier),
+                source = "BROAD",
+            )
+            "pcm" ->
+                if (preferPcmBeat) {
+                    DetectorSelection(
+                        isBeat = pcmIsBeat,
+                        score = pcmScore,
+                        threshold = pcmThreshold,
+                        confidence = pcmConfidence,
+                        source = "PCM",
+                    )
+                } else {
+                    DetectorSelection(
+                        isBeat = hybridIsBeat,
+                        score = hybridScore,
+                        threshold = beatThreshold,
+                        confidence = hybridConfidence,
+                        source = "HYBRID",
+                    )
+                }
+            "hybrid" -> DetectorSelection(
+                isBeat = hybridIsBeat,
+                score = hybridScore,
+                threshold = beatThreshold,
+                confidence = hybridConfidence,
+                source = "HYBRID",
+            )
+            else ->
+                if (preferPcmBeat) {
+                    DetectorSelection(
+                        isBeat = pcmIsBeat,
+                        score = pcmScore,
+                        threshold = pcmThreshold,
+                        confidence = pcmConfidence,
+                        source = "PCM",
+                    )
+                } else {
+                    DetectorSelection(
+                        isBeat = hybridIsBeat,
+                        score = hybridScore,
+                        threshold = beatThreshold,
+                        confidence = hybridConfidence,
+                        source = "HYBRID",
+                    )
+                }
+        }
+        val isBeat = selection.isBeat
+        val finalBeatScore = selection.score
+        val finalBeatThreshold = selection.threshold
+        val finalBeatConfidence = selection.confidence
+        val finalBeatSource = selection.source
 
         if (isBeat) {
             if (trackedLastBeatMs > 0L) {
@@ -695,23 +805,6 @@ class VisualizerPlugin(
             }
         }
 
-        val beats = BooleanArray(NUM_BEAT_ALGOS)
-        // 0 BASS   – pre-boost bass vs 20-frame mean
-        beats[0] = normBeat(sig0, bassHistory,   adaptiveMultiplier, 0)
-        // 1 MID    – normalizedMid vs 20-frame mean
-        beats[1] = normBeat(sig1, midHistory,    adaptiveMultiplier, 1)
-        // 2 BROAD  – (bass+mid)/2 vs 20-frame mean
-        beats[2] = normBeat(sig3, broadHistory,  adaptiveMultiplier, 2)
-        // 3 ALL    – all-band onset vs 20-frame mean
-        beats[3] = normBeat(sig4, allHistory,    adaptiveMultiplier, 3)
-        // 4 EMA    – normalizedMid vs its own EMA background (classic onset)
-        beats[4] = midEmaWarmup.size >= 10 &&
-                   midEmaVal > SILENCE_THRESHOLD &&
-                   sig1 > midEmaVal * (1.0 + (1.0 - beatSensitivity) * 0.5) &&
-                   (nowMs - lastBeatMs[4]) > MIN_BEAT_GAP_MS
-        if (beats[4]) lastBeatMs[4] = nowMs
-        // 5 TREB   – normalizedTreble vs 20-frame mean
-        beats[5] = normBeat(sig2, trebleHistory, adaptiveMultiplier, 5)
         if (isBeat) {
             Log.d(
                 TAG,
@@ -741,7 +834,6 @@ class VisualizerPlugin(
             )
         }
 
-        val emaThresholdRatio = 1.0 + (1.0 - beatSensitivity) * 0.5
         val algoSignals = doubleArrayOf(
             sig0, // 0 BASS
             sig1, // 1 MID
@@ -771,12 +863,12 @@ class VisualizerPlugin(
         // Mean-window variants report signal / rolling mean.
         // EMA reports signal / EMA baseline.
         val algoLevels = doubleArrayOf(
-            scoreVsMean(sig0, bassHistory).coerceIn(0.0, 3.0),                               // 0 BASS
-            scoreVsMean(sig1, midHistory).coerceIn(0.0, 3.0),                                // 1 MID
-            scoreVsMean(sig3, broadHistory).coerceIn(0.0, 3.0),                              // 2 BROAD
-            scoreVsMean(sig4, allHistory).coerceIn(0.0, 3.0),                                // 3 ALL
-            scoreVsEma(sig1, midEmaVal, midEmaWarmup.size >= 10).coerceIn(0.0, 3.0),         // 4 EMA
-            scoreVsMean(sig2, trebleHistory).coerceIn(0.0, 3.0),                             // 5 TREB
+            bassScore,   // 0 BASS
+            midScore,    // 1 MID
+            broadScore,  // 2 BROAD
+            allScore,    // 3 ALL
+            emaScore,    // 4 EMA
+            trebleScore, // 5 TREB
         )
         val winningAlgoId = algoLevels.indices.maxByOrNull { algoLevels[it] }
             ?.takeIf { algoLevels[it] > 0.0 }
@@ -808,7 +900,8 @@ class VisualizerPlugin(
             "algoSignals" to algoSignals.toList(),
             "algoBaselines" to algoBaselines.toList(),
             "algoThresholds" to algoThresholds.toList(),
-            "winningAlgoId" to winningAlgoId
+            "winningAlgoId" to winningAlgoId,
+            "debugAudioSessionId" to currentAudioSessionId,
         )
 
         eventSink?.success(data)

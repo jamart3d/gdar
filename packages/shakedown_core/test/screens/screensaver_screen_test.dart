@@ -30,6 +30,9 @@ class FakeStereoScreensaverSettingsProvider extends FakeSettingsProvider {
 
   @override
   String get oilAudioGraphMode => graphMode;
+
+  @override
+  String get oilBeatDetectorMode => 'pcm';
 }
 
 class FakeWakelockService extends Fake implements WakelockService {

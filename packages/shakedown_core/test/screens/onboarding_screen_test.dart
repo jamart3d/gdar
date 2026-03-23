@@ -12,8 +12,9 @@ import 'package:shakedown_core/services/device_service.dart';
 
 import 'splash_screen_test.mocks.dart';
 
-// Manual mock for ThemeProvider since it's not generated
-class MockThemeProvider extends ChangeNotifier implements ThemeProvider {
+class MockThemeProvider extends ChangeNotifier
+    with WidgetsBindingObserver
+    implements ThemeProvider {
   bool _isDarkMode = false;
 
   @override

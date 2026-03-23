@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.9+219] - 2026-03-23
+
+### Added
+- **TV UI**: Implemented conditional RGB highlighting—now only the active cursor has the moving rainbow border, while the currently playing track is clearly indicated by a playback icon and progress bar.
+- **TV UI**: Added focus memory to the track list, preserving the last selected item when returning to the playback pane.
+- **Web UI**: Added a "Crossfade Play/Pause" setting for the Fruit theme to provide smooth audio transitions and prevent pops.
+- **Data**: Conducted a thorough audit of the Grateful Dead song structure hints, removing non-GD tracks and JGB side projects for a more accurate catalog.
+
+### Fixed
+- **Web UI**: Resolved size and placement issues for the "Rate Show" modal in the Fruit theme.
+- **Data Quality**: Fixed leading space issues in several song titles in `grateful_dead_song_structure_hints.json`.
+- **Testing**: Stabilized the screensaver regression tests by correctly configuring stereo capture requirements.
+
 ## [1.3.8+218] - 2026-03-22
 
 ### Added

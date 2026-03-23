@@ -1291,8 +1291,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
       case 'PS':
         String desc = 'Unknown';
         if (value == 'LD') desc = 'Loading — fetching audio data';
-        if (value == 'BUF')
+        if (value == 'BUF') {
           desc = 'Buffering — waiting for enough data to play';
+        }
         if (value == 'RDY') desc = 'Ready — playing normally';
         if (value == 'END') desc = 'Completed — reached end of playlist';
         if (value == 'IDL') desc = 'Idle — no track loaded';

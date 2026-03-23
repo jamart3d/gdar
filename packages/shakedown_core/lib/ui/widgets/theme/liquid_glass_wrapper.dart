@@ -78,21 +78,25 @@ class LiquidGlassWrapper extends StatelessWidget {
         child: Stack(
           fit: StackFit.passthrough,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: baseColor.withValues(
-                  alpha: !isAllowedPlatform && !shouldBypassBlur
-                      ? (effectiveOpacity > 0.5 ? 1.0 : effectiveOpacity * 2.0)
-                            .clamp(0.0, 1.0)
-                      : effectiveOpacity,
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: baseColor.withValues(
+                    alpha: !isAllowedPlatform && !shouldBypassBlur
+                        ? (effectiveOpacity > 0.5
+                                  ? 1.0
+                                  : effectiveOpacity * 2.0)
+                              .clamp(0.0, 1.0)
+                        : effectiveOpacity,
+                  ),
+                  borderRadius: borderRadius,
+                  border: (isFruitTheme && !isFruitGlassEnabled) || !showBorder
+                      ? null
+                      : Border.all(
+                          color: baseColor.withValues(alpha: 0.1),
+                          width: 0.5,
+                        ),
                 ),
-                borderRadius: borderRadius,
-                border: (isFruitTheme && !isFruitGlassEnabled) || !showBorder
-                    ? null
-                    : Border.all(
-                        color: baseColor.withValues(alpha: 0.1),
-                        width: 0.5,
-                      ),
               ),
             ),
             if (isFruitTheme)
@@ -116,21 +120,23 @@ class LiquidGlassWrapper extends StatelessWidget {
       child: Stack(
         fit: StackFit.passthrough,
         children: [
-          BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: effectiveBlur,
-              sigmaY: effectiveBlur,
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: baseColor.withValues(alpha: opacity),
-                borderRadius: borderRadius,
-                border: showBorder
-                    ? Border.all(
-                        color: baseColor.withValues(alpha: 0.1),
-                        width: 0.5,
-                      )
-                    : null,
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: effectiveBlur,
+                sigmaY: effectiveBlur,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: baseColor.withValues(alpha: opacity),
+                  borderRadius: borderRadius,
+                  border: showBorder
+                      ? Border.all(
+                          color: baseColor.withValues(alpha: 0.1),
+                          width: 0.5,
+                        )
+                      : null,
+                ),
               ),
             ),
           ),
