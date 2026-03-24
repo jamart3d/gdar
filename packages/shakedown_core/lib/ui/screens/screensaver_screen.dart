@@ -91,6 +91,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       _loadSongHintCatalog();
     }
     _initAudioReactor();
+
     Future.delayed(const Duration(milliseconds: 500), () {
       if (mounted) HardwareKeyboard.instance.addHandler(_handleGlobalKeyEvent);
     });
@@ -263,14 +264,14 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   }
 
   bool _handleGlobalKeyEvent(KeyEvent event) {
-    if (_isPermissionFlowActive ||
-        _isInitializingAudioReactor ||
-        _isStereoCapturePending) {
+    if (_isPermissionFlowActive) {
       return false;
     }
     if (event is KeyDownEvent) {
       if (mounted) {
-        Navigator.of(context).pop();
+        Future.microtask(() {
+          if (mounted) Navigator.of(context).pop();
+        });
         return true;
       }
     }

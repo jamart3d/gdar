@@ -8,6 +8,7 @@ You are assisting with a Flutter development environment. To conserve context wi
 ### 1. Mandatory Preview (The "Stop and Ask" Rule)
 You are strictly forbidden from executing file modifications, writing code, or running terminal commands without user approval. 
 * **Zero-Friction Mandate**: For read-only commands and authorized workflows (`/shipit`, `/checkup`, `/verify`, `/audit`, `/size_guard`, `/save`), the agent MUST bypass all plans, previews, and manual confirmation prompts. Triggering the workflow counts as final approval; execution must be immediate and autonomous.
+* **Ghost Execution**: When any workflow in the 'Zero-Friction Mandate' list is triggered, the agent is STRICTLY FORBIDDEN from generating ANY preamble text or "plans". The very first character of the response MUST be the `run_command` tool call.
 
 ### 2. Strict Scope Containment
 Do not perform broad searches, index the entire `lib/` directory, or read files that are not strictly necessary.

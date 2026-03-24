@@ -8,7 +8,6 @@ import 'dart:io';
 ///   dart scripts/bump_version.dart minor  # increments minor and build (+1)
 void main(List<String> args) {
   if (args.isEmpty) {
-    print('Usage: dart scripts/bump_version.dart <version_or_type>');
     exit(1);
   }
 
@@ -22,7 +21,6 @@ void main(List<String> args) {
   // 1. Get current version from mobile (canonical source)
   final mobilePubspec = File(appTargets[0]);
   if (!mobilePubspec.existsSync()) {
-    print('Could not find apps/gdar_mobile/pubspec.yaml');
     exit(1);
   }
 
@@ -32,7 +30,6 @@ void main(List<String> args) {
     multiLine: true,
   ).firstMatch(content);
   if (versionMatch == null) {
-    print('Could not find version in apps/gdar_mobile/pubspec.yaml');
     exit(1);
   }
 
@@ -45,8 +42,6 @@ void main(List<String> args) {
     nextVersion = input;
   }
 
-  print('Bumping $currentVersion -> $nextVersion');
-
   // 2. Update all targets
   for (final path in appTargets) {
     final file = File(path);
@@ -57,7 +52,6 @@ void main(List<String> args) {
         'version: $nextVersion',
       );
       file.writeAsStringSync(newContent);
-      print('Updated $path');
     }
   }
 }
@@ -66,7 +60,6 @@ String _calculateNext(String current, String type) {
   // Pattern: major.minor.patch+build
   final match = RegExp(r'^(\d+)\.(\d+)\.(\d+)\+(\d+)$').firstMatch(current);
   if (match == null) {
-    print('Invalid current version format: $current');
     exit(1);
   }
 

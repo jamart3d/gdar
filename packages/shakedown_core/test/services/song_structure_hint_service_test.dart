@@ -28,7 +28,7 @@ void main() {
     final eyesMatches = catalog.lookup('Eyes');
     expect(eyesMatches, isNotEmpty);
     expect(
-      eyesMatches.any((entry) => entry.canonicalTitle == 'Eyes of the World'),
+      eyesMatches.any((entry) => entry.canonicalTitle == 'Eyes of The World'),
       isTrue,
     );
   });

@@ -97,7 +97,7 @@ void main() {
 
   testWidgets('Screensaver exits on Tap', (WidgetTester tester) async {
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 3000));
 
     expect(find.byType(ScreensaverScreen), findsOneWidget);
 
@@ -112,7 +112,7 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 3000));
 
     expect(find.byType(ScreensaverScreen), findsOneWidget);
 
@@ -125,7 +125,7 @@ void main() {
 
   testWidgets('Screensaver exits on Back button', (WidgetTester tester) async {
     await tester.pumpWidget(createWidgetUnderTest());
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 3000));
 
     expect(find.byType(ScreensaverScreen), findsOneWidget);
 

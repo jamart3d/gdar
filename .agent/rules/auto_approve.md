@@ -24,6 +24,8 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `Measure-Object` | Count/stats on output (Safe) |
 | `Select-Object` | Select specific properties (Safe) |
 | `Get-ChildItem -Path .agent/ -Recurse ...` | Recursive indexing (Safe) |
+| `Get-ChildItem -Path .agent/ -Recurse | Select-Object FullName` | Exact indexing command (Safe) |
+| `git ls-files .agent/` | Git-based indexing (Safe) |
 | `sls ...` | Alias for Select-String (Safe) |
 
 ### Git Read-Only
@@ -50,7 +52,14 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `dart pub deps` | Dependency tree |
 | `flutter --version`, `dart --version` | Version info |
 | `... --help` (melos, flutter, firebase) | CLI Discovery (Safe and Read-only) |
-| `dart format .`, `flutter format .` | Standard code formatting |
+| `melos --help` | Melos discovery (Safe) |
+| `flutter --help` | Flutter discovery (Safe) |
+| `dart --help` | Dart discovery (Safe) |
+| `melos run analyze` | Static analysis (all apps) |
+| `melos run format` | Workspace formatting |
+| `melos run test` | Workspace tests |
+| dart fix --apply; melos run format; melos run analyze | Chained health check (Safe) |
+| `dart fix --apply`, `flutter format .` | Standard code formatting |
 
 ### General Inspection
 | Command | Notes |
@@ -139,6 +148,7 @@ These commands are auto-approved only when executed within the specific release 
 - `dart fix --apply` (Health check auto-fix)
 - MCP: `mcp_dart-mcp-server_dart_fix`, `mcp_dart-mcp-server_dart_format`, `mcp_dart-mcp-server_run_tests`
 - `dart scripts/bump_version.dart patch`, `dart scripts/bump_version.dart minor`
+- `dart fix --apply; melos run format; melos run analyze`
 - `git rev-parse HEAD`, `git diff --stat`, `git status`
 
 ---

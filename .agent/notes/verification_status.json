@@ -1,11 +1,12 @@
 {
-  "last_verification": "2026-03-23T18:36:27-07:00",
-  "git_sha": "c72574fbb39dd61a8b00dcc2ac0204c8fe185e44",
+  "last_verification": "2026-03-23T21:15:00-07:00",
+  "git_sha": "e9cc4e7c86289b361c40e69773f1ebc971ca0c3d",
   "results": {
     "analyze": "success",
     "test": "success",
     "format": "success",
-    "fix": "success"
+    "fix": "success",
+    "size_guard": "passed"
   },
-  "summary": "Full /checkup completed. Automated hygiene passed, 2 smoke tests passed, and static analysis is clean (excluding scripts)."
+  "summary": "Full /checkup completed successfully. All monorepo targets (gdar_mobile, gdar_tv, gdar_web, shakedown_core) analyze clean and tests passed (248+). Size audit confirmed assets remain within 10MB JSON budget and 1MB font budget (with flags for individual large fonts)."
 }
