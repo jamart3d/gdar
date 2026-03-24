@@ -1,9 +1,11 @@
 {
-  "last_sha": "546d60807133ca85cb9d8350a82001e590ba2294",
-  "last_modification_time": "2026-03-23T12:35:00-07:00",
+  "last_verification": "2026-03-23T18:36:27-07:00",
+  "git_sha": "c72574fbb39dd61a8b00dcc2ac0204c8fe185e44",
   "results": {
-    "format": "pass",
-    "analyze": "pass",
-    "test": "pass"
-  }
+    "analyze": "success",
+    "test": "success",
+    "format": "success",
+    "fix": "success"
+  },
+  "summary": "Full /checkup completed. Automated hygiene passed, 2 smoke tests passed, and static analysis is clean (excluding scripts)."
 }

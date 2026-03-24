@@ -188,7 +188,7 @@ class FakeShowListProvider extends ChangeNotifier implements ShowListProvider {
 
   @override
   bool get isChoosingRandomShow => _isChoosingRandomShow;
-  
+
   @override
   String? get expandedShowKey => null;
 

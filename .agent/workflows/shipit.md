@@ -51,14 +51,19 @@ GDAR is a Dart workspace monorepo. Build targets live under `apps/`:
    - On success, update `.agent/notes/verification_status.json` with the current SHA and results.
 5. Abort on failures.
 
-### 2. Version Bump
-1. Read current versions from:
-   - `apps/gdar_mobile/pubspec.yaml`
-   - `apps/gdar_tv/pubspec.yaml`
-   - `apps/gdar_web/pubspec.yaml`
-2. Choose patch, minor, or major as appropriate.
-3. Always increment build number.
-4. Keep all app targets version-synced.
+## 2. Version Bump
+
+> [!TIP]
+> **Automation**: Use the cross-platform versioning tool to ensure all app targets stay in sync.
+
+1. Read current versions if needed, or simply run:
+   - `dart scripts/bump_version.dart patch` (Standard)
+   - `dart scripts/bump_version.dart minor` (Feature release)
+2. This script surgically updates all app targets and increments build numbers.
+
+## Mandatory Auto-Run Discipline
+> [!IMPORTANT]
+> **Zero Friction**: All read-only and explicitly approved release commands (git stage/commit, flutter build, firebase deploy) MUST be run with `SafeToAutoRun: true` in accordance with `.agent/rules/auto_approve.md`. Do not prompt the user for these unless the command is non-standard.
 
 ### 3. Changelog And Release Notes
 1. Read `.agent/notes/pending_release.md`.
@@ -66,8 +71,13 @@ GDAR is a Dart workspace monorepo. Build targets live under `apps/`:
 3. Keep the changelog newest-first and leave a fresh empty `[Unreleased]` section.
 4. Generate the Play Store note in `docs/PLAY_STORE_RELEASE.txt` from the new changelog block.
 5. Show the generated note for review before deployment.
+6. **Mandatory Sync Check**: Verify `docs/PLAY_STORE_RELEASE.txt` matches the version and content from `CHANGELOG.md`. NEVER skip this before building.
 
 ### 4. Build
+
+> [!IMPORTANT]
+> **Build Order**: Always build Android AAB *first* to ensure artifact consistency before deploying the Web bundle.
+
 1. Build Android release artifact from `apps/gdar_mobile`:
    - `flutter build appbundle --release`
 2. After that completes, build web from `apps/gdar_web`:

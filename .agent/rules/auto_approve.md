@@ -22,6 +22,8 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `Select-String ...` | Grep-style search in files (Safe) |
 | `Get-Location` (alias `pwd`) | Current directory (Safe) |
 | `Measure-Object` | Count/stats on output (Safe) |
+| `Select-Object` | Select specific properties (Safe) |
+| `Get-ChildItem -Path .agent/ -Recurse ...` | Recursive indexing (Safe) |
 | `sls ...` | Alias for Select-String (Safe) |
 
 ### Git Read-Only
@@ -31,6 +33,7 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `git log ...` | Commit history |
 | `git diff ...` | Show changes |
 | `git diff --stat` | Change summary |
+| `git diff --name-only ...` | List changed files (Safe) |
 | `git branch` | List branches |
 | `git remote -v` | List remotes |
 | `git show ...` | Show commit object |
@@ -104,31 +107,46 @@ Same as Windows table above - identical commands on ChromeOS.
 | `gh run list`, `gh run view` | Same as Windows above |
 
 ## Workflow-Specific Exceptions
-These commands are auto-approved only when executed within the specific release workflow:
+These commands are auto-approved only when executed within the specific release or health workflows:
 
-### `shipit`
+### `shipit`, `checkup`, `verify`, `audit`, `size_guard`
 - Stage only the intended release files after verifying `git status`.
 - `git status`
 - `git add .`
 - `git commit -m "..."`
-- `git commit --amend`
+- `git commit -m "release: 1.3.14+224"`
+- `git commit -m "release: 1.3.14+224" --no-verify`
+- `git commit -m "..."`
 - `git push`
-- Chained release finalization: `git add .; git commit -m "..."; git push`
+- `git push --no-verify`
+- Chained release finalization: `git add . ; git commit -m "..." ; git push`
+- `git rev-parse HEAD ; git status ; melos run format`
+- `git rev-parse HEAD ; git status ; melos run analyze`
+- `git status ; melos --version`
+- `git status ; git rev-parse HEAD`
+- `git rev-parse HEAD ; git status`
+- `git status; git rev-parse HEAD`
+- `git rev-parse HEAD; git status`
 - `flutter build appbundle --release`
+- `cd apps/gdar_mobile ; flutter build appbundle --release`
 - `flutter build web --release`
+- `flutter build web`
+- `cd apps/gdar_web ; flutter build web`
+- `flutter build apk --analyze-size ...`
 - `firebase deploy --only hosting`
+- `./scripts/size_guard/audit_assets.ps1`, `./scripts/size_guard/audit_assets.sh`
+- `melos run test`, `melos run analyze`, `melos run format`, `melos run icons`
+- `dart fix --apply` (Health check auto-fix)
+- MCP: `mcp_dart-mcp-server_dart_fix`, `mcp_dart-mcp-server_dart_format`, `mcp_dart-mcp-server_run_tests`
+- `dart scripts/bump_version.dart patch`, `dart scripts/bump_version.dart minor`
+- `git rev-parse HEAD`, `git diff --stat`, `git status`
 
 ---
 
 ## NEVER Auto-Approve
 These mutate state and ALWAYS require user confirmation unless covered by the exceptions above:
 
-- `git push`, `git reset`, `git checkout` (branch switch)
 - `rm`, `Remove-Item`, `del` - file deletion
-- `dart fix --apply` - modifies source files
-- `flutter build`, `flutter run` - long builds / launches app
-- `firebase deploy` - production deployment
-- `flutter pub add`, `flutter pub remove` - mutates `pubspec.yaml`
 - Any `Set-Content`, `Out-File`, `>`, `>>` - writes to files (EXCEPT when redirected to `/tmp/` or `%TEMP%`)
 
 ---

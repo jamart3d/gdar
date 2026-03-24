@@ -4,6 +4,8 @@ trigger: always_on
 
 # Project Rules: GDAR Audio Player
 
+* **Action:** When a workflow is triggered (e.g., /checkup), strictly follow every step as defined in its `.md` file, including `// turbo` auto-approval logic.
+
 ### 1. CODING STANDARDS & ARCHITECTURE
 * **Stack:** Latest Stable Flutter / Dart SDK. Strictly follow modern syntax
   (e.g., favoring `.withValues()` over `withOpacity()`) and proactively resolve

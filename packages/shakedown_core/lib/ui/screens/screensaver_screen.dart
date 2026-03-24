@@ -21,12 +21,18 @@ import 'package:permission_handler/permission_handler.dart';
 /// Screensaver screen displaying the Steal Your Face visualizer.
 /// Note: This screensaver and its audio reactivity are explicitly for the TV UI.
 class ScreensaverScreen extends StatefulWidget {
-  const ScreensaverScreen({super.key, this.songHintCatalogOverride});
+  const ScreensaverScreen({
+    super.key,
+    this.songHintCatalogOverride,
+    this.allowPermissionPrompts = true,
+  });
 
   final SongStructureHintCatalog? songHintCatalogOverride;
+  final bool allowPermissionPrompts;
 
   static Route<void> route({
     SongStructureHintCatalog? songHintCatalogOverride,
+    bool allowPermissionPrompts = true,
   }) {
     return PageRouteBuilder(
       settings: const RouteSettings(name: ShakedownRouteNames.screensaver),
@@ -34,7 +40,10 @@ class ScreensaverScreen extends StatefulWidget {
       transitionDuration: const Duration(milliseconds: 800),
       reverseTransitionDuration: const Duration(milliseconds: 400),
       pageBuilder: (context, animation, secondaryAnimation) =>
-          ScreensaverScreen(songHintCatalogOverride: songHintCatalogOverride),
+          ScreensaverScreen(
+            songHintCatalogOverride: songHintCatalogOverride,
+            allowPermissionPrompts: allowPermissionPrompts,
+          ),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         return FadeTransition(
           opacity: CurvedAnimation(parent: animation, curve: Curves.easeIn),
@@ -56,6 +65,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   AudioReactor? _audioReactor;
   int? _debugAudioSessionId;
   bool _isInitializingAudioReactor = false;
+  bool _isPermissionFlowActive = false;
   Timer? _sessionRetryTimer;
   int _sessionRetryCount = 0;
   static const int _maxSessionRetries = 10;
@@ -162,9 +172,19 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       return;
     }
 
+    if (!widget.allowPermissionPrompts) {
+      debugPrint(
+        'Screensaver: Skipping enhanced capture request during '
+        'non-interactive launch.',
+      );
+      return;
+    }
+
     _isStereoCapturePending = true;
     _hasAttemptedStereoCapture = true;
-    final started = await VisualizerAudioReactor.requestStereoCapture();
+    final started = await _runPermissionFlow(
+      VisualizerAudioReactor.requestStereoCapture,
+    );
     _isStereoCapturePending = false;
 
     if (!mounted) {
@@ -243,6 +263,11 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   }
 
   bool _handleGlobalKeyEvent(KeyEvent event) {
+    if (_isPermissionFlowActive ||
+        _isInitializingAudioReactor ||
+        _isStereoCapturePending) {
+      return false;
+    }
     if (event is KeyDownEvent) {
       if (mounted) {
         Navigator.of(context).pop();
@@ -268,7 +293,16 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       if (defaultTargetPlatform == TargetPlatform.android) {
         final status = await Permission.microphone.status;
         if (!status.isGranted) {
-          final result = await Permission.microphone.request();
+          if (!widget.allowPermissionPrompts) {
+            debugPrint(
+              'Screensaver: Skipping microphone permission request during '
+              'non-interactive launch. Reactivity disabled for this session.',
+            );
+            return;
+          }
+          final result = await _runPermissionFlow(
+            Permission.microphone.request,
+          );
           if (!result.isGranted) {
             debugPrint(
               'Screensaver: Audio permission denied. Reactivity disabled.',
@@ -344,6 +378,15 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _lastPushedReactivityStrength = null;
     _lastPushedBeatDetectorMode = null;
     _lastPushedBeatSensitivity = null;
+  }
+
+  Future<T> _runPermissionFlow<T>(Future<T> Function() action) async {
+    _isPermissionFlowActive = true;
+    try {
+      return await action();
+    } finally {
+      _isPermissionFlowActive = false;
+    }
   }
 
   void _ensureAudioReactorState(SettingsProvider settings) {

@@ -35,6 +35,14 @@ class FakeStereoScreensaverSettingsProvider extends FakeSettingsProvider {
   String get oilBeatDetectorMode => 'pcm';
 }
 
+class FakeReactiveScreensaverSettingsProvider extends FakeSettingsProvider {
+  @override
+  bool get oilEnableAudioReactivity => true;
+
+  @override
+  String get oilBeatDetectorMode => 'pcm';
+}
+
 class FakeWakelockService extends Fake implements WakelockService {
   @override
   Future<void> enable() async {}
@@ -333,6 +341,66 @@ void main() {
         await tester.pump();
 
         expect(stereoStopCount, 0);
+      },
+    );
+
+    testWidgets(
+      'non-interactive launch skips permission and enhanced capture prompts',
+      (WidgetTester tester) async {
+        final reactiveSettings = FakeReactiveScreensaverSettingsProvider()
+          ..isTv = true;
+        var permissionRequestCount = 0;
+        var stereoRequestCount = 0;
+        var visualizerInitializeCount = 0;
+
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(permissionChannel, (call) async {
+              switch (call.method) {
+                case 'checkPermissionStatus':
+                  return 0; // denied
+                case 'requestPermissions':
+                  permissionRequestCount++;
+                  return <int, int>{7: 0};
+              }
+              return null;
+            });
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(visualizerChannel, (call) async {
+              if (call.method == 'initialize') {
+                visualizerInitializeCount++;
+              }
+              return true;
+            });
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(stereoChannel, (call) async {
+              if (call.method == 'requestCapture') {
+                stereoRequestCount++;
+              }
+              return true;
+            });
+
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: [
+              ChangeNotifierProvider<SettingsProvider>.value(
+                value: reactiveSettings,
+              ),
+              ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
+              ChangeNotifierProvider<DeviceService>.value(value: deviceService),
+              Provider<WakelockService>.value(value: wakelockService),
+            ],
+            child: const MaterialApp(
+              home: ScreensaverScreen(allowPermissionPrompts: false),
+            ),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 600));
+
+        expect(find.byType(StealVisualizer), findsOneWidget);
+        expect(permissionRequestCount, 0);
+        expect(stereoRequestCount, 0);
+        expect(visualizerInitializeCount, 0);
       },
     );
   });

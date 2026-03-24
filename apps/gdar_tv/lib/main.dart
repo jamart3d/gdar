@@ -136,10 +136,15 @@ class _GdarTvAppState extends State<GdarTvApp> {
     }
   }
 
-  Future<void> _showScreensaver(NavigatorState navigator) async {
+  Future<void> _showScreensaver(
+    NavigatorState navigator, {
+    bool allowPermissionPrompts = true,
+  }) async {
     _setScreensaverActive(true);
     try {
-      await navigator.push(ScreensaverScreen.route());
+      await navigator.push(
+        ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
+      );
     } finally {
       _setScreensaverActive(false);
       _inactivityService.onUserActivity();
@@ -198,7 +203,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
     }
 
     logger.i('TV inactivity timeout fired; launching screensaver');
-    await _showScreensaver(navigator);
+    await _showScreensaver(navigator, allowPermissionPrompts: false);
   }
 
   void _syncInactivityService(SettingsProvider settingsProvider) {

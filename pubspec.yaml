@@ -39,7 +39,7 @@ melos:
       run: melos exec -c 1 -- flutter analyze
     test:
       description: Run tests in all packages/apps.
-      run: melos exec -c 1 --dir-exists=test --ignore="screensaver_tv" -- flutter test
+      run: melos exec -c 1 --dir-exists=test --ignore="screensaver_tv" -- flutter test -j 1
     format:
       description: Check formatting across the workspace.
       run: dart format --set-exit-if-changed .
