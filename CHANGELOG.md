@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.16+226] - 2026-03-24
+
+### Added
+- **TV Enhancement**: Refined the `InactivityDetector` logic to ignore phantom hardware input signals, ensuring more reliable screensaver activation on Google TV.
+- **TV UI**: Hardened `GdarTvApp` to prevent anonymous system dialogs from inadvertently disabling the inactivity timer.
+- **Maintenance**: Added a specialized `/screensaver_timeout_report` to track and debug inactivity detection thresholds.
+
+### Fixed
+- **Web UI (Fruit)**: Optimized vertical spacing in the Fruit theme playback screen, ensuring a consistent 5pt gap between the floating now-playing card and the bottom navigation bar across all device sizes.
+- **Workflow**: Eliminated friction from the `/checkup` and `/shipit` workflows, authorizing automated versioning, building, and deployment without manual prompts.
+- **Monorepo**: Pruned stale git worktrees and synchronized workspace verification status following successful health checks.
+
 ## [1.3.15+225] - 2026-03-23
 
 ### Fixed

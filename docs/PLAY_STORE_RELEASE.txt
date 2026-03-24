@@ -1,3 +1,11 @@
+What's new in v1.3.16+226
+- TV Enhancement: Refined inactivity detection logic to ignore phantom input signals on Google TV.
+- TV UI: Hardened inactivity timer against accidental disablement by system dialogs.
+- Web UI: Optimized vertical spacing in the Fruit theme playback screen for consistent 5pt gaps.
+- Workflow: Eliminated friction from the automated release and health check pipelines.
+
+---
+
 What's new in v1.3.15+225
 - Maintenance: Completed a full monorepo-wide health check with successful analysis and passing tests across all targets.
 - Verification: Synchronized the workspace verification status and enforced strict formatting and linting standards.
