@@ -118,6 +118,11 @@ class _GdarTvAppState extends State<GdarTvApp> {
 
   void _handleRouteChanged(Route<dynamic>? route) {
     final name = route?.settings.name;
+
+    // Ignore anonymous sub-routes (like dialogs) so they don't break the timer
+    // evaluation when shown on top of an eligible named route.
+    if (name == null) return;
+
     final hasEnteredTvMainUi =
         _hasEnteredTvMainUi || name == ShakedownRouteNames.tvHome;
     if (_currentRouteName == name &&

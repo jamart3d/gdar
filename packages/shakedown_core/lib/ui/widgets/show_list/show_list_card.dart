@@ -418,27 +418,31 @@ class _ShowListCardState extends State<ShowListCard> {
                                     SizedBox(width: 16 * style.effectiveScale),
                                   ],
                                   if (isDesktopInlinePlaying) const Spacer(),
-                                  Text(
-                                    settingsProvider.dateFirstInShowCard
-                                        ? style.formattedDate
-                                        : widget.show.venue,
-                                    style: isFruit
-                                        ? style.topStyle
-                                        : style.bottomStyle,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                  Flexible(
+                                    child: Text(
+                                      settingsProvider.dateFirstInShowCard
+                                          ? style.formattedDate
+                                          : widget.show.venue,
+                                      style: isFruit
+                                          ? style.topStyle
+                                          : style.bottomStyle,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
                                   const Spacer(),
-                                  Text(
-                                    settingsProvider.dateFirstInShowCard
-                                        ? widget.show.venue
-                                        : style.formattedDate,
-                                    style: isFruit
-                                        ? style.bottomStyle
-                                        : style.topStyle,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.right,
+                                  Flexible(
+                                    child: Text(
+                                      settingsProvider.dateFirstInShowCard
+                                          ? widget.show.venue
+                                          : style.formattedDate,
+                                      style: isFruit
+                                          ? style.bottomStyle
+                                          : style.topStyle,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.right,
+                                    ),
                                   ),
                                 ],
                               );

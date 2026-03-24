@@ -977,7 +977,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     );
 
     final double appBarHeight = themeProvider.themeStyle == ThemeStyle.fruit
-        ? (14.0 + 92.0)
+        ? (14.0 + (92.0 * scaleFactor))
         : kToolbarHeight;
     final double immersiveTopPadding =
         MediaQuery.paddingOf(context).top + appBarHeight;
@@ -1217,14 +1217,17 @@ class PlaybackScreenState extends State<PlaybackScreen>
               trackShow: currentShow,
               scaleFactor: scaleFactor,
               topOffset: immersiveTopPadding,
-              bottomOffset: settingsProvider.fruitStickyNowPlaying ? 0 : 80,
+              bottomOffset: settingsProvider.fruitStickyNowPlaying
+                  ? 0
+                  : 75.0 * scaleFactor + MediaQuery.paddingOf(context).bottom,
             ),
             if (!settingsProvider.fruitStickyNowPlaying &&
                 audioProvider.currentTrack != null)
               Positioned(
                 left: 16 * scaleFactor,
                 right: 16 * scaleFactor,
-                bottom: 100.0 * scaleFactor,
+                bottom:
+                    5.0 * scaleFactor + MediaQuery.paddingOf(context).bottom,
                 child: FruitNowPlayingCard(
                   trackShow: currentShow,
                   track: audioProvider.currentTrack!,
@@ -1244,7 +1247,10 @@ class PlaybackScreenState extends State<PlaybackScreen>
                   blur: 18,
                   opacity: settingsProvider.performanceMode ? 0.96 : 0.82,
                   child: Container(
-                    height: MediaQuery.paddingOf(context).top + 14.0 + 92.0,
+                    height:
+                        MediaQuery.paddingOf(context).top +
+                        14.0 +
+                        (92.0 * scaleFactor),
                     padding: EdgeInsets.only(
                       top: MediaQuery.paddingOf(context).top + 14.0,
                     ),

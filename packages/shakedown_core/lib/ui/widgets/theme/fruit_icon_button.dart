@@ -49,16 +49,6 @@ class _FruitIconButtonState extends State<FruitIconButton> {
       ),
     );
 
-    if (widget.tooltip != null) {
-      final isFruit =
-          context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
-      if (isFruit) {
-        content = FruitTooltip(message: widget.tooltip!, child: content);
-      } else {
-        content = Tooltip(message: widget.tooltip!, child: content);
-      }
-    }
-
     final isEnabled = widget.onPressed != null;
     final interactive = FocusableActionDetector(
       enabled: isEnabled,
@@ -106,11 +96,23 @@ class _FruitIconButtonState extends State<FruitIconButton> {
       ),
     );
 
-    return Semantics(
+    Widget result = Semantics(
       button: true,
       enabled: isEnabled,
       label: widget.semanticLabel ?? widget.tooltip,
       child: ExcludeSemantics(child: interactive),
     );
+
+    if (widget.tooltip != null) {
+      final isFruit =
+          context.watch<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+      if (isFruit) {
+        result = FruitTooltip(message: widget.tooltip!, child: result);
+      } else {
+        result = Tooltip(message: widget.tooltip!, child: result);
+      }
+    }
+
+    return result;
   }
 }

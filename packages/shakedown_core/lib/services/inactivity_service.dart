@@ -108,9 +108,31 @@ class _InactivityDetectorState extends State<InactivityDetector> {
   bool _handleKeyEvent(KeyEvent event) {
     if (event is KeyDownEvent && event is! KeyRepeatEvent) {
       if (!widget.isScreensaverActive) {
-        widget.inactivityService?.onUserActivity(
-          'key:${event.logicalKey.keyLabel}',
-        );
+        final key = event.logicalKey;
+
+        final isDirectional =
+            key == LogicalKeyboardKey.arrowUp ||
+            key == LogicalKeyboardKey.arrowDown ||
+            key == LogicalKeyboardKey.arrowLeft ||
+            key == LogicalKeyboardKey.arrowRight;
+
+        final isSelection =
+            key == LogicalKeyboardKey.select ||
+            key == LogicalKeyboardKey.enter ||
+            key == LogicalKeyboardKey.numpadEnter ||
+            key == LogicalKeyboardKey.space;
+
+        final isNavigation =
+            key == LogicalKeyboardKey.goBack ||
+            key == LogicalKeyboardKey.escape ||
+            key == LogicalKeyboardKey.backspace;
+
+        final isMedia =
+            key.debugName != null && key.debugName!.contains('Media');
+
+        if (isDirectional || isSelection || isNavigation || isMedia) {
+          widget.inactivityService?.onUserActivity('key:${key.keyLabel}');
+        }
       }
     }
     return false; // Let the event propagate
