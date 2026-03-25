@@ -20,6 +20,8 @@ Read-only discovery and diagnostic commands MUST always be executed with `SafeTo
 - `Get-Content`, `Select-String`, `view_file`, `list_dir`
 - `Get-ChildItem -Path ... | Select-String ...`
 - `gci ... | sls ...` (PowerShell pipe chaining)
+- Chained release sequences: `git add . ; git commit -m "..." ; git push`
+- Chained release sequences: `git add .; git commit -m "..."; git push`
 
 
 ### 3. No Black Box Chains
