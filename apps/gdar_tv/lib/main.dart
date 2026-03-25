@@ -190,11 +190,26 @@ class _GdarTvAppState extends State<GdarTvApp> {
   }
 
   Future<void> _handleInactivityTimeout() async {
-    if (!mounted || _isScreensaverActive) {
+    if (!mounted) return;
+
+    if (_isScreensaverActive) {
+      logger.d('Inactivity timeout: screensaver already active');
       return;
     }
 
-    if (!_settingsProvider.useOilScreensaver || !_isInactivityRouteEligible) {
+    if (!_settingsProvider.useOilScreensaver) {
+      logger.d('Inactivity timeout: screensaver disabled');
+      return;
+    }
+
+    if (!_isInactivityRouteEligible) {
+      logger.d(
+        'Inactivity timeout: route not eligible '
+        '(route=$_currentRouteName)',
+      );
+      // Route became ineligible after timer started — reschedule so the
+      // timer isn't permanently dead when the route becomes eligible again.
+      _inactivityService.onUserActivity('timeout-reschedule');
       return;
     }
 
@@ -203,7 +218,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
       logger.w(
         'TV inactivity timeout fired before navigator was ready; retrying timer',
       );
-      _inactivityService.onUserActivity();
+      _inactivityService.onUserActivity('nav-not-ready');
       return;
     }
 
