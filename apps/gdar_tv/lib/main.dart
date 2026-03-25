@@ -13,7 +13,6 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/services/inactivity_service.dart';
-import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
@@ -94,9 +93,6 @@ class _GdarTvAppState extends State<GdarTvApp> {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   late final _TvNavigationObserver _navigationObserver;
   bool _isScreensaverActive = false;
-  bool _hasEnteredTvMainUi = false;
-  String? _currentRouteName;
-  String? _lastInactivitySummary;
 
   void _setScreensaverActive(bool active) {
     if (!mounted) {
@@ -108,42 +104,11 @@ class _GdarTvAppState extends State<GdarTvApp> {
     });
   }
 
-  bool get _isInactivityRouteEligible {
-    final routeName = _currentRouteName;
-    if (routeName == null) return false;
-
-    // Gate out onboarding and the screensaver itself.
-    if (routeName == ShakedownRouteNames.onboarding ||
-        routeName == ShakedownRouteNames.screensaver) {
-      return false;
-    }
-
-    // Otherwise, it's eligible if we've reached the main UI.
-    return _hasEnteredTvMainUi;
-  }
-
   void _handleRouteChanged(Route<dynamic>? route) {
+    // Route tracking kept for diagnostics only — no longer gates the timer.
     final name = route?.settings.name;
-
-    // Ignore anonymous sub-routes (like dialogs) so they don't break the timer
-    // evaluation when shown on top of an eligible named route.
-    if (name == null) return;
-
-    final hasEnteredTvMainUi =
-        _hasEnteredTvMainUi || name == ShakedownRouteNames.tvHome;
-    if (_currentRouteName == name &&
-        _hasEnteredTvMainUi == hasEnteredTvMainUi) {
-      return;
-    }
-
-    _currentRouteName = name;
-    _hasEnteredTvMainUi = hasEnteredTvMainUi;
-    debugPrint(
-      'GdarTvApp: route changed name=$name enteredTvMain=$_hasEnteredTvMainUi',
-    );
-
-    if (mounted) {
-      _syncInactivityService(_settingsProvider);
+    if (name != null) {
+      debugPrint('GdarTvApp: route changed name=$name');
     }
   }
 
@@ -196,53 +161,28 @@ class _GdarTvAppState extends State<GdarTvApp> {
   }
 
   Future<void> _handleInactivityTimeout() async {
-    if (!mounted) {
-      logger.w('Inactivity timeout: not mounted — timer orphaned');
-      return;
-    }
+    if (!mounted) return;
 
-    logger.i(
-      'Inactivity timeout fired — evaluating launch conditions: '
-      'ssActive=$_isScreensaverActive '
-      'enabled=${_settingsProvider.useOilScreensaver} '
-      'routeEligible=$_isInactivityRouteEligible '
-      'route=$_currentRouteName '
-      'enteredTvMain=$_hasEnteredTvMainUi '
-      'hasNav=${_navigatorKey.currentState != null}',
-    );
-
-    if (_isScreensaverActive) {
-      logger.d('Inactivity timeout: screensaver already active');
-      return;
-    }
-
-    if (!_settingsProvider.useOilScreensaver) {
-      logger.d('Inactivity timeout: screensaver disabled');
-      return;
-    }
-
-    if (!_isInactivityRouteEligible) {
-      logger.d(
-        'Inactivity timeout: route not eligible '
-        '(route=$_currentRouteName)',
-      );
-      // Route became ineligible after timer started — reschedule so the
-      // timer isn't permanently dead when the route becomes eligible again.
-      _inactivityService.onUserActivity('timeout-reschedule');
-      return;
-    }
+    // Guard: don't double-launch if screensaver is already active.
+    if (_isScreensaverActive) return;
 
     final navigator = _navigatorKey.currentState;
-    if (navigator == null) {
-      logger.w(
-        'TV inactivity timeout fired before navigator was ready; retrying timer',
-      );
-      _inactivityService.onUserActivity('nav-not-ready');
-      return;
-    }
+    if (navigator == null) return;
 
-    logger.i('TV inactivity timeout: ALL checks passed — pushing screensaver');
-    unawaited(_showScreensaver(navigator, allowPermissionPrompts: false));
+    logger.i('TV inactivity timeout — launching screensaver');
+    _inactivityService.stop();
+    _setScreensaverActive(true);
+    try {
+      await navigator.push(
+        ScreensaverScreen.route(allowPermissionPrompts: false),
+      );
+    } finally {
+      _setScreensaverActive(false);
+      // Restart monitoring after screensaver exits.
+      if (_settingsProvider.useOilScreensaver) {
+        _inactivityService.start();
+      }
+    }
   }
 
   void _syncInactivityService(SettingsProvider settingsProvider) {
@@ -250,22 +190,9 @@ class _GdarTvAppState extends State<GdarTvApp> {
       Duration(minutes: settingsProvider.oilScreensaverInactivityMinutes),
     );
 
-    final shouldRun =
-        settingsProvider.useOilScreensaver && _isInactivityRouteEligible;
-    final summary =
-        'enabled=${settingsProvider.useOilScreensaver} '
-        'eligible=$_isInactivityRouteEligible '
-        'enteredTvMain=$_hasEnteredTvMainUi '
-        'route=$_currentRouteName '
-        'screensaverActive=$_isScreensaverActive '
-        'timeout=${settingsProvider.oilScreensaverInactivityMinutes}m '
-        'src=${identityHashCode(settingsProvider)}';
-    if (_lastInactivitySummary != summary) {
-      _lastInactivitySummary = summary;
-      debugPrint('GdarTvApp: inactivity sync shouldRun=$shouldRun $summary');
-    }
-
-    if (shouldRun) {
+    // Match v1.1.69: run whenever enabled and screensaver isn't active.
+    // No route-eligibility gate — the timeout handler checks what it needs.
+    if (settingsProvider.useOilScreensaver && !_isScreensaverActive) {
       _inactivityService.start();
     } else {
       _inactivityService.stop();
@@ -387,9 +314,6 @@ class _GdarTvAppState extends State<GdarTvApp> {
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
-          if (widget.isTv && !_hasEnteredTvMainUi) {
-            _hasEnteredTvMainUi = true;
-          }
           _syncInactivityService(settingsProvider);
           final theme = AppThemes.darkTheme(
             settingsProvider.activeAppFont,

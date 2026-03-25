@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.20+230] - 2026-03-25
+
+### Fixed
+- **Core**: Hardened `AudioCacheService` preloading with explicit timeouts and connection refusal handling to prevent background task hangs.
+- **Maintenance**: Expanded auto-approval policies to include common git discovery and preflight commands for zero-friction monorepo orchestration.
+- **Testing**: Resolved flakiness in audio cache regression tests by eliminating real-world network dependencies.
+- **TV UI**: Simplified inactivity detection by removing brittle route-based gating, preferring unified state-agnostic monitoring for the Google TV screensaver.
+
+
 ## [1.3.19+229] - 2026-03-25
 
 ### Fixed

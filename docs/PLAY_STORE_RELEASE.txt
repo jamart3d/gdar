@@ -1,4 +1,13 @@
+What's new in v1.3.20+230
+- TV UI: Simplified inactivity detection for Google TV by removing brittle route-based gating.
+- Core: Hardened audio preloading with explicit timeouts to prevent background task hangs.
+- Testing: Resolved flakiness in audio cache tests by eliminating external network dependencies.
+- Maintenance: Expanded auto-approval policies for zero-friction monorepo orchestration.
+
+---
+
 What's new in v1.3.19+229
+
 - TV Enhancement: Finalized formatting and layout stability for the real-time developer monitor.
 - Maintenance: Orchestration of the automated /deploy pipeline across the monorepo.
 

@@ -1,5 +1,5 @@
 ---
-description: Root-level monorepo cleanup audit and safe hygiene checklist.
+description: Root-level monorepo cleanup audit and recursive hygiene checklist.
 ---
 
 # Clean Home Workflow (Monorepo)
@@ -24,7 +24,8 @@ Important current repo facts:
 
 ## 1. Root Directory Audit
 1. List all files and directories in the project root.
-2. Compare files against the approved root file list:
+2. Recursively search `apps/` and `packages/` for transient artifacts (*.log, *.tmp, test_out.txt, etc).
+3. Compare root files against the approved root file list:
    - `pubspec.yaml`, `pubspec.lock`
    - `analysis_options.yaml`, `build.yaml`
    - `firebase.json`, `.firebaserc`
@@ -41,8 +42,9 @@ Important current repo facts:
    - `.git/`, `.idea/`, `.vscode/`, `.dart_tool/`, `.firebase/`
    - `build/` if present and gitignored
 
-## 2. Identify Cleanup Candidates
-Flag the following for review:
+### 2. Identify Cleanup Candidates
+
+#### Root-Level Drift
 - Temporary files such as `*.tmp`, `*.log`, `*.bak`, `*.pid`, `temp_*`
 - One-off test output dumps such as `test_output*.txt`, `test_error*.txt`
 - Root-level scripts that belong under `scripts/`
@@ -51,10 +53,17 @@ Flag the following for review:
 - Legacy root-level `lib/` or `test/` directories
 - Report or scratch markdown files that do not belong in `docs/` or `.agent/`
 
+#### Recursive Member Target Cleanup (apps/ and packages/)
+- Transient artifacts scattered within member packages:
+  - `*.log`, `*.tmp`, `*.bak`
+  - `test_out.txt`, `test_output.txt`, `test_fail_lifecycle.log`
+  - Misplaced `debug_*.png` or scratch JSON dumps.
+
 ## 3. Safe Cleanup Rules
 1. Delete only obvious temporary files without asking:
    - `*.tmp`, `*.log`, `*.pid`
-   - transient test output dumps
+   - `test_out.txt`, `test_output*.txt`
+   - transient test output dumps at root or inside targets
 2. Move misplaced scripts into `scripts/` if their destination is clear.
 3. Do not delete docs, workflow files, or `.agent/` content without confirming
    they are intentionally obsolete.

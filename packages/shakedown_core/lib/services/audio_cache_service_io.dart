@@ -283,10 +283,15 @@ class AudioCacheService with ChangeNotifier {
       final tempFile = File('${file.path}.part');
       logger.d('Smart Pre-Load: Downloading ${track.title}...');
 
-      final response = await _httpClient!.get(
-        Uri.parse(track.url),
-        headers: {'User-Agent': 'GDAR/1.0.0 (shakedown_app@googlegroups.com)'},
-      );
+      final response = await _httpClient!
+          .get(
+            Uri.parse(track.url),
+            headers: {
+              'User-Agent': 'GDAR/1.0.0 (shakedown_app@googlegroups.com)',
+            },
+          )
+          .timeout(const Duration(seconds: 10));
+
       if (_isPreloadCancelled) return;
 
       if (response.statusCode == 200) {

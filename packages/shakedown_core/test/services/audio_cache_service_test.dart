@@ -132,14 +132,14 @@ void main() {
         final track1 = Track(
           trackNumber: 1,
           title: 'Track 1',
-          url: 'https://archive.org/t1.mp3',
+          url: 'http://localhost:1/t1.mp3',
           duration: 300,
           setName: 'Set 1',
         );
         final track2 = Track(
           trackNumber: 2,
           title: 'Track 2',
-          url: 'https://archive.org/t2.mp3',
+          url: 'http://localhost:1/t2.mp3',
           duration: 300,
           setName: 'Set 1',
         );

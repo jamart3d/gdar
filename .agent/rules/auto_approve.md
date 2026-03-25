@@ -18,6 +18,10 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `Get-Item ...` | File/dir metadata |
 | `Get-ChildItem ...` (alias `ls`, `dir`) | Directory listing |
 | `Get-ChildItem docs/*.md` | List documentation files |
+| `Get-ChildItem -Path scripts/*version*` | List version scripts (Safe) |
+| `Get-ChildItem -Path scripts/*version* | Select-Object FullName` | Exact indexing command (Safe) |
+
+
 | `Test-Path ...` | Check if path exists |
 | `Select-String ...` | Grep-style search in files (Safe) |
 | `Get-Location` (alias `pwd`) | Current directory (Safe) |
@@ -60,6 +64,8 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `melos run test` | Workspace tests |
 | dart fix --apply; melos run format; melos run analyze | Chained health check (Safe) |
 | `dart fix --apply`, `flutter format .` | Standard code formatting |
+| `git status; melos run format; melos run analyze; melos run test` | Chained preflight suite (Safe) |
+
 
 ### General Inspection
 | Command | Notes |
@@ -151,6 +157,12 @@ These commands are auto-approved only when executed within the specific release 
 - `dart scripts/bump_version.dart patch`, `dart scripts/bump_version.dart minor`
 - `dart fix --apply; melos run format; melos run analyze`
 - `git rev-parse HEAD`, `git diff --stat`, `git status`
+- `git status; melos run format; melos run analyze; melos run test`
+- `git diff apps/gdar_tv/lib/main.dart | Head -n 50`
+- `git diff apps/gdar_tv/lib/main.dart | Select-Object -First 50`
+
+
+
 
 ---
 
