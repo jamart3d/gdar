@@ -123,12 +123,13 @@ These commands are auto-approved only when executed within the specific release 
 - `git status`
 - `git add .`
 - `git commit -m "..."`
-- `git commit -m "release: 1.3.14+224"`
-- `git commit -m "release: 1.3.14+224" --no-verify`
 - `git commit -m "..."`
 - `git push`
 - `git push --no-verify`
 - Chained release finalization: `git add . ; git commit -m "..." ; git push`
+- Chained release finalization: `git status; melos run format; melos run analyze; melos run test`
+- Chained release finalization: `git commit -m "release: $(dart scripts/get_current_version.dart)"`
+- Chained release finalization: `cd apps/gdar_mobile; flutter build appbundle --release`
 - `git rev-parse HEAD ; git status ; melos run format`
 - `git rev-parse HEAD ; git status ; melos run analyze`
 - `git status ; melos --version`
@@ -157,8 +158,6 @@ These commands are auto-approved only when executed within the specific release 
 These mutate state and ALWAYS require user confirmation unless covered by the exceptions above:
 
 - `rm`, `Remove-Item`, `del` - file deletion
-- Any `Set-Content`, `Out-File`, `>`, `>>` - writes to files (EXCEPT when redirected to `/tmp/` or `%TEMP%`)
-
 ---
 
 ## Notes

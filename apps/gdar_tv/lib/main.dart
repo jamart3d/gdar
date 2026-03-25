@@ -422,8 +422,12 @@ class _GdarTvAppState extends State<GdarTvApp> {
                     ),
                     if (settingsProvider.useOilScreensaver &&
                         !_isScreensaverActive)
-                      _InactivityCountdownOverlay(
-                        countdown: _inactivityService.debugCountdown,
+                      Positioned(
+                        left: 8,
+                        bottom: 8,
+                        child: _InactivityCountdownOverlay(
+                          countdown: _inactivityService.debugCountdown,
+                        ),
                       ),
                   ],
                 ),
@@ -479,30 +483,26 @@ class _InactivityCountdownOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      left: 8,
-      bottom: 8,
-      child: IgnorePointer(
-        child: ValueListenableBuilder<String>(
-          valueListenable: countdown,
-          builder: (context, value, _) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0x66000000),
-                borderRadius: BorderRadius.circular(4),
+    return IgnorePointer(
+      child: ValueListenableBuilder<String>(
+        valueListenable: countdown,
+        builder: (context, value, _) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: const Color(0x66000000),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              'SS: $value',
+              style: const TextStyle(
+                color: Color(0x99FFFFFF),
+                fontSize: 10,
+                fontFamily: 'monospace',
               ),
-              child: Text(
-                'SS: $value',
-                style: const TextStyle(
-                  color: Color(0x99FFFFFF),
-                  fontSize: 10,
-                  fontFamily: 'monospace',
-                ),
-              ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
