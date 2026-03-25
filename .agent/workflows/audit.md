@@ -58,10 +58,17 @@ Run the sections relevant to the user's request. If the user just says "audit", 
    - **Interaction Flows**: `TvInteractionModal` and `TvReloadDialog` on TV only.
 3. Categorize findings: Aligned, Drifted, Violation, Undocumented.
 
+
 ## Section 5: Optimization Audit
 1. **Size Analysis**: `flutter build appbundle --analyze-size` (from `apps/gdar_mobile`).
 2. **Assets**: Find files > 500KB across `packages/shakedown_core/assets/`.
 3. **Deep Links**: Scan `apps/gdar_mobile/android/app/src/main/AndroidManifest.xml` for intent filters and App Actions.
+
+## Section 6: Architecture & Refactor Audit
+1. **Large Files**: `Get-ChildItem -Recurse -Filter *.dart | Measure-Lines` (find files > 800 lines).
+2. **Complex Providers**: Identify Providers or Services that are "God Classes" (too many responsibilities).
+3. **Deep Build Metrics**: Identify widgets with overly complex build methods or deep nesting.
+4. **Mock Parity**: Run the `check_mock_parity` workflow to ensure test mocks match the real providers. 
 
 ## Output
 1. Generate or update a single `AUDIT_REPORT.md`.

@@ -173,6 +173,7 @@ These mutate state and ALWAYS require user confirmation unless covered by the ex
 ---
 
 ## Notes
-- **Windows only**: Use `;` between chained commands, never `&&` (bash-only).
-- **ChromeOS only**: `&&` is fine for chaining in bash.
+- **Windows only**: Use `;` between independent commands. Use `|` (pipe) to chain read-only discovery tools (e.g., `Get-ChildItem | Select-String`).
+- **ChromeOS only**: `&&` is fine for chaining in bash. `|` is also safe for discovery.
 - When in doubt: read-only = auto. Write/mutate = ask.
+

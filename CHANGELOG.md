@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Maintenance**: Expanded auto-approval policies to include common git discovery and preflight commands for zero-friction monorepo orchestration.
 - **Testing**: Resolved flakiness in audio cache regression tests by eliminating real-world network dependencies.
 - **TV UI**: Simplified inactivity detection by removing brittle route-based gating, preferring unified state-agnostic monitoring for the Google TV screensaver.
+- **Web UI**: Implemented a chip-driven (D, P, W, L) decision tree for first-run playback settings, automatically selecting optimal engine presets (maxGapless, balanced, stability) based on the detected hardware profile and Safari-specific constraints.
 
 
 ## [1.3.19+229] - 2026-03-25

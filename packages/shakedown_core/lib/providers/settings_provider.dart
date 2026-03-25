@@ -10,6 +10,7 @@ import 'package:shakedown_core/utils/web_perf_hint.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/utils/web_runtime.dart';
+import '../utils/pwa_detection.dart';
 
 enum DevHudMode {
   full,
@@ -745,6 +746,53 @@ class SettingsProvider with ChangeNotifier {
     'com.jamart3d.shakedown/ui_scale',
   );
 
+  void _resetWebPlaybackSettings() {
+    if (!kIsWeb) return;
+
+    final profile = detectWebRuntimeProfile();
+    final isSafari = isSafariWeb();
+
+    switch (profile) {
+      case WebRuntimeProfile.low:
+        // Chip [L]: Stability focus for budget hardware.
+        // Hybrid engine + Video hack to ensure survival on background thread.
+        setHiddenSessionPreset(HiddenSessionPreset.stability);
+        break;
+
+      case WebRuntimeProfile.pwa:
+        // Chip [P]: Installed PWA behavior.
+        // We prefer balanced for PWAs to reduce thermal/battery impact,
+        // but if it's Safari (iOS), we still need the stability hack.
+        if (isSafari) {
+          setHiddenSessionPreset(HiddenSessionPreset.stability);
+        } else {
+          setHiddenSessionPreset(HiddenSessionPreset.balanced);
+        }
+        break;
+
+      case WebRuntimeProfile.web:
+        // Chip [W]: Performance for generic mobile web browsers.
+        // This is the least trusted environment (Safari mobile, budget Android).
+        if (isSafari) {
+          setHiddenSessionPreset(HiddenSessionPreset.stability);
+        } else {
+          setHiddenSessionPreset(HiddenSessionPreset.balanced);
+        }
+        break;
+
+      case WebRuntimeProfile.desk:
+        // Chip [D]: High-throughput desktop environment.
+        // Desktop Safari still has quirks that benefit from 'balanced' engine timing,
+        // but others (Chrome/Edge/FF) go for maximum immersion.
+        if (isSafari) {
+          setHiddenSessionPreset(HiddenSessionPreset.balanced);
+        } else {
+          setHiddenSessionPreset(HiddenSessionPreset.maxGapless);
+        }
+        break;
+    }
+  }
+
   void resetAndroidFirstTimeSettings() {
     // Rock Salt font
     _appFont = 'rock_salt';
@@ -763,6 +811,8 @@ class SettingsProvider with ChangeNotifier {
       setGlowMode(25);
       setHighlightPlayingWithRgb(true);
     }
+
+    _resetWebPlaybackSettings();
 
     notifyListeners();
   }
@@ -789,6 +839,8 @@ class SettingsProvider with ChangeNotifier {
       _fruitEnableLiquidGlass = false;
       _prefs.setBool(_fruitEnableLiquidGlassKey, false);
     }
+
+    _resetWebPlaybackSettings();
 
     notifyListeners();
   }

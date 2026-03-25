@@ -3,3 +3,5 @@ import 'web_perf_hint_noop.dart'
     as impl;
 
 bool isLikelyLowPowerWebDevice() => impl.isLikelyLowPowerWebDevice();
+bool isSafariWeb() => impl.isSafariWeb();
+bool isMobileWeb() => impl.isMobileWeb();

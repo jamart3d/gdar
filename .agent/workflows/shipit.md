@@ -4,10 +4,14 @@ description: Guided production release workflow for GDAR (monorepo).
 // turbo-all
 # Shipit Workflow (Monorepo)
 
+
 **TRIGGERS:** shipit, release, prod
 
-Use this workflow for explicit release preparation and deployment work. Treat it
-as a guided release runbook, not an always-safe autonomous action.
+> [!IMPORTANT]
+> **AUTONOMY OVERRIDE & PLANNING MODE**: When this workflow is triggered, provide a single, comprehensive **Release Plan**. Once the user approves the plan, proceed autonomously end-to-end (running analysis/tests, versioning, building, and deploying) without stopping for intermediate permission. Only pause if a critical error occurs. 
+
+> [!WARNING]
+> **NO BLACK BOXES**: You are strictly forbidden from chaining multiple long-running terminal commands into a single "black box" string (e.g., `build; build; push`). Run each primary tool (Melos, Flutter build, Firebase) as its own step so progress and status are reported in real-time.
 
 ## Monorepo Layout
 

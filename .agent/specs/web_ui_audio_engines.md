@@ -85,3 +85,24 @@ To ensure the Hybrid engine [5] remains stable when the screen is off (e.g., dur
 2.  **Hybrid Continuity**: The engine MUST NOT skip the "Instant Start" (HTML5 Engine [2]) phase just because the tab is hidden. Relying only on Web Audio for background starts is prohibited as it is more prone to suspension.
 3.  **Heartbeat Priority**: Survival heartbeats (video/audio) are the primary mechanism for background stability. If `backgroundMode` is set to `heartbeat` or `video`, these MUST remain active throughout the duration of the background session.
 
+## 4. Hardware-Based Initialization (First Run)
+
+To provide the optimal experience without manual configuration, GDAR uses a hardware-aware decision tree to set initial playback settings on the first run of the Web UI (Fruit style/PWA). The logic is driven by the `WebRuntimeProfile` (D, P, W, L) chips.
+
+### 4.1 Decision Tree Logic
+
+The following logic is executed in `SettingsProvider._resetWebPlaybackSettings()` during first-run resets:
+
+| Chip | Profile | Detection Heuristic | Target Preset | Strategy Rationale |
+| :--- | :--- | :--- | :--- | :--- |
+| **[D]** | **Desktop** | `_isDesktopWeb()` | `maxGapless` | Full Web Audio immersion. *Safari shifts to `balanced`.* |
+| **[P]** | **PWA** | `isPwa()` (Installed) | `balanced` | Reliable background survival for apps. *Safari shifts to `stability`.* |
+| **[W]** | **Web (Mobile)** | Generic Mobile | `balanced` | Standard mobile support. *Safari shifts to `stability`.* |
+| **[L]** | **Low-Power** | `isLikelyLowPowerWebDevice()` | `stability` | Minimal CPU overhead + H5 background hack. |
+
+### 4.2 Key Detection Heuristics
+
+*   **Chip [L]**: Detected via `isLikelyLowPowerWebDevice()` (checks hardware concurrency <= 4 and low-DPI combinations).
+*   **Chip [P]**: Detected via `isPwa()` (checks `is_pwa` entry point or display mode).
+*   **Safari Gate**: Detected via `isSafariWeb()` (User Agent parsing). Safari is always shifted one stability step lower than other browsers on the same chip.
+

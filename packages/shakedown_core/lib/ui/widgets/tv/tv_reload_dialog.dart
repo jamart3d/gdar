@@ -38,11 +38,10 @@ class TvReloadDialog extends StatelessWidget {
                 Expanded(
                   child: Text(
                     'Connection Issue?',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
                   ),
                 ),
               ],
@@ -50,10 +49,9 @@ class TvReloadDialog extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'The track seems to be taking longer than usual to load. Would you like to try reloading the show?',
-              style: TextStyle(
-                fontSize: 18,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
             ),
             const SizedBox(height: 32),
             Column(
@@ -150,18 +148,16 @@ class _DialogButton extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
-                    ),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
                   ),
                   Text(
                     description,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                   ),
                 ],
               ),

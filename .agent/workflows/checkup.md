@@ -4,14 +4,16 @@ description: Rapid health check with automated fixes for linting, formatting, an
 # Checkup Workflow (Monorepo)
 // turbo-all
 
+
 **TRIGGERS:** checkup, health, quick-audit, lint-fix
 
-This workflow is optimized for speed and developer productivity. It prioritizes automated fixes and parallel analysis using optimized MCP tools.
+> [!IMPORTANT]
+> **AUTONOMY OVERRIDE & PLANNING MODE**: When this workflow is triggered, proceed autonomously end-to-end (running analysis, automated fixes, and tests) without stopping for intermediate permission. Only pause if a critical error occurs. 
+
+> [!WARNING]
+> **NO BLACK BOXES**: You are strictly forbidden from chaining multiple terminal commands into a single "black box" string (e.g., `format; analyze; test`). Run each health check and workspace tool as its own step so status is reported in real-time.
 
 > [!NOTE]
-> **FAST MODE DEFAULT**: This workflow is designed to be lean and fast. If significant architectural failures are found, consider upgrading to `/audit` or `/issue_report`.
-
-> [!IMPORTANT]
 > **MONOREPO**: This is a Dart workspace. Run analysis/format/fix from the **workspace root** - the Dart tools will recurse into `apps/` and `packages/` automatically.
 
 ## 1. Atomic Health Pass

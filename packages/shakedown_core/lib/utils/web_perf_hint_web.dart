@@ -22,3 +22,26 @@ bool isLikelyLowPowerWebDevice() {
     return false;
   }
 }
+
+bool isSafariWeb() {
+  try {
+    final ua = web.window.navigator.userAgent.toLowerCase();
+    return ua.contains('safari') &&
+        !ua.contains('chrome') &&
+        !ua.contains('chromium');
+  } catch (_) {
+    return false;
+  }
+}
+
+bool isMobileWeb() {
+  try {
+    final ua = web.window.navigator.userAgent.toLowerCase();
+    return ua.contains('mobi') ||
+        ua.contains('android') ||
+        ua.contains('iphone') ||
+        ua.contains('ipad');
+  } catch (_) {
+    return false;
+  }
+}
