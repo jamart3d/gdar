@@ -30,12 +30,18 @@ class InactivityService {
     }
   }
 
+  /// Whether the inactivity timer is currently ticking.
+  bool get isTimerActive => _inactivityTimer?.isActive ?? false;
+
   /// Start monitoring for inactivity.
   void start() {
-    if (_isEnabled) return;
+    // Restart the timer if it died (e.g. one-shot fired but the handler
+    // returned early without calling onUserActivity).
+    if (_isEnabled && isTimerActive) return;
     _isEnabled = true;
     debugPrint(
-      'InactivityService: start (${_inactivityDuration.inMinutes}m timeout)',
+      'InactivityService: start (${_inactivityDuration.inMinutes}m timeout,'
+      ' wasActive=${_inactivityTimer?.isActive ?? false})',
     );
     _resetTimer();
   }
