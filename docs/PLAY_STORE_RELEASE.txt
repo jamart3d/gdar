@@ -1,3 +1,10 @@
+What's new in v1.3.21+231
+- Maintenance: Synchronized monorepo auto-approval policies and orchestration rules for zero-friction production releases.
+- Audit: Conducted a unified monorepo health audit and staged results in reports/audits/.
+- Web UI: Refined performance hint initialization for PWA and narrow-mobile viewports.
+
+---
+
 What's new in v1.3.20+230
 - TV UI: Simplified inactivity detection for Google TV by removing brittle route-based gating.
 - Core: Hardened audio preloading with explicit timeouts to prevent background task hangs.

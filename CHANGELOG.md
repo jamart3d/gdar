@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.21+231] - 2026-03-25
+
+### Added
+- **Maintenance**: Synchronized monorepo auto-approval policies and orchestration rules for zero-friction production releases.
+- **Audit**: Conducted a unified monorepo health audit and staged results in `reports/audits/`.
+
+### Fixed
+- **Web UI**: Refined performance hint initialization for PWA and narrow-mobile viewports.
+
+
 ## [1.3.20+230] - 2026-03-25
 
 ### Fixed

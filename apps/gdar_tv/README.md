@@ -42,8 +42,8 @@ adb shell am start -W -a android.intent.action.VIEW -d "shakedown://ui-scale?ena
 ## 🎨 Branding & Icons
 
 This app target does not maintain its own launcher icons. It is configured via `flutter_launcher_icons` to pull branded assets directly from `shakedown_core`:
-*   **Path**: `packages/shakedown_core/assets/images/gdar_icon.png`
-*   **Foreground (Adaptive)**: `packages/shakedown_core/assets/images/gdar_icon_forground.png`
+*   **Path**: `packages/shakedown_core/assets/images/gdar_icon.webp`
+*   **Foreground (Adaptive)**: `packages/shakedown_core/assets/images/gdar_icon_forground.webp`
 
 To regenerate icons for this target:
 ```bash

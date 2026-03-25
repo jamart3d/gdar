@@ -13,6 +13,7 @@ void main() {
   ).firstMatch(content);
 
   if (versionMatch != null) {
+    // ignore: avoid_print
     print(versionMatch.group(1));
   } else {
     exit(1);
