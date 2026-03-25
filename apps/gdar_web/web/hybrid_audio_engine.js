@@ -75,6 +75,7 @@
     let _handoffInProgress = false;
     let _lastStateForwardMs = 0;
     let _fenceHandoffPending = false;
+    let _lastGapMs = null;
 
     // Web Worker for background timing - now managed centrally via audio_scheduler.js
     // let _schedulerWorker = null;
@@ -104,6 +105,14 @@
         if (engine && typeof engine.setVolume === 'function') {
             engine.setVolume(volume);
         }
+    }
+
+    function _logRoutingDecision(source, pure, allowHandoff, useHtml5) {
+        _log.log(
+            `[hybrid] ${source} route: pure=${pure} allowHandoff=${allowHandoff} ` +
+            `useHtml5=${useHtml5} active=${_activeEngine === _bgEngine ? 'H5' : 'WA'} ` +
+            `handoffInProgress=${_handoffInProgress}`,
+        );
     }
 
     function _startHandoffCrossfade() {
@@ -147,12 +156,25 @@
         // while the HTML5 engine is successfully driving playback during an Instant Start.
         if (sourceEngine !== _activeEngine) return;
 
+        const hasGapUpdate =
+            typeof state.lastGapMs === 'number' && Number.isFinite(state.lastGapMs);
+
+        // Preserve the last measured track-transition gap across engine swaps.
+        // The active engine can change from HTML5 to Web Audio before the HUD
+        // has a chance to repaint, so we keep the most recent non-null gap and
+        // reattach it to later state emissions.
+        if (hasGapUpdate) {
+            _lastGapMs = state.lastGapMs;
+        } else if (_lastGapMs != null) {
+            state.lastGapMs = _lastGapMs;
+        }
+
         // Sync central MediaSession Anchor
         if (window._gdarMediaSession) {
             window._gdarMediaSession.updatePlaybackState(state.playing);
             window._gdarMediaSession.updatePositionState(state);
         }
-        if (_handoffInProgress) {
+        if (_handoffInProgress && !hasGapUpdate) {
             const now = performance.now();
             if (now - _lastStateForwardMs < 250) return;
             _lastStateForwardMs = now;
@@ -198,6 +220,11 @@
         else { __tech = 'OFF'; }
 
         const hbNeeded = window._gdarIsHeartbeatNeeded();
+        // Keep AE pinned to HTML5 while the restore loop is still settling so
+        // the HUD does not advertise WA before the swap has actually completed.
+        if (_handoffInProgress && _activeEngine === _fgEngine) {
+            __tech = '(H5)';
+        }
         state.heartbeatNeeded = hbNeeded;
         state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
 
@@ -397,7 +424,6 @@
                 } else {
                     _bgEngine.stop();
                 }
-                _handoffInProgress = false;
 
                 const swapTime = performance.now() - swapStart;
                 _log.log(`[hybrid] HANDOFF COMPLETE (ID: ${id}). Settle cycles: ${pollCount}, Swap hitch: ${swapTime.toFixed(2)}ms`);
@@ -409,6 +435,7 @@
                 }
 
                 _forwardState(fgState, _fgEngine);
+                _handoffInProgress = false;
             } else {
                 if (pollCount % 10 === 0) {
                     _log.log(`[hybrid] Waiting for foreground... (ID: ${id}, state: ${fgState.processingState})`);
@@ -612,8 +639,12 @@
 
             const pure = _isPureWebAudio();
             const allowHandoff = _handoffMode !== 'none';
+            // HTML5 is the instant-start path unless we are locked to pure
+            // Web Audio and the selected handoff mode still allows a swap.
+            const useHtml5 = !pure || !allowHandoff;
+            _logRoutingDecision('syncState', pure, allowHandoff, useHtml5);
 
-            if (!pure) {
+            if (useHtml5) {
                 _log.log('[hybrid] syncState: Choosing HTML5 (Background) for Instant Start');
                 _swapEngine(_bgEngine);
                 _instantHandoffPending = shouldPlay && allowHandoff;
@@ -648,14 +679,18 @@
 
             const pure = _isPureWebAudio();
             const allowHandoff = _handoffMode !== 'none';
+            // Same routing rule as syncState(): start on HTML5 unless the
+            // runtime is explicitly locked to Web Audio and handoff is allowed.
+            const useHtml5 = !pure || !allowHandoff;
+            _logRoutingDecision('setPlaylist', pure, allowHandoff, useHtml5);
 
-            if (!pure) {
+            if (useHtml5) {
                 _log.log('[hybrid] setPlaylist: Choosing HTML5 (Background) for Instant Start');
                 _instantHandoffPending = allowHandoff;
                 _instantHandoffIndex = _currentIndex;
                 _swapEngine(_bgEngine);
             } else {
-                _log.log('[hybrid] setPlaylist: Choosing Web Audio (Foreground)');
+                _log.log('[hybrid] setPlaylist: Choosing Web Audio (Foreground) for Instant Start');
                 _instantHandoffPending = false;
                 _swapEngine(_fgEngine);
             }
@@ -678,10 +713,11 @@
             }
 
             const allowHandoff = _handoffMode !== 'none';
-
-            // HYBRID CORE: Always prioritize HTML5 for "Instant Start" if Web Audio is not yet ready/playing
             const fgState = _fgEngine.getState();
             const fgReady = fgState.playing && fgState.processingState === 'ready';
+
+            // HYBRID CORE: Always prioritize HTML5 for "Instant Start" if Web Audio is not yet ready/playing
+            _logRoutingDecision('play', false, allowHandoff, !fgReady && _activeEngine !== _bgEngine);
 
             if (!fgReady && _activeEngine !== _bgEngine) {
                 _log.log('[hybrid] Startup: Web Audio not ready. Initiating HTML5 Instant Start.');
@@ -818,6 +854,9 @@
 
         getState: function () {
             const state = _activeEngine.getState();
+            if (_lastGapMs != null && (state.lastGapMs == null || !Number.isFinite(state.lastGapMs))) {
+                state.lastGapMs = _lastGapMs;
+            }
             state.playing = _playing;
             let __tech = '??';
             if (_activeEngine === _fgEngine) { __tech = '(WA)'; }
@@ -828,6 +867,11 @@
             else { __tech = 'OFF'; }
 
             const hbNeeded = window._gdarIsHeartbeatNeeded();
+            // Keep AE on H5 during an in-flight restore until the foreground
+            // handoff has been forwarded and the flag is cleared.
+            if (_handoffInProgress && _activeEngine === _fgEngine) {
+                __tech = '(H5)';
+            }
             state.heartbeatNeeded = hbNeeded;
             state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
 
@@ -846,11 +890,6 @@
     window._hybridAudio = api;
 
 })();
-
-
-
-
-
 
 
 

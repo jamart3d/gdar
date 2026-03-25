@@ -782,7 +782,12 @@ class GaplessPlayer {
     if (!_useJsEngine) {
       await _fallbackPlayer?.setVolume(volume);
     } else {
-      _callEngine((e) => e.setVolume(volume.toJS));
+      _callEngine((e) {
+        final obj = _JSObject(e as JSObject);
+        if (obj.hasOwnProperty('setVolume'.toJS)) {
+          e.setVolume(volume.toJS);
+        }
+      });
     }
   }
 

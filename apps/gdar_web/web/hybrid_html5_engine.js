@@ -106,14 +106,14 @@
                         (err) => {
                             _log.error('[html5] WA decode failed for track', this.idx, '— staying on HTML5 stream');
                             this.webAudioLoadingState = GaplessPlaybackLoadingState.NONE;
-                            this.queue.onError();
                         }
                     )
                 )
                 .catch((e) => {
                     _log.warn('[html5] Fetch error for track', this.idx, e && e.message);
+                    // CORS-blocked prefetch is non-fatal: the HTML5 stream can keep
+                    // playing even if the Web Audio decode path cannot read the URL.
                     this.webAudioLoadingState = GaplessPlaybackLoadingState.NONE;
-                    this.queue.onError();
                 });
         }
 
@@ -265,8 +265,6 @@
             // AND the queue is still the primary window._html5Audio queue.
             if (!this.isActiveTrack || this.queue !== _queue) {
                 _log.warn(`[html5] Ignoring onEnded for zombie track (idx: ${this.idx}). Skip Next.`);
-                return;
-            }
                 return;
             }
 
@@ -623,6 +621,9 @@
                 },
                 onStartNewTrack: (track) => {
                     if (!track) return;
+                    if (_onStateChange) {
+                        _onStateChange(_translateState(track));
+                    }
                     if (_onTrackChange) _onTrackChange({ from: _lastIndex, to: track.idx });
                     _lastIndex = track.idx;
                     // Update MediaSession via centralized anchor
