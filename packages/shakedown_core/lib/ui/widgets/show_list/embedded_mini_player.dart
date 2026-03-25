@@ -41,14 +41,18 @@ class EmbeddedMiniPlayer extends StatelessWidget {
 
     if (currentTrack == null) return const SizedBox.shrink();
 
-    final horizontalPad = compact ? 8.0 : 10.0;
-    final verticalPad = compact ? 5.0 : 8.0;
-    final buttonSize = (compact ? 26.0 : 32.0) * scaleFactor;
-    final iconSize = (compact ? 14.0 : 16.0) * scaleFactor;
-    final loaderSize = (compact ? 12.0 : 14.0) * scaleFactor;
-    final titleSize = (compact ? 10.5 : 12.0) * scaleFactor;
-    final timeSize = (compact ? 8.5 : 10.0) * scaleFactor;
+    final horizontalPad = compact ? 4.0 : 10.0;
+    final verticalPad = compact ? 0.0 : 8.0;
+    final buttonSize = (compact ? 36.0 : 32.0) * scaleFactor;
+    final iconSize = (compact ? 18.0 : 16.0) * scaleFactor;
+    final loaderSize = (compact ? 16.0 : 18.0) * scaleFactor;
+    final titleSize = (compact ? 18.0 : 14.0) * scaleFactor;
+    final isTv = Provider.of<DeviceService>(context).isTv;
+    final timeSize = (compact ? 12.0 : 11.0) * scaleFactor;
 
+    final contentRadius = isTv
+        ? 12.0
+        : 28.0; // Matching the card's 28px radius (semicircle look)
     final content = Container(
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPad,
@@ -56,7 +60,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(contentRadius),
         border: useRgb
             ? null // RGB Border handles this
             : Border.all(
@@ -65,6 +69,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
               ),
       ),
       child: Row(
+        mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,
         children: [
           // Play/Pause Button
           StreamBuilder<PlayerState>(
@@ -146,121 +151,111 @@ class EmbeddedMiniPlayer extends StatelessWidget {
               );
             },
           ),
-          SizedBox(width: compact ? 8 : 12),
+          SizedBox(width: compact ? 4 : 12),
           // Info & Progress
-          Expanded(
-            child: Column(
+          // Compact mode: no Expanded (intrinsic width from parent)
+          // Non-compact mode: Expanded to fill available space
+          if (compact)
+            Row(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 2,
+                    vertical: 1,
+                  ),
+                  child: Text(
+                    currentTrack.title,
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                      height: 1.0,
+                    ),
+                    maxLines: 1,
+                    softWrap: false,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                // Progress Bar stacked under Time
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        currentTrack.title,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: titleSize,
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    _buildTimeText(
+                      audioProvider,
+                      colorScheme,
+                      timeSize,
+                      compact,
+                      showFullDuration,
                     ),
-                    SizedBox(width: compact ? 6 : 8),
-                    StreamBuilder<Duration>(
-                      stream: audioProvider.positionStream,
-                      initialData: audioProvider.audioPlayer.position,
-                      builder: (context, posSnap) {
-                        final pos = posSnap.data ?? Duration.zero;
-                        return StreamBuilder<Duration?>(
-                          stream: audioProvider.durationStream,
-                          initialData: audioProvider.audioPlayer.duration,
-                          builder: (context, durSnap) {
-                            final dur = durSnap.data ?? Duration.zero;
-                            return Text(
-                              (compact && !showFullDuration)
-                                  ? _formatDuration(pos)
-                                  : '${_formatDuration(pos)} / ${_formatDuration(dur)}',
-                              style: TextStyle(
-                                fontFamily: 'Roboto',
-                                fontSize: timeSize,
-                                fontWeight: FontWeight.w400,
-                                color: colorScheme.onSurface.withValues(
-                                  alpha: 0.5,
-                                ),
-                                fontFeatures: const [
-                                  FontFeature.tabularFigures(),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
+                    const SizedBox(height: 1),
+                    _buildProgressBar(audioProvider, colorScheme, compact),
                   ],
                 ),
-                SizedBox(height: compact ? 3 : 6),
-                // Progress Bar
-                StreamBuilder<Duration>(
-                  stream: audioProvider.positionStream,
-                  initialData: audioProvider.audioPlayer.position,
-                  builder: (context, posSnap) {
-                    final pos = posSnap.data ?? Duration.zero;
-                    return StreamBuilder<Duration?>(
-                      stream: audioProvider.durationStream,
-                      initialData: audioProvider.audioPlayer.duration,
-                      builder: (context, durSnap) {
-                        final dur = durSnap.data ?? Duration.zero;
-                        final double progress = dur.inMilliseconds > 0
-                            ? (pos.inMilliseconds / dur.inMilliseconds).clamp(
-                                0.0,
-                                1.0,
-                              )
-                            : 0.0;
-
-                        return Stack(
-                          children: [
-                            Container(
-                              height: 2,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                color: colorScheme.onSurface.withValues(
-                                  alpha: 0.1,
-                                ),
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            ),
-                            FractionallySizedBox(
-                              widthFactor: progress,
-                              child: Container(
-                                height: 2,
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primary,
-                                  borderRadius: BorderRadius.circular(1),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                ),
               ],
+            )
+          else
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          currentTrack.title,
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: titleSize,
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
+                            height: 1.0,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(width: compact ? 6 : 8),
+                      Container(
+                        child: _buildTimeText(
+                          audioProvider,
+                          colorScheme,
+                          timeSize,
+                          compact,
+                          showFullDuration,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: compact ? 3 : 6),
+                  // Progress Bar
+                  Container(
+                    child: _buildProgressBar(
+                      audioProvider,
+                      colorScheme,
+                      compact,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
 
     if (useRgb) {
       return AnimatedGradientBorder(
-        borderRadius: 16.0,
+        borderRadius: contentRadius,
         borderWidth: 1.5,
-        showGlow:
-            false, // Keep inner glow subtle to prevent washing out buttons
+        alignment: Alignment.centerLeft,
+        usePadding:
+            true, // Prevents button/text from clipping against the border
+        showGlow: true,
+        glowOpacity: 0.3,
+        glowSpread: 8.0,
         colors: const [
           Colors.red,
           Colors.yellow,
@@ -275,5 +270,76 @@ class EmbeddedMiniPlayer extends StatelessWidget {
     }
 
     return content;
+  }
+
+  Widget _buildTimeText(
+    AudioProvider audioProvider,
+    ColorScheme colorScheme,
+    double timeSize,
+    bool compact,
+    bool showFullDuration,
+  ) {
+    return StreamBuilder<Duration>(
+      stream: audioProvider.positionStream,
+      initialData: audioProvider.audioPlayer.position,
+      builder: (context, posSnap) {
+        final pos = posSnap.data ?? Duration.zero;
+        return StreamBuilder<Duration?>(
+          stream: audioProvider.durationStream,
+          initialData: audioProvider.audioPlayer.duration,
+          builder: (context, durSnap) {
+            final dur = durSnap.data ?? Duration.zero;
+            return Text(
+              (compact && !showFullDuration)
+                  ? _formatDuration(pos)
+                  : '${_formatDuration(pos)} / ${_formatDuration(dur)}',
+              style: TextStyle(
+                fontFamily: 'Roboto',
+                fontSize: timeSize,
+                fontWeight: FontWeight.w400,
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
+                height: 1.0,
+                fontFeatures: const [FontFeature.tabularFigures()],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildProgressBar(
+    AudioProvider audioProvider,
+    ColorScheme colorScheme,
+    bool compact,
+  ) {
+    return StreamBuilder<Duration>(
+      stream: audioProvider.positionStream,
+      initialData: audioProvider.audioPlayer.position,
+      builder: (context, posSnap) {
+        final pos = posSnap.data ?? Duration.zero;
+        return StreamBuilder<Duration?>(
+          stream: audioProvider.durationStream,
+          initialData: audioProvider.audioPlayer.duration,
+          builder: (context, durSnap) {
+            final dur = durSnap.data ?? Duration.zero;
+            final double progress = dur.inMilliseconds > 0
+                ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
+                : 0.0;
+
+            return SizedBox(
+              width: compact ? 48.0 : 0.0,
+              child: LinearProgressIndicator(
+                value: progress,
+                backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
+                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                minHeight: 2,
+                borderRadius: BorderRadius.circular(1),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

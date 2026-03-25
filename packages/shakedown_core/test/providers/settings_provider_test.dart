@@ -349,4 +349,18 @@ void main() {
       },
     );
   });
+
+  group('SettingsProvider Debug Layout', () {
+    test('initializes debugPaintSizeEnabled to true by default', () {
+      expect(settingsProvider.debugPaintSizeEnabled, true);
+    });
+
+    test('setDebugPaintSizeEnabled updates value', () {
+      settingsProvider.setDebugPaintSizeEnabled(false);
+      expect(settingsProvider.debugPaintSizeEnabled, false);
+
+      settingsProvider.setDebugPaintSizeEnabled(true);
+      expect(settingsProvider.debugPaintSizeEnabled, true);
+    });
+  });
 }

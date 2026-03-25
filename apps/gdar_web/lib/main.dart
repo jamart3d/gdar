@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
@@ -74,6 +75,12 @@ class _GdarWebAppState extends State<GdarWebApp> {
     final bool isTv = _isTv;
     _settingsProvider = SettingsProvider(widget.prefs, isTv: isTv);
     _showListProvider = ShowListProvider();
+
+    // Targeted debug boxes for show list cards
+    _settingsProvider.setShowDebugLayout(true);
+    if (kIsWeb) {
+      debugPaintSizeEnabled = false;
+    }
 
     // Link providers for theme-specific settings resets
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);

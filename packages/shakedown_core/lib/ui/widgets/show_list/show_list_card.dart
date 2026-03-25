@@ -86,7 +86,8 @@ class _ShowListCardState extends State<ShowListCard> {
     final hPadding = isTv
         ? 24.0
         : (settingsProvider.performanceMode ? 8.0 : 16.0);
-    final vPadding = (isFruit && settingsProvider.fruitDenseList) ? 2.0 : 6.0;
+    const vPadding =
+        2.0; // Restoring safe gap for border/button clearance (prevents clipping)
     final outerPadding = EdgeInsets.fromLTRB(
       hPadding,
       isTv ? 2 : vPadding,
@@ -311,9 +312,6 @@ class _ShowListCardState extends State<ShowListCard> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
         color: backgroundColor,
-        border: settingsProvider.showDebugLayout
-            ? Border.all(color: Colors.red.withValues(alpha: 0.3), width: 2)
-            : null,
       ),
       child: Material(
         color: Colors.transparent,
@@ -333,148 +331,174 @@ class _ShowListCardState extends State<ShowListCard> {
               Positioned.fill(
                 right: effectiveControlZoneWidth,
                 child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: settingsProvider.showDebugLayout
-                          ? Colors.blue.withValues(alpha: 0.3)
-                          : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
-                  child: Container(
-                    alignment: Alignment.centerLeft,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTv ? 6.0 : 12.0,
-                    ),
-                    child: Builder(
-                      builder: (context) {
-                        final Widget textArea = (!kIsWeb || useMobileLayout)
-                            ? Column(
-                                children: [
-                                  Expanded(
-                                    flex: 57,
-                                    child: Container(
+                  alignment: Alignment.centerLeft,
+                  clipBehavior: Clip.none,
+                  padding: EdgeInsets.symmetric(horizontal: isTv ? 6.0 : 12.0),
+                  child: Builder(
+                    builder: (context) {
+                      final hPadding = isTv
+                          ? 24.0
+                          : (settingsProvider.performanceMode ? 8.0 : 16.0);
+                      final Widget textArea = (!kIsWeb || useMobileLayout)
+                          ? Column(
+                              children: [
+                                Expanded(
+                                  flex: 57,
+                                  child: Container(
+                                    alignment: Alignment.centerLeft,
+                                    width: double.infinity,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
                                       alignment: Alignment.centerLeft,
-                                      width: double.infinity,
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        alignment: Alignment.centerLeft,
-                                        child: ConditionalMarquee(
-                                          text:
-                                              settingsProvider
-                                                  .dateFirstInShowCard
-                                              ? style.formattedDate
-                                              : widget.show.venue,
-                                          style: style.topStyle.copyWith(
-                                            height: 1.3,
-                                          ),
-                                          enableAnimation:
-                                              settingsProvider.marqueeEnabled,
+                                      child: ConditionalMarquee(
+                                        text:
+                                            settingsProvider.dateFirstInShowCard
+                                            ? style.formattedDate
+                                            : widget.show.venue,
+                                        style: style.topStyle.copyWith(
+                                          height: 1.3,
                                         ),
+                                        enableAnimation:
+                                            settingsProvider.marqueeEnabled,
                                       ),
                                     ),
                                   ),
-                                  Expanded(
-                                    flex: 43,
-                                    child: Container(
-                                      alignment: Alignment.centerLeft,
-                                      margin: const EdgeInsets.only(
-                                        left: 4.0,
-                                      ), // v134 offset
-                                      width: double.infinity,
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          settingsProvider.dateFirstInShowCard
-                                              ? widget.show.venue
-                                              : style.formattedDate,
-                                          style: style.bottomStyle.copyWith(
-                                            height: 1.3,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Row(
-                                children: [
-                                  if (isDesktopInlinePlaying) ...[
-                                    SizedBox(
-                                      width:
-                                          (isFruit ? 260.0 : 254.0) *
-                                          style.effectiveScale,
-                                      child: EmbeddedMiniPlayer(
-                                        scaleFactor:
-                                            style.effectiveScale * 0.88,
-                                        compact: true,
-                                        useRgb: style.useRgb,
-                                        showFullDuration: true,
-                                      ),
-                                    ),
-                                    SizedBox(width: 16 * style.effectiveScale),
-                                  ],
-                                  if (isDesktopInlinePlaying) const Spacer(),
-                                  Flexible(
-                                    child: Text(
-                                      settingsProvider.dateFirstInShowCard
-                                          ? style.formattedDate
-                                          : widget.show.venue,
-                                      style: isFruit
-                                          ? style.topStyle
-                                          : style.bottomStyle,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  Flexible(
-                                    child: Text(
-                                      settingsProvider.dateFirstInShowCard
-                                          ? widget.show.venue
-                                          : style.formattedDate,
-                                      style: isFruit
-                                          ? style.bottomStyle
-                                          : style.topStyle,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ),
-                                ],
-                              );
-
-                        if (usePremium) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                            child: NeumorphicWrapper(
-                              borderRadius: 12.0,
-                              intensity: 0.4,
-                              isPressed: true,
-                              color: Colors.transparent,
-                              child: LiquidGlassWrapper(
-                                enabled: true,
-                                borderRadius: BorderRadius.circular(12.0),
-                                opacity: 0.03,
-                                blur: 4.0,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10.0,
-                                    vertical: 4.0,
-                                  ),
-                                  child: textArea,
                                 ),
+                                Expanded(
+                                  flex: 43,
+                                  child: Container(
+                                    alignment: Alignment.centerLeft,
+                                    margin: const EdgeInsets.only(
+                                      left: 4.0,
+                                    ), // v134 offset
+                                    width: double.infinity,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        settingsProvider.dateFirstInShowCard
+                                            ? widget.show.venue
+                                            : style.formattedDate,
+                                        style: style.bottomStyle.copyWith(
+                                          height: 1.3,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (isDesktopInlinePlaying) ...[
+                                  Flexible(
+                                    flex: 0,
+                                    child: Transform.translate(
+                                      offset: Offset(
+                                        isTv ? -4.0 : (-hPadding + 10.0),
+                                        0,
+                                      ),
+                                      child: ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          minWidth:
+                                              (isFruit ? 260.0 : 254.0) *
+                                              style.effectiveScale,
+                                        ),
+                                        child: AnimatedSize(
+                                          clipBehavior: Clip.none,
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
+                                          curve: Curves.easeInOut,
+                                          alignment: Alignment.centerLeft,
+                                          child: EmbeddedMiniPlayer(
+                                            scaleFactor:
+                                                style.effectiveScale * 0.88,
+                                            compact: true,
+                                            useRgb: style.useRgb,
+                                            showFullDuration: true,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 5 * style.effectiveScale),
+                                ],
+                                Flexible(
+                                  flex: 3,
+                                  child: Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        settingsProvider.dateFirstInShowCard
+                                            ? style.formattedDate
+                                            : widget.show.venue,
+                                        style: isFruit
+                                            ? style.topStyle
+                                            : style.bottomStyle,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const Spacer(),
+                                Flexible(
+                                  flex: 1,
+                                  child: Container(
+                                    alignment: Alignment.centerRight,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerRight,
+                                      child: Text(
+                                        settingsProvider.dateFirstInShowCard
+                                            ? widget.show.venue
+                                            : style.formattedDate,
+                                        style: isFruit
+                                            ? style.bottomStyle
+                                            : style.topStyle,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+
+                      if (usePremium) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: NeumorphicWrapper(
+                            borderRadius: 12.0,
+                            intensity: 0.4,
+                            isPressed: true,
+                            color: Colors.transparent,
+                            child: LiquidGlassWrapper(
+                              enabled: true,
+                              borderRadius: BorderRadius.circular(12.0),
+                              opacity: 0.03,
+                              blur: 4.0,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10.0,
+                                  vertical: 4.0,
+                                ),
+                                child: textArea,
                               ),
                             ),
-                          );
-                        }
+                          ),
+                        );
+                      }
 
-                        return textArea;
-                      },
-                    ),
+                      return textArea;
+                    },
                   ),
                 ),
               ),
@@ -570,11 +594,14 @@ class _ShowListCardState extends State<ShowListCard> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
-    final List<Color> gradientColors = isTrueBlackMode
-        ? [Colors.black, Colors.black]
+    final gradientColors = isTrueBlackMode
+        ? [
+            colorScheme.surface.withValues(alpha: 0.8),
+            colorScheme.surface.withValues(alpha: 0.8),
+          ]
         : [
-            colorScheme.secondaryContainer.withValues(alpha: 0.7),
-            colorScheme.secondaryContainer.withValues(alpha: 0.5),
+            colorScheme.primaryContainer.withValues(alpha: 0.9),
+            colorScheme.secondaryContainer.withValues(alpha: 0.9),
           ];
 
     final TextStyle style = Theme.of(context).textTheme.labelSmall!.copyWith(
@@ -897,14 +924,6 @@ class _ShowListCardState extends State<ShowListCard> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: columnChildren.map((w) {
                           return Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: settings.showDebugLayout
-                                    ? Colors.purple.withValues(alpha: 0.5)
-                                    : Colors.transparent,
-                                width: 1,
-                              ),
-                            ),
                             alignment: Alignment.centerRight,
                             child: w,
                           );

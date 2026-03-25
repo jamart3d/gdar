@@ -21,6 +21,7 @@ class AnimatedGradientBorder extends StatefulWidget {
   final bool backlightMode;
   final double? glowSpread;
   final double? glowBlur;
+  final AlignmentGeometry alignment;
 
   const AnimatedGradientBorder({
     super.key,
@@ -39,6 +40,7 @@ class AnimatedGradientBorder extends StatefulWidget {
     this.backlightMode = false,
     this.glowSpread,
     this.glowBlur,
+    this.alignment = Alignment.center,
   });
 
   @override
@@ -199,7 +201,7 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
 
         return Stack(
           clipBehavior: Clip.none,
-          alignment: Alignment.center,
+          alignment: widget.alignment,
           children: [
             Positioned(
               left: -spreadPadding,

@@ -721,6 +721,9 @@ class SettingsProvider with ChangeNotifier {
     _showDebugLayout = !_showDebugLayout,
   );
 
+  void setShowDebugLayout(bool value) =>
+      _updatePreference(_showDebugLayoutKey, _showDebugLayout = value);
+
   static const String _enableShakedownTweenKey = 'enable_shakedown_tween';
   late bool _enableShakedownTween;
   bool get enableShakedownTween => _enableShakedownTween;
@@ -728,6 +731,15 @@ class SettingsProvider with ChangeNotifier {
     _enableShakedownTweenKey,
     _enableShakedownTween = !_enableShakedownTween,
   );
+
+  bool _debugPaintSizeEnabled = true;
+  bool get debugPaintSizeEnabled => _debugPaintSizeEnabled;
+  void setDebugPaintSizeEnabled(bool value) {
+    if (_debugPaintSizeEnabled != value) {
+      _debugPaintSizeEnabled = value;
+      notifyListeners();
+    }
+  }
 
   static const MethodChannel _uiScaleChannel = MethodChannel(
     'com.jamart3d.shakedown/ui_scale',
@@ -1021,6 +1033,12 @@ class SettingsProvider with ChangeNotifier {
         DefaultSettings.omitHttpPathInCopy;
     _showDebugLayout =
         _prefs.getBool(_showDebugLayoutKey) ?? DefaultSettings.showDebugLayout;
+
+    // Force off if it was enabled (likely from previous debugging session)
+    if (_showDebugLayout) {
+      _showDebugLayout = false;
+      _prefs.setBool(_showDebugLayoutKey, false);
+    }
     _enableShakedownTween = _prefs.getBool(_enableShakedownTweenKey) ?? true;
     _useNeumorphism =
         _prefs.getBool(_useNeumorphismKey) ??
