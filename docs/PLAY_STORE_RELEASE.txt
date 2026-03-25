@@ -1,4 +1,4 @@
-What's new in v1.3.16+226
+What's new in v1.3.17+227
 - TV Enhancement: Refined inactivity detection logic to ignore phantom input signals on Google TV.
 - TV UI: Hardened inactivity timer against accidental disablement by system dialogs.
 - Web UI: Optimized vertical spacing in the Fruit theme playback screen for consistent 5pt gaps.

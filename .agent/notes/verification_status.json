@@ -1,6 +1,6 @@
 {
-  "last_verification": "2026-03-24T11:45:00-07:00",
-  "git_sha": "60f2b0d01ab92f9e556df65ebbb6125fc0f6ce35",
+  "last_verification": "2026-03-24T23:15:00-07:00",
+  "git_sha": "9b086f7abd393fe6f3fd23f278f506cdc5a0cecb",
   "results": {
     "analyze": "success",
     "test": "success",
@@ -8,5 +8,5 @@
     "fix": "success",
     "size_guard": "passed"
   },
-  "summary": "Full /checkup completed successfully. All monorepo targets (gdar_mobile, gdar_tv, gdar_web, shakedown_core) analyze clean and tests passed (248+). Automated formatting and commits for inactivity detector fixes and screensaver cleanup push to main."
+  "summary": "Full /shipit preflight completed successfully. All monorepo targets (gdar_mobile, gdar_tv, gdar_web, shakedown_core) analyze clean and 251 tests passed. Ready for version bump and release builds."
 }
