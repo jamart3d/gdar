@@ -6,12 +6,12 @@ To provide an optimal "out-of-the-box" experience without requiring manual calib
 
 The initialization logic is encapsulated in `SettingsProvider._resetWebPlaybackSettings()`. It evaluates the `WebRuntimeProfile` (D, P, W, L) to assign a `HiddenSessionPreset`.
 
-| Chip | Profile | Target Preset | Engine Mode | Handoff | Strategy Rationale |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **[D]** | **Desktop** | `maxGapless` | `Web Audio` | `immediate` | Full immersion. *Gated to `balanced` on Desktop Safari.* |
-| **[P]** | **PWA** | `balanced` | `Hybrid` | `buffered` | Energy-efficient background survival for apps. |
-| **[W]** | **Web (Mobile)** | `balanced` | `Hybrid` | `buffered` | Standard mobile browser support. *Gated to `stability` on Safari.* |
-| **[L]** | **Low-Power** | `stability` | `Hybrid` | `buffered` | Maximum resource preservation and H5 background hack. |
+| Chip | Profile | Target Preset | Engine Mode | Handoff | Background | Strategy Rationale |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **[D]** | **Desktop** | `maxGapless` | `Web Audio` | `immediate` | `none` | Full immersion; no BG survival needed. *Gated to `balanced` on Desktop Safari.* |
+| **[P]** | **PWA** | `balanced` | `Hybrid` | `buffered` | `heartbeat` | Energy-efficient background survival for apps. |
+| **[W]** | **Web (Mobile)** | `balanced` | `Hybrid` | `buffered` | `heartbeat` | Standard mobile browser support. *Gated to `stability` on Safari.* |
+| **[L]** | **Low-Power** | `stability` | `Hybrid` | `buffered` | `video` | Maximum resource preservation and H5 background hack. |
 
 ## 2. Detection Mechanisms
 

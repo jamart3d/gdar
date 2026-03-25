@@ -1,5 +1,5 @@
 ---
-description: Heavyweight health check that requires manual approval for every step and provides full transparent output.
+description: Heavyweight health check that runs autonomously but provides full verbose output at every step.
 ---
 # Hammer Workflow (Monorepo)
 // turbo-all

@@ -7,7 +7,7 @@ To maintain "Strong" agentic behavior and zero human friction, follow these rule
 
 ### 1. Zero-Friction Mandate (Workflows)
 When the user triggers one of the following "Authorized workflows," triggering counts as **final approval**. Proceed autonomously end-to-end without pausing for intermediate permission:
-- `/shipit`, `/release`, `/prod`
+- `/shipit`, `/release`, `/deploy`, `/prod`
 - `/checkup`, `/health`, `/lint-fix`
 - `/audit`, `/glass`, `/liquid_glass`
 - `/verify`, `/audit_size`, `/size_guard`

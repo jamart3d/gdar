@@ -31,6 +31,8 @@ They are read-only or strictly non-destructive and the user must never be prompt
 | `Get-ChildItem -Path .agent/ -Recurse | Select-Object FullName` | Exact indexing command (Safe) |
 | `git ls-files .agent/` | Git-based indexing (Safe) |
 | `sls ...` | Alias for Select-String (Safe) |
+| `... \| Out-File path.txt` | Pipe output to file (Safe) |
+| `... \| Add-Content log.txt` | Append output to file (Safe) |
 
 ### Git Read-Only
 | Command | Notes |

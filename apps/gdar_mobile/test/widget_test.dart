@@ -13,53 +13,6 @@ import 'package:shakedown_core/services/audio_cache_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 
-class _FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-
-  @override
-  bool get showSplashScreen => false;
-
-  @override
-  bool get showOnboarding => false;
-
-  @override
-  double get rgbAnimationSpeed => 1.0;
-
-  @override
-  bool get useTrueBlack => false;
-
-  @override
-  bool get useMaterial3 => true;
-
-  @override
-  bool get uiScale => false;
-
-  @override
-  String get activeAppFont => 'default';
-
-  @override
-  String get appFont => 'default';
-
-  @override
-  bool get isFirstRun => false;
-
-  @override
-  bool get performanceMode => false;
-
-  @override
-  bool get playRandomOnStartup => false;
-
-  @override
-  bool get enableShakedownTween => false;
-
-  @override
-  bool get useNeumorphism => false;
-
-  @override
-  bool get isTv => false;
-}
-
 class _FakeShowListProvider extends ChangeNotifier implements ShowListProvider {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -202,7 +155,6 @@ void main() {
         showListProvider: _FakeShowListProvider(),
         audioProvider: _FakeAudioProvider(),
         audioCacheService: _FakeAudioCacheService(),
-        settingsProvider: _FakeSettingsProvider(),
         deviceService: _FakeDeviceService(),
         enableDeepLinks: false,
       ),

@@ -1,3 +1,11 @@
+What's new in v1.3.22+232
+- Core: Advanced SettingsProvider refactoring into specialized service mixins for performance.
+- Maintenance: Achieved zero-friction monorepo orchestration for the /deploy workflow.
+- TV UI: Stabilized unified inactivity detection and removed redundant diagnostic tests.
+- Web UI: Refined hardware-aware profile detection for PWA and narrow-mobile viewports.
+
+---
+
 What's new in v1.3.21+231
 - Maintenance: Synchronized monorepo auto-approval policies and orchestration rules for zero-friction production releases.
 - Audit: Conducted a unified monorepo health audit and staged results in reports/audits/.

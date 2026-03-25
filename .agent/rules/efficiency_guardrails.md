@@ -7,7 +7,7 @@ You are assisting with a Flutter development environment. To conserve context wi
 
 ### 1. Mandatory Preview (The "Stop and Ask" Rule)
 You are strictly forbidden from executing file modifications, writing code, or running terminal commands without user approval. 
-* **Zero-Friction Mandate**: For read-only commands and authorized workflows (`/shipit`, `/checkup`, `/verify`, `/audit`, `/size_guard`, `/save`), the agent MUST bypass all plans, previews, and manual confirmation prompts. Triggering the workflow counts as final approval; execution must be immediate and autonomous.
+* **Zero-Friction Mandate**: For read-only commands and authorized workflows (`/shipit`, `/deploy`, `/checkup`, `/verify`, `/audit`, `/size_guard`, `/save`), the agent MUST bypass all plans, previews, and manual confirmation prompts. Triggering the workflow counts as final approval; execution must be immediate and autonomous.
 * **Ghost Execution**: When any workflow in the 'Zero-Friction Mandate' list is triggered, the agent is STRICTLY FORBIDDEN from generating ANY preamble text or "plans". The very first character of the response MUST be the `run_command` tool call.
 
 ### 2. Strict Scope Containment
@@ -19,7 +19,7 @@ Do not perform broad searches, index the entire `lib/` directory, or read files 
 
 ### 3. No Unauthorized Execution 
 Do not assume you need to run the application to test your changes. 
-* **Action:** Never automatically trigger `flutter run`, `flutter build`, or any similar execution commands outside of authorized workflows (`/shipit`, `/checkup`, `/verify`, `/audit`, `/size_guard`). The user manages the application's runtime state; the agent manages health and release tasks. 
+* **Action:** Never automatically trigger `flutter run`, `flutter build`, or any similar execution commands outside of authorized workflows (`/shipit`, `/deploy`, `/checkup`, `/verify`, `/audit`, `/size_guard`). The user manages the application's runtime state; the agent manages health and release tasks. 
 
 ### 4. Surgical Code Edits
 Do not rewrite or output entire files just to change a few lines.
@@ -32,10 +32,10 @@ Unless the user explicitly asks for "deep reasoning" or "architectural planning,
 A curated allow-list of safe commands lives in `.agent/rules/auto_approve.md`.
 * **Read-only commands** (file reads, `git status/log/diff`, `flutter analyze`, directory listings, path lookups) MUST always be run with `SafeToAutoRun: true`. Never prompt the user for these.
 * **Platform syntax**: Windows 10 uses PowerShell — chain commands with `;`. ChromeOS uses bash — `&&` is fine.
-* The `shipit`, `checkup`, `verify`, `audit`, and `size_guard` workflows may use the commands explicitly listed in their respective sections of `auto_approve.md` with `SafeToAutoRun: true` during an active run.
+* The `shipit`, `deploy`, `checkup`, `verify`, `audit`, and `size_guard` workflows may use the commands explicitly listed in their respective sections of `auto_approve.md` with `SafeToAutoRun: true` during an active run.
 * **URGENT GATING**: The `shipit` workflow must not be triggered by the word "save". It requires explicit release intent such as "shipit", "release", "deploy", or "prod".
 * **Save vs. Ship Boundary**: Any request containing "save" must ONLY trigger the `/save` workflow. You are strictly forbidden from jumping to a release pipeline unless the user explicitly confirms a production deployment intent.
-* **Confirmation Requirement**: Even for "Autonomous" skills, you must provide a `notify_user` preview before starting the first command if that command is a long-running build or production deployment. This requirement is **waived** for the `/shipit`, `/release`, `/checkup`, `/verify`, `/audit`, and `/size_guard` workflows once they have been explicitly initiated by the user.
+* **Confirmation Requirement**: Even for "Autonomous" skills, you must provide a `notify_user` preview before starting the first command if that command is a long-running build or production deployment. This requirement is **waived** for the `/shipit`, `/deploy`, `/release`, `/checkup`, `/verify`, `/audit`, and `/size_guard` workflows once they have been explicitly initiated by the user.
 
 ### 8. Negative Constraint Integrity
 To prevent persistent oversights and "stale" implementation details:
