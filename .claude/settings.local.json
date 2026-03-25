@@ -23,7 +23,13 @@
       "mcp__dart__run_tests",
       "mcp__dart__dart_format",
       "Bash(flutter pub:*)",
-      "Bash(grep -rn \"tap\\\\|click\\\\|event\" /home/jam/StudioProjects/gdar/apps/gdar_web/web/*.js)"
+      "Bash(grep -rn \"tap\\\\|click\\\\|event\" /home/jam/StudioProjects/gdar/apps/gdar_web/web/*.js)",
+      "Bash(dart fix:*)",
+      "Bash(melos run:*)",
+      "Bash(dart format:*)",
+      "Bash(where melos:*)",
+      "Bash(dart pub:*)",
+      "Bash(melos.bat run:*)"
     ]
   }
 }

@@ -118,7 +118,7 @@ Same as Windows table above - identical commands on ChromeOS.
 ## Workflow-Specific Exceptions
 These commands are auto-approved only when executed within the specific release or health workflows:
 
-### `shipit`, `checkup`, `verify`, `audit`, `size_guard`
+### `deploy`, `shipit`, `checkup`, `verify`, `audit`, `size_guard`
 - Stage only the intended release files after verifying `git status`.
 - `git status`
 - `git add .`

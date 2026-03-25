@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.17+227] - 2026-03-24
+## [1.3.18+228] - 2026-03-25
+
+### Added
+- **TV Enhancement**: Implemented a real-time developer monitor (`SS` indicator) in `gdar_tv` to visualize inactivity thresholds and troubleshoot screensaver activation.
+- **TV UI**: Hardened `GdarTvApp` to stabilize inactivity detection and prevent state loss during background source transitions.
+- **Maintenance**: Introduced the `/deploy` and `/hammer` workflows to facilitate zero-friction releases and heavyweight repo health audits.
+- **Maintenance**: Finalized a formalized inactivity regression report following a deep-dive audit of Google TV screensaver behavior.
+
+## [1.3.17+227] - 2026-03-25
 
 ### Added
 - **TV Enhancement**: Refined the `InactivityDetector` logic to ignore phantom hardware input signals, ensuring more reliable screensaver activation on Google TV.

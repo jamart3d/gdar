@@ -1,18 +1,26 @@
 import 'dart:async';
+import 'package:clock/clock.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 
 /// Service to monitor user inactivity and trigger screensaver.
 ///
-/// This service listens to pointer events (mouse/touch) and key events
-/// to detect user activity. When the configured inactivity timeout is
-/// reached, it triggers a callback to launch the screensaver.
+/// Uses a polling timer instead of a one-shot timer so the check can never
+/// die permanently. Every [_pollInterval] seconds we compare wall-clock time
+/// since the last activity against the configured duration.
 class InactivityService {
-  Timer? _inactivityTimer;
+  Timer? _pollTimer;
   final void Function() onInactivityTimeout;
   Duration _inactivityDuration;
   bool _isEnabled = false;
-  DateTime? _lastActivityLogAt;
+  DateTime _lastActivityAt = clock.now();
+  bool _timeoutFiredSinceLastActivity = false;
+
+  /// Observable countdown for on-screen debug overlay.
+  /// Value is a human-readable status string (e.g. "42s", "OFF", "FIRED").
+  final ValueNotifier<String> debugCountdown = ValueNotifier<String>('OFF');
+
+  static const _pollInterval = Duration(seconds: 1);
 
   InactivityService({
     required this.onInactivityTimeout,
@@ -25,25 +33,26 @@ class InactivityService {
     debugPrint(
       'InactivityService: duration updated to ${_inactivityDuration.inMinutes}m',
     );
+    // Reset activity so the new duration applies from now.
     if (_isEnabled) {
-      _resetTimer();
+      _lastActivityAt = clock.now();
+      _timeoutFiredSinceLastActivity = false;
     }
   }
 
-  /// Whether the inactivity timer is currently ticking.
-  bool get isTimerActive => _inactivityTimer?.isActive ?? false;
+  /// Whether the polling timer is running.
+  bool get isTimerActive => _pollTimer?.isActive ?? false;
 
   /// Start monitoring for inactivity.
   void start() {
-    // Restart the timer if it died (e.g. one-shot fired but the handler
-    // returned early without calling onUserActivity).
     if (_isEnabled && isTimerActive) return;
     _isEnabled = true;
+    _lastActivityAt = clock.now();
+    _timeoutFiredSinceLastActivity = false;
     debugPrint(
-      'InactivityService: start (${_inactivityDuration.inMinutes}m timeout,'
-      ' wasActive=${_inactivityTimer?.isActive ?? false})',
+      'InactivityService: start (${_inactivityDuration.inMinutes}m timeout)',
     );
-    _resetTimer();
+    _ensurePolling();
   }
 
   /// Stop monitoring for inactivity.
@@ -52,32 +61,64 @@ class InactivityService {
       debugPrint('InactivityService: stop');
     }
     _isEnabled = false;
-    _inactivityTimer?.cancel();
-    _inactivityTimer = null;
+    _pollTimer?.cancel();
+    _pollTimer = null;
+    debugCountdown.value = 'OFF';
   }
 
   /// Call this when user activity is detected.
   void onUserActivity([String source = 'activity']) {
     if (!_isEnabled) return;
-    final now = DateTime.now();
-    if (_lastActivityLogAt == null ||
-        now.difference(_lastActivityLogAt!) >= const Duration(seconds: 1)) {
-      _lastActivityLogAt = now;
-      debugPrint('InactivityService: activity from $source; resetting timer');
-    }
-    _resetTimer();
+    _lastActivityAt = clock.now();
+    _timeoutFiredSinceLastActivity = false;
+    _ensurePolling();
   }
 
-  void _resetTimer() {
-    _inactivityTimer?.cancel();
-    _inactivityTimer = Timer(_inactivityDuration, () {
-      debugPrint('InactivityService: timeout fired');
-      onInactivityTimeout();
-    });
+  void _ensurePolling() {
+    if (_pollTimer?.isActive ?? false) return;
+    _pollTimer = Timer.periodic(_pollInterval, _tick);
+  }
+
+  void _tick(Timer timer) {
+    if (!_isEnabled) {
+      timer.cancel();
+      _pollTimer = null;
+      debugCountdown.value = 'OFF';
+      return;
+    }
+
+    final now = clock.now();
+    final elapsed = now.difference(_lastActivityAt);
+    final remaining = _inactivityDuration - elapsed;
+
+    debugPrint(
+      'InactivityService: tick elapsed=${elapsed.inSeconds}s, '
+      'remaining=${remaining.inSeconds}s, '
+      'timeoutFired=$_timeoutFiredSinceLastActivity',
+    );
+
+    if (remaining <= Duration.zero) {
+      if (!_timeoutFiredSinceLastActivity) {
+        _timeoutFiredSinceLastActivity = true;
+        debugCountdown.value = 'FIRED';
+        debugPrint(
+          'InactivityService: timeout fired — launching screensaver'
+          ' (elapsed=${elapsed.inSeconds}s,'
+          ' target=${_inactivityDuration.inSeconds}s)',
+        );
+        onInactivityTimeout();
+      } else {
+        // Already fired, waiting for activity or stop to reset.
+        debugCountdown.value = 'WAIT';
+      }
+    } else {
+      debugCountdown.value = '${remaining.inSeconds}s';
+    }
   }
 
   void dispose() {
     stop();
+    debugCountdown.dispose();
   }
 }
 

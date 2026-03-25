@@ -1,3 +1,11 @@
+What's new in v1.3.18+228
+- TV Enhancement: New real-time developer monitor to visualize inactivity thresholds on Google TV.
+- TV UI: Hardened inactivity detection to prevent state loss during background source transitions.
+- Maintenance: Introduced automated /deploy and /hammer workflows for zero-friction releases.
+- Maintenance: Finalized formalized inactivity regression report following deep-dive TV audit.
+
+---
+
 What's new in v1.3.17+227
 - TV Enhancement: Refined inactivity detection logic to ignore phantom input signals on Google TV.
 - TV UI: Hardened inactivity timer against accidental disablement by system dialogs.

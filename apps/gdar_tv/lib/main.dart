@@ -111,9 +111,15 @@ class _GdarTvAppState extends State<GdarTvApp> {
   bool get _isInactivityRouteEligible {
     final routeName = _currentRouteName;
     if (routeName == null) return false;
-    return routeName != Navigator.defaultRouteName &&
-        routeName != ShakedownRouteNames.onboarding &&
-        routeName != ShakedownRouteNames.screensaver;
+
+    // Gate out onboarding and the screensaver itself.
+    if (routeName == ShakedownRouteNames.onboarding ||
+        routeName == ShakedownRouteNames.screensaver) {
+      return false;
+    }
+
+    // Otherwise, it's eligible if we've reached the main UI.
+    return _hasEnteredTvMainUi;
   }
 
   void _handleRouteChanged(Route<dynamic>? route) {
@@ -190,7 +196,20 @@ class _GdarTvAppState extends State<GdarTvApp> {
   }
 
   Future<void> _handleInactivityTimeout() async {
-    if (!mounted) return;
+    if (!mounted) {
+      logger.w('Inactivity timeout: not mounted — timer orphaned');
+      return;
+    }
+
+    logger.i(
+      'Inactivity timeout fired — evaluating launch conditions: '
+      'ssActive=$_isScreensaverActive '
+      'enabled=${_settingsProvider.useOilScreensaver} '
+      'routeEligible=$_isInactivityRouteEligible '
+      'route=$_currentRouteName '
+      'enteredTvMain=$_hasEnteredTvMainUi '
+      'hasNav=${_navigatorKey.currentState != null}',
+    );
 
     if (_isScreensaverActive) {
       logger.d('Inactivity timeout: screensaver already active');
@@ -222,8 +241,8 @@ class _GdarTvAppState extends State<GdarTvApp> {
       return;
     }
 
-    logger.i('TV inactivity timeout fired; launching screensaver');
-    await _showScreensaver(navigator, allowPermissionPrompts: false);
+    logger.i('TV inactivity timeout: ALL checks passed — pushing screensaver');
+    unawaited(_showScreensaver(navigator, allowPermissionPrompts: false));
   }
 
   void _syncInactivityService(SettingsProvider settingsProvider) {
@@ -239,7 +258,8 @@ class _GdarTvAppState extends State<GdarTvApp> {
         'enteredTvMain=$_hasEnteredTvMainUi '
         'route=$_currentRouteName '
         'screensaverActive=$_isScreensaverActive '
-        'timeout=${settingsProvider.oilScreensaverInactivityMinutes}m';
+        'timeout=${settingsProvider.oilScreensaverInactivityMinutes}m '
+        'src=${identityHashCode(settingsProvider)}';
     if (_lastInactivitySummary != summary) {
       _lastInactivitySummary = summary;
       debugPrint('GdarTvApp: inactivity sync shouldRun=$shouldRun $summary');
@@ -367,6 +387,9 @@ class _GdarTvAppState extends State<GdarTvApp> {
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
+          if (widget.isTv && !_hasEnteredTvMainUi) {
+            _hasEnteredTvMainUi = true;
+          }
           _syncInactivityService(settingsProvider);
           final theme = AppThemes.darkTheme(
             settingsProvider.activeAppFont,
@@ -391,9 +414,18 @@ class _GdarTvAppState extends State<GdarTvApp> {
               builder: (context, child) => InactivityDetector(
                 inactivityService: _inactivityService,
                 isScreensaverActive: _isScreensaverActive,
-                child: ColoredBox(
-                  color: finalTheme.scaffoldBackgroundColor,
-                  child: child ?? const SizedBox.shrink(),
+                child: Stack(
+                  children: [
+                    ColoredBox(
+                      color: finalTheme.scaffoldBackgroundColor,
+                      child: child ?? const SizedBox.shrink(),
+                    ),
+                    if (settingsProvider.useOilScreensaver &&
+                        !_isScreensaverActive)
+                      _InactivityCountdownOverlay(
+                        countdown: _inactivityService.debugCountdown,
+                      ),
+                  ],
                 ),
               ),
               home: const SplashScreen(),
@@ -434,5 +466,44 @@ class _TvNavigationObserver extends NavigatorObserver {
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didRemove(route, previousRoute);
     _notify(previousRoute);
+  }
+}
+
+/// Small semi-transparent countdown overlay in the bottom-left corner.
+/// Shows the inactivity timer state so you can confirm it's alive on hardware
+/// without needing logcat.
+class _InactivityCountdownOverlay extends StatelessWidget {
+  const _InactivityCountdownOverlay({required this.countdown});
+
+  final ValueNotifier<String> countdown;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 8,
+      bottom: 8,
+      child: IgnorePointer(
+        child: ValueListenableBuilder<String>(
+          valueListenable: countdown,
+          builder: (context, value, _) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0x66000000),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'SS: $value',
+                style: const TextStyle(
+                  color: Color(0x99FFFFFF),
+                  fontSize: 10,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 }
