@@ -652,5 +652,63 @@ void main() {
         verify(mockAudioPlayer.addAudioSources(any)).called(1);
       });
     });
+
+    group('Regression: Web Playback Race Condition', () {
+      setUp(() {
+        audioProvider = AudioProvider(
+          audioPlayer: mockAudioPlayer,
+          catalogService: mockCatalogService,
+          audioCacheService: mockAudioCacheService,
+          wakelockService: mockWakelockService,
+          isWeb: true,
+        );
+        audioProvider.update(
+          mockShowListProvider,
+          mockSettingsProvider,
+          mockAudioCacheService,
+        );
+      });
+
+      testWidgets('pause() is aborted if play() is called during fade-out',
+          (tester) async {
+        await tester.runAsync(() async {
+          // 1. Mock play() and pause() to respond immediately
+          when(mockAudioPlayer.play()).thenAnswer((_) async {});
+          when(mockAudioPlayer.pause()).thenAnswer((_) async {});
+          when(mockAudioPlayer.setVolume(any)).thenAnswer((_) async {});
+
+          // 2. Mock usePlayPauseFade to true
+          when(mockSettingsProvider.usePlayPauseFade).thenReturn(true);
+
+          // 3. Start a pause operation (this will start a 150ms fade)
+          final pauseFuture = audioProvider.pause();
+
+          // 4. Immediately start a play operation
+          // This increases _fadeId, which should cause pause() to abort its engine call.
+          await audioProvider.play();
+
+          await pauseFuture;
+
+          // 5. Verify that mockAudioPlayer.pause() was NEVER called because it was aborted
+          verifyNever(mockAudioPlayer.pause());
+
+          // 6. Verify that mockAudioPlayer.play() WAS called
+          verify(mockAudioPlayer.play()).called(1);
+        });
+      });
+
+      testWidgets('play() handles engine errors gracefully', (tester) async {
+        await tester.runAsync(() async {
+          // Mock engine to throw an error (simulating browser interruption)
+          when(mockAudioPlayer.play())
+              .thenThrow(Exception('Interrupted by pause'));
+
+          // Should not re-throw
+          await audioProvider.play();
+
+          verify(mockAudioPlayer.play()).called(1);
+        });
+      });
+    });
   });
 }

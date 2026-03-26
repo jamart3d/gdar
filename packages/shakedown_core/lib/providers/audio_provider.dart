@@ -42,7 +42,9 @@ class AudioProvider extends ChangeNotifier
     AudioCacheService? audioCacheService,
     WakelockService? wakelockService,
     bool useWebGaplessEngine = true,
+    bool? isWeb,
   }) {
+    _isWeb = isWeb ?? kIsWeb;
     _catalogService = catalogService ?? CatalogService();
     _audioCacheService = audioCacheService ?? AudioCacheService();
     _wakelockService = wakelockService ?? WakelockService();

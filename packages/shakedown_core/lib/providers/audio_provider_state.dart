@@ -49,6 +49,7 @@ mixin _AudioProviderState {
   String? _error;
   DateTime _lastErrorNotifyAt = DateTime.fromMillisecondsSinceEpoch(0);
   int _fadeId = 0;
+  late final bool _isWeb;
 
   GaplessPlayer get audioPlayer => _audioPlayer;
   bool get isPlaying => _audioPlayer.playing;

@@ -101,8 +101,8 @@ mixin _SettingsProviderWebExtension
     switch (preset) {
       case HiddenSessionPreset.stability:
         _audioEngineMode = AudioEngineMode.hybrid;
-        _hybridHandoffMode = HybridHandoffMode.buffered;
-        _hybridBackgroundMode = HybridBackgroundMode.video;
+        _hybridHandoffMode = HybridHandoffMode.none;
+        _hybridBackgroundMode = HybridBackgroundMode.html5;
         _allowHiddenWebAudio = false;
         break;
       case HiddenSessionPreset.balanced:
@@ -112,9 +112,9 @@ mixin _SettingsProviderWebExtension
         _allowHiddenWebAudio = false;
         break;
       case HiddenSessionPreset.maxGapless:
-        _audioEngineMode = AudioEngineMode.webAudio;
-        _hybridHandoffMode = HybridHandoffMode.immediate;
-        _hybridBackgroundMode = HybridBackgroundMode.heartbeat;
+        _audioEngineMode = AudioEngineMode.hybrid;
+        _hybridHandoffMode = HybridHandoffMode.buffered;
+        _hybridBackgroundMode = HybridBackgroundMode.none;
         _allowHiddenWebAudio = true;
         break;
     }

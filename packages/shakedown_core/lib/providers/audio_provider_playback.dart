@@ -400,7 +400,9 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
         preload: _settingsProvider?.offlineBuffering ?? false,
       );
 
-      unawaited(_audioPlayer.play());
+      unawaited(_audioPlayer.play().catchError((e, stack) {
+        logger.w('AudioProvider: play() deferred execution failed: $e');
+      }));
     } catch (e, stackTrace) {
       if (_currentSource?.id == source.id) {
         logger.e('Error playing source', error: e, stackTrace: stackTrace);

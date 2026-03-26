@@ -180,6 +180,11 @@ class MockGaplessPlayer extends _i1.Mock implements _i3.GaplessPlayer {
           as bool);
 
   @override
+  bool get fetchInFlight =>
+      (super.noSuchMethod(Invocation.getter(#fetchInFlight), returnValue: false)
+          as bool);
+
+  @override
   _i5.Stream<_i2.PlayerState> get playerStateStream =>
       (super.noSuchMethod(
             Invocation.getter(#playerStateStream),
@@ -403,6 +408,15 @@ class MockGaplessPlayer extends _i1.Mock implements _i3.GaplessPlayer {
   _i5.Future<void> stop() =>
       (super.noSuchMethod(
             Invocation.method(#stop, []),
+            returnValue: _i5.Future<void>.value(),
+            returnValueForMissingStub: _i5.Future<void>.value(),
+          )
+          as _i5.Future<void>);
+
+  @override
+  _i5.Future<void> setVolume(double? volume) =>
+      (super.noSuchMethod(
+            Invocation.method(#setVolume, [volume]),
             returnValue: _i5.Future<void>.value(),
             returnValueForMissingStub: _i5.Future<void>.value(),
           )

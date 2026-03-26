@@ -12,10 +12,6 @@ mixin _SettingsProviderInitializationExtension
   void setHiddenSessionPreset(HiddenSessionPreset preset);
   void setGlowMode(int mode);
   void setHighlightPlayingWithRgb(bool value);
-  void _applyWebEngineProfile(
-    WebEngineProfile profile, {
-    required bool persistPrefs,
-  });
 
   void resetAndroidFirstTimeSettings() {
     _appFont = 'rock_salt';
@@ -68,6 +64,8 @@ mixin _SettingsProviderInitializationExtension
         setHiddenSessionPreset(HiddenSessionPreset.stability);
         break;
       case WebRuntimeProfile.pwa:
+        setHiddenSessionPreset(HiddenSessionPreset.balanced);
+        break;
       case WebRuntimeProfile.web:
         setHiddenSessionPreset(
           isSafari
@@ -518,14 +516,16 @@ mixin _SettingsProviderInitializationExtension
       return;
     }
 
+    // Delegate to the hardware-aware decision tree for first-run defaults
+    _resetWebPlaybackSettings();
     _webEngineProfile = isLikelyLowPowerWebDevice()
         ? WebEngineProfile.legacy
         : WebEngineProfile.modern;
-    _applyWebEngineProfile(_webEngineProfile, persistPrefs: true);
+
     _prefs.setBool(_webEngineProfileInitKey, true);
     _prefs.setString(_webEngineProfileChoiceKey, _webEngineProfile.name);
     logger.i(
-      'SettingsProvider: Adaptive web engine profile applied: ${_webEngineProfile.name}',
+      'SettingsProvider: Adaptive web engine profile applied (Decision Tree Logic).',
     );
   }
 

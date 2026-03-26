@@ -1,3 +1,11 @@
+What's new in v1.3.24+234
+- Web UI: Fixed a playback race condition where rapid play/pause could hang the audio engine.
+- Web UI: Improved stability of volume fades and crossfades on the Fruit theme.
+- Core: Refactored engine platform-gating to enable robust multi-platform testing in the Dart VM.
+- Maintenance: Fully synchronized the monorepo preflight suite with 100% test pass.
+
+---
+
 What's new in v1.3.23+233
 - Core: Modularized complex UI components (DevAudioHud, ShowListCard, TvScreensaverSection) for performance.
 - Maintenance: Finalized internal monorepo deployment pipeline for automated releases.

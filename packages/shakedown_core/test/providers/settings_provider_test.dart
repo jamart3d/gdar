@@ -266,8 +266,8 @@ void main() {
         settingsProvider.hiddenSessionPreset,
         HiddenSessionPreset.stability,
       );
-      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.video);
-      expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.buffered);
+      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.html5);
+      expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.none);
     });
 
     test('setHiddenSessionPreset applies balanced preset fields', () {
@@ -291,9 +291,9 @@ void main() {
       );
       expect(
         settingsProvider.hybridBackgroundMode,
-        HybridBackgroundMode.heartbeat,
+        HybridBackgroundMode.none,
       );
-      expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.immediate);
+      expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.buffered);
     });
   });
 

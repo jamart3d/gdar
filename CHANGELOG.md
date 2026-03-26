@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.24+234] - 2026-03-26
+
+### Fixed
+- Fixed a playback race condition on Web where `pause()` could interrupt a pending `play()` during volume fades.
+- Refactored `AudioProvider` to use a testable platform check (`_isWeb`), enabling robust web-logic testing in the Dart VM.
+- Resolved asynchronous exception handling for unawaited engine calls.
+- Full preflight suite (Format, Analyze, Test) passed with zero regressions across the monorepo.
+
 ## [1.3.23+233] - 2026-03-25
 
 ### Added

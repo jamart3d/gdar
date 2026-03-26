@@ -8,7 +8,7 @@ mixin _AudioProviderControls on ChangeNotifier, _AudioProviderState {
     Duration? initialPosition,
   });
 
-  Future<void> _fadeVolume({
+  Future<int> _fadeVolume({
     required double from,
     required double to,
     required Duration duration,
@@ -21,12 +21,12 @@ mixin _AudioProviderControls on ChangeNotifier, _AudioProviderState {
 
     if (stepDurationMs <= 0) {
       await _audioPlayer.setVolume(to);
-      return;
+      return currentFadeId;
     }
 
     for (var i = 1; i <= steps; i++) {
       await Future.delayed(Duration(milliseconds: stepDurationMs));
-      if (_fadeId != currentFadeId) return;
+      if (_fadeId != currentFadeId) return currentFadeId;
       final volume = from + (diff * (i / steps));
       await _audioPlayer.setVolume(volume);
     }
@@ -34,38 +34,57 @@ mixin _AudioProviderControls on ChangeNotifier, _AudioProviderState {
     if (_fadeId == currentFadeId) {
       await _audioPlayer.setVolume(to);
     }
+    return currentFadeId;
   }
 
   Future<void> play() async {
-    if (kIsWeb && (_settingsProvider?.usePlayPauseFade ?? true)) {
-      await _audioPlayer.setVolume(0.0);
-      unawaited(_audioPlayer.play());
-      await _fadeVolume(
-        from: 0.0,
-        to: 1.0,
-        duration: const Duration(milliseconds: 150),
-      );
-      return;
-    }
+    try {
+      if (_isWeb && (_settingsProvider?.usePlayPauseFade ?? true)) {
+        await _audioPlayer.setVolume(0.0);
+        unawaited(_audioPlayer.play().catchError((e, stack) {
+          logger.e('AudioProvider: play() engine failed: $e');
+        }));
+        await _fadeVolume(
+          from: 0.0,
+          to: 1.0,
+          duration: const Duration(milliseconds: 150),
+        );
+        return;
+      }
 
-    await _audioPlayer.play();
+      await _audioPlayer.play();
+    } catch (e) {
+      logger.e('AudioProvider: play() failed: $e');
+    }
   }
 
   Future<void> resume() => play();
 
   Future<void> pause() async {
-    if (kIsWeb && (_settingsProvider?.usePlayPauseFade ?? true)) {
-      await _fadeVolume(
-        from: 1.0,
-        to: 0.0,
-        duration: const Duration(milliseconds: 150),
-      );
-      await _audioPlayer.pause();
-      await _audioPlayer.setVolume(1.0);
-      return;
-    }
+    try {
+      if (_isWeb && (_settingsProvider?.usePlayPauseFade ?? true)) {
+        final fadeId = await _fadeVolume(
+          from: 1.0,
+          to: 0.0,
+          duration: const Duration(milliseconds: 150),
+        );
 
-    await _audioPlayer.pause();
+        // If a new fade started (e.g. from play()), we should NOT pause the
+        // engine because that would interrupt the new play request.
+        if (_fadeId != fadeId) {
+          logger.d('AudioProvider: pause() aborted; newer transition started.');
+          return;
+        }
+
+        await _audioPlayer.pause();
+        await _audioPlayer.setVolume(1.0);
+        return;
+      }
+
+      await _audioPlayer.pause();
+    } catch (e) {
+      logger.e('AudioProvider: pause() failed: $e');
+    }
   }
 
   Future<void> stop() => _audioPlayer.stop();
