@@ -1,6 +1,5 @@
 ﻿What's new in v1.3.26+236
-- Google TV: Integrated InactivityDetector and a debug countdown overlay in pps/gdar_tv to assist with inactivity-based hardware testing.
-- Android TV: Refined inactivity timeout logic to ensure reliable screensaver triggers during extended sessions.
+- Google TV: Added an InactivityDetector and debug countdown overlay in apps/gdar_tv to assist with hardware testing and ensure reliable screensaver triggers during long sessions.
 
 ---
 
@@ -92,7 +91,7 @@ What's new in v1.3.12+222
 ---
 
 What's new in v1.3.11+221
-- TV UI: Refined visual highlightsâ€”now ONLY the active cursor has the rainbow RGB border for maximum clarity.
+- TV UI: Refined visual highlightsÃ¢â‚¬â€now ONLY the active cursor has the rainbow RGB border for maximum clarity.
 - TV UI: Added focus memory to the track list; it now remembers your last selected item when returning to the library.
 - Web UI: Added a "Crossfade Play/Pause" setting for smooth audio transitions on the Fruit theme.
 - Data: Conducted a major cleanup of the Grateful Dead song structural hints, removing JGB and non-GD side projects for accuracy.
