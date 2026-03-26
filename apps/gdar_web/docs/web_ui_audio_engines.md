@@ -125,10 +125,10 @@ Common diagnostic chips (organized by their diagnostic columns):
 - `HF`: hybrid handoff mode (imm, buf, bnd, off)
 - `BG`: hybrid survival mode (h5, hb, vid, none) + heartbeat pulse
 - `STB`: hidden-session preset (STB, BAL, MAX)
-- `ENG`: effective engine mode (WBA, H5, HYB, STD)
+- `ENG`: effective engine mode (WBA, H5, HYB, STD, AUT)
 - `DET`: detected profile label (L, P, D, W)
-- `AE`: Active engine context. Variants: **`-New`** (Native), **`-Opt`** (Optimized). A pulsing **standard plus (`+`)** and **Indigo background** indicate active survival mode. The pulse is precisely synced (220ms) with the `BG` heartbeat indicator.
-- `V`: visibility status and hidden duration (VIS, HID)
+- `AE`: active sub-engine. Values: `WA` (Web Audio API), `H5` (HTML5 `<audio>`), `STD` (standard just_audio), `WA+`/`H5+` (engine active + heartbeat survival running simultaneously), or the resolved mode abbreviation (`HYB`, `AUT`, `WBA`, etc.) when the JS context string has not yet arrived. Shown in **all** engine modes.
+- `LG`: last track-boundary gap in milliseconds. In hybrid mode with an H5→WA handoff, this is the full cross-engine audible gap from H5 `onEnded` to the moment WA is confirmed playing.
 - `E`: error state flag
 - `ST`: raw engine status code
 - `SIG`: signal source (AGT, ISS, NTF or --)
@@ -231,6 +231,25 @@ Hidden-tab behavior is platform-sensitive:
   hidden Web Audio is not allowed
 - on desktop, hybrid typically fences the handoff until the next track boundary
 
+## Last Gap Measurement (LG Chip)
+
+`LG` reports the milliseconds of silence at the most recent track boundary.
+
+How the value is computed depends on which engine drives the transition:
+
+- **H5→H5** (no handoff, or handoff disabled): measured inside the HTML5 engine
+  from `Track.onEnded()` → `Track.play()` on the next track. Near-zero when
+  the next track was preloaded.
+- **H5→WA boundary handoff** (hybrid mode, tab visible, handoff enabled):
+  `_trackBoundaryAtMs` is stamped in the hybrid orchestrator the moment
+  `_forwardTrack` fires. When `_executeForegroundRestore` confirms WA is ready
+  and calls `_swapEngine`, the gap is overwritten with
+  `performance.now() - _trackBoundaryAtMs`. This is the **full cross-engine
+  audible silence** — from the last H5 audio sample to the first WA audio
+  sample. Logged as `[hybrid] LG gap (H5→WA boundary): XXX.Xms`.
+- **Mid-track handoff** (H5→WA instant-start, or failure handoff WA→H5):
+  no `onEnded` fires, so `LG` retains the previous boundary value.
+
 ### Handoff Crossfade
 
 Stored in `SettingsProvider.handoffCrossfadeMs` and synced to JS.
@@ -292,6 +311,27 @@ Current preset mappings:
 - `hybridHandoffMode = immediate`
 - `hybridBackgroundMode = heartbeat`
 - `allowHiddenWebAudio = true`
+
+## Recent Changes (2026-03-26)
+
+- **`AE` chip shown for all engine modes**: Previously `AE` returned `--` for
+  non-hybrid modes. It now shows the active sub-engine in every mode. When the
+  engine context string is populated (`webaudio`, `html5`, `standard`), that
+  label wins. When it is not yet populated, the resolved mode abbreviation is
+  shown as a fallback (`HYB`, `AUT`, `WBA`, etc.).
+
+- **`AE` value semantics updated**: The `+` suffix (e.g. `WA+`, `H5+`) now
+  means the heartbeat/survival layer is simultaneously running alongside the
+  primary engine, replacing the old `-New`/`-Opt` suffix scheme. `?` indicates
+  hybrid mode is initializing but the sub-engine context string has not yet
+  been reported by JS.
+
+- **`LG` now captures H5→WA cross-engine gap**: At a track boundary where the
+  hybrid orchestrator transitions from HTML5 to Web Audio, `_trackBoundaryAtMs`
+  is stamped in `_forwardTrack` and the gap is finalized in
+  `_executeForegroundRestore` when `_swapEngine` fires. This replaces the
+  previous behavior where `LG` only reported the H5-internal `play()` timing
+  and was blind to WA restore latency.
 
 ## Recent Cleanup (2026-03-19)
 

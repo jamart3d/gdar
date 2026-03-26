@@ -289,10 +289,7 @@ void main() {
         settingsProvider.hiddenSessionPreset,
         HiddenSessionPreset.maxGapless,
       );
-      expect(
-        settingsProvider.hybridBackgroundMode,
-        HybridBackgroundMode.none,
-      );
+      expect(settingsProvider.hybridBackgroundMode, HybridBackgroundMode.none);
       expect(settingsProvider.hybridHandoffMode, HybridHandoffMode.buffered);
     });
   });

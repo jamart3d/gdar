@@ -19,4 +19,5 @@ linter:
     - prefer_single_quotes
     - sized_box_for_whitespace
     - unawaited_futures
+    - unnecessary_string_escapes
     - use_rethrow_when_possible

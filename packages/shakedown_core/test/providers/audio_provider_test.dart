@@ -669,8 +669,9 @@ void main() {
         );
       });
 
-      testWidgets('pause() is aborted if play() is called during fade-out',
-          (tester) async {
+      testWidgets('pause() is aborted if play() is called during fade-out', (
+        tester,
+      ) async {
         await tester.runAsync(() async {
           // 1. Mock play() and pause() to respond immediately
           when(mockAudioPlayer.play()).thenAnswer((_) async {});
@@ -700,8 +701,9 @@ void main() {
       testWidgets('play() handles engine errors gracefully', (tester) async {
         await tester.runAsync(() async {
           // Mock engine to throw an error (simulating browser interruption)
-          when(mockAudioPlayer.play())
-              .thenThrow(Exception('Interrupted by pause'));
+          when(
+            mockAudioPlayer.play(),
+          ).thenThrow(Exception('Interrupted by pause'));
 
           // Should not re-throw
           await audioProvider.play();

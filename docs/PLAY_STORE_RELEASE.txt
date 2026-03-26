@@ -1,3 +1,11 @@
+What's new in v1.3.25+235
+- Web UI: Refined HUD diagnostics for accurate sub-engine (WA/H5) and gap reporting.
+- Web Audio: Fixed a track handoff race condition to ensure smooth transitions.
+- Core: Added unnecessary_string_escapes lint to improve codebase hygiene.
+- Maintenance: Fully stabilized the automated production preflight suite.
+
+---
+
 What's new in v1.3.24+234
 - Web UI: Fixed a playback race condition where rapid play/pause could hang the audio engine.
 - Web UI: Improved stability of volume fades and crossfades on the Fruit theme.

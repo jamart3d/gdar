@@ -41,9 +41,11 @@ mixin _AudioProviderControls on ChangeNotifier, _AudioProviderState {
     try {
       if (_isWeb && (_settingsProvider?.usePlayPauseFade ?? true)) {
         await _audioPlayer.setVolume(0.0);
-        unawaited(_audioPlayer.play().catchError((e, stack) {
-          logger.e('AudioProvider: play() engine failed: $e');
-        }));
+        unawaited(
+          _audioPlayer.play().catchError((e, stack) {
+            logger.e('AudioProvider: play() engine failed: $e');
+          }),
+        );
         await _fadeVolume(
           from: 0.0,
           to: 1.0,

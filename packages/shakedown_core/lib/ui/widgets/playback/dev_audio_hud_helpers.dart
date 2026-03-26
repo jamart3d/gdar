@@ -429,10 +429,7 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
         return 'Session Stability Preset: $desc ($value)';
       case 'AE':
         if (value == '--') {
-          return 'Active Engine: not applicable (non-hybrid mode)';
-        }
-        if (value == '?') {
-          return 'Active Engine: unknown - engine context not yet reported';
+          return 'Active Engine: not yet available';
         }
         String aeDesc = 'Unknown';
         if (value.startsWith('WA')) {
@@ -457,7 +454,7 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
           aeDesc = 'Generic foreground engine.';
         }
         final aeSuffix = value.endsWith('+')
-            ? ' | +: survival mode active.'
+            ? ' | +: heartbeat/survival mode also active.'
             : '';
         return 'Active Engine: $aeDesc$aeSuffix';
       case 'V':

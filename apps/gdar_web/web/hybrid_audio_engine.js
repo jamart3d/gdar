@@ -76,6 +76,7 @@
     let _lastStateForwardMs = 0;
     let _fenceHandoffPending = false;
     let _lastGapMs = null;
+    let _trackBoundaryAtMs = 0; // Stamped when H5 track boundary fires, cleared when WA swap completes
 
     // Web Worker for background timing - now managed centrally via audio_scheduler.js
     // let _schedulerWorker = null;
@@ -228,9 +229,11 @@
         state.heartbeatNeeded = hbNeeded;
         state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
 
+        // heartbeatActive = actual survival mechanism running (hbt/vid).
+        // Not 'visible && playing' — that always fires on Desktop foreground.
         const survivalDisabled = _backgroundMode === 'none';
-        state.heartbeatActive = !survivalDisabled && (!!(document.visibilityState === 'visible' && _playing) ||
-            !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()));
+        state.heartbeatActive = !survivalDisabled &&
+            !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive());
         _onStateChange(state);
     }
 
@@ -261,6 +264,9 @@
                 _log.log('[hybrid] Track Boundary: Staying in HTML5 (handoff disabled).');
             } else if (document.visibilityState !== 'hidden') {
                 _log.log('[hybrid] Track Boundary: Attempting Foreground Restore for the next track.');
+                // Stamp the boundary time so _executeForegroundRestore can compute the
+                // true audible gap (H5 track-end → WA audio start) for the LG chip.
+                _trackBoundaryAtMs = performance.now();
                 // We keep _bgEngine as the active engine (reporting 'ready')
                 // and use the restore loop to swap to Web Audio ONLY once it's decoded.
                 _executeForegroundRestore(0);
@@ -417,6 +423,17 @@
 
             if (isReady) {
                 const swapStart = performance.now();
+
+                // True audible gap = time from H5 track boundary → WA first audio.
+                // Overwrite _lastGapMs so LG shows the full cross-engine silence,
+                // not just the H5-internal play() timing.
+                if (_trackBoundaryAtMs > 0) {
+                    _lastGapMs = performance.now() - _trackBoundaryAtMs;
+                    fgState.lastGapMs = _lastGapMs;
+                    _trackBoundaryAtMs = 0;
+                    _log.log(`[hybrid] LG gap (H5→WA boundary): ${_lastGapMs.toFixed(1)}ms`);
+                }
+
                 _swapEngine(_fgEngine);
                 _log.log('[hybrid] ACTIVE ENGINE SWAPPED: Now using Web Audio (Foreground)');
                 if (_handoffCrossfadeMs > 0) {
@@ -574,6 +591,15 @@
             }
 
             }).catch(err => {
+            // AbortError is intentional: seekToIndex cancelled the in-flight
+            // prepareToPlay. Not a real failure — seekToIndex already reset
+            // the pending flags before launching the new attempt.
+            const isAbort = err && (err.name === 'AbortError' ||
+                (err.message && err.message.toLowerCase().includes('abort')));
+            if (isAbort) {
+                _log.log('[hybrid] Handoff prepare aborted by seek/index change — expected.');
+                return;
+            }
             _log.error('[hybrid] Failed to prepare instant handoff:', err);
             _instantHandoffPending = false;
             _handoffInProgress = false;
@@ -876,8 +902,8 @@
             state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
 
             const survivalDisabled = _backgroundMode === 'none';
-            state.heartbeatActive = !survivalDisabled && (!!(document.visibilityState === 'visible' && _playing) ||
-                !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()));
+            state.heartbeatActive = !survivalDisabled &&
+                !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive());
             return state;
         },
 

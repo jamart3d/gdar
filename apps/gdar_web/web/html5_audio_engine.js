@@ -550,11 +550,8 @@
             nextTrackTotal: 0,
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: 'idle',
-            heartbeatActive: (function () {
-                if (_backgroundMode === 'none') return false;
-                if (document.visibilityState === 'visible') return true;
-                return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
-            })(),
+            heartbeatActive: _backgroundMode !== 'none' &&
+                !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
             heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
             contextState: 'html5 (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb'
         };
@@ -583,11 +580,8 @@
             nextTrackTotal: nextTrack && isFinite(nextTrack.duration) ? nextTrack.duration : 0,
             playlistLength: (_queue && _queue.tracks) ? _queue.tracks.length : 0,
             processingState: 'ready',
-            heartbeatActive: (function () {
-                if (_backgroundMode === 'none') return false;
-                if (document.visibilityState === 'visible' && !track.isPaused) return true;
-                return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
-            })(),
+            heartbeatActive: _backgroundMode !== 'none' &&
+                !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
             heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
             contextState: 'html5 (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb',
             lastGapMs: _lastGapMs,

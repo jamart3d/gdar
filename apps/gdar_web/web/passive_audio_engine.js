@@ -262,7 +262,8 @@
                 nextTrackTotal: nextTrackTotal,
                 playlistLength: _playlist.length,
                 processingState: ps,
-                heartbeatActive: (_backgroundMode !== 'none') && ((document.visibilityState === 'visible') || !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive())),
+                heartbeatActive: _backgroundMode !== 'none' &&
+                    !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
                 heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
                 contextState: 'passive (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb'
             });
@@ -440,7 +441,8 @@
                 playlistLength: _playlist.length,
                 processingState: _loadingState,
                 contextState: 'passive' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb',
-                heartbeatActive: (_backgroundMode !== 'none') && ((document.visibilityState === 'visible') || !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive())),
+                heartbeatActive: _backgroundMode !== 'none' &&
+                    !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
                 heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
             };
         },

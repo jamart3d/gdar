@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.25+235] - 2026-03-26
+
+### Added
+- **Core**: Enhanced `analysis_options.yaml` with the `unnecessary_string_escapes` lint rule to improve string hygiene.
+
+### Fixed
+- **Web UI**: Refined Web Audio HUD diagnostics to provide accurate real-time reporting for sub-engines (WA/H5) and Last Gap (LG) silence detection.
+- **Web Audio**: Resolved a track handoff race condition to ensure audible silence is correctly attributes to cross-engine transitions.
+- **Maintenance**: Stabilized the automated production deployment pipeline for zero-friction monorepo releases.
+- **Testing**: Preflight verified passing across all targets with 253 monorepo tests at 100% success rate.
+
 ## [1.3.24+234] - 2026-03-26
 
 ### Fixed

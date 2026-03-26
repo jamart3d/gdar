@@ -289,7 +289,12 @@
       return audioBuf;
     });
 
-    p.catch(err => {
+    // MUST store and return the caught chain — not `p` — so the browser's
+    // window-level unhandledrejection handler never fires on an AbortError.
+    // If we attach .catch as a side-effect but return `p`, the rejection on
+    // `p` is unhandled from the browser's perspective before the caller's
+    // own .catch can attach.
+    const handled = p.catch(err => {
       delete _decodingPromises[index];
       if (err.message !== 'Aborted') {
         _log.error('[gdar engine] Decode failed for index', index, err);
@@ -298,8 +303,8 @@
       throw err;
     });
 
-    _decodingPromises[index] = p;
-    return p;
+    _decodingPromises[index] = handled;
+    return handled;
   }
 
   function _evictOldBuffers() {
@@ -673,11 +678,8 @@
           playlistLength: _playlist.length,
           processingState: ps,
           heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
-          heartbeatActive: (function () {
-            if (_backgroundMode === 'none') return false;
-            if (document.visibilityState === 'visible' && _playing) return true;
-            return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
-          })(),
+          heartbeatActive: _backgroundMode !== 'none' &&
+            !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
           contextState: (function() {
              const hbNeeded = window._gdarIsHeartbeatNeeded();
              const base = _ctx ? (_ctx.state === 'running' || _ctx.state === 'suspended' ? _ctx.state + ' (WA)' : _ctx.state) : 'none';
@@ -939,11 +941,8 @@
         nextTrackTotal: (_playlist[_currentIndex + 1] && isFinite(_playlist[_currentIndex + 1].duration) ? _playlist[_currentIndex + 1].duration : 0) || (_scheduledSource && isFinite(_scheduledSource.buffer.duration) ? _scheduledSource.buffer.duration : 0),
         playlistLength: _playlist.length,
         processingState: ps,
-        heartbeatActive: (function () {
-          if (_backgroundMode === 'none') return false;
-          if (document.visibilityState === 'visible' && _playing) return true;
-          return window._gdarHeartbeat ? window._gdarHeartbeat.isActive() : false;
-        })(),
+        heartbeatActive: _backgroundMode !== 'none' &&
+          !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
         heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
         contextState: (function() {
             const hbNeeded = window._gdarIsHeartbeatNeeded();

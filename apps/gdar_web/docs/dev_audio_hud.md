@@ -39,6 +39,7 @@ Each chip represents a specific state or metric. Tapping an interactive chip (in
 | **BUF** | Buffer | — | Current track data in memory (MB). |
 | **NX** | Next | — | Next track prefetch progress (MB). |
 | **V** | Visibility | — | App state (`VIS`: Foreground, `HID`: Background) + duration. |
+| **LG** | Last Gap | **Green** (<5ms), **Orange** (5–50ms), **Red** (>50ms) | Milliseconds of silence at the last track boundary. In hybrid mode with an H5→WA handoff, reports the full cross-engine gap: from H5 `onEnded` to the moment WA is confirmed playing and `_swapEngine` fires. |
 
 ### Engine & Capability
 | Key | Label | Color Cues | Meaning |
@@ -46,7 +47,7 @@ Each chip represents a specific state or metric. Tapping an interactive chip (in
 | **ENG** | Engine | — | Configured Engine Mode (`HYB`, `WBA`, `H5`, `STD`, `AUT`). |
 | **DET** | Detect | — | Runtime profile (`L`: Low-power, `P`: PWA installed, `D`: Desktop, `W`: Browser). `L` is checked first — a low-power PWA shows `L`, not `P`. |
 | **TX** | Transition | — | Track transition mode (`GLS`: Gapless, `XFD`: Crossfade, `GAP`: Gap). |
-| **AE** | Active | **Indigo** (Survival+) | Core technology: `WA` (WebAudio), `H5` (HTML5), `VI` (Video). Suffixes: **`-New`** (Native/New), **`-Opt`** (Optimized/Old). A **`+`** indicates an active heartbeat helper and pulses in 220ms unison with the `BG` dots. |
+| **AE** | Active Engine | **Indigo** (Survival+) | Active sub-engine: `WA` (Web Audio API), `H5` (HTML5 `<audio>`), `STD` (standard just_audio). A **`+`** suffix (e.g. `WA+`, `H5+`) means the heartbeat/survival layer is simultaneously active and pulses in 220ms unison with the `BG` dots. Falls back to the resolved mode abbreviation (`HYB`, `AUT`, `WBA`, etc.) if the JS context string has not yet arrived. Shown for **all** engine modes. |
 | **ST** | Status | **Orange** (HFDN) | Internal state (`PLAY`, `STAL`, `SUSE`, `HFDN`). |
 | **PS** | Process | **Orange** (BUF), **Green** (RDY) | Player Processing State (`LD`, `BUF`, `RDY`, `END`, `IDL`). |
 | **PM** | Perf Mode | **Amber** (ON) | Performance Mode state. `ON` = visual effects disabled (set by low-power detection or Fruit first-run). `OFF` = full effects enabled and Liquid Glass active by default. |
