@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.26+236] - 2026-03-26
+
+### Added
+- **Google TV**: Integrated `InactivityDetector` and a debug countdown overlay in `apps/gdar_tv` to assist with inactivity-based hardware testing.
+- **Android TV**: Refined inactivity timeout logic to ensure reliable screensaver triggers during extended sessions.
+
 ## [1.3.25+235] - 2026-03-26
 
 ### Added

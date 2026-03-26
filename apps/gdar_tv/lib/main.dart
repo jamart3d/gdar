@@ -93,6 +93,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   late final _TvNavigationObserver _navigationObserver;
   bool _isScreensaverActive = false;
+  final ValueNotifier<String?> _launchError = ValueNotifier(null);
 
   void _setScreensaverActive(bool active) {
     if (!mounted) {
@@ -155,27 +156,44 @@ class _GdarTvAppState extends State<GdarTvApp> {
   @override
   void dispose() {
     _inactivityService.dispose();
+    _launchError.dispose();
     _linkSubscription?.cancel();
     _deepLinkService?.dispose();
     super.dispose();
   }
 
   Future<void> _handleInactivityTimeout() async {
-    if (!mounted) return;
+    if (!mounted) {
+      _launchError.value = 'widget not mounted';
+      return;
+    }
 
     // Guard: don't double-launch if screensaver is already active.
-    if (_isScreensaverActive) return;
+    if (_isScreensaverActive) {
+      _launchError.value = 'already active';
+      return;
+    }
 
     final navigator = _navigatorKey.currentState;
-    if (navigator == null) return;
+    if (navigator == null) {
+      _launchError.value = 'navigator null';
+      return;
+    }
 
     logger.i('TV inactivity timeout — launching screensaver');
     _inactivityService.stop();
     _setScreensaverActive(true);
+    _launchError.value = null;
     try {
       await navigator.push(
         ScreensaverScreen.route(allowPermissionPrompts: false),
       );
+    } on Exception catch (e) {
+      _launchError.value = e.toString().replaceFirst('Exception: ', '');
+      logger.e('Screensaver launch failed', error: e);
+    } catch (e) {
+      _launchError.value = e.runtimeType.toString();
+      logger.e('Screensaver launch failed', error: e);
     } finally {
       _setScreensaverActive(false);
       // Restart monitoring after screensaver exits.
@@ -348,9 +366,10 @@ class _GdarTvAppState extends State<GdarTvApp> {
                         !_isScreensaverActive)
                       Positioned(
                         left: 8,
-                        bottom: 8,
+                        top: 8,
                         child: _InactivityCountdownOverlay(
                           countdown: _inactivityService.debugCountdown,
+                          launchError: _launchError,
                         ),
                       ),
                   ],
@@ -397,34 +416,60 @@ class _TvNavigationObserver extends NavigatorObserver {
   }
 }
 
-/// Small semi-transparent countdown overlay in the bottom-left corner.
+/// Small semi-transparent countdown overlay in the top-left corner.
 /// Shows the inactivity timer state so you can confirm it's alive on hardware
-/// without needing logcat.
+/// without needing logcat. Turns red with a specific message if launch fails.
 class _InactivityCountdownOverlay extends StatelessWidget {
-  const _InactivityCountdownOverlay({required this.countdown});
+  const _InactivityCountdownOverlay({
+    required this.countdown,
+    required this.launchError,
+  });
 
   final ValueNotifier<String> countdown;
+  final ValueNotifier<String?> launchError;
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: ValueListenableBuilder<String>(
-        valueListenable: countdown,
-        builder: (context, value, _) {
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: const Color(0x66000000),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              'SS: $value',
-              style: const TextStyle(
-                color: Color(0x99FFFFFF),
-                fontSize: 10,
-                fontFamily: 'monospace',
+      child: ValueListenableBuilder<String?>(
+        valueListenable: launchError,
+        builder: (context, error, _) {
+          if (error != null) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xCC990000),
+                borderRadius: BorderRadius.circular(4),
               ),
-            ),
+              child: Text(
+                'SS ERR: $error',
+                style: const TextStyle(
+                  color: Color(0xFFFFAAAA),
+                  fontSize: 10,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            );
+          }
+          return ValueListenableBuilder<String>(
+            valueListenable: countdown,
+            builder: (context, value, _) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0x66000000),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'SS: $value',
+                  style: const TextStyle(
+                    color: Color(0x99FFFFFF),
+                    fontSize: 10,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              );
+            },
           );
         },
       ),
