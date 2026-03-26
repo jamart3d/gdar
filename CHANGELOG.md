@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.23+233] - 2026-03-25
+
+### Added
+- **Core**: Modularized complex UI components (`DevAudioHud`, `ShowListCard`, `TvScreensaverSection`) into specialized build, control, and painter widgets for improved clarity and performance.
+- **Maintenance**: Finalized internal monorepo deployment pipeline for fully automated, zero-friction production releases.
+
 ## [1.3.22+232] - 2026-03-25
 
 ### Added

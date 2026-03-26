@@ -1,3 +1,9 @@
+What's new in v1.3.23+233
+- Core: Modularized complex UI components (DevAudioHud, ShowListCard, TvScreensaverSection) for performance.
+- Maintenance: Finalized internal monorepo deployment pipeline for automated releases.
+
+---
+
 What's new in v1.3.22+232
 - Core: Advanced SettingsProvider refactoring into specialized service mixins for performance.
 - Maintenance: Achieved zero-friction monorepo orchestration for the /deploy workflow.
