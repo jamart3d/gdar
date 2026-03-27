@@ -12,6 +12,8 @@ import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
+import 'package:shakedown_core/services/inactivity_service.dart';
+import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
@@ -107,9 +109,22 @@ class GdarMobileApp extends StatefulWidget {
 class _GdarMobileAppState extends State<GdarMobileApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
+  InactivityService? _inactivityService;
   DeepLinkService? _deepLinkService;
   StreamSubscription? _linkSubscription;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  bool _isScreensaverActive = false;
+  final ValueNotifier<String?> _launchError = ValueNotifier(null);
+
+  void _setScreensaverActive(bool active) {
+    if (!mounted) {
+      _isScreensaverActive = active;
+      return;
+    }
+    setState(() {
+      _isScreensaverActive = active;
+    });
+  }
 
   @override
   void initState() {
@@ -118,6 +133,14 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
         widget.settingsProvider ??
         SettingsProvider(widget.prefs, isTv: widget.isTv);
     _showListProvider = widget.showListProvider ?? ShowListProvider();
+    if (widget.isTv) {
+      _inactivityService = InactivityService(
+        onInactivityTimeout: _handleInactivityTimeout,
+        initialDuration: Duration(
+          minutes: _settingsProvider.oilScreensaverInactivityMinutes,
+        ),
+      );
+    }
 
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
 
@@ -131,9 +154,65 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
 
   @override
   void dispose() {
+    _inactivityService?.dispose();
+    _launchError.dispose();
     _linkSubscription?.cancel();
     _deepLinkService?.dispose();
     super.dispose();
+  }
+
+  Future<void> _launchScreensaver({
+    required bool allowPermissionPrompts,
+    required String source,
+  }) async {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) {
+      _launchError.value = 'navigator null';
+      return;
+    }
+
+    logger.i('Launching screensaver from mobile/$source');
+    _inactivityService?.stop();
+    _setScreensaverActive(true);
+    _launchError.value = null;
+    try {
+      await navigator.push(
+        ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
+      );
+    } on Exception catch (e) {
+      _launchError.value = e.toString().replaceFirst('Exception: ', '');
+      logger.e('Screensaver launch failed', error: e);
+    } catch (e) {
+      _launchError.value = e.runtimeType.toString();
+      logger.e('Screensaver launch failed', error: e);
+    } finally {
+      _setScreensaverActive(false);
+      _inactivityService?.onUserActivity('screensaver_exit:mobile_$source');
+      if (widget.isTv && _settingsProvider.useOilScreensaver) {
+        _inactivityService?.start();
+      }
+    }
+  }
+
+  Future<void> _handleInactivityTimeout() {
+    return _launchScreensaver(allowPermissionPrompts: false, source: 'timeout');
+  }
+
+  void _syncInactivityService(SettingsProvider settingsProvider) {
+    final inactivityService = _inactivityService;
+    if (!widget.isTv || inactivityService == null) {
+      return;
+    }
+
+    inactivityService.updateDuration(
+      Duration(minutes: settingsProvider.oilScreensaverInactivityMinutes),
+    );
+
+    if (settingsProvider.useOilScreensaver && !_isScreensaverActive) {
+      inactivityService.start();
+    } else {
+      inactivityService.stop();
+    }
   }
 
   void _initDeepLinks() {
@@ -213,7 +292,12 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
           await settingsProvider.setOilScreensaverMode(value);
         }
       } else if (trimmedStep == 'screensaver') {
-        if (context.mounted) {
+        if (widget.isTv) {
+          await _launchScreensaver(
+            allowPermissionPrompts: true,
+            source: 'automation',
+          );
+        } else if (context.mounted) {
           await ScreensaverScreen.show(context);
         }
       }
@@ -259,9 +343,21 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
           create: (_) =>
               widget.deviceService ?? DeviceService(initialIsTv: widget.isTv),
         ),
+        if (widget.isTv)
+          Provider<ScreensaverLaunchDelegate>.value(
+            value: ScreensaverLaunchDelegate(({
+              bool allowPermissionPrompts = true,
+            }) {
+              return _launchScreensaver(
+                allowPermissionPrompts: allowPermissionPrompts,
+                source: 'manual',
+              );
+            }),
+          ),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
+          _syncInactivityService(settingsProvider);
           return RgbClockWrapper(
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: MaterialApp(
@@ -299,8 +395,94 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
                       style: ThemeStyle.android,
                     ),
               themeMode: themeProvider.currentThemeMode,
+              builder: (context, child) {
+                if (!widget.isTv || _inactivityService == null) {
+                  return child ?? const SizedBox.shrink();
+                }
+
+                return InactivityDetector(
+                  inactivityService: _inactivityService,
+                  isScreensaverActive: _isScreensaverActive,
+                  child: Stack(
+                    children: [
+                      ColoredBox(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        child: child ?? const SizedBox.shrink(),
+                      ),
+                      if (settingsProvider.useOilScreensaver)
+                        Center(
+                          child: _InactivityCountdownOverlay(
+                            countdown: _inactivityService!.debugCountdown,
+                            launchError: _launchError,
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
               home: const SplashScreen(),
             ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _InactivityCountdownOverlay extends StatelessWidget {
+  const _InactivityCountdownOverlay({
+    required this.countdown,
+    required this.launchError,
+  });
+
+  final ValueNotifier<String> countdown;
+  final ValueNotifier<String?> launchError;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: ValueListenableBuilder<String?>(
+        valueListenable: launchError,
+        builder: (context, error, _) {
+          if (error != null) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xCC990000),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                'SS ERR: $error',
+                style: const TextStyle(
+                  color: Color(0xFFFFAAAA),
+                  fontSize: 10,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            );
+          }
+
+          return ValueListenableBuilder<String>(
+            valueListenable: countdown,
+            builder: (context, value, _) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xCCFF0000),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: Text(
+                  'SS: $value (TV: ${ThemeProvider.getInstance?.isTv})',
+                  style: const TextStyle(
+                    color: Color(0xFFFFFFFF),
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              );
+            },
           );
         },
       ),
