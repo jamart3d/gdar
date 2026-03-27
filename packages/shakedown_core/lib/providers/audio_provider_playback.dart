@@ -108,6 +108,7 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
     int initialIndex = 0,
     Duration? initialPosition,
   }) async {
+    final requestId = ++_playbackRequestSerial;
     _currentShow = show;
     _currentSource = source;
     _hasPrequeuedNextShow = false;
@@ -128,10 +129,13 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
         source,
         initialIndex: initialIndex,
         initialPosition: initialPosition,
+        requestId: requestId,
       );
     } finally {
-      _isSwitchingSource = false;
-      _isTransitioning = false;
+      if (requestId == _playbackRequestSerial) {
+        _isSwitchingSource = false;
+        _isTransitioning = false;
+      }
     }
 
     if (_settingsProvider?.offlineBuffering ?? false) {
@@ -354,6 +358,7 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
     Source source, {
     int initialIndex = 0,
     Duration? initialPosition,
+    required int requestId,
   }) async {
     logger.i(
       'Loading show: ${_currentShow!.name}, source: ${source.id}, starting at '
@@ -366,6 +371,14 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
       artUri = await _audioCacheService.getAlbumArtUri();
     } catch (e) {
       logger.w('Failed to get album art URI: $e');
+    }
+
+    if (requestId != _playbackRequestSerial) {
+      logger.i(
+        'Skipping superseded playback request before queue load '
+        '(source: ${source.id}, index: $initialIndex)',
+      );
+      return;
     }
 
     if (!kIsWeb) {
@@ -399,6 +412,14 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
         );
       }).toList();
 
+      if (requestId != _playbackRequestSerial) {
+        logger.i(
+          'Skipping superseded playback request before setAudioSources '
+          '(source: ${source.id}, index: $initialIndex)',
+        );
+        return;
+      }
+
       await _audioPlayer.setAudioSources(
         children,
         initialIndex: initialIndex,
@@ -406,13 +427,22 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
         preload: _settingsProvider?.offlineBuffering ?? false,
       );
 
+      if (requestId != _playbackRequestSerial) {
+        logger.i(
+          'Skipping play() for superseded playback request '
+          '(source: ${source.id}, index: $initialIndex)',
+        );
+        return;
+      }
+
       unawaited(
         _audioPlayer.play().catchError((e, stack) {
           logger.w('AudioProvider: play() deferred execution failed: $e');
         }),
       );
     } catch (e, stackTrace) {
-      if (_currentSource?.id == source.id) {
+      if (requestId == _playbackRequestSerial &&
+          _currentSource?.id == source.id) {
         logger.e('Error playing source', error: e, stackTrace: stackTrace);
         _error = 'Error playing source: ${e.toString()}';
         _errorController.add(_error!);
@@ -420,8 +450,8 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
         unawaited(stopAndClear());
       } else {
         logger.w(
-          'Ignoring error from superseded playback request (Source: '
-          '${source.id}): $e',
+          'Ignoring error from superseded playback request '
+          '(source: ${source.id}, index: $initialIndex): $e',
         );
       }
     }

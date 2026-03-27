@@ -1,6 +1,6 @@
 {
-  "last_verification": "2026-03-27T00:00:00-07:00",
-  "git_sha": "pending_commit",
+  "last_verification": "2026-03-27T09:07:00-07:00",
+  "git_sha": "d3c9d9c1a5e1de8be90733dfc5c8365f58432c06",
   "results": {
     "analyze": "passed",
     "test": "passed",
@@ -9,10 +9,10 @@
     "size_guard": "passed"
   },
   "test_counts": {
-    "total": 256,
-    "passed": 256,
+    "total": 258,
+    "passed": 258,
     "failed": 0,
     "skipped": 2
   },
-  "summary": "Checkup passed clean after 2026-03-27 session. Features: markPlayedOnStart (replaces Sequence Run Detection), Fruit font enforcement (Inter everywhere, Rock Salt for Shakedown branding), mini player polish (title size, time alignment, progress bar), show list card text size/gap. Three test regressions fixed during checkup: fruitDenseList missing from _FakeSettings, ThemeProvider nullable reads in ShakedownTitle+EmbeddedMiniPlayer, embedded_mini_player_test SizedBox width constraint. Baseline: 0ac43a8."
+  "summary": "Full pre-release checkup passed clean. 258 tests passed. Verification successful for SHA d3c9d9c."
 }

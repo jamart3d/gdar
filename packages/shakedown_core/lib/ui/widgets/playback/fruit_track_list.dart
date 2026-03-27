@@ -107,10 +107,17 @@ class _FruitTrackListState extends State<FruitTrackList> {
 
   @override
   Widget build(BuildContext context) {
-    final audioProvider = context.watch<AudioProvider>();
+    final audioProvider = context.read<AudioProvider>();
+    final currentTrackIndex = context.select<AudioProvider, int>(
+      (provider) => provider.audioPlayer.currentIndex ?? 0,
+    );
+    final currentTrack = context.select<AudioProvider, Track?>(
+      (provider) => provider.currentTrack,
+    );
+    final tracks = context.select<AudioProvider, List<Track>>(
+      (provider) => provider.currentSource?.tracks ?? const <Track>[],
+    );
     final settingsProvider = context.watch<SettingsProvider>();
-    final currentTrackIndex = audioProvider.audioPlayer.currentIndex ?? 0;
-    final tracks = audioProvider.currentSource?.tracks ?? [];
 
     final bool isSimple = settingsProvider.performanceMode;
     final bool disableBlur = isSimple || isWasmSafeMode();
@@ -120,10 +127,10 @@ class _FruitTrackListState extends State<FruitTrackList> {
 
     // Use a simplified version for the sticky overlay
     Widget buildStickyCard(int index) {
-      if (audioProvider.currentTrack == null) return const SizedBox.shrink();
+      if (currentTrack == null) return const SizedBox.shrink();
       return FruitNowPlayingCard(
         trackShow: widget.trackShow,
-        track: audioProvider.currentTrack!,
+        track: currentTrack,
         index: index + 1,
         scaleFactor: widget.scaleFactor,
         showNext: false,
@@ -137,59 +144,52 @@ class _FruitTrackListState extends State<FruitTrackList> {
 
     return Stack(
       children: [
-        NotificationListener<ScrollNotification>(
-          onNotification: (notification) {
-            _handleScroll();
-            return false;
-          },
-          child: ListView.builder(
-            controller: _scrollController,
-            padding: EdgeInsets.fromLTRB(
-              24.0 * widget.scaleFactor, // px-6
-              146.0 *
-                  widget
-                      .scaleFactor, // Avoid overlap with fixed 116px header + breather
-              24.0 * widget.scaleFactor,
-              widget.bottomOffset, // pb-tabbar + dynamic mini-player
-            ),
-            itemCount: tracks.length,
-            itemBuilder: (context, i) {
-              final isCurrent =
-                  i == currentTrackIndex && audioProvider.currentTrack != null;
-
-              if (isCurrent && settingsProvider.fruitStickyNowPlaying) {
-                return Opacity(
-                  // Hide original when sticky is active at top or bottom
-                  opacity: (_isOffScreenTop || _isOffScreenBottom) ? 0.0 : 1.0,
-                  child: Padding(
-                    key: _nowPlayingKey,
-                    padding: EdgeInsets.symmetric(
-                      vertical: 20 * widget.scaleFactor,
-                    ),
-                    child: FruitNowPlayingCard(
-                      trackShow: widget.trackShow,
-                      track: audioProvider.currentTrack!,
-                      index: i + 1,
-                      scaleFactor: widget.scaleFactor,
-                      showNext: false,
-                    ),
-                  ),
-                );
-              }
-
-              // If it's the current track but sticky is OFF, render as a regular item
-              // but tagged with the key so we can still track its position if needed
-              return _buildTrackItem(
-                context: context,
-                track: tracks[i],
-                index: i,
-                isActive: isCurrent,
-                currentTrackIndex: currentTrackIndex,
-                audioProvider: audioProvider,
-                key: isCurrent ? _nowPlayingKey : null,
-              );
-            },
+        ListView.builder(
+          controller: _scrollController,
+          padding: EdgeInsets.fromLTRB(
+            24.0 * widget.scaleFactor, // px-6
+            146.0 *
+                widget
+                    .scaleFactor, // Avoid overlap with fixed 116px header + breather
+            24.0 * widget.scaleFactor,
+            widget.bottomOffset, // pb-tabbar + dynamic mini-player
           ),
+          itemCount: tracks.length,
+          itemBuilder: (context, i) {
+            final isCurrent = i == currentTrackIndex && currentTrack != null;
+
+            if (isCurrent && settingsProvider.fruitStickyNowPlaying) {
+              return Opacity(
+                // Hide original when sticky is active at top or bottom
+                opacity: (_isOffScreenTop || _isOffScreenBottom) ? 0.0 : 1.0,
+                child: Padding(
+                  key: _nowPlayingKey,
+                  padding: EdgeInsets.symmetric(
+                    vertical: 20 * widget.scaleFactor,
+                  ),
+                  child: FruitNowPlayingCard(
+                    trackShow: widget.trackShow,
+                    track: currentTrack,
+                    index: i + 1,
+                    scaleFactor: widget.scaleFactor,
+                    showNext: false,
+                  ),
+                ),
+              );
+            }
+
+            // If it's the current track but sticky is OFF, render as a regular item
+            // but tagged with the key so we can still track its position if needed
+            return _buildTrackItem(
+              context: context,
+              track: tracks[i],
+              index: i,
+              isActive: isCurrent,
+              currentTrackIndex: currentTrackIndex,
+              audioProvider: audioProvider,
+              key: isCurrent ? _nowPlayingKey : null,
+            );
+          },
         ),
         // Sticky Top
         if (settingsProvider.fruitStickyNowPlaying && _isOffScreenTop)
@@ -292,31 +292,8 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
     final settingsProvider = context.watch<SettingsProvider>();
     final showTrackNumbers = settingsProvider.showTrackNumbers;
     final hideDuration = settingsProvider.hideTrackDuration;
-
-    final audioProvider = context.watch<AudioProvider>();
     final isUpcoming = widget.index > widget.currentTrackIndex;
     final isNext = widget.index == widget.currentTrackIndex + 1;
-
-    Color dotColor = colorScheme.primary;
-
-    if (widget.isActive) {
-      final processingState = audioProvider.audioPlayer.processingState;
-      if (processingState == ProcessingState.loading ||
-          processingState == ProcessingState.buffering) {
-        dotColor = Colors.orange;
-      } else {
-        dotColor = const Color(0xFF2E7D32); // Darker Green
-      }
-    } else if (isNext) {
-      final nextBuffered = audioProvider.nextTrackBuffered;
-      final engineState = audioProvider.engineState;
-
-      if (nextBuffered != null && nextBuffered > Duration.zero) {
-        dotColor = Colors.green;
-      } else if (engineState == 'prefetching' || engineState == 'fetching') {
-        dotColor = Colors.orange;
-      }
-    }
 
     final double contentOpacity = isUpcoming ? 0.6 : 1.0;
 
@@ -410,13 +387,11 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                       Expanded(
                         child: Row(
                           children: [
-                            Container(
-                              width: 5 * widget.scaleFactor,
-                              height: 5 * widget.scaleFactor,
-                              decoration: BoxDecoration(
-                                color: dotColor,
-                                shape: BoxShape.circle,
-                              ),
+                            _TrackStatusDot(
+                              audioProvider: widget.audioProvider,
+                              isActive: widget.isActive,
+                              isNext: isNext,
+                              scaleFactor: widget.scaleFactor,
                             ),
                             SizedBox(width: 10 * widget.scaleFactor),
                             Expanded(
@@ -487,5 +462,74 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
     final minutes = duration.inMinutes;
     final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
+  }
+}
+
+class _TrackStatusDot extends StatelessWidget {
+  final AudioProvider audioProvider;
+  final bool isActive;
+  final bool isNext;
+  final double scaleFactor;
+
+  const _TrackStatusDot({
+    required this.audioProvider,
+    required this.isActive,
+    required this.isNext,
+    required this.scaleFactor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isActive) {
+      return StreamBuilder<PlayerState>(
+        stream: audioProvider.playerStateStream,
+        initialData: audioProvider.audioPlayer.playerState,
+        builder: (context, snapshot) {
+          final processingState =
+              snapshot.data?.processingState ??
+              audioProvider.audioPlayer.processingState;
+          final color =
+              processingState == ProcessingState.loading ||
+                  processingState == ProcessingState.buffering
+              ? Colors.orange
+              : const Color(0xFF2E7D32);
+          return _dot(color);
+        },
+      );
+    }
+
+    if (isNext) {
+      return StreamBuilder<Duration?>(
+        stream: audioProvider.nextTrackBufferedStream,
+        initialData: audioProvider.nextTrackBuffered,
+        builder: (context, bufferedSnapshot) {
+          return StreamBuilder<String>(
+            stream: audioProvider.engineStateStringStream,
+            initialData: audioProvider.engineState,
+            builder: (context, engineSnapshot) {
+              final nextBuffered = bufferedSnapshot.data;
+              final engineState =
+                  engineSnapshot.data ?? audioProvider.engineState;
+              final color = nextBuffered != null && nextBuffered > Duration.zero
+                  ? Colors.green
+                  : (engineState == 'prefetching' || engineState == 'fetching')
+                  ? Colors.orange
+                  : const Color(0xFF4D8BFF);
+              return _dot(color);
+            },
+          );
+        },
+      );
+    }
+
+    return _dot(const Color(0xFF4D8BFF));
+  }
+
+  Widget _dot(Color color) {
+    return Container(
+      width: 5 * scaleFactor,
+      height: 5 * scaleFactor,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
   }
 }

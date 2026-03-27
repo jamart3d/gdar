@@ -410,6 +410,55 @@ void main() {
       });
     });
 
+    testWidgets(
+      'seekToTrack during startup load does not let stale playSource win',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final show = createDummyShow(1);
+          final source = show.sources.first;
+          final firstArtUriCompleter = Completer<Uri?>();
+          var artRequestCount = 0;
+
+          when(
+            mockAudioPlayer.processingState,
+          ).thenReturn(ProcessingState.loading);
+          when(mockAudioPlayer.sequence).thenReturn(const []);
+          when(mockAudioCacheService.getAlbumArtUri()).thenAnswer((_) {
+            artRequestCount++;
+            if (artRequestCount == 1) {
+              return firstArtUriCompleter.future;
+            }
+            return Future<Uri?>.value(null);
+          });
+
+          unawaited(audioProvider.playSource(show, source));
+          await Future<void>.delayed(Duration.zero);
+
+          audioProvider.seekToTrack(1);
+          await Future<void>.delayed(Duration.zero);
+
+          firstArtUriCompleter.complete(null);
+          await Future<void>.delayed(const Duration(milliseconds: 120));
+
+          verify(
+            mockAudioPlayer.setAudioSources(
+              any,
+              initialIndex: 1,
+              preload: false,
+            ),
+          ).called(1);
+          verifyNever(
+            mockAudioPlayer.setAudioSources(
+              any,
+              initialIndex: 0,
+              preload: false,
+            ),
+          );
+          verify(mockAudioPlayer.play()).called(1);
+        });
+      },
+    );
+
     //       .thenReturn([createDummyShow(1)]);
     //   when(audioProvider.playRandomShow()).thenAnswer((_) async {
     //     completer.complete();

@@ -1,3 +1,10 @@
+What's new in v1.3.30+240
+- Web UI: Refined Fruit Now Playing Card and Track List with enhanced glassmorphism effects and layout polishing for better mobile responsiveness.
+- Audio: Improved AudioProvider playback and state synchronization, including hardened gapless handoff handling for Web platforms.
+- Testing: Updated AudioProvider test suite to cover new platform-specific playback logic and ensure 100% regression coverage.
+
+---
+
 What's new in v1.3.29+239
 - TV UI: Resolved the issue where the screensaver countdown overlay was not visible on TV hardware.
 - Inactivity Detection: Hardened the InactivityDetector and introduced a ScreensaverLaunchDelegate to ensure reliable screensaver triggering and visibility during extended sessions.

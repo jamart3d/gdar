@@ -39,6 +39,7 @@ mixin _AudioProviderState {
   bool _isTransitioning = false;
   bool _hasPrequeuedNextShow = false;
   bool _isSwitchingSource = false;
+  int _playbackRequestSerial = 0;
 
   late final CatalogService _catalogService;
   late AudioCacheService _audioCacheService;

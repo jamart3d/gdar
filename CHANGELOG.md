@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.30+240] - 2026-03-27
+
+### Changed
+- **Web UI**: Refined **Fruit Now Playing Card** and **Fruit Track List** with enhanced glassmorphism effects and layout polishing for better mobile responsiveness.
+- **Audio**: Improved `AudioProvider` playback and state synchronization, including hardened gapless handoff handling for Web platforms.
+- **Testing**: Updated `AudioProvider` test suite to cover new platform-specific playback logic and ensure 100% regression coverage.
+
 ## [1.3.29+239] - 2026-03-27
 
 ### Fixed

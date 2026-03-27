@@ -34,13 +34,20 @@ class FruitNowPlayingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final audioProvider = context.watch<AudioProvider>();
-    final settingsProvider = context.watch<SettingsProvider>();
+    final audioProvider = context.read<AudioProvider>();
+    final isSimple = context.select<SettingsProvider, bool>(
+      (settings) => settings.performanceMode,
+    );
+    final enableLiquidGlass = context.select<SettingsProvider, bool>(
+      (settings) => settings.fruitEnableLiquidGlass,
+    );
+    final showDevAudioHud = context.select<SettingsProvider, bool>(
+      (settings) => settings.showDevAudioHud,
+    );
     final colorScheme = Theme.of(context).colorScheme;
 
-    final isSimple = settingsProvider.performanceMode;
-    final hasGlass = settingsProvider.fruitEnableLiquidGlass && !isSimple;
-    final showCompactHud = kIsWeb && settingsProvider.showDevAudioHud;
+    final hasGlass = enableLiquidGlass && !isSimple;
+    final showCompactHud = kIsWeb && showDevAudioHud;
     final horizontalPadding = showCompactHud ? 12.0 : 16.0;
 
     return FruitSurface(
@@ -129,45 +136,63 @@ class FruitNowPlayingCard extends StatelessWidget {
                         stream: audioProvider.bufferedPositionStream,
                         initialData: audioProvider.audioPlayer.bufferedPosition,
                         builder: (context, bufferedSnapshot) {
-                          final buffered =
-                              bufferedSnapshot.data ?? Duration.zero;
-                          final progressBar = _buildCompactProgressBar(
-                            audioProvider,
-                            colorScheme,
-                            isLoading: isLoading,
-                            isBuffering: isBuffering,
-                            bufferedPositionMs: buffered.inMilliseconds,
-                            isSimple: isSimple,
-                          );
-                          if (!showCompactHud) return progressBar;
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  _buildCompactPlayButton(
-                                    context,
-                                    audioProvider,
+                          return StreamBuilder<Duration>(
+                            stream: audioProvider.positionStream,
+                            initialData: audioProvider.audioPlayer.position,
+                            builder: (context, positionSnapshot) {
+                              return StreamBuilder<Duration?>(
+                                stream: audioProvider.durationStream,
+                                initialData: audioProvider.audioPlayer.duration,
+                                builder: (context, durationSnapshot) {
+                                  final buffered =
+                                      bufferedSnapshot.data ?? Duration.zero;
+                                  final progressBar = _buildCompactProgressBar(
                                     colorScheme,
-                                  ),
-                                  SizedBox(width: 6 * scaleFactor),
-                                  Expanded(child: progressBar),
-                                ],
-                              ),
-                              SizedBox(height: 4 * scaleFactor),
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  left: (36 + 18) * scaleFactor,
-                                ),
-                                child: const PlaybackMessages(
-                                  textAlign: TextAlign.left,
-                                  showDivider: false,
-                                  showDevHudInline: false,
-                                  fontScale: 0.74,
-                                ),
-                              ),
-                            ],
+                                    isLoading: isLoading,
+                                    isBuffering: isBuffering,
+                                    bufferedPositionMs: buffered.inMilliseconds,
+                                    positionMs:
+                                        (positionSnapshot.data ?? Duration.zero)
+                                            .inMilliseconds,
+                                    durationMs:
+                                        (durationSnapshot.data ?? Duration.zero)
+                                            .inMilliseconds,
+                                    isSimple: isSimple,
+                                  );
+                                  if (!showCompactHud) return progressBar;
+
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          _buildCompactPlayButton(
+                                            context,
+                                            audioProvider,
+                                            colorScheme,
+                                          ),
+                                          SizedBox(width: 6 * scaleFactor),
+                                          Expanded(child: progressBar),
+                                        ],
+                                      ),
+                                      SizedBox(height: 4 * scaleFactor),
+                                      Padding(
+                                        padding: EdgeInsets.only(
+                                          left: (36 + 18) * scaleFactor,
+                                        ),
+                                        child: const PlaybackMessages(
+                                          textAlign: TextAlign.left,
+                                          showDivider: false,
+                                          showDevHudInline: false,
+                                          fontScale: 0.74,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
                           );
                         },
                       );
@@ -301,70 +326,88 @@ class FruitNowPlayingCard extends StatelessWidget {
     ColorScheme colorScheme, {
     required bool isSimple,
   }) {
-    final pos = audioProvider.audioPlayer.position;
-    final dur = audioProvider.audioPlayer.duration ?? Duration.zero;
-    final isUnknown = dur.inMilliseconds == 0 && pos.inMilliseconds == 0;
-    final elapsed = isUnknown ? '--:--' : formatDuration(pos);
-    final total = isUnknown ? '--:--' : formatDuration(dur);
+    return StreamBuilder<Duration>(
+      stream: audioProvider.positionStream,
+      initialData: audioProvider.audioPlayer.position,
+      builder: (context, positionSnapshot) {
+        return StreamBuilder<Duration?>(
+          stream: audioProvider.durationStream,
+          initialData: audioProvider.audioPlayer.duration,
+          builder: (context, durationSnapshot) {
+            final pos = positionSnapshot.data ?? Duration.zero;
+            final dur = durationSnapshot.data ?? Duration.zero;
+            final isUnknown =
+                dur.inMilliseconds == 0 && pos.inMilliseconds == 0;
+            final elapsed = isUnknown ? '--:--' : formatDuration(pos);
+            final total = isUnknown ? '--:--' : formatDuration(dur);
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 6 * scaleFactor,
-        vertical: 2 * scaleFactor,
-      ),
-      decoration: BoxDecoration(
-        color: isSimple
-            ? colorScheme.onSurface.withValues(alpha: 0.06)
-            : colorScheme.primary.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6 * scaleFactor),
-      ),
-      child: RichText(
-        text: TextSpan(
-          style: TextStyle(
-            fontFamily: 'Roboto',
-            fontSize: 11 * scaleFactor,
-            fontWeight: FontWeight.w700,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-          children: [
-            TextSpan(
-              text: elapsed,
-              style: TextStyle(
+            return Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: 6 * scaleFactor,
+                vertical: 2 * scaleFactor,
+              ),
+              decoration: BoxDecoration(
                 color: isSimple
-                    ? colorScheme.onSurface.withValues(alpha: 0.92)
-                    : colorScheme.primary,
+                    ? colorScheme.onSurface.withValues(alpha: 0.06)
+                    : colorScheme.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(6 * scaleFactor),
               ),
-            ),
-            TextSpan(
-              text: ' / ',
-              style: TextStyle(
-                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.65),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontFamily: 'Roboto',
+                    fontSize: 11 * scaleFactor,
+                    fontWeight: FontWeight.w700,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                  children: [
+                    TextSpan(
+                      text: elapsed,
+                      style: TextStyle(
+                        color: isSimple
+                            ? colorScheme.onSurface.withValues(alpha: 0.92)
+                            : colorScheme.primary,
+                      ),
+                    ),
+                    TextSpan(
+                      text: ' / ',
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.65,
+                        ),
+                      ),
+                    ),
+                    TextSpan(
+                      text: total,
+                      style: TextStyle(
+                        color: isSimple
+                            ? colorScheme.onSurfaceVariant.withValues(
+                                alpha: 0.88,
+                              )
+                            : colorScheme.onSurface.withValues(alpha: 0.9),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            TextSpan(
-              text: total,
-              style: TextStyle(
-                color: isSimple
-                    ? colorScheme.onSurfaceVariant.withValues(alpha: 0.88)
-                    : colorScheme.onSurface.withValues(alpha: 0.9),
-              ),
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
   Widget _buildCompactProgressBar(
-    AudioProvider audioProvider,
     ColorScheme colorScheme, {
     required bool isLoading,
     required bool isBuffering,
     required int bufferedPositionMs,
+    required int positionMs,
+    required int durationMs,
     required bool isSimple,
   }) {
-    final duration = audioProvider.audioPlayer.duration?.inMilliseconds ?? 0;
-    final position = audioProvider.audioPlayer.position.inMilliseconds;
+    final duration = durationMs;
+    final position = positionMs;
     final double progress = (duration > 0)
         ? (position / duration).clamp(0.0, 1.0)
         : 0.0;
