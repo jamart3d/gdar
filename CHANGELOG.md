@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.29+239] - 2026-03-27
+
+### Fixed
+- **TV UI**: Resolved the issue where the screensaver countdown overlay was not visible on TV hardware.
+- **Inactivity Detection**: Hardened the `InactivityDetector` and introduced a `ScreensaverLaunchDelegate` to ensure reliable screensaver triggering and visibility during extended sessions.
+
 ## [1.3.28+238] - 2026-03-27
 
 ### Added

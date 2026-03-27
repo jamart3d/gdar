@@ -5,7 +5,9 @@ import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
 import 'package:shakedown_core/ui/widgets/settings/tv_screensaver_section.dart';
+import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
 import '../../../helpers/fake_settings_provider.dart';
 
 class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
@@ -62,7 +64,11 @@ class _FakeSettings extends FakeSettingsProvider {
   String get oilBeatDetectorMode => beatDetectorMode;
 }
 
-Widget _buildSection(String graphMode, {String beatDetectorMode = 'auto'}) {
+Widget _buildSection(
+  String graphMode, {
+  String beatDetectorMode = 'auto',
+  ScreensaverLaunchDelegate? launchDelegate,
+}) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<SettingsProvider>.value(
@@ -71,6 +77,7 @@ Widget _buildSection(String graphMode, {String beatDetectorMode = 'auto'}) {
       ChangeNotifierProvider<ThemeProvider>.value(value: _FakeThemeProvider()),
       ChangeNotifierProvider<DeviceService>.value(value: _FakeDeviceService()),
       ChangeNotifierProvider<AudioProvider>.value(value: _FakeAudioProvider()),
+      Provider<ScreensaverLaunchDelegate?>.value(value: launchDelegate),
     ],
     child: const MaterialApp(
       home: Scaffold(
@@ -174,6 +181,30 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+
+    testWidgets('start button prefers shared launch delegate', (tester) async {
+      var launchCount = 0;
+      await tester.pumpWidget(
+        _buildSection(
+          'off',
+          launchDelegate: ScreensaverLaunchDelegate(({
+            bool allowPermissionPrompts = true,
+          }) async {
+            launchCount++;
+          }),
+        ),
+      );
+
+      final startTile = find.ancestor(
+        of: find.text('Start Screen Saver'),
+        matching: find.byType(TvFocusWrapper),
+      );
+      await tester.ensureVisible(startTile);
+      await tester.tap(startTile);
+      await tester.pump();
+
+      expect(launchCount, 1);
     });
   });
 }

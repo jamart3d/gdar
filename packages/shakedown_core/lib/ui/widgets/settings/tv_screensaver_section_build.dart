@@ -158,7 +158,14 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
             'Start Screen Saver',
             style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
           ),
-          onTap: () => ScreensaverScreen.show(context),
+          onTap: () async {
+            final launchDelegate = context.read<ScreensaverLaunchDelegate?>();
+            if (launchDelegate != null) {
+              await launchDelegate.launch();
+              return;
+            }
+            await ScreensaverScreen.show(context);
+          },
         ),
         const SizedBox(height: 32),
       ],

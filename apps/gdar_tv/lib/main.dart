@@ -13,6 +13,7 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/services/inactivity_service.dart';
+import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
@@ -113,21 +114,6 @@ class _GdarTvAppState extends State<GdarTvApp> {
     }
   }
 
-  Future<void> _showScreensaver(
-    NavigatorState navigator, {
-    bool allowPermissionPrompts = true,
-  }) async {
-    _setScreensaverActive(true);
-    try {
-      await navigator.push(
-        ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
-      );
-    } finally {
-      _setScreensaverActive(false);
-      _inactivityService.onUserActivity();
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -162,7 +148,10 @@ class _GdarTvAppState extends State<GdarTvApp> {
     super.dispose();
   }
 
-  Future<void> _handleInactivityTimeout() async {
+  Future<void> _launchScreensaver({
+    required bool allowPermissionPrompts,
+    required String source,
+  }) async {
     if (!mounted) {
       _launchError.value = 'widget not mounted';
       return;
@@ -180,13 +169,13 @@ class _GdarTvAppState extends State<GdarTvApp> {
       return;
     }
 
-    logger.i('TV inactivity timeout — launching screensaver');
+    logger.i('Launching screensaver from $source');
     _inactivityService.stop();
     _setScreensaverActive(true);
     _launchError.value = null;
     try {
       await navigator.push(
-        ScreensaverScreen.route(allowPermissionPrompts: false),
+        ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
       );
     } on Exception catch (e) {
       _launchError.value = e.toString().replaceFirst('Exception: ', '');
@@ -196,11 +185,16 @@ class _GdarTvAppState extends State<GdarTvApp> {
       logger.e('Screensaver launch failed', error: e);
     } finally {
       _setScreensaverActive(false);
+      _inactivityService.onUserActivity('screensaver_exit:$source');
       // Restart monitoring after screensaver exits.
       if (_settingsProvider.useOilScreensaver) {
         _inactivityService.start();
       }
     }
+  }
+
+  Future<void> _handleInactivityTimeout() {
+    return _launchScreensaver(allowPermissionPrompts: false, source: 'timeout');
   }
 
   void _syncInactivityService(SettingsProvider settingsProvider) {
@@ -281,10 +275,10 @@ class _GdarTvAppState extends State<GdarTvApp> {
           await settingsProvider.setOilScreensaverMode(value);
         }
       } else if (trimmedStep == 'screensaver') {
-        final navigator = _navigatorKey.currentState;
-        if (navigator != null) {
-          await _showScreensaver(navigator);
-        }
+        await _launchScreensaver(
+          allowPermissionPrompts: true,
+          source: 'automation',
+        );
       }
     }
   }
@@ -328,6 +322,16 @@ class _GdarTvAppState extends State<GdarTvApp> {
           create: (_) =>
               widget.deviceService ??
               DeviceService(initialIsTv: widget.isTv, lockIsTv: widget.isTv),
+        ),
+        Provider<ScreensaverLaunchDelegate>.value(
+          value: ScreensaverLaunchDelegate(({
+            bool allowPermissionPrompts = true,
+          }) {
+            return _launchScreensaver(
+              allowPermissionPrompts: allowPermissionPrompts,
+              source: 'manual',
+            );
+          }),
         ),
       ],
       child: Consumer2<ThemeProvider, SettingsProvider>(

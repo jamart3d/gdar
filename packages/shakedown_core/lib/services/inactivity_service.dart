@@ -69,6 +69,7 @@ class InactivityService {
   /// Call this when user activity is detected.
   void onUserActivity([String source = 'activity']) {
     if (!_isEnabled) return;
+    debugPrint('InactivityService: activity source=$source');
     _lastActivityAt = clock.now();
     _timeoutFiredSinceLastActivity = false;
     _ensurePolling();
