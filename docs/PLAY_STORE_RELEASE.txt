@@ -1,4 +1,10 @@
-﻿What's new in v1.3.26+236
+What's new in v1.3.28+238
+- Core: Synchronized monorepo auto-approval policies and orchestration rules for zero-friction production releases.
+- Maintenance: Updated internal rules to enforce stricter zero-friction autonomy and proxy confirmation.
+
+---
+
+What's new in v1.3.27+237
 - Google TV: Added an InactivityDetector and debug countdown overlay in apps/gdar_tv to assist with hardware testing and ensure reliable screensaver triggers during long sessions.
 
 ---

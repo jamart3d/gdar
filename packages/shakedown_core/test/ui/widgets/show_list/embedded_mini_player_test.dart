@@ -94,18 +94,15 @@ void main() {
             value: MockSettingsProvider(),
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           home: Scaffold(
             body: Row(
               children: [
                 SizedBox(
                   width: 350,
-                  child: const EmbeddedMiniPlayer(
-                    compact: true,
-                    scaleFactor: 1.0,
-                  ),
+                  child: EmbeddedMiniPlayer(compact: true, scaleFactor: 1.0),
                 ),
-                const Expanded(child: SizedBox()),
+                Expanded(child: SizedBox()),
               ],
             ),
           ),
