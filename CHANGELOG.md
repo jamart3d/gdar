@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.31+241] - 2026-03-27
+
+### Fixed
+- **Testing**: Resolved redundant `unused_import` lint in `apps/gdar_mobile`.
+- **Maintenance**: Successfully completed full monorepo-wide health check with 258/258 tests passing across all targets.
+- **Hygiene**: Cleaned workspace root of temporary build logs and diagnostic artifacts to maintain monorepo hygiene.
+
 ## [1.3.30+240] - 2026-03-27
 
 ### Changed

@@ -1,3 +1,10 @@
+What's new in v1.3.31+241
+- Maintenance: Successfully completed full monorepo-wide health check with 258/258 tests passing across all targets.
+- Hygiene: Cleaned workspace root of temporary diagnostic logs and artifacts.
+- Testing: Resolved minor linting regressions in mobile test suite.
+
+---
+
 What's new in v1.3.30+240
 - Web UI: Refined Fruit Now Playing Card and Track List with enhanced glassmorphism effects and layout polishing for better mobile responsiveness.
 - Audio: Improved AudioProvider playback and state synchronization, including hardened gapless handoff handling for Web platforms.
