@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/ui/styles/font_config.dart';
 
@@ -112,16 +113,20 @@ class _ShakedownTitleState extends State<ShakedownTitle>
 
     final String activeFont =
         widget.fontKeyOverride ?? settingsProvider.activeAppFont;
+    final bool isFruit =
+        context.read<ThemeProvider?>()?.themeStyle == ThemeStyle.fruit;
 
     final textStyle = theme.textTheme.displayLarge?.copyWith(
       fontSize: widget.fontSize * scaleFactor,
-      fontFamily: activeFont == 'default'
-          ? FontConfig.resolve('Inter') // Assuming 'Inter' for default
-          : (activeFont == 'rock_salt'
-                ? FontConfig.resolve('RockSalt')
-                : (activeFont == 'permanent_marker'
-                      ? FontConfig.resolve('Permanent Marker')
-                      : FontConfig.resolve('Caveat'))),
+      fontFamily: isFruit
+          ? FontConfig.resolve('RockSalt')
+          : (activeFont == 'default'
+                ? FontConfig.resolve('Inter')
+                : (activeFont == 'rock_salt'
+                      ? FontConfig.resolve('RockSalt')
+                      : (activeFont == 'permanent_marker'
+                            ? FontConfig.resolve('Permanent Marker')
+                            : FontConfig.resolve('Caveat')))),
       fontWeight: FontWeight.bold,
       color: theme.colorScheme.primary,
       letterSpacing: 1.2,

@@ -1,136 +1,333 @@
-# DevAudioHud: Advanced Diagnostic Interface
+# DevAudioHud
 
-The `DevAudioHud` is a specialized, ultra-high-density diagnostic overlay used to monitor the health and performance of the custom Web Audio engines in real-time.
+`DevAudioHud` is the web playback diagnostics overlay for GDAR. It is a
+compact, always-expanded HUD that exposes engine state, hybrid handoff state,
+buffering health, and Web Audio timing data in real time.
 
-## 1. Visual Architecture
+This document describes the implemented HUD behavior in the current codebase.
 
-The HUD is organized into a three-tier stacked layout designed for vertical alignment of related telemetry.
+## 1. Layout
 
-### Unified Performance Columns
-To ensure a stable "precision-shave" look, the performance chips are fixed at **84px** width. This creates vertical columns where the graph data and the numeric data perfectly align:
+The HUD is rendered as five semantic rows:
 
-| Column | Metric | Graph (Top Row) | Value Chip (Middle Row) |
-| :--- | :--- | :--- | :--- |
-| **1** | **State Drift** | `DFT` Sparkline | `DFT` Value |
-| **2** | **Headroom** | `HD` Sparkline | `HD` Value |
-| **3** | **Current Buffer** | _(removed)_ | `BUF` Value + fill bar + `PF` (Prefetch) |
-| **4** | **Next Track** | _(removed)_ | `NX` Value + fill bar + `HF` (Handoff) |
+1. `Sparklines`
+2. `Controls`
+3. `State`
+4. `Metrics`
+5. `Messaging`
 
-## 2. The Sparkline Suite
+The rows are built in
+[packages/shakedown_core/lib/ui/widgets/playback/dev_audio_hud_build.dart](../../packages/shakedown_core/lib/ui/widgets/playback/dev_audio_hud_build.dart).
 
-The top row contains two real-time trend graphs. Each graph features a **tiny integrated label** in the lower-right corner for instant identification.
+### Sparklines
 
-*   **DFT (Drift)**: Monitors high-resolution timing drift in worker ticks. Fluctuations here indicate thread contention or clock de-sync.
-*   **HD (Headroom)**: Tracks how much silence or buffer remains before the engine starves. Positive values are critical for gapless performance.
+Each sparkline chip combines:
 
-### BUF and NX — Inline Bar Graphs
+- a trend graph
+- a key badge in the top-left
+- the current numeric value in a separate badge at the bottom-right
+- a tooltip on hover / long-press
 
-The `BUF` and `NX` value chips each contain an **embedded horizontal fill bar** (instead of a top-row sparkline). The bar fills from left to right proportionally against the configured prefetch window (`webPrefetchSeconds`, e.g. 30s or 60s). Colors: BUF uses teal, NX uses green.
+The label and value are intentionally styled differently so the sparkline can
+be scanned quickly.
 
-## 3. Field Reference (The HUD Dictionary)
+### Controls
 
-Each chip represents a specific state or metric. Tapping an interactive chip (indicated by an active border) opens an adjustment menu.
+Interactive chips have a visible border and dropdown affordance:
 
-### Performance & Timing
-| Key | Label | Color Cues | Meaning |
-| :--- | :--- | :--- | :--- |
-| **DFT** | Drift | — | JS Engine Tick Drift (seconds). Lower is better. |
-| **HD** | Headroom | **Red** (<0s), **Orange** (<5s) | Buffer minus Position. Positive values prevent gaps. |
-| **BUF** | Buffer | — | Current track data in memory (MB). |
-| **NX** | Next | — | Next track prefetch progress (MB). |
-| **V** | Visibility | — | App state (`VIS`: Foreground, `HID`: Background) + duration. |
-| **LG** | Last Gap | **Green** (<5ms), **Orange** (5–50ms), **Red** (>50ms) | Milliseconds of silence at the last track boundary. In hybrid mode with an H5→WA handoff, reports the full cross-engine gap: from H5 `onEnded` to the moment WA is confirmed playing and `_swapEngine` fires. |
+- `ENG`
+- `HF`
+- `BG`
+- `STB`
+- `PF`
 
-### Engine & Capability
-| Key | Label | Color Cues | Meaning |
-| :--- | :--- | :--- | :--- |
-| **ENG** | Engine | — | Configured Engine Mode (`HYB`, `WBA`, `H5`, `STD`, `AUT`). |
-| **DET** | Detect | — | Runtime profile (`L`: Low-power, `P`: PWA installed, `D`: Desktop, `W`: Browser). `L` is checked first — a low-power PWA shows `L`, not `P`. |
-| **TX** | Transition | — | Track transition mode (`GLS`: Gapless, `XFD`: Crossfade, `GAP`: Gap). |
-| **AE** | Active Engine | **Indigo** (Survival+) | Active sub-engine: `WA` (Web Audio API), `H5` (HTML5 `<audio>`), `STD` (standard just_audio). A **`+`** suffix (e.g. `WA+`, `H5+`) means the heartbeat/survival layer is simultaneously active and pulses in 220ms unison with the `BG` dots. Falls back to the resolved mode abbreviation (`HYB`, `AUT`, `WBA`, etc.) if the JS context string has not yet arrived. Shown for **all** engine modes. |
-| **ST** | Status | **Orange** (HFDN) | Internal state (`PLAY`, `STAL`, `SUSE`, `HFDN`). |
-| **PS** | Process | **Orange** (BUF), **Green** (RDY) | Player Processing State (`LD`, `BUF`, `RDY`, `END`, `IDL`). |
-| **PM** | Perf Mode | **Amber** (ON) | Performance Mode state. `ON` = visual effects disabled (set by low-power detection or Fruit first-run). `OFF` = full effects enabled and Liquid Glass active by default. |
+### State
 
-### Controls & Presets (Interactive)
-| Key | Label | Options | Purpose |
-| :--- | :--- | :--- | :--- |
-| **PF** | Prefetch | `30s`, `60s`, `G` | Toggle next-track lookahead window. `G` = greedy (WebAudio mode). Default is `60s` when handoff mode is `BND`, `30s` otherwise. |
-| **HF** | Handoff | `IMM`, `BUF`, `BND`, `OFF` | Control when Hybrid engine swaps from H5 to WA. Default for modern profile is `BND` (boundary). |
-| **BG** | Background | `HBT`, `VID`, `H5`, `NONE` | Set the survival strategy for hidden browser tabs. `HBT` auto-escalates to `VID` after 60s on mobile. |
-| **STB** | Background Mode | `STB`→Compatible, `BAL`→Balanced, `MAX`→Gapless | Named preset bundles for the engine config. Compatible = best longevity, Gapless = best quality. |
+Read-only state chips summarize what the engine is doing now:
 
-## 4. Background Performance Monitoring
+- `AE`
+- `V`
+- `ST`
+- `PS`
+- `SHD`
+- `GAP`
+- `PM`
+- WA-only telemetry when relevant: `LAT`, `ERR`, `WTC`, `SR`, `CAC`
+- hybrid-only telemetry: `HS`, `HAT`
 
-### The BG Chip
-The **BG (Background)** chip is the primary monitor for tab survival. 
-*   **Heartbeat Pulse**: Contains three horizontal indicators:
-    *   **RED**: Heartbeat required by architecture but currently **Inactive**. High risk of OS suspension.
-    *   **ORANGE**: Heartbeat not required (tab is currently visible).
-    *   **GREEN**: Heartbeat **Active and Pulsing**. Successfully preventing tab sleep.
-*   **Synchronized Heartbeat Pulse**: When a survival strategy (`HBT`, `VID`) is active, the engine enters a "shielded" state. This is visualized via a **unified pulse**:
-    *   **Heartbeat Dot**: Flashes Green/Red in the `BG` chip.
-    *   **Survival Marker**: A **`+`** symbol appears in the `AE` chip.
-    *   **Perfect Sync**: Both indicators fade in/out together (220ms duration) to signal they are driven by the same internal clock.
-*   **Survival Highlight**: When active, the **AE** chip background turns **Indigo** for high visibility.
-*   **60s Escalation (mobile only)**: When `BG=HBT` and `isLikelyLowPowerWebDevice()` is true, a 60-second timer starts on tab-hide. If the tab is still hidden and playing at expiry, the engine automatically escalates from audio heartbeat (`HBT`) to video heartbeat (`VID`). The timer is cleared immediately on tab-show. Watch the `SHD` chip for escalation state.
+### Metrics
 
-## 5. Session Health Chips
+Numeric metrics and session counters:
 
-Four computed chips that synthesise multiple raw signals into a single at-a-glance status.
+- `BUF`
+- `NX`
+- `LG`
+- `BGT`
+- `D`
 
-### SHD — Session Shield
-Summarises whether the current playback session is protected against OS suspension while hidden.
+`D` is the runtime profile chip. Internally the key is still `DET`, but the
+visible label is intentionally shortened to `D:`.
 
-| Value | Color | Meaning |
+### Messaging
+
+Bottom-row messaging chips:
+
+- `E`
+- `SIG`
+- `MSG`
+
+`MSG` is tappable and clears the active issue.
+
+## 2. Sparkline Suite
+
+The top row adapts to the active engine.
+
+### Always shown
+
+- `DFT`: tick drift history
+- `HD`: headroom history
+
+### Shown in Web Audio and Hybrid
+
+- `NET`: fetch time-to-first-byte history
+
+### Shown only when WA telemetry is actually valid
+
+These are shown in pure `WBA`, or in `HYB` only when the active sub-engine is
+currently Web Audio:
+
+- `SCH`: schedule lead time
+- `DEC`: decode time
+- `BCT`: buffer concat time
+
+### Shown in Hybrid
+
+- `HPD`: handoff poll depth
+
+### Sparkline meanings
+
+| Key | Meaning | Notes |
 | :--- | :--- | :--- |
-| `VIS` | — | Tab is foreground — no background survival needed |
-| `OK` | **Green** | Heartbeat active and pulsing — session shielded |
-| `SOFT` | **Amber** | Background strategy active but heartbeat not yet pulsing — watch on mobile |
-| `RISK` | **Orange** | Heartbeat needed but not running — OS may suspend soon |
-| `DEAD` | **Red** | No survival strategy configured — tab will be killed in background |
-| `--` | — | Not playing |
+| `DFT` | Time between state ticks | Lower and steadier is better |
+| `HD` | Buffer time ahead of playback | Dimmed in pure WA because it behaves more like time remaining |
+| `NET` | Archive fetch TTFB | In-flight fetches show elapsed time |
+| `SCH` | Seconds until the next WA start | Computed from `scheduledStartContextTime - ctxCurrentTime` |
+| `DEC` | `decodeAudioData()` time | Last decode cost |
+| `BCT` | post-fetch concat time | Cost of assembling downloaded chunks |
+| `HPD` | restore poll cycles | Number of polls before WA became ready |
 
-### GAP — Gapless Readiness
-Shows whether the next-track buffer is ready for a gapless handoff at the track boundary.
+## 3. Chip Reference
 
-| Value | Color | Meaning |
-| :--- | :--- | :--- |
-| `RDY` | **Green** | Next track buffered — gapless handoff expected |
-| `WAIT` | **Cyan** | Next track prefetching — not yet ready |
-| `LOW` | **Orange** | Handoff approaching, next buffer low — gap likely |
-| `MISS` | **Red** | Handoff window reached with insufficient buffer — gap will occur |
-| `OFF` | — | Gapless handoff disabled (`HF=OFF`) |
-| `--` | — | No next-track prefetch in progress |
+### Controls
 
-### BGT — Background Time
-Cumulative time the tab has been hidden while playing this session. Accumulates across multiple background/foreground cycles. Resets on page reload. Text turns **light blue** when non-zero.
+| Key | Meaning |
+| :--- | :--- |
+| `ENG` | Configured engine mode |
+| `HF` | Hybrid handoff mode |
+| `BG` | Background strategy |
+| `STB` | Hidden-session preset |
+| `PF` | Prefetch window |
 
-### PM — Performance Mode
-Shows the current `performanceMode` state.
+### Core State
 
-| Value | Color | Meaning |
-| :--- | :--- | :--- |
-| `ON` | **Amber** | Performance mode active — visual effects (glow, RGB, Liquid Glass) disabled |
-| `OFF` | — | Full effects enabled; Liquid Glass is on by default for capable devices |
+| Key | Meaning |
+| :--- | :--- |
+| `AE` | Active playback engine or active hybrid sub-engine |
+| `V` | Visibility state |
+| `ST` | Internal engine state |
+| `PS` | Playback processing state |
+| `SHD` | Session shield summary |
+| `GAP` | Gapless readiness summary |
+| `PM` | Performance mode |
+| `E` | Error flag |
+| `SIG` | Message severity |
+| `MSG` | Current status message |
 
-`ON` is set by: low-power device detection on first run, Fruit theme first-switch, or user toggle.
+### Metrics
 
----
+| Key | Meaning |
+| :--- | :--- |
+| `BUF` | Current-track buffered amount |
+| `NX` | Next-track buffered amount |
+| `LG` | Last measured track gap |
+| `BGT` | Total hidden-tab time this session |
+| `D` | Runtime profile: `L`, `P`, `D`, `W` |
 
-## 6. System Messaging & Signal Logic
+### WA Telemetry
 
-The bottom row provides high-priority feedback via the **SIG** (Signal) and **MSG** (Message) fields.
+| Key | Meaning |
+| :--- | :--- |
+| `LAT` | AudioContext output latency |
+| `ERR` | Failed fetch/decode count |
+| `WTC` | Worker tick count |
+| `SR` | AudioContext sample rate |
+| `CAC` | Decoded buffer cache depth |
+| `SCH` | Schedule lead time |
+| `DEC` | Decode time |
+| `BCT` | Concat time |
 
-*   **SIG (Signal)**:
-    *   `ISS` (**Red**): **Issue** - Critical playback error or stall requiring attention.
-    *   `NTF` (**Orange**): **Notification** - Transient system update (clears after 8s).
-    *   `AGT` (**Cyan**): **Agent** - Status update from the Hybrid orchestrator.
-*   **MSG (Message)**:
-    *   **Marquee**: Text over 30 characters automatically scrolls.
-    *   **Manual Clear**: Tapping the `MSG` chip clears the active issue and resets the signal.
+### Hybrid Telemetry
 
-## 7. HUD Lifecycle
-*   **Enablement**: Requires `SettingsProvider.showDevAudioHud` = true and `kIsWeb`.
-*   **Data Source**: Driven by a high-frequency (50ms) stream from `AudioProvider`.
-*   **Precision Alignment**: All performance values are width-locked to **84px** to ensure stable vertical alignment with the graph columns, preventing UI "pop" during value changes.
+| Key | Meaning |
+| :--- | :--- |
+| `HS` | Hybrid handoff state |
+| `HAT` | True handoff-attempt count for the current session |
+| `HPD` | Poll depth of the last successful restore |
+
+`HAT` is intentionally a session counter now. It no longer mirrors the
+internal stale-loop cancellation token.
+
+## 4. Engine Gating
+
+The HUD hides or dims chips when their source data is not meaningful.
+
+### Pure Web Audio (`WBA`)
+
+- Shows WA telemetry
+- Shows `NET`
+- Shows `HD` dimmed
+- Does not show hybrid-only controls or counters
+
+### Pure HTML5 (`H5`)
+
+- Hides WA-only telemetry
+- Hides `NET`
+- Hides hybrid controls
+- Keeps the general state, metric, and messaging rows
+
+### Hybrid (`HYB` / `AUT`)
+
+- Shows hybrid controls and counters
+- Shows `NET`
+- Shows WA-only telemetry only when the active sub-engine is WA
+- Keeps `HPD` visible as a hybrid-only sparkline
+
+## 5. Tooltip Behavior
+
+Every sparkline and chip can expose a tooltip.
+
+### Fruit tooltip styling
+
+In Fruit mode, the HUD uses
+[packages/shakedown_core/lib/ui/widgets/theme/fruit_tooltip.dart](../../packages/shakedown_core/lib/ui/widgets/theme/fruit_tooltip.dart).
+
+Tooltips support rich text, and important tokens are color-aligned with the
+HUD language where possible, for example:
+
+- `WA` / `WBA`
+- `H5`
+- `HYB`
+- `ISS`
+- `RDY`
+- `D`
+
+### Tooltip goals
+
+Tooltip copy is intentionally short:
+
+- explain the acronym
+- describe whether lower/higher is better when useful
+- avoid repeating obvious label text
+
+## 6. Color Cues
+
+The HUD uses color as a fast risk signal.
+
+### Common patterns
+
+- `Green`: healthy / ready / low latency / low gap
+- `Amber` or `Orange`: caution / transition / moderate latency
+- `Red`: issue / starvation / high gap / failure
+- `Cyan` / `Light Blue`: Web Audio or visibility/context signals
+
+### Specific examples
+
+- `LG` turns green for very small gaps, amber for moderate gaps, red for large
+  gaps
+- `NET` uses green, amber, and red thresholds for completed TTFB samples
+- `ERR` is highlighted when non-zero
+- `HS` and `HAT` shift warmer when handoff activity grows
+
+## 7. Session Health Chips
+
+### `SHD`
+
+Session shield summary:
+
+- `VIS`: tab visible
+- `OK`: protected
+- `SOFT`: best-effort protection
+- `RISK`: protection needed but not active
+- `DEAD`: no useful protection
+- `--`: not playing
+
+### `GAP`
+
+Gapless readiness summary:
+
+- `RDY`
+- `WAIT`
+- `LOW`
+- `MISS`
+- `OFF`
+- `--`
+
+### `LG`
+
+`LG` reports the last audible transition gap. In hybrid mode this includes the
+full H5-to-WA boundary gap when that path is used.
+
+## 8. Hybrid Handoff Telemetry
+
+### `HS`
+
+Hybrid handoff state:
+
+- `IDLE`
+- `ARM`
+- `FNC`
+- `PRB`
+- `DONE`
+
+### `HAT`
+
+`HAT` counts real hybrid handoff launches for the current session. Lower is
+usually better. A high number can indicate frequent swaps, repeated retry
+pressure, or lots of seeking/skipping.
+
+### `HPD`
+
+`HPD` shows how many restore polls were needed before Web Audio reported
+`ready`. Lower is better.
+
+## 9. Data Sources
+
+The HUD is built from `HudSnapshot`, which is fed by:
+
+- web engine JS state
+- hybrid engine JS state
+- computed Dart-side summaries and histories
+
+Key files:
+
+- [packages/shakedown_core/lib/models/hud_snapshot.dart](../../packages/shakedown_core/lib/models/hud_snapshot.dart)
+- [packages/shakedown_core/lib/providers/audio_provider_diagnostics.dart](../../packages/shakedown_core/lib/providers/audio_provider_diagnostics.dart)
+- [packages/shakedown_core/lib/ui/widgets/playback/dev_audio_hud_build.dart](../../packages/shakedown_core/lib/ui/widgets/playback/dev_audio_hud_build.dart)
+- [packages/shakedown_core/lib/ui/widgets/playback/dev_audio_hud_helpers.dart](../../packages/shakedown_core/lib/ui/widgets/playback/dev_audio_hud_helpers.dart)
+- [apps/gdar_web/web/gapless_audio_engine.js](../web/gapless_audio_engine.js)
+- [apps/gdar_web/web/hybrid_audio_engine.js](../web/hybrid_audio_engine.js)
+
+## 10. Current Status
+
+The HUD now includes:
+
+- adaptive sparkline chips with embedded values
+- WA advanced telemetry
+- hybrid handoff telemetry
+- engine-gated visibility
+- concise tooltips for chips and sparklines
+- rich Fruit tooltips with color-aligned keywords
+- the shortened `D` profile chip instead of a visible `DET` label
+
+If the HUD changes again, this file should be updated alongside the widget and
+engine code so the documentation stays implementation-first.

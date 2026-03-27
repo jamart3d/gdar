@@ -362,11 +362,10 @@ class _GdarTvAppState extends State<GdarTvApp> {
                       color: finalTheme.scaffoldBackgroundColor,
                       child: child ?? const SizedBox.shrink(),
                     ),
-                    if (settingsProvider.useOilScreensaver &&
-                        !_isScreensaverActive)
-                      Positioned(
-                        left: 8,
-                        top: 8,
+                    // DIAGNOSIS: Force overlay visibility and center it to rule out overscan.
+                    // Also removed the !_isScreensaverActive gate to see if it's "stuck" active.
+                    if (settingsProvider.useOilScreensaver)
+                      Center(
                         child: _InactivityCountdownOverlay(
                           countdown: _inactivityService.debugCountdown,
                           launchError: _launchError,
@@ -457,14 +456,16 @@ class _InactivityCountdownOverlay extends StatelessWidget {
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0x66000000),
-                  borderRadius: BorderRadius.circular(4),
+                  color: const Color(0xCCFF0000), // Bright red
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white, width: 2),
                 ),
                 child: Text(
-                  'SS: $value',
+                  'SS: $value (TV: ${ThemeProvider.getInstance?.isTv})',
                   style: const TextStyle(
-                    color: Color(0x99FFFFFF),
-                    fontSize: 10,
+                    color: Color(0xFFFFFFFF),
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                     fontFamily: 'monospace',
                   ),
                 ),

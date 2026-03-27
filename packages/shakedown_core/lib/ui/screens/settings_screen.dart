@@ -203,6 +203,9 @@ class _SettingsScreenState extends State<SettingsScreen>
         backgroundColor: effectiveBackgroundColor,
         surfaceTintColor: Colors.transparent,
       ),
+      textTheme: isFruit
+          ? baseTheme.textTheme.apply(fontFamily: 'Inter')
+          : baseTheme.textTheme,
     );
 
     final List<Widget> slivers = [

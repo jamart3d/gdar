@@ -228,7 +228,7 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
 
   double _heartbeatStackHeight(double labelsFontSize) {
     final size = labelsFontSize * 0.44;
-    return (size * 3) + (0.8 * 2 * 3) + 4;
+    return (size * 3) + (0.8 * 2 * 3) + 4 + 8.0;
   }
 
   double? _parseDriftValue(String? raw) {
@@ -253,6 +253,53 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
     _headroomHistory.add(sample);
     if (_headroomHistory.length > _DevAudioHudState._headroomHistoryMaxPoints) {
       _headroomHistory.removeAt(0);
+    }
+  }
+
+  double? _computeScheduleLeadSeconds(HudSnapshot hud) {
+    final scheduledIndex = hud.scheduledIndex;
+    final scheduledStart = hud.scheduledStartContextTime;
+    final currentContext = hud.ctxCurrentTime;
+    if (scheduledIndex == null || scheduledIndex < 0) {
+      return null;
+    }
+    if (scheduledStart == null || currentContext == null) {
+      return null;
+    }
+    final leadSeconds = scheduledStart - currentContext;
+    if (!leadSeconds.isFinite) return null;
+    return leadSeconds;
+  }
+
+  void _appendSchSample(double? sample) {
+    if (sample == null) return;
+    _schHistory.add(sample);
+    if (_schHistory.length > _DevAudioHudState._driftHistoryMaxPoints) {
+      _schHistory.removeAt(0);
+    }
+  }
+
+  void _appendDecSample(double? sample) {
+    if (sample == null) return;
+    _decHistory.add(sample);
+    if (_decHistory.length > _DevAudioHudState._netHistoryMaxPoints) {
+      _decHistory.removeAt(0);
+    }
+  }
+
+  void _appendBctSample(double? sample) {
+    if (sample == null) return;
+    _bctHistory.add(sample);
+    if (_bctHistory.length > _DevAudioHudState._netHistoryMaxPoints) {
+      _bctHistory.removeAt(0);
+    }
+  }
+
+  void _appendHpdSample(int? sample) {
+    if (sample == null) return;
+    _hpdHistory.add(sample.toDouble());
+    if (_hpdHistory.length > _DevAudioHudState._netHistoryMaxPoints) {
+      _hpdHistory.removeAt(0);
     }
   }
 
@@ -368,179 +415,205 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
     return 0;
   }
 
+  Widget _wrapHudTooltip({
+    required Widget child,
+    required String key,
+    required String value,
+    required bool isFruit,
+  }) {
+    final tooltip = _hudFieldTooltip(key, value);
+    if (tooltip.isEmpty) return child;
+    final richTooltip = _buildHudTooltipRichMessage(tooltip);
+    if (isFruit) {
+      return FruitTooltip(
+        message: tooltip,
+        richMessage: richTooltip,
+        child: child,
+      );
+    }
+    return Tooltip(
+      richMessage: richTooltip,
+      preferBelow: false,
+      verticalOffset: 20,
+      child: child,
+    );
+  }
+
+  InlineSpan _buildHudTooltipRichMessage(String text) {
+    const tokenColorMap = <String, Color>{
+      'WA': Colors.cyan,
+      'WBA': Colors.cyan,
+      'WEBAUDIO': Colors.cyan,
+      'H5': Colors.lightBlueAccent,
+      'HTML5': Colors.lightBlueAccent,
+      'HYB': Colors.orangeAccent,
+      'HYBRID': Colors.orangeAccent,
+      'AUT': Colors.greenAccent,
+      'AUTO': Colors.greenAccent,
+      'VID': Colors.purpleAccent,
+      'HBT': Colors.greenAccent,
+      'OFF': Colors.redAccent,
+      'STB': Colors.green,
+      'BAL': Colors.lightBlueAccent,
+      'MAX': Colors.orangeAccent,
+      'ISS': Colors.redAccent,
+      'NTF': Colors.orange,
+      'AGT': Colors.lightBlueAccent,
+      'VIS': Colors.green,
+      'OK': Colors.green,
+      'SOFT': Colors.amber,
+      'RISK': Colors.redAccent,
+      'DEAD': Colors.redAccent,
+      'RDY': Colors.green,
+      'LOW': Colors.amber,
+      'MISS': Colors.redAccent,
+      'IMM': Colors.cyanAccent,
+      'BND': Colors.orangeAccent,
+      'BUF': Colors.amber,
+      'CNT': Colors.orangeAccent,
+      'SUS': Colors.redAccent,
+      'ACT': Colors.greenAccent,
+      'LD': Colors.orangeAccent,
+      'END': Colors.lightBlueAccent,
+      'IDL': Colors.blueGrey,
+      'ARM': Colors.amber,
+      'FNC': Colors.orangeAccent,
+      'PRB': Colors.orangeAccent,
+      'DONE': Colors.greenAccent,
+      'PWA': Colors.greenAccent,
+      'L': Colors.amber,
+      'P': Colors.greenAccent,
+      'D': Colors.cyanAccent,
+      'W': Colors.lightBlueAccent,
+    };
+    final tokens = tokenColorMap.keys.toList()
+      ..sort((a, b) => b.length.compareTo(a.length));
+    final pattern = RegExp(
+      '(?<!\\w)(${tokens.map(RegExp.escape).join('|')})(?!\\w)',
+    );
+    final children = <InlineSpan>[];
+    var cursor = 0;
+
+    for (final match in pattern.allMatches(text)) {
+      if (match.start > cursor) {
+        children.add(TextSpan(text: text.substring(cursor, match.start)));
+      }
+      final token = match.group(0)!;
+      children.add(
+        TextSpan(
+          text: token,
+          style: TextStyle(
+            color: tokenColorMap[token.toUpperCase()],
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      );
+      cursor = match.end;
+    }
+
+    if (cursor < text.length) {
+      children.add(TextSpan(text: text.substring(cursor)));
+    }
+
+    return TextSpan(children: children);
+  }
+
   String _hudFieldTooltip(String key, String value) {
     switch (key) {
       case 'ENG':
-        String desc = 'Unknown';
-        if (value == 'WBA') desc = 'WebAudio';
-        if (value == 'H5') desc = 'HTML5';
-        if (value == 'STD') desc = 'Standard';
-        if (value == 'PAS') desc = 'Passive';
-        if (value == 'HYB') desc = 'Hybrid';
-        if (value == 'AUT') desc = 'Auto';
-        return 'Configured Engine Mode: $desc ($value)';
+        return 'Engine mode. Tap to switch. WBA=WebAudio, H5=HTML5, HYB=Hybrid, AUT=Auto.';
       case 'DET':
-        String profile = 'Unknown';
-        if (value == 'L') profile = 'Low Performance (Mobile/Old)';
-        if (value == 'P') profile = 'PWA (Installed App)';
-        if (value == 'D') profile = 'Desktop (High Performance)';
-        if (value == 'W') profile = 'Standard Web Browser';
-        return 'Detected Hardware Profile: $profile ($value)';
+        return 'Runtime profile. L=low, P=PWA, D=desktop, W=web.';
       case 'HF':
-        String desc = 'Unknown';
-        if (value == 'IMM') {
-          desc = 'Immediate - swap to WebAudio as soon as loaded';
-        }
-        if (value == 'BND') {
-          desc = 'End - swap at the next track boundary';
-        }
-        if (value == 'OFF') {
-          desc = 'Disabled - stay on HTML5, no WebAudio handoff';
-        }
-        if (value == 'BUF') {
-          desc = 'Mid - wait until HTML5 buffer is exhausted, then swap';
-        }
-        return 'Hybrid Handoff Mode: $desc ($value)';
+        return 'Hybrid handoff mode. Tap to change. IMM=immediate, BND=boundary, BUF=buffered, OFF=stay on HTML5.';
       case 'BG':
-        String desc = 'Unknown';
-        if (value == 'VID') {
-          desc =
-              'Video Overlay - silent video keeps WebAudio alive in background';
-        }
-        if (value == 'HBT') {
-          desc =
-              'Heartbeat - silent audio clock keeps WebAudio alive in background';
-        }
-        if (value == 'OFF') {
-          desc = 'Disabled - no background survival, may throttle on mobile';
-        }
-        if (value == 'H5') {
-          desc = 'HTML5 Keepalive - hands off to HTML5 in background';
-        }
-        final dotLegend = value == 'HBT'
-            ? ' | Dots: needed but inactive (risk) | not needed (desktop) | active (protected)'
-            : '';
-        return 'Background Survival: $desc$dotLegend';
+        return 'Background strategy. Tap to change. H5=handoff, HBT=heartbeat, VID=video keepalive, OFF=disabled.';
       case 'STB':
-        String desc = 'Unknown';
-        if (value == 'STB') desc = 'Stability (Safe)';
-        if (value == 'BAL') desc = 'Balanced';
-        if (value == 'MAX') desc = 'Maximum (Performance)';
-        return 'Session Stability Preset: $desc ($value)';
+        return 'Hidden-session preset. Tap to change. STB=stable, BAL=balanced, MAX=aggressive.';
       case 'AE':
-        if (value == '--') {
-          return 'Active Engine: not yet available';
-        }
-        String aeDesc = 'Unknown';
-        if (value.startsWith('WA')) {
-          aeDesc =
-              'Web Audio API - low-latency, gapless, needs full buffer decoded upfront.';
-        }
-        if (value.startsWith('H5')) {
-          aeDesc = 'HTML5 <audio> element - streaming, background-safe.';
-        }
-        if (value.startsWith('VI')) {
-          aeDesc =
-              'Video Overlay - silent video trick keeps WebAudio alive in background.';
-        }
-        if (value.startsWith('HBT')) {
-          aeDesc =
-              'Heartbeat - silent audio clock preventing browser throttle.';
-        }
-        if (value.startsWith('BG')) {
-          aeDesc = 'Generic background engine.';
-        }
-        if (value.startsWith('FG')) {
-          aeDesc = 'Generic foreground engine.';
-        }
-        final aeSuffix = value.endsWith('+')
-            ? ' | +: heartbeat/survival mode also active.'
-            : '';
-        return 'Active Engine: $aeDesc$aeSuffix';
+        return value == '--'
+            ? 'Current playback engine is not available yet.'
+            : 'Current playback engine. WA=WebAudio, H5=HTML5. + means survival help is active.';
       case 'V':
         if (value.startsWith('VIS')) {
-          return 'Tab Visible - app is in the foreground ($value)';
+          return 'Tab is visible.';
         }
-        return 'Tab Hidden - app is in the background ($value). Audio may throttle on mobile.';
+        return 'Tab is hidden. Mobile browsers may throttle audio.';
       case 'DFT':
-        return 'Tick Drift: $value - time between engine heartbeats. Lower = more stable playback.';
+        return 'Tick drift sparkline. Lower and steadier is better.';
       case 'PF':
         if (value == 'G') {
-          return 'Prefetch: Greedy - fetch full track immediately. Required by WebAudio.';
+          return 'Prefetch is greedy: fetch the whole track up front.';
         }
-        return 'Prefetch Window: pre-load $value of the next track.';
+        return 'Prefetch window for the next track. Tap to change.';
       case 'PS':
-        String desc = 'Unknown';
-        if (value == 'LD') {
-          desc = 'Loading - fetching audio data';
-        }
-        if (value == 'BUF') {
-          desc = 'Buffering - waiting for enough data to play';
-        }
-        if (value == 'RDY') {
-          desc = 'Ready - playing normally';
-        }
-        if (value == 'END') {
-          desc = 'Completed - reached end of playlist';
-        }
-        if (value == 'IDL') {
-          desc = 'Idle - no track loaded';
-        }
-        return 'Processing State: $desc';
+        return 'Playback state. LD=loading, BUF=buffering, RDY=ready, END=ended, IDL=idle.';
       case 'P':
-        return 'Player State: $value - whether audio is playing or paused';
+        return 'Player state.';
       case 'BUF':
-        return 'Current Track Buffered: $value of this track is downloaded';
+        return 'Buffered amount for the current track.';
       case 'HD':
-        return 'Buffer Headroom: $value ahead of playback position.';
+        return 'Headroom sparkline. Buffer time ahead of playback.';
       case 'NX':
         if (value == '--' || value == '00:00') {
-          return 'Next Track Buffer: nothing buffered yet';
+          return 'No next-track buffer yet.';
         }
-        return 'Next Track Buffer: $value of the next track is pre-loaded.';
+        return 'Buffered amount for the next track.';
       case 'E':
-        if (value == 'OK') return 'No errors';
-        if (value == '--') return 'Error status not available';
-        return 'Error detected: $value - tap MSG chip for details';
+        if (value == 'OK') return 'No engine error.';
+        if (value == '--') return 'Error state not available.';
+        return 'Engine error flag. Check MSG for detail.';
       case 'ST':
-        return 'Engine Context: $value - internal state of the active audio engine';
+        return 'Engine state. CNT=countdown, SUS=suspended, VIS=waiting on visibility, ACT=active, RDY=ready.';
       case 'SIG':
-        String sigDesc = value;
-        if (value == 'ISS') sigDesc = 'Issue detected';
-        if (value == 'NTF') sigDesc = 'Notification';
-        if (value == 'AGT') sigDesc = 'Agent update';
-        if (value == 'OK') sigDesc = 'All clear';
-        return 'Signal: $sigDesc - tap MSG for details';
+        return 'Message type. ISS=issue, NTF=notice, AGT=agent note.';
       case 'MSG':
-        return 'Status Message - tap to dismiss. $value';
+        return 'Latest status message. Tap to dismiss.';
       case 'TX':
-        String txDesc = 'Unknown';
-        if (value == 'XFD') txDesc = 'Crossfade';
-        if (value == 'GAP') txDesc = 'Gapless';
-        if (value == 'OFF') txDesc = 'Off';
-        return 'Track Transition Mode: $txDesc ($value)';
+        return 'Track transition mode.';
       case 'SHD':
-        return 'Session Shield (background protection): $value';
+        return 'Background protection status. VIS=visible, OK=protected, SOFT=best effort, RISK=at risk, DEAD=off.';
       case 'GAP':
-        return 'Gapless Readiness (next track pre-loaded): $value';
+        return 'Gapless readiness for the next handoff. RDY is healthy; LOW or MISS means risk.';
       case 'BGT':
-        return 'Background Time: $value total time the tab has been hidden this session';
+        return 'Total time this tab has been in the background.';
       case 'PM':
-        final pmDesc = value == 'ON' ? 'Enabled (effects reduced)' : 'Disabled';
-        return 'Performance Mode: $pmDesc ($value)';
+        return 'Performance mode. ON reduces effects and visual cost.';
       case 'NET':
         if (value == '--') {
-          return 'Network TTFB: no fetch recorded yet (WebAudio engine only)';
+          return 'Network sparkline. No fetch sample yet.';
         }
         if (value.endsWith('...')) {
-          return 'Network TTFB: fetch in progress ($value) - time since request started';
+          return 'Network sparkline. A fetch is in flight.';
         }
-        return 'Network TTFB (archive.org time-to-first-byte): $value';
+        return 'Network sparkline. Time to first byte from Archive.';
       case 'LG':
         if (value == '--') {
-          return 'Last Gap: no track transition yet';
+          return 'No measured track gap yet.';
         }
-        return 'Last Gap: $value between previous and current track.';
+        return 'Measured gap between the last two tracks.';
+      case 'SCH':
+        return 'Schedule sparkline. Seconds until the next WebAudio start.';
+      case 'LAT':
+        return 'Output latency in milliseconds.';
+      case 'DEC':
+        return 'Decode sparkline. Time spent in decodeAudioData.';
+      case 'BCT':
+        return 'Concat sparkline. Time spent stitching fetch chunks together.';
+      case 'ERR':
+        return 'Count of failed fetch or decode attempts in this session.';
+      case 'WTC':
+        return 'Background worker tick count.';
+      case 'SR':
+        return 'Active AudioContext sample rate.';
+      case 'CAC':
+        return 'Decoded WebAudio buffers currently cached.';
+      case 'HS':
+        return 'Hybrid handoff state. IDLE=idle, ARM=armed, FNC=fenced, PRB=probing, DONE=WebAudio active.';
+      case 'HAT':
+        return 'Total hybrid handoff attempts this session.';
+      case 'HPD':
+        return 'Restore sparkline. Poll cycles needed before WebAudio became ready.';
       default:
         return '$key: $value';
     }

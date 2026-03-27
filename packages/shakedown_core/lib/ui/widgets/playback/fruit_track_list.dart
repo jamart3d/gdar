@@ -322,7 +322,7 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
 
     void activate() {
       AppHaptics.lightImpact(context.read<DeviceService>());
-      widget.audioProvider.audioPlayer.seek(Duration.zero, index: widget.index);
+      widget.audioProvider.seekToTrack(widget.index);
     }
 
     return Semantics(

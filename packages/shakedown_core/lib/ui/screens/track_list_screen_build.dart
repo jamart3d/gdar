@@ -668,6 +668,60 @@ extension _TrackListScreenBuild on _TrackListScreenState {
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
+    Offset? tapPosition;
+
+    Future<void> handleTrackTap(AudioProvider audioProvider) async {
+      if (!settingsProvider.playOnTap) {
+        final screenSize = MediaQuery.sizeOf(context);
+        final pos =
+            tapPosition ?? Offset(screenSize.width / 2, screenSize.height / 2);
+
+        final result = await showMenu<String>(
+          context: context,
+          position: RelativeRect.fromLTRB(
+            pos.dx,
+            pos.dy,
+            screenSize.width - pos.dx,
+            screenSize.height - pos.dy,
+          ),
+          items: [
+            PopupMenuItem<String>(
+              enabled: false,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Text(
+                '"Play on Tap" is off',
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const PopupMenuItem<String>(
+              value: 'enable',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.touch_app_rounded, size: 16),
+                  SizedBox(width: 8),
+                  Text('Enable Play on Tap'),
+                ],
+              ),
+            ),
+          ],
+        );
+
+        if (result == 'enable') {
+          settingsProvider.togglePlayOnTap();
+        }
+        return;
+      }
+      if (audioProvider.currentSource?.id == source.id) {
+        audioProvider.seekToTrack(index);
+      } else {
+        unawaited(_playShowFromHeader(initialIndex: index));
+      }
+    }
+
     if (isFruit) {
       final audioProvider = context.watch<AudioProvider>();
       final currentTrackIndex = audioProvider.audioPlayer.currentIndex ?? -1;
@@ -704,51 +758,56 @@ extension _TrackListScreenBuild on _TrackListScreenState {
 
       final double contentOpacity = isUpcoming ? 0.6 : 1.0;
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
-        child: Row(
-          children: [
-            Container(
-              width: 5,
-              height: 5,
-              decoration: BoxDecoration(
-                color: dotColor,
-                shape: BoxShape.circle,
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (details) => tapPosition = details.globalPosition,
+        onTap: () => handleTrackTap(audioProvider),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
+          child: Row(
+            children: [
+              Container(
+                width: 5,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: dotColor,
+                  shape: BoxShape.circle,
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Opacity(
-                opacity: contentOpacity,
-                child: Text(
-                  track.title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: isCurrentTrack
-                        ? FontWeight.w900
-                        : FontWeight.w700,
-                    fontFamily: 'Inter',
-                    color: isCurrentTrack
-                        ? colorScheme.primary
-                        : colorScheme.onSurface.withValues(alpha: 0.9),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Opacity(
+                  opacity: contentOpacity,
+                  child: Text(
+                    track.title,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: isCurrentTrack
+                          ? FontWeight.w900
+                          : FontWeight.w700,
+                      fontFamily: 'Inter',
+                      color: isCurrentTrack
+                          ? colorScheme.primary
+                          : colorScheme.onSurface.withValues(alpha: 0.9),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Opacity(
-              opacity: contentOpacity,
-              child: Text(
-                Duration(
-                  seconds: track.duration,
-                ).toString().split('.').first.padLeft(8, '0').substring(3),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'Inter',
+              const SizedBox(width: 12),
+              Opacity(
+                opacity: contentOpacity,
+                child: Text(
+                  Duration(
+                    seconds: track.duration,
+                  ).toString().split('.').first.padLeft(8, '0').substring(3),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Inter',
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }
@@ -832,9 +891,14 @@ extension _TrackListScreenBuild on _TrackListScreenState {
           );
         }
 
-        final Widget item = Container(
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-          child: itemContent,
+        final Widget item = InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTapDown: (details) => tapPosition = details.globalPosition,
+          onTap: () => handleTrackTap(audioProvider),
+          child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+            child: itemContent,
+          ),
         );
 
         final isTv = context.read<DeviceService>().isTv;

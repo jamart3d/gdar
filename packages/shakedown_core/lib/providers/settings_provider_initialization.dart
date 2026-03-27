@@ -190,9 +190,9 @@ mixin _SettingsProviderInitializationExtension
     _simpleRandomIcon = _prefs.getBool(_simpleRandomIconKey) ?? false;
     _fruitDenseList = _prefs.getBool(_fruitDenseListKey) ?? false;
     _fruitStickyNowPlaying = _prefs.getBool(_fruitStickyNowPlayingKey) ?? false;
-    _enableRunDetection =
-        _prefs.getBool(_enableRunDetectionKey) ??
-        DefaultSettings.enableRunDetection;
+    _markPlayedOnStart =
+        _prefs.getBool(_markPlayedOnStartKey) ??
+        DefaultSettings.markPlayedOnStart;
     _enableHaptics = _prefs.getBool(_enableHapticsKey) ?? true;
 
     _loadLegacyCoreMigrations();

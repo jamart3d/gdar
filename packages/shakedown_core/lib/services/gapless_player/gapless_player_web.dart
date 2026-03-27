@@ -116,6 +116,59 @@ extension type _GdarState(JSObject _) implements JSObject {
   @JS('lastGapMs')
   external JSNumber? get lastGapMsJS;
   double? get lastGapMs => lastGapMsJS?.toDartDouble;
+
+  @JS('scheduledIndex')
+  external JSNumber? get scheduledIndexJS;
+  int? get scheduledIndex => scheduledIndexJS?.toDartInt;
+
+  @JS('scheduledStartContextTime')
+  external JSNumber? get scheduledStartContextTimeJS;
+  double? get scheduledStartContextTime =>
+      scheduledStartContextTimeJS?.toDartDouble;
+
+  @JS('ctxCurrentTime')
+  external JSNumber? get ctxCurrentTimeJS;
+  double? get ctxCurrentTime => ctxCurrentTimeJS?.toDartDouble;
+
+  @JS('outputLatencyMs')
+  external JSNumber? get outputLatencyMsJS;
+  double? get outputLatencyMs => outputLatencyMsJS?.toDartDouble;
+
+  @JS('lastDecodeMs')
+  external JSNumber? get lastDecodeMsJS;
+  double? get lastDecodeMs => lastDecodeMsJS?.toDartDouble;
+
+  @JS('lastConcatMs')
+  external JSNumber? get lastConcatMsJS;
+  double? get lastConcatMs => lastConcatMsJS?.toDartDouble;
+
+  @JS('failedTrackCount')
+  external JSNumber? get failedTrackCountJS;
+  int? get failedTrackCount => failedTrackCountJS?.toDartInt;
+
+  @JS('workerTickCount')
+  external JSNumber? get workerTickCountJS;
+  int? get workerTickCount => workerTickCountJS?.toDartInt;
+
+  @JS('sampleRate')
+  external JSNumber? get sampleRateJS;
+  int? get sampleRate => sampleRateJS?.toDartInt;
+
+  @JS('decodedCacheSize')
+  external JSNumber? get decodedCacheSizeJS;
+  int? get decodedCacheSize => decodedCacheSizeJS?.toDartInt;
+
+  @JS('hs')
+  external JSString? get handoffStateJS;
+  String? get handoffState => handoffStateJS?.toDart;
+
+  @JS('hat')
+  external JSNumber? get handoffAttemptCountJS;
+  int? get handoffAttemptCount => handoffAttemptCountJS?.toDartInt;
+
+  @JS('hpd')
+  external JSNumber? get lastHandoffPollCountJS;
+  int? get lastHandoffPollCount => lastHandoffPollCountJS?.toDartInt;
 }
 
 @JS()
@@ -171,6 +224,18 @@ class _GaplessPlayerBase {
   final _heartbeatNeededController = StreamController<bool>.broadcast();
   final _driftController = StreamController<double>.broadcast();
   final _visibilityController = StreamController<String>.broadcast();
+  final _scheduledStartContextTimeController =
+      StreamController<double?>.broadcast();
+  final _outputLatencyMsController = StreamController<double?>.broadcast();
+  final _lastDecodeMsController = StreamController<double?>.broadcast();
+  final _lastConcatMsController = StreamController<double?>.broadcast();
+  final _failedTrackCountController = StreamController<int?>.broadcast();
+  final _workerTickCountController = StreamController<int?>.broadcast();
+  final _sampleRateController = StreamController<int?>.broadcast();
+  final _decodedCacheSizeController = StreamController<int?>.broadcast();
+  final _handoffStateController = StreamController<String?>.broadcast();
+  final _handoffAttemptCountController = StreamController<int?>.broadcast();
+  final _lastHandoffPollCountController = StreamController<int?>.broadcast();
 
   bool _playing = false;
   int? _currentIndex;
@@ -192,6 +257,19 @@ class _GaplessPlayerBase {
   double? _lastFetchTtfbMs;
   bool _fetchInFlight = false;
   double? _lastGapMs;
+  int? _scheduledIndex;
+  double? _scheduledStartContextTime;
+  double? _ctxCurrentTime;
+  double? _outputLatencyMs;
+  double? _lastDecodeMs;
+  double? _lastConcatMs;
+  int? _failedTrackCount;
+  int? _workerTickCount;
+  int? _sampleRate;
+  int? _decodedCacheSize;
+  String? _handoffState;
+  int? _handoffAttemptCount;
+  int? _lastHandoffPollCount;
 
   final bool _useJsEngine;
   final AudioPlayer? _fallbackPlayer;

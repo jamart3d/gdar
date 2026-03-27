@@ -16,10 +16,25 @@ extension _DevAudioHudBuild on _DevAudioHudState {
         _trackBgt(hud);
         _trackNet(hud);
 
+        final scheduleLeadSeconds = _computeScheduleLeadSeconds(hud);
+        final hudMap = hud.toMap();
+
+        if (hud.isPlaying) {
+          _appendDriftSample(hudMap['DFT']);
+          _appendHeadroomSample(hudMap['HD']);
+          _appendSchSample(scheduleLeadSeconds);
+          _appendDecSample(hud.lastDecodeMs);
+          _appendBctSample(hud.lastConcatMs);
+          _appendHpdSample(hud.lastHandoffPollCount);
+        }
+
+        // Derive engine booleans for gated visibility
+        final isWA = hud.engine == 'WBA';
+        final isHybrid = hud.engine == 'HYB' || hud.engine == 'AUT';
+        final waSubEngineActive = hud.activeEngine.startsWith('WA');
+
         if (!widget.compact) {
-          final summary = hud
-              .toMap()
-              .entries
+          final summary = hudMap.entries
               .map((e) => '${e.key}:${e.value}')
               .join(' • ');
           return Text(
@@ -37,13 +52,27 @@ extension _DevAudioHudBuild on _DevAudioHudState {
         }
 
         final fields = {
-          ...hud.toMap(),
+          ...hudMap,
           'SHD': _computeShield(hud),
           'GAP': _computeGap(hud),
           'BGT': _computeBgt(),
           'PM': widget.settingsProvider.performanceMode ? 'ON' : 'OFF',
           'NET': _computeNetDisplay(hud),
           'LG': _computeLastGap(hud),
+          // Advanced telemetry chips
+          'SCH': scheduleLeadSeconds?.toStringAsFixed(3) ?? '--',
+          'LAT': hud.outputLatencyMs?.toStringAsFixed(1) ?? '--',
+          'DEC': hud.lastDecodeMs?.toStringAsFixed(1) ?? '--',
+          'BCT': hud.lastConcatMs?.toStringAsFixed(1) ?? '--',
+          'ERR': hud.failedTrackCount?.toString() ?? '0',
+          'WTC': hud.workerTickCount?.toString() ?? '--',
+          'SR': hud.sampleRate != null
+              ? '${(hud.sampleRate! / 1000).toStringAsFixed(1)}k'
+              : '--',
+          'CAC': hud.decodedCacheSize?.toString() ?? '--',
+          'HS': hud.handoffState ?? '--',
+          'HAT': hud.handoffAttemptCount?.toString() ?? '--',
+          'HPD': hud.lastHandoffPollCount?.toString() ?? '--',
         };
         final isFruitMode =
             context.read<ThemeProvider?>()?.themeStyle == ThemeStyle.fruit;
@@ -86,30 +115,34 @@ extension _DevAudioHudBuild on _DevAudioHudState {
                       : null),
           ),
           child: LayoutBuilder(
-            builder: (context, constraints) {
-              const keys = [
-                'DFT',
-                'HD',
-                'BUF',
-                'NX',
-                'PF',
-                'HF',
-                'TX',
-                'DET',
-                'BG',
-                'STB',
+            builder: (context, _) {
+              final showHybridControls = isHybrid;
+              final showNetControls = isWA || isHybrid;
+              final showWaTelemetry = isWA || (isHybrid && waSubEngineActive);
+              final orderedKeys = [
                 'ENG',
+                if (showHybridControls) 'HF',
+                if (showNetControls) 'BG',
+                if (showHybridControls) 'STB',
+                if (showNetControls) 'PF',
                 'AE',
                 'V',
-                'E',
                 'ST',
                 'PS',
                 'SHD',
                 'GAP',
-                'BGT',
                 'PM',
-                'NET',
+                if (showWaTelemetry) ...['LAT', 'ERR', 'WTC', 'SR', 'CAC'],
+                if (showHybridControls) ...[
+                  'HS',
+                  if (!waSubEngineActive) 'HAT',
+                ],
+                'BUF',
+                'NX',
                 'LG',
+                'BGT',
+                'DET',
+                'E',
                 'SIG',
                 'MSG',
               ];
@@ -117,7 +150,7 @@ extension _DevAudioHudBuild on _DevAudioHudState {
               return _buildHudFieldWrap(
                 context: context,
                 fields: fields,
-                orderedKeys: keys,
+                orderedKeys: orderedKeys,
                 labelsFontSize: labelsFontSize,
                 colorScheme: widget.colorScheme,
                 fontFamily: widget.fontFamily,
@@ -128,6 +161,9 @@ extension _DevAudioHudBuild on _DevAudioHudState {
                 heartbeatEnabledBySettings: hud.heartbeatEnabledBySettings,
                 isPlaying: hud.isPlaying,
                 isHandoffCountdown: hud.isHandoffCountdown,
+                isWA: isWA,
+                isHybrid: isHybrid,
+                waSubEngineActive: waSubEngineActive,
               );
             },
           ),
@@ -163,21 +199,24 @@ extension _DevAudioHudBuild on _DevAudioHudState {
     required bool heartbeatEnabledBySettings,
     required bool isPlaying,
     bool isHandoffCountdown = false,
+    required bool isWA,
+    required bool isHybrid,
+    required bool waSubEngineActive,
   }) {
     const chipSpacing = 8.0;
     const sparklineChipWidth = 84.0;
-    if (isPlaying) {
-      _appendDriftSample(fields['DFT']);
-      _appendHeadroomSample(fields['HD']);
-    }
-    final telemetryChips = <Widget>[];
-    final sparklineValueChips = <Widget>[];
+    final showNetTelemetry = isWA || isHybrid;
+    final showWaTelemetry = isWA || (isHybrid && waSubEngineActive);
     final trendChips = <Widget>[];
-    Widget? bgChip;
-    Widget? detChip;
-    Widget? errorChip;
-    Widget? sigChip;
-    Widget? msgChip;
+    final controlChips = <Widget>[];
+    final stateChips = <Widget>[];
+    final metricChips = <Widget>[];
+    final sigAndMsgChildren = <Widget>[];
+
+    const controlKeys = {'ENG', 'HF', 'BG', 'STB', 'PF'};
+    const metricKeys = {'BUF', 'NX', 'LG', 'BGT', 'DET'};
+    const messagingKeys = {'SIG', 'MSG', 'E'};
+    const interactiveKeys = {'ENG', 'HF', 'BG', 'STB', 'PF'};
 
     final baseTextColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.96);
     final keyTextColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.7);
@@ -196,8 +235,20 @@ extension _DevAudioHudBuild on _DevAudioHudState {
       String label,
       Color strokeColor, {
       double alpha = 0.92,
+      String? currentValue,
+      bool dimmed = false,
     }) {
-      return Container(
+      final labelBadgeColor = colorScheme.surface.withValues(
+        alpha: isTrueBlack ? 0.42 : 0.78,
+      );
+      final valueBadgeColor = colorScheme.surface.withValues(
+        alpha: isTrueBlack ? 0.56 : 0.9,
+      );
+      final labelColor = strokeColor.withValues(alpha: dimmed ? 0.72 : 0.96);
+      final valueColor = colorScheme.onSurface.withValues(
+        alpha: dimmed ? 0.88 : 0.98,
+      );
+      final chip = Container(
         width: trendChipWidth,
         height: trendChipHeight,
         decoration: BoxDecoration(
@@ -213,36 +264,152 @@ extension _DevAudioHudBuild on _DevAudioHudState {
                 painter: _HudSparklinePainter(
                   values: history,
                   baseline: 0,
-                  strokeColor: strokeColor.withValues(alpha: alpha),
+                  strokeColor: strokeColor.withValues(
+                    alpha: dimmed ? 0.35 : alpha,
+                  ),
                   guideColor: keyTextColor.withValues(alpha: 0.45),
                 ),
               ),
             ),
             Positioned(
-              bottom: 1,
-              right: 2,
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: keyTextColor.withValues(alpha: 0.6),
-                  fontSize: labelsFontSize * 0.65,
-                  fontWeight: FontWeight.w900,
-                  fontFamily: fontFamily ?? 'RobotoMono',
+              top: 1,
+              left: 4,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: labelBadgeColor,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: labelColor,
+                      fontSize: labelsFontSize * 0.68,
+                      fontWeight: FontWeight.w900,
+                      fontFamily: fontFamily ?? 'RobotoMono',
+                      letterSpacing: 0.2,
+                    ),
+                  ),
                 ),
               ),
             ),
+            if (currentValue != null)
+              Positioned(
+                bottom: 1,
+                right: 4,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: valueBadgeColor,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: strokeColor.withValues(alpha: 0.24),
+                      width: 0.6,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 1,
+                    ),
+                    child: Text(
+                      currentValue,
+                      style: TextStyle(
+                        color: valueColor,
+                        fontSize: labelsFontSize * 0.82,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: fontFamily ?? 'RobotoMono',
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
+      );
+      return _wrapHudTooltip(
+        child: chip,
+        key: label,
+        value: currentValue ?? '--',
+        isFruit: isFruit,
       );
     }
 
     trendChips.add(
-      buildTrendChip(_driftHistory, 'DFT', baseTextColor, alpha: 1.0),
+      buildTrendChip(
+        _driftHistory,
+        'DFT',
+        baseTextColor,
+        alpha: 1.0,
+        currentValue: fields['DFT'],
+      ),
     );
-    trendChips.add(buildTrendChip(_headroomHistory, 'HD', baseTextColor));
     trendChips.add(
-      buildTrendChip(_netHistory, 'NET', Colors.amberAccent, alpha: 0.9),
+      buildTrendChip(
+        _headroomHistory,
+        'HD',
+        baseTextColor,
+        dimmed: isWA,
+        currentValue: fields['HD'],
+      ),
     );
+    if (showNetTelemetry) {
+      trendChips.add(
+        buildTrendChip(
+          _netHistory,
+          'NET',
+          Colors.amberAccent.withValues(alpha: 0.9),
+          alpha: 0.9,
+          currentValue: fields['NET'],
+        ),
+      );
+    }
+
+    if (showWaTelemetry) {
+      trendChips.add(
+        buildTrendChip(
+          _schHistory,
+          'SCH',
+          Colors.cyanAccent.withValues(alpha: 0.8),
+          alpha: 0.85,
+          currentValue: fields['SCH'],
+        ),
+      );
+      trendChips.add(
+        buildTrendChip(
+          _decHistory,
+          'DEC',
+          Colors.purpleAccent.withValues(alpha: 0.7),
+          alpha: 0.8,
+          currentValue: fields['DEC'],
+        ),
+      );
+      trendChips.add(
+        buildTrendChip(
+          _bctHistory,
+          'BCT',
+          Colors.indigoAccent.withValues(alpha: 0.7),
+          alpha: 0.8,
+          currentValue: fields['BCT'],
+        ),
+      );
+    }
+
+    if (isHybrid) {
+      trendChips.add(
+        buildTrendChip(
+          _hpdHistory,
+          'HPD',
+          Colors.orangeAccent.withValues(alpha: 0.8),
+          alpha: 0.85,
+          currentValue: fields['HPD'],
+        ),
+      );
+    }
 
     for (final key in orderedKeys) {
       final value = fields[key];
@@ -261,7 +428,7 @@ extension _DevAudioHudBuild on _DevAudioHudState {
             chipWidth = 68;
             break;
           case 'DET':
-            chipWidth = 38;
+            chipWidth = 32;
             break;
           case 'ENG':
             chipWidth = 44;
@@ -299,6 +466,27 @@ extension _DevAudioHudBuild on _DevAudioHudState {
           case 'LG':
             chipWidth = 58;
             break;
+          case 'SCH':
+            chipWidth = 66;
+            break;
+          case 'LAT':
+          case 'DEC':
+          case 'BCT':
+          case 'SR':
+          case 'HPD':
+            chipWidth = 54;
+            break;
+          case 'ERR':
+          case 'CAC':
+          case 'HAT':
+            chipWidth = 40;
+            break;
+          case 'WTC':
+            chipWidth = 62;
+            break;
+          case 'HS':
+            chipWidth = 46;
+            break;
         }
       }
 
@@ -307,7 +495,6 @@ extension _DevAudioHudBuild on _DevAudioHudState {
       Color finalKeyTextColor = keyTextColor;
       bool hasClickableBorder = false;
 
-      const interactiveKeys = ['ENG', 'HF', 'BG', 'STB', 'PF'];
       if (interactiveKeys.contains(key)) {
         hasClickableBorder = true;
       }
@@ -455,6 +642,29 @@ extension _DevAudioHudBuild on _DevAudioHudState {
           finalBaseTextColor = Colors.white;
           finalKeyTextColor = Colors.white.withValues(alpha: 0.8);
         }
+      } else if (key == 'SCH') {
+        final drift = double.tryParse(value) ?? 0.0;
+        if (drift.abs() > 0.1) {
+          finalBaseTextColor = Colors.redAccent;
+        } else if (drift.abs() > 0.01) {
+          finalBaseTextColor = Colors.orangeAccent;
+        }
+      } else if (key == 'DEC') {
+        final decMs = double.tryParse(value) ?? 0.0;
+        if (decMs > 300) finalBaseTextColor = Colors.orangeAccent;
+        if (decMs > 800) finalBaseTextColor = Colors.redAccent;
+      } else if (key == 'BCT') {
+        final bctMs = double.tryParse(value) ?? 0.0;
+        if (bctMs > 50) finalBaseTextColor = Colors.orangeAccent;
+        if (bctMs > 150) finalBaseTextColor = Colors.redAccent;
+      } else if (key == 'ERR' && value != '0') {
+        finalChipBgColor = Colors.redAccent.withValues(alpha: 0.9);
+        finalBaseTextColor = Colors.white;
+        finalKeyTextColor = Colors.white.withValues(alpha: 0.8);
+      } else if (key == 'HS' && value != 'IDLE') {
+        finalBaseTextColor = Colors.orangeAccent;
+      } else if (key == 'HAT' && (int.tryParse(value) ?? 0) > 1) {
+        finalBaseTextColor = Colors.orangeAccent;
       }
 
       Widget chip = Container(
@@ -617,19 +827,12 @@ extension _DevAudioHudBuild on _DevAudioHudState {
         );
       }
 
-      final tooltip = _hudFieldTooltip(key, value);
-      if (tooltip.isNotEmpty) {
-        if (isFruit) {
-          chip = FruitTooltip(message: tooltip, child: chip);
-        } else {
-          chip = Tooltip(
-            message: tooltip,
-            preferBelow: false,
-            verticalOffset: 20,
-            child: chip,
-          );
-        }
-      }
+      chip = _wrapHudTooltip(
+        child: chip,
+        key: key,
+        value: value,
+        isFruit: isFruit,
+      );
 
       if (key == 'V') {
         chip = Padding(
@@ -638,35 +841,16 @@ extension _DevAudioHudBuild on _DevAudioHudState {
         );
       }
 
-      if (key == 'DET') {
-        detChip = chip;
-      } else if (key == 'E') {
-        errorChip = chip;
-      } else if (key == 'DFT' || key == 'HD') {
-        sparklineValueChips.add(chip);
-      } else if (key == 'BG') {
-        bgChip = chip;
-      } else if (key == 'SIG') {
-        sigChip = chip;
-      } else if (key == 'MSG') {
-        msgChip = chip;
+      if (messagingKeys.contains(key)) {
+        sigAndMsgChildren.add(chip);
+      } else if (controlKeys.contains(key)) {
+        controlChips.add(chip);
+      } else if (metricKeys.contains(key)) {
+        metricChips.add(chip);
       } else {
-        telemetryChips.add(chip);
+        stateChips.add(chip);
       }
     }
-
-    final middleRowChips = <Widget>[];
-    middleRowChips.addAll(sparklineValueChips);
-    if (bgChip != null) {
-      middleRowChips.add(bgChip);
-    }
-    middleRowChips.addAll(telemetryChips);
-
-    final sigAndMsgChildren = <Widget>[];
-    if (detChip != null) sigAndMsgChildren.add(detChip);
-    if (errorChip != null) sigAndMsgChildren.add(errorChip);
-    if (sigChip != null) sigAndMsgChildren.add(sigChip);
-    if (msgChip != null) sigAndMsgChildren.add(msgChip);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -677,13 +861,30 @@ extension _DevAudioHudBuild on _DevAudioHudState {
           runSpacing: chipSpacing,
           children: trendChips,
         ),
-        if (middleRowChips.isNotEmpty) const SizedBox(height: chipSpacing),
-        if (middleRowChips.isNotEmpty)
+        if (controlChips.isNotEmpty) ...[
+          const SizedBox(height: chipSpacing),
           Wrap(
             spacing: chipSpacing,
             runSpacing: chipSpacing,
-            children: middleRowChips,
+            children: controlChips,
           ),
+        ],
+        if (stateChips.isNotEmpty) ...[
+          const SizedBox(height: chipSpacing),
+          Wrap(
+            spacing: chipSpacing,
+            runSpacing: chipSpacing,
+            children: stateChips,
+          ),
+        ],
+        if (metricChips.isNotEmpty) ...[
+          const SizedBox(height: chipSpacing),
+          Wrap(
+            spacing: chipSpacing,
+            runSpacing: chipSpacing,
+            children: metricChips,
+          ),
+        ],
         if (sigAndMsgChildren.isNotEmpty) ...[
           const SizedBox(height: chipSpacing),
           Wrap(

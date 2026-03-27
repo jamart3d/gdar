@@ -34,6 +34,21 @@ class HudSnapshot {
   // Track transition gap (ms between previous track end and current track start)
   final double? lastGapMs;
 
+  // Advanced Web Audio / Hybrid Telemetry
+  final int? scheduledIndex;
+  final double? scheduledStartContextTime;
+  final double? ctxCurrentTime;
+  final double? outputLatencyMs;
+  final double? lastDecodeMs;
+  final double? lastConcatMs;
+  final int? failedTrackCount;
+  final int? workerTickCount;
+  final int? sampleRate;
+  final int? decodedCacheSize;
+  final String? handoffState;
+  final int? handoffAttemptCount;
+  final int? lastHandoffPollCount;
+
   const HudSnapshot({
     required this.engine,
     required this.detectedProfile,
@@ -62,6 +77,19 @@ class HudSnapshot {
     this.fetchTtfbMs,
     this.fetchInFlight = false,
     this.lastGapMs,
+    this.scheduledIndex,
+    this.scheduledStartContextTime,
+    this.ctxCurrentTime,
+    this.outputLatencyMs,
+    this.lastDecodeMs,
+    this.lastConcatMs,
+    this.failedTrackCount,
+    this.workerTickCount,
+    this.sampleRate,
+    this.decodedCacheSize,
+    this.handoffState,
+    this.handoffAttemptCount,
+    this.lastHandoffPollCount,
   });
 
   /// Initial empty snapshot to avoid null checks in UI.
@@ -93,6 +121,19 @@ class HudSnapshot {
     fetchTtfbMs: null,
     fetchInFlight: false,
     lastGapMs: null,
+    scheduledIndex: null,
+    scheduledStartContextTime: null,
+    ctxCurrentTime: null,
+    outputLatencyMs: null,
+    lastDecodeMs: null,
+    lastConcatMs: null,
+    failedTrackCount: null,
+    workerTickCount: null,
+    sampleRate: null,
+    decodedCacheSize: null,
+    handoffState: null,
+    handoffAttemptCount: null,
+    lastHandoffPollCount: null,
   );
 
   Map<String, String> toMap() {
@@ -147,6 +188,19 @@ class HudSnapshot {
     double? fetchTtfbMs,
     bool? fetchInFlight,
     double? lastGapMs,
+    int? scheduledIndex,
+    double? scheduledStartContextTime,
+    double? ctxCurrentTime,
+    double? outputLatencyMs,
+    double? lastDecodeMs,
+    double? lastConcatMs,
+    int? failedTrackCount,
+    int? workerTickCount,
+    int? sampleRate,
+    int? decodedCacheSize,
+    String? handoffState,
+    int? handoffAttemptCount,
+    int? lastHandoffPollCount,
   }) {
     return HudSnapshot(
       engine: engine ?? this.engine,
@@ -177,6 +231,20 @@ class HudSnapshot {
       fetchTtfbMs: fetchTtfbMs ?? this.fetchTtfbMs,
       fetchInFlight: fetchInFlight ?? this.fetchInFlight,
       lastGapMs: lastGapMs ?? this.lastGapMs,
+      scheduledIndex: scheduledIndex ?? this.scheduledIndex,
+      scheduledStartContextTime:
+          scheduledStartContextTime ?? this.scheduledStartContextTime,
+      ctxCurrentTime: ctxCurrentTime ?? this.ctxCurrentTime,
+      outputLatencyMs: outputLatencyMs ?? this.outputLatencyMs,
+      lastDecodeMs: lastDecodeMs ?? this.lastDecodeMs,
+      lastConcatMs: lastConcatMs ?? this.lastConcatMs,
+      failedTrackCount: failedTrackCount ?? this.failedTrackCount,
+      workerTickCount: workerTickCount ?? this.workerTickCount,
+      sampleRate: sampleRate ?? this.sampleRate,
+      decodedCacheSize: decodedCacheSize ?? this.decodedCacheSize,
+      handoffState: handoffState ?? this.handoffState,
+      handoffAttemptCount: handoffAttemptCount ?? this.handoffAttemptCount,
+      lastHandoffPollCount: lastHandoffPollCount ?? this.lastHandoffPollCount,
     );
   }
 }

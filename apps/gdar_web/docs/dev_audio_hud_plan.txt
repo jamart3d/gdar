@@ -1,0 +1,67 @@
+# Audio HUD Redesign — Task Checklist
+
+## Phase 1 — Widget Refactor (no model changes) ✨ Start here
+**Scope**: `packages/shakedown_core/lib/ui/widgets/playback/dev_audio_hud_build.dart` only.
+
+- [ ] Derive engine booleans in `_buildHud()`: `isWA`, `isH5`, `isHybrid`, `waSubEngineActive`
+- [ ] Replace static `const keys` list with a dynamic `orderedKeys` built from engine booleans
+  - Always keys: `DFT HD BUF NX LG ENG DET V E ST PS SHD GAP BGT PM SIG MSG`
+  - WA+hybrid: `NET BG PF`
+  - Hybrid-only: `HF STB TX`
+- [ ] Split chip routing into 5 semantic lists:
+  - `trendChips` — sparklines (unchanged)
+  - `controlChips` — `ENG HF BG STB PF` (bordered, tappable)
+  - `stateChips` — `AE PS ST SHD GAP DET PM V E`
+  - `metricChips` — `BUF NX LG BGT TX`
+  - `sigAndMsgChildren` — `DET E SIG MSG` (unchanged)
+- [ ] Move `BG` from special-cased `bgChip` slot → `controlChips`
+- [ ] Move `AE` from `telemetryChips` → `stateChips`
+- [ ] Update `Column` render order: trendChips → controlChips → stateChips → metricChips → messaging
+- [ ] Verify: `DET` and `E` remain in the messaging row (bottom row, not state row)
+
+---
+
+## Phase 2 — Combined Sparkline+Value Chips
+**Scope**: `dev_audio_hud_build.dart` — `buildTrendChip` and `trendChipHeight`.
+
+- [ ] Increase `trendChipHeight` by ~8px
+- [ ] Add `String? currentValue` param to `buildTrendChip`
+- [ ] Overlay value label at bottom-right in the sparkline `Stack` (key label moves to top-left, slightly larger)
+- [ ] Pass `fields['DFT']` and `fields['HD']` as `currentValue` to their `buildTrendChip` calls
+- [ ] Pass `_computeNetDisplay(hud)` as `currentValue` to NET sparkline
+- [ ] Remove `DFT` and `HD` from `sparklineValueChips` routing (they no longer need separate value chips)
+- [ ] Add `dimmed` bool param to `buildTrendChip`; use `alpha: 0.35` in WA mode for `HD`
+
+---
+
+## Phase 3 — New JS Engine Stats (emit from JS)
+**Scope**: `apps/gdar_web/web/gapless_audio_engine.js` and `hybrid_audio_engine.js`.
+
+- [ ] **WA engine** (`gapless_audio_engine.js` → `_emitState()`):
+  - [ ] `scheduledIndex`, `scheduledStartContextTime`, `ctxCurrentTime` → for `SCH`
+  - [ ] `outputLatencyMs` (`_ctx.outputLatency || _ctx.baseLatency`) → for `LAT`
+  - [ ] `lastDecodeMs` (time `decodeAudioData`) → for `DEC` sparkline
+  - [ ] `lastConcatMs` (`finalizeStart` delta, already logged) → for `BCT` sparkline
+  - [ ] `failedTrackCount` (`_failedTracks.size`) → for `ERR`
+  - [ ] `workerTickCount` (`_workerTickCount`) → for `WTC`
+  - [ ] `sampleRate` (`_ctx.sampleRate`) → for `SR`
+  - [ ] `decodedCacheSize` (`Object.keys(_decoded).length`) → for `CAC`
+- [ ] **Hybrid engine** (`hybrid_audio_engine.js`):
+  - [ ] `handoffState` string (`IDLE/ARM/FNC/PRB/DONE`) → for `HS`
+  - [ ] `handoffAttemptCount` (`_handoffAttemptId`) → for `HAT`
+  - [ ] `lastHandoffPollCount` (from `_executeForegroundRestore`) → for `HPD` sparkline
+
+---
+
+## Phase 4 — Dart Plumbing + New Chips/Sparklines
+**Scope**: `_GdarState` extension, `hud_snapshot.dart`, `audio_provider_diagnostics.dart`, `dev_audio_hud_build.dart`.
+
+- [ ] Add JS accessor fields to `_GdarState` extension type in `gapless_player_web.dart`
+- [ ] Add Dart accessors in `gapless_player_web_accessors.dart`
+- [ ] Add fields to `HudSnapshot` model
+- [ ] Wire new fields in `_createHudSnapshot()` in `audio_provider_diagnostics.dart`
+- [ ] Add sparkline history lists to `_DevAudioHudState`: `_schHistory`, `_decHistory`, `_bctHistory`, `_hpdHistory`
+- [ ] Add `_appendSchSample`, `_appendDecSample`, etc. helpers
+- [ ] Add engine-gated `trendChips.add(...)` calls for `SCH`, `DEC`, `BCT`, `HPD`
+- [ ] Add new chips to appropriate semantic rows in `orderedKeys`
+- [ ] Add color logic for new chips in the chip routing switch

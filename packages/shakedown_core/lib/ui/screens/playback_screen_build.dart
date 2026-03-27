@@ -4,6 +4,8 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
   Widget _buildFruitTopBar(BuildContext context, double scaleFactor) {
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
+    final isFruit =
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     final currentShow = audioProvider.currentShow;
     if (currentShow == null) return const SizedBox.shrink();
 
@@ -200,7 +202,10 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                               SizedBox(width: 12 * scaleFactor),
                               Text(
                                 'Sticky Now Playing',
-                                style: TextStyle(fontSize: 14 * scaleFactor),
+                                style: TextStyle(
+                                  fontFamily: isFruit ? 'Inter' : null,
+                                  fontSize: 14 * scaleFactor,
+                                ),
                               ),
                             ],
                           ),
@@ -222,7 +227,10 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                             SizedBox(width: 12 * scaleFactor),
                             Text(
                               'Track Numbers',
-                              style: TextStyle(fontSize: 14 * scaleFactor),
+                              style: TextStyle(
+                                fontFamily: isFruit ? 'Inter' : null,
+                                fontSize: 14 * scaleFactor,
+                              ),
                             ),
                           ],
                         ),
@@ -250,7 +258,10 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                               SizedBox(width: 12 * scaleFactor),
                               Text(
                                 'Audio HUD',
-                                style: TextStyle(fontSize: 14 * scaleFactor),
+                                style: TextStyle(
+                                  fontFamily: isFruit ? 'Inter' : null,
+                                  fontSize: 14 * scaleFactor,
+                                ),
                               ),
                             ],
                           ),
@@ -271,7 +282,10 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                             SizedBox(width: 12 * scaleFactor),
                             Text(
                               'Track Duration',
-                              style: TextStyle(fontSize: 14 * scaleFactor),
+                              style: TextStyle(
+                                fontFamily: isFruit ? 'Inter' : null,
+                                fontSize: 14 * scaleFactor,
+                              ),
                             ),
                           ],
                         ),
@@ -301,36 +315,39 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
     return Semantics(
       button: true,
       label: 'Copy show details',
-      child: GestureDetector(
-        onTap: () {
-          final track = audioProvider.currentTrack;
-          if (track == null || currentSource == null) return;
-          final locationStr = currentSource.location != null
-              ? ' - ${currentSource.location}'
-              : '';
-          final urlStr = settingsProvider.omitHttpPathInCopy
-              ? ''
-              : '\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}';
-          final info =
-              '${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}$urlStr';
-          Clipboard.setData(ClipboardData(text: info));
-          AppHaptics.selectionClick(context.read<DeviceService>());
-          showMessage(context, 'Details copied to clipboard');
-        },
-        child: Container(
-          width: 20 * scaleFactor,
-          height: 20 * scaleFactor,
-          decoration: BoxDecoration(
-            color: colorScheme.onSurface.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(6 * scaleFactor),
-            border: Border.all(
-              color: colorScheme.onSurface.withValues(alpha: 0.08),
+      child: FruitTooltip(
+        message: 'Copy show details',
+        child: GestureDetector(
+          onTap: () {
+            final track = audioProvider.currentTrack;
+            if (track == null || currentSource == null) return;
+            final locationStr = currentSource.location != null
+                ? ' - ${currentSource.location}'
+                : '';
+            final urlStr = settingsProvider.omitHttpPathInCopy
+                ? ''
+                : '\n${track.url.replaceAll('/download/', '/details/').split('/').sublist(0, 5).join('/')}';
+            final info =
+                '${currentShow.venue}$locationStr - $formattedDate - ${currentSource.id}\n${track.title}$urlStr';
+            Clipboard.setData(ClipboardData(text: info));
+            AppHaptics.selectionClick(context.read<DeviceService>());
+            showMessage(context, 'Details copied to clipboard');
+          },
+          child: Container(
+            width: 20 * scaleFactor,
+            height: 20 * scaleFactor,
+            decoration: BoxDecoration(
+              color: colorScheme.onSurface.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(6 * scaleFactor),
+              border: Border.all(
+                color: colorScheme.onSurface.withValues(alpha: 0.08),
+              ),
             ),
-          ),
-          child: Icon(
-            LucideIcons.copy,
-            size: 12 * scaleFactor,
-            color: colorScheme.onSurfaceVariant.withValues(alpha: 0.65),
+            child: Icon(
+              LucideIcons.copy,
+              size: 12 * scaleFactor,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.65),
+            ),
           ),
         ),
       ),
@@ -404,6 +421,7 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                 Text(
                   'SELECTING RANDOM SHOW...',
                   style: theme.textTheme.labelLarge?.copyWith(
+                    fontFamily: isFruit ? 'Inter' : null,
                     color: colorScheme.primary,
                     letterSpacing: 2.0,
                     fontWeight: FontWeight.bold,
@@ -419,6 +437,7 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                 Text(
                   'No show selected.',
                   style: theme.textTheme.titleMedium?.copyWith(
+                    fontFamily: isFruit ? 'Inter' : null,
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
@@ -504,7 +523,9 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                           Text(
                             currentShow.formattedDate,
                             style: TextStyle(
-                              fontFamily: FontConfig.resolve('RockSalt'),
+                              fontFamily: isFruit
+                                  ? 'Inter'
+                                  : FontConfig.resolve('RockSalt'),
                               fontSize: 17,
                               fontWeight: FontWeight.w500,
                               color: colorScheme.onSurface.withValues(
@@ -564,7 +585,9 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                             Text(
                               currentShow.venue,
                               style: TextStyle(
-                                fontFamily: FontConfig.resolve('RockSalt'),
+                                fontFamily: isFruit
+                                    ? 'Inter'
+                                    : FontConfig.resolve('RockSalt'),
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: colorScheme.primary,
@@ -585,7 +608,9 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                               Text(
                                 currentSource.location!,
                                 style: TextStyle(
-                                  fontFamily: FontConfig.resolve('RockSalt'),
+                                  fontFamily: isFruit
+                                      ? 'Inter'
+                                      : FontConfig.resolve('RockSalt'),
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: colorScheme.onSurfaceVariant,

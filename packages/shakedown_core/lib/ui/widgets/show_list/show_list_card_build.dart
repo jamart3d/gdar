@@ -221,7 +221,11 @@ extension _ShowListCardBuild on _ShowListCardState {
 
     final double baseHeight = isTv
         ? 48.0
-        : (useMobileLayout ? 54.0 : (isFruit ? 54.0 : 58.0));
+        : useMobileLayout
+        ? 54.0
+        : isFruit
+        ? (settingsProvider.fruitDenseList ? 54.0 : 72.0)
+        : 58.0;
     final double cardHeight = baseHeight * style.effectiveScale;
     final bool isDesktopInlinePlaying =
         kIsWeb && !useMobileLayout && !isTv && widget.isPlaying;
@@ -326,9 +330,18 @@ extension _ShowListCardBuild on _ShowListCardState {
                                       ),
                                       child: ConstrainedBox(
                                         constraints: BoxConstraints(
-                                          minWidth:
-                                              (isFruit ? 260.0 : 254.0) *
-                                              style.effectiveScale,
+                                          minWidth: isFruit
+                                              ? (settingsProvider.fruitDenseList
+                                                        ? 240.0
+                                                        : 300.0) *
+                                                    style.effectiveScale
+                                              : 254.0 * style.effectiveScale,
+                                          maxWidth: isFruit
+                                              ? (settingsProvider.fruitDenseList
+                                                        ? 310.0
+                                                        : 370.0) *
+                                                    style.effectiveScale
+                                              : 310.0 * style.effectiveScale,
                                         ),
                                         child: AnimatedSize(
                                           clipBehavior: Clip.none,
@@ -339,7 +352,12 @@ extension _ShowListCardBuild on _ShowListCardState {
                                           alignment: Alignment.centerLeft,
                                           child: EmbeddedMiniPlayer(
                                             scaleFactor:
-                                                style.effectiveScale * 0.88,
+                                                style.effectiveScale *
+                                                (isFruit &&
+                                                        !settingsProvider
+                                                            .fruitDenseList
+                                                    ? 1.0
+                                                    : 0.88),
                                             compact: true,
                                             useRgb: style.useRgb,
                                             showFullDuration: true,
@@ -370,7 +388,8 @@ extension _ShowListCardBuild on _ShowListCardState {
                                     ),
                                   ),
                                 ),
-                                const Spacer(),
+                                SizedBox(width: isFruit ? 24.0 : 0.0),
+                                if (!isFruit) const Spacer(),
                                 Flexible(
                                   flex: 1,
                                   child: Container(

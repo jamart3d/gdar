@@ -380,69 +380,6 @@ extension _PlaybackSectionWeb on PlaybackSection {
       ),
     ];
   }
-
-  Widget _buildDevHudAbbreviationLegend(
-    BuildContext context,
-    double scaleFactor,
-  ) {
-    final theme = Theme.of(context);
-    final titleStyle = theme.textTheme.titleSmall?.copyWith(
-      fontSize: 13 * scaleFactor,
-      fontWeight: FontWeight.w700,
-    );
-    final bodyStyle = theme.textTheme.bodySmall?.copyWith(
-      fontSize: 12 * scaleFactor,
-      height: 1.35,
-    );
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        56 * scaleFactor,
-        0,
-        16 * scaleFactor,
-        8 * scaleFactor,
-      ),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(
-          horizontal: 12 * scaleFactor,
-          vertical: 10 * scaleFactor,
-        ),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(
-            alpha: 0.35,
-          ),
-          borderRadius: BorderRadius.circular(12 * scaleFactor),
-          border: Border.all(
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('HUD Abbreviations', style: titleStyle),
-            SizedBox(height: 6 * scaleFactor),
-            Text(
-              'ENG engine  -  DET profile  -  TX transition  -  HF handoff  -  BG background',
-              style: bodyStyle,
-            ),
-            Text(
-              'PF prefetch  -  PS processing  -  ST engine state',
-              style: bodyStyle,
-            ),
-            Text(
-              'POS position/duration  -  BUF buffered  -  HD headroom',
-              style: bodyStyle,
-            ),
-            Text(
-              'NX next buffered  -  IDX track index  -  SIG signal  -  E error',
-              style: bodyStyle,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _SegmentedWrap<T> extends StatelessWidget {

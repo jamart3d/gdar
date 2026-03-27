@@ -245,21 +245,24 @@ extension _TrackListScreenFruit on _TrackListScreenState {
   }) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: onPressed,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: colorScheme.primary.withValues(alpha: 0.12),
-          border: Border.all(
-            color: colorScheme.primary.withValues(alpha: 0.18),
-            width: 0.8,
+    return FruitTooltip(
+      message: 'Play from start',
+      child: GestureDetector(
+        onTap: onPressed,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: colorScheme.primary.withValues(alpha: 0.12),
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: 0.18),
+              width: 0.8,
+            ),
           ),
+          child: Icon(LucideIcons.play, size: 12, color: colorScheme.primary),
         ),
-        child: Icon(LucideIcons.play, size: 12, color: colorScheme.primary),
       ),
     );
   }

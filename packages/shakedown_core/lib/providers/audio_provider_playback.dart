@@ -114,6 +114,12 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
     _showListProvider?.setPlayingShow(show.name, source.id);
     _showListProvider?.setIsChoosingRandomShow(false);
     _hasMarkedAsPlayed = false;
+    if (_settingsProvider?.markPlayedOnStart == true &&
+        !_catalogService.isPlayed(source.id)) {
+      await _catalogService.markAsPlayed(source.id);
+      await _catalogService.incrementPlayCount(source.id);
+      _hasMarkedAsPlayed = true;
+    }
     notifyListeners();
 
     try {

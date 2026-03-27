@@ -72,6 +72,8 @@
   // Track transition gap measurement (LG chip).
   let _trackEndedAtMs = 0;
   let _lastGapMs = null;
+  let _lastDecodeMs = null;      // Time taken for decodeAudioData
+  let _lastConcatMs = null;      // Time taken for buffer concatenation
 
   // Callbacks registered by Dart.
   let _onStateChange = null;
@@ -251,7 +253,8 @@
         _emitState();
 
         delete _abortControllers[index];
-        _log.log(`[gdar engine] Fetch complete for index ${index}. Finalization (buffer concat) took ${(performance.now() - finalizeStart).toFixed(2)}ms`);
+        _lastConcatMs = performance.now() - finalizeStart;
+        _log.log(`[gdar engine] Fetch complete for index ${index}. Finalization (buffer concat) took ${_lastConcatMs.toFixed(2)}ms`);
         return buf;
       })
       .catch(err => {
@@ -280,7 +283,11 @@
     const p = _fetchCompressed(index).then(compressed => {
       // decodeAudioData detaches the input buffer.
       // We allow it to happen to save a multi-megabyte memory clone.
-      return _ctx.decodeAudioData(compressed);
+      const start = performance.now();
+      return _ctx.decodeAudioData(compressed).then(buf => {
+        _lastDecodeMs = performance.now() - start;
+        return buf;
+      });
     }).then(audioBuf => {
       _decoded[index] = audioBuf;
       delete _decodingPromises[index];
@@ -688,6 +695,16 @@
           fetchTtfbMs: _lastFetchTtfbMs,
           fetchInFlight: _fetchInFlight,
           lastGapMs: _lastGapMs,
+          scheduledIndex: _scheduledIndex,
+          scheduledStartContextTime: _scheduledStartContextTime,
+          ctxCurrentTime: _ctx ? _ctx.currentTime : 0,
+          outputLatencyMs: _ctx ? (_ctx.outputLatency || _ctx.baseLatency || 0) * 1000 : 0,
+          lastDecodeMs: _lastDecodeMs,
+          lastConcatMs: _lastConcatMs,
+          failedTrackCount: _failedTracks.size,
+          workerTickCount: _workerTickCount,
+          sampleRate: _ctx ? _ctx.sampleRate : 0,
+          decodedCacheSize: Object.keys(_decoded).length,
         });
 
         // Update MediaSession Position State
@@ -944,6 +961,16 @@
         heartbeatActive: _backgroundMode !== 'none' &&
           !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
         heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
+        scheduledIndex: _scheduledIndex,
+        scheduledStartContextTime: _scheduledStartContextTime,
+        ctxCurrentTime: _ctx ? _ctx.currentTime : 0,
+        outputLatencyMs: _ctx ? (_ctx.outputLatency || _ctx.baseLatency || 0) * 1000 : 0,
+        lastDecodeMs: _lastDecodeMs,
+        lastConcatMs: _lastConcatMs,
+        failedTrackCount: _failedTracks.size,
+        workerTickCount: _workerTickCount,
+        sampleRate: _ctx ? _ctx.sampleRate : 0,
+        decodedCacheSize: Object.keys(_decoded).length,
         contextState: (function() {
             const hbNeeded = window._gdarIsHeartbeatNeeded();
             const base = _ctx ? _ctx.state : 'none';
@@ -959,7 +986,6 @@
 
   window._gdarAudio = api;
 })();
-
 
 
 

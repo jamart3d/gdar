@@ -95,6 +95,7 @@ class CardStyle {
     final venueStyle = baseVenueStyle
         .apply(fontSizeFactor: effectiveScale)
         .copyWith(
+          fontFamily: isFruit ? 'Inter' : null,
           color: isFruit
               ? (isDark
                     ? Colors.white.withValues(alpha: 0.9)
@@ -114,6 +115,7 @@ class CardStyle {
     final dateStyle = baseDateStyle
         .apply(fontSizeFactor: effectiveScale)
         .copyWith(
+          fontFamily: isFruit ? 'Inter' : null,
           color: isFruit
               ? (isDark
                     ? Colors.white.withValues(alpha: 0.6)
@@ -134,20 +136,28 @@ class CardStyle {
         ? 11.0
         : 9.5; // v134 standard Date size
 
-    if (isRockSalt) {
-      if (dateFirst) {
-        topSize = 12.0;
-      } else {
-        bottomSize = 7.0;
+    if (!isFruit) {
+      if (isRockSalt) {
+        if (dateFirst) {
+          topSize = 12.0;
+        } else {
+          bottomSize = 7.0;
+        }
+      } else if (isCaveat) {
+        if (settings.uiScale) {
+          topSize = 16.5;
+          bottomSize = 10.0;
+        } else {
+          topSize = 22.0;
+          bottomSize = 14.0;
+        }
       }
-    } else if (isCaveat) {
-      if (settings.uiScale) {
-        topSize = 16.5;
-        bottomSize = 10.0;
-      } else {
-        topSize = 22.0;
-        bottomSize = 14.0;
-      }
+    }
+
+    // Fruit desktop: boost text size (mobile uses hardcoded sizes; TV overrides below)
+    if (isFruit && !deviceService.isTv) {
+      topSize *= 1.1;
+      bottomSize *= 1.3;
     }
 
     if (deviceService.isTv) {

@@ -23,6 +23,7 @@ import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown_core/ui/widgets/rating_control.dart';
 import 'package:shakedown_core/ui/widgets/shnid_badge.dart';
 import 'package:shakedown_core/ui/widgets/src_badge.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_tooltip.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
@@ -114,13 +115,12 @@ class _TrackListScreenState extends State<TrackListScreen> {
     }
   }
 
-  Future<void> _playShowFromHeader() async {
+  Future<void> _playShowFromHeader({int initialIndex = 0}) async {
     unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
     final ap = context.read<AudioProvider>();
-    if (ap.currentShow != null && ap.currentShow!.name != widget.show.name) {
-      await ap.stopAndClear();
-    }
-    unawaited(ap.playSource(widget.show, widget.source));
+    unawaited(
+      ap.playSource(widget.show, widget.source, initialIndex: initialIndex),
+    );
     await _openPlaybackScreen();
   }
 

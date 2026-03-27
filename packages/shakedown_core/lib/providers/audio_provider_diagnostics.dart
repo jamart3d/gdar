@@ -93,6 +93,19 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
       fetchTtfbMs: _audioPlayer.fetchTtfbMs,
       fetchInFlight: _audioPlayer.fetchInFlight,
       lastGapMs: _audioPlayer.lastGapMs,
+      scheduledIndex: _audioPlayer.scheduledIndex,
+      scheduledStartContextTime: _audioPlayer.scheduledStartContextTime,
+      ctxCurrentTime: _audioPlayer.ctxCurrentTime,
+      outputLatencyMs: _audioPlayer.outputLatencyMs,
+      lastDecodeMs: _audioPlayer.lastDecodeMs,
+      lastConcatMs: _audioPlayer.lastConcatMs,
+      failedTrackCount: _audioPlayer.failedTrackCount,
+      workerTickCount: _audioPlayer.workerTickCount,
+      sampleRate: _audioPlayer.sampleRate,
+      decodedCacheSize: _audioPlayer.decodedCacheSize,
+      handoffState: _audioPlayer.handoffState,
+      handoffAttemptCount: _audioPlayer.handoffAttemptCount,
+      lastHandoffPollCount: _audioPlayer.lastHandoffPollCount,
     );
   }
 
@@ -180,6 +193,19 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
       fetchTtfbMs: dng.fetchTtfbMs,
       fetchInFlight: dng.fetchInFlight,
       lastGapMs: dng.lastGapMs,
+      scheduledIndex: dng.scheduledIndex,
+      scheduledStartContextTime: dng.scheduledStartContextTime,
+      ctxCurrentTime: dng.ctxCurrentTime,
+      outputLatencyMs: dng.outputLatencyMs,
+      lastDecodeMs: dng.lastDecodeMs,
+      lastConcatMs: dng.lastConcatMs,
+      failedTrackCount: dng.failedTrackCount,
+      workerTickCount: dng.workerTickCount,
+      sampleRate: dng.sampleRate,
+      decodedCacheSize: dng.decodedCacheSize,
+      handoffState: dng.handoffState,
+      handoffAttemptCount: dng.handoffAttemptCount,
+      lastHandoffPollCount: dng.lastHandoffPollCount,
     );
   }
 
@@ -303,6 +329,8 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
         return 'HBA';
       case 'active':
         return 'ACT';
+      case 'ready':
+        return 'RDY';
       case 'idle':
         return 'IDL';
       case null:

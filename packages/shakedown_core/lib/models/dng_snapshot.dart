@@ -22,6 +22,21 @@ class DngSnapshot {
   final bool fetchInFlight;
   final double? lastGapMs;
 
+  // New telemetry
+  final int? scheduledIndex;
+  final double? scheduledStartContextTime;
+  final double? ctxCurrentTime;
+  final double? outputLatencyMs;
+  final double? lastDecodeMs;
+  final double? lastConcatMs;
+  final int? failedTrackCount;
+  final int? workerTickCount;
+  final int? sampleRate;
+  final int? decodedCacheSize;
+  final String? handoffState;
+  final int? handoffAttemptCount;
+  final int? lastHandoffPollCount;
+
   DngSnapshot({
     required this.position,
     required this.buffered,
@@ -37,10 +52,23 @@ class DngSnapshot {
     this.notificationMessage,
     this.lastIssueMessage,
     this.lastIssueAt,
-    this.error,
     this.fetchTtfbMs,
     this.fetchInFlight = false,
     this.lastGapMs,
+    this.scheduledIndex,
+    this.scheduledStartContextTime,
+    this.ctxCurrentTime,
+    this.outputLatencyMs,
+    this.lastDecodeMs,
+    this.lastConcatMs,
+    this.failedTrackCount,
+    this.workerTickCount,
+    this.sampleRate,
+    this.decodedCacheSize,
+    this.handoffState,
+    this.handoffAttemptCount,
+    this.lastHandoffPollCount,
+    this.error,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();
 

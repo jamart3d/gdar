@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -41,15 +42,15 @@ class EmbeddedMiniPlayer extends StatelessWidget {
 
     if (currentTrack == null) return const SizedBox.shrink();
 
+    final isFruit = context.read<ThemeProvider?>()?.isFruit ?? false;
     final horizontalPad = compact ? 4.0 : 10.0;
     final verticalPad = compact ? 0.0 : 8.0;
     final buttonSize = (compact ? 36.0 : 32.0) * scaleFactor;
     final iconSize = (compact ? 18.0 : 16.0) * scaleFactor;
     final loaderSize = (compact ? 16.0 : 18.0) * scaleFactor;
-    final titleSize = (compact ? 18.0 : 14.0) * scaleFactor;
+    final titleSize = (compact ? (isFruit ? 22.0 : 18.0) : 14.0) * scaleFactor;
     final isTv = Provider.of<DeviceService>(context).isTv;
     final timeSize = (compact ? 12.0 : 11.0) * scaleFactor;
-
     final contentRadius = isTv
         ? 12.0
         : 28.0; // Matching the card's 28px radius (semicircle look)
@@ -59,17 +60,19 @@ class EmbeddedMiniPlayer extends StatelessWidget {
         vertical: verticalPad,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: isFruit
+            ? Colors.transparent
+            : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(contentRadius),
-        border: useRgb
-            ? null // RGB Border handles this
+        border: (useRgb || isFruit)
+            ? null
             : Border.all(
                 color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                 width: 1.0,
               ),
       ),
       child: Row(
-        mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,
+        mainAxisSize: MainAxisSize.max,
         children: [
           // Play/Pause Button
           StreamBuilder<PlayerState>(
@@ -156,45 +159,45 @@ class EmbeddedMiniPlayer extends StatelessWidget {
           // Compact mode: no Expanded (intrinsic width from parent)
           // Non-compact mode: Expanded to fill available space
           if (compact)
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 2,
-                    vertical: 1,
-                  ),
-                  child: Text(
-                    currentTrack.title,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: titleSize,
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurface,
-                      height: 1.0,
+            Expanded(
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Expanded(
+                    child: Text(
+                      currentTrack.title,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                        height: 1.0,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    softWrap: false,
                   ),
-                ),
-                const SizedBox(width: 4),
-                // Progress Bar stacked under Time
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTimeText(
-                      audioProvider,
-                      colorScheme,
-                      timeSize,
-                      compact,
-                      showFullDuration,
+                  const SizedBox(width: 8),
+                  // Time + progress bar, right-aligned
+                  IntrinsicWidth(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildTimeText(
+                          audioProvider,
+                          colorScheme,
+                          timeSize,
+                          compact,
+                          showFullDuration,
+                        ),
+                        const SizedBox(height: 1),
+                        _buildProgressBar(audioProvider, colorScheme, compact),
+                      ],
                     ),
-                    const SizedBox(height: 1),
-                    _buildProgressBar(audioProvider, colorScheme, compact),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             )
           else
             Expanded(
@@ -253,6 +256,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
         alignment: Alignment.centerLeft,
         usePadding:
             true, // Prevents button/text from clipping against the border
+        backgroundColor: isFruit ? Colors.transparent : null,
         showGlow: true,
         glowOpacity: 0.3,
         glowSpread: 8.0,
@@ -293,6 +297,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
               (compact && !showFullDuration)
                   ? _formatDuration(pos)
                   : '${_formatDuration(pos)} / ${_formatDuration(dur)}',
+              textAlign: TextAlign.end,
               style: TextStyle(
                 fontFamily: 'Roboto',
                 fontSize: timeSize,
@@ -327,15 +332,12 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                 ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
                 : 0.0;
 
-            return SizedBox(
-              width: compact ? 48.0 : 0.0,
-              child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
-                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-                minHeight: 2,
-                borderRadius: BorderRadius.circular(1),
-              ),
+            return LinearProgressIndicator(
+              value: progress,
+              backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+              minHeight: 2,
+              borderRadius: BorderRadius.circular(1),
             );
           },
         );

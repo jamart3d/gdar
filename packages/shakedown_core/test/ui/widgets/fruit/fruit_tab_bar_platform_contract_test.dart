@@ -33,6 +33,8 @@ class _FakeSettings extends ChangeNotifier implements SettingsProvider {
   bool get enableHaptics => false;
   @override
   bool get performanceMode => false;
+  @override
+  bool get fruitDenseList => false;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

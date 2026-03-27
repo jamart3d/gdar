@@ -63,6 +63,33 @@ mixin _GaplessPlayerWebAccessors
 
   double? get lastGapMs => _useJsEngine ? _lastGapMs : null;
 
+  int? get scheduledIndex => _useJsEngine ? _scheduledIndex : null;
+
+  double? get scheduledStartContextTime =>
+      _useJsEngine ? _scheduledStartContextTime : null;
+
+  double? get ctxCurrentTime => _useJsEngine ? _ctxCurrentTime : null;
+
+  double? get outputLatencyMs => _useJsEngine ? _outputLatencyMs : null;
+
+  double? get lastDecodeMs => _useJsEngine ? _lastDecodeMs : null;
+
+  double? get lastConcatMs => _useJsEngine ? _lastConcatMs : null;
+
+  int? get failedTrackCount => _useJsEngine ? _failedTrackCount : null;
+
+  int? get workerTickCount => _useJsEngine ? _workerTickCount : null;
+
+  int? get sampleRate => _useJsEngine ? _sampleRate : null;
+
+  int? get decodedCacheSize => _useJsEngine ? _decodedCacheSize : null;
+
+  String? get handoffState => _useJsEngine ? _handoffState : null;
+
+  int? get handoffAttemptCount => _useJsEngine ? _handoffAttemptCount : null;
+
+  int? get lastHandoffPollCount => _useJsEngine ? _lastHandoffPollCount : null;
+
   String get engineName {
     if (!_useJsEngine) {
       return 'Standard Engine (just_audio)';
@@ -172,4 +199,40 @@ mixin _GaplessPlayerWebAccessors
   Stream<SequenceState?> get sequenceStateStream => _useJsEngine
       ? _sequenceStateController.stream
       : _fallbackPlayer!.sequenceStateStream;
+
+  Stream<double?> get scheduledStartContextTimeStream => _useJsEngine
+      ? _scheduledStartContextTimeController.stream
+      : const Stream.empty();
+
+  Stream<double?> get outputLatencyMsStream =>
+      _useJsEngine ? _outputLatencyMsController.stream : const Stream.empty();
+
+  Stream<double?> get lastDecodeMsStream =>
+      _useJsEngine ? _lastDecodeMsController.stream : const Stream.empty();
+
+  Stream<double?> get lastConcatMsStream =>
+      _useJsEngine ? _lastConcatMsController.stream : const Stream.empty();
+
+  Stream<int?> get failedTrackCountStream =>
+      _useJsEngine ? _failedTrackCountController.stream : const Stream.empty();
+
+  Stream<int?> get workerTickCountStream =>
+      _useJsEngine ? _workerTickCountController.stream : const Stream.empty();
+
+  Stream<int?> get sampleRateStream =>
+      _useJsEngine ? _sampleRateController.stream : const Stream.empty();
+
+  Stream<int?> get decodedCacheSizeStream =>
+      _useJsEngine ? _decodedCacheSizeController.stream : const Stream.empty();
+
+  Stream<String?> get handoffStateStream =>
+      _useJsEngine ? _handoffStateController.stream : const Stream.empty();
+
+  Stream<int?> get handoffAttemptCountStream => _useJsEngine
+      ? _handoffAttemptCountController.stream
+      : const Stream.empty();
+
+  Stream<int?> get lastHandoffPollCountStream => _useJsEngine
+      ? _lastHandoffPollCountController.stream
+      : const Stream.empty();
 }

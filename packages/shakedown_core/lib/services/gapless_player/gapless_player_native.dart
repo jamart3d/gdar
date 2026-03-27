@@ -94,6 +94,45 @@ class GaplessPlayer {
   /// Last track gap (not applicable natively).
   double? get lastGapMs => null;
 
+  /// JS engine scheduled index (not applicable natively).
+  int? get scheduledIndex => null;
+
+  /// JS engine scheduled context time (not applicable natively).
+  double? get scheduledStartContextTime => null;
+
+  /// JS engine current AudioContext time (not applicable natively).
+  double? get ctxCurrentTime => null;
+
+  /// JS engine output latency (not applicable natively).
+  double? get outputLatencyMs => null;
+
+  /// JS engine last decode duration (not applicable natively).
+  double? get lastDecodeMs => null;
+
+  /// JS engine last concat duration (not applicable natively).
+  double? get lastConcatMs => null;
+
+  /// JS engine failed track count (not applicable natively).
+  int? get failedTrackCount => null;
+
+  /// JS engine worker tick count (not applicable natively).
+  int? get workerTickCount => null;
+
+  /// JS engine sample rate (not applicable natively).
+  int? get sampleRate => null;
+
+  /// JS engine decoded cache size (not applicable natively).
+  int? get decodedCacheSize => null;
+
+  /// JS engine handoff state (not applicable natively).
+  String? get handoffState => null;
+
+  /// JS engine handoff attempt count (not applicable natively).
+  int? get handoffAttemptCount => null;
+
+  /// JS engine last handoff poll count (not applicable natively).
+  int? get lastHandoffPollCount => null;
+
   // ─── Passthrough streams ─────────────────────────────────────────────────
 
   /// Stream of [PlayerState] changes.
@@ -143,6 +182,39 @@ class GaplessPlayer {
 
   /// Stream of JS engine visibility status.
   Stream<String> get visibilityStream => const Stream.empty();
+
+  /// Stream of scheduled context time.
+  Stream<double?> get scheduledStartContextTimeStream => const Stream.empty();
+
+  /// Stream of output latency.
+  Stream<double?> get outputLatencyMsStream => const Stream.empty();
+
+  /// Stream of last decode duration.
+  Stream<double?> get lastDecodeMsStream => const Stream.empty();
+
+  /// Stream of last concat duration.
+  Stream<double?> get lastConcatMsStream => const Stream.empty();
+
+  /// Stream of failed track count.
+  Stream<int?> get failedTrackCountStream => const Stream.empty();
+
+  /// Stream of worker tick count.
+  Stream<int?> get workerTickCountStream => const Stream.empty();
+
+  /// Stream of sample rate.
+  Stream<int?> get sampleRateStream => const Stream.empty();
+
+  /// Stream of decoded cache size.
+  Stream<int?> get decodedCacheSizeStream => const Stream.empty();
+
+  /// Stream of handoff state.
+  Stream<String?> get handoffStateStream => const Stream.empty();
+
+  /// Stream of handoff attempt count.
+  Stream<int?> get handoffAttemptCountStream => const Stream.empty();
+
+  /// Stream of last handoff poll count.
+  Stream<int?> get lastHandoffPollCountStream => const Stream.empty();
 
   /// Stream of current index changes.
   Stream<int?> get currentIndexStream => _player.currentIndexStream;

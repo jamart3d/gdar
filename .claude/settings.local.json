@@ -29,7 +29,32 @@
       "Bash(dart format:*)",
       "Bash(where melos:*)",
       "Bash(dart pub:*)",
-      "Bash(melos.bat run:*)"
+      "Bash(melos.bat run:*)",
+      "Bash(find packages/shakedown_core -name *steal* -o -name *screensaver*)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(sed -i 's/enableRunDetection/markPlayedOnStart/g; s/toggleEnableRunDetection/toggleMarkPlayedOnStart/g' \"$f\")",
+      "Bash(echo \"Updated $f\")",
+      "Bash(done)",
+      "Bash(dart run:*)"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\": \"Claude finished.\"}'"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "date +\"⏱ %H:%M:%S\""
   }
 }

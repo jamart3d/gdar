@@ -36,7 +36,7 @@ const String _preventSleepKey = 'prevent_sleep';
 const String _simpleRandomIconKey = 'simple_random_icon';
 const String _fruitDenseListKey = 'fruit_dense_list';
 const String _fruitStickyNowPlayingKey = 'fruit_sticky_now_playing';
-const String _enableRunDetectionKey = 'enable_run_detection';
+const String _markPlayedOnStartKey = 'mark_played_on_start';
 const String _hideTvScrollbarsKey = 'hide_tv_scrollbars';
 const String _marqueeEnabledKey = 'marquee_enabled';
 const String _enableSwipeToBlockKey = 'enable_swipe_to_block';
@@ -98,7 +98,7 @@ mixin _SettingsProviderCoreFields {
   late bool _forceTv;
   late bool _enableHaptics;
   late bool _fruitStickyNowPlaying;
-  late bool _enableRunDetection;
+  late bool _markPlayedOnStart;
   late bool _hideTvScrollbars;
 
   Color? _seedColor;
@@ -163,7 +163,7 @@ mixin _SettingsProviderCoreExtension
       isWasmSafeMode() ? false : _fruitEnableLiquidGlass;
   bool get fruitStickyNowPlaying => _fruitStickyNowPlaying;
   bool get enableHaptics => _enableHaptics;
-  bool get enableRunDetection => _enableRunDetection;
+  bool get markPlayedOnStart => _markPlayedOnStart;
   NeumorphicStyle get neumorphicStyle => _neumorphicStyle;
   bool get performanceMode => isWasmSafeMode() ? true : _performanceMode;
   bool get forceTv => _forceTv;
@@ -261,9 +261,9 @@ mixin _SettingsProviderCoreExtension
     _updatePreference(_fruitStickyNowPlayingKey, _fruitStickyNowPlaying);
   }
 
-  void toggleEnableRunDetection() {
-    _enableRunDetection = !_enableRunDetection;
-    _updatePreference(_enableRunDetectionKey, _enableRunDetection);
+  void toggleMarkPlayedOnStart() {
+    _markPlayedOnStart = !_markPlayedOnStart;
+    _updatePreference(_markPlayedOnStartKey, _markPlayedOnStart);
   }
 
   void toggleShowTrackNumbers() => _updatePreference(

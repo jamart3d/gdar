@@ -12,12 +12,14 @@ import 'package:shakedown_core/utils/web_runtime.dart';
 class FruitTooltip extends StatefulWidget {
   final Widget child;
   final String message;
+  final InlineSpan? richMessage;
   final Duration showDelay;
 
   const FruitTooltip({
     super.key,
     required this.child,
     required this.message,
+    this.richMessage,
     this.showDelay = const Duration(milliseconds: 500),
   });
 
@@ -82,16 +84,19 @@ class _FruitTooltipState extends State<FruitTooltip> {
     final bool disableBlur = kIsWeb && isWasmRuntime();
     final bool effectiveGlass = useGlass && !disableBlur;
 
-    final Widget content = Text(
-      widget.message,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontFamily: 'Inter',
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: isDark ? colorScheme.onSurface : colorScheme.onSurface,
-      ),
+    final baseStyle = TextStyle(
+      fontFamily: 'Inter',
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: colorScheme.onSurface,
     );
+    final Widget content = widget.richMessage != null
+        ? Text.rich(
+            widget.richMessage!,
+            textAlign: TextAlign.center,
+            style: baseStyle,
+          )
+        : Text(widget.message, textAlign: TextAlign.center, style: baseStyle);
 
     final decoration = BoxDecoration(
       color: effectiveGlass

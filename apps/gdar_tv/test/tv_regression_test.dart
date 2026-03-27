@@ -419,7 +419,7 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void toggleShowDevAudioHud() {}
   @override
-  void toggleEnableRunDetection() {}
+  void toggleMarkPlayedOnStart() {}
   @override
   void setFruitEnableLiquidGlass(bool value) {}
   @override

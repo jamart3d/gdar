@@ -56,7 +56,7 @@ class DefaultSettings {
   static const bool randomOnlyUnplayed = false;
   static const bool randomOnlyHighRated = false;
   static const bool randomExcludePlayed = false;
-  static const bool enableRunDetection = false;
+  static const bool markPlayedOnStart = true;
 
   // Source Categories (true = enabled by default)
   static const Map<String, bool> sourceCategoryFilters = {

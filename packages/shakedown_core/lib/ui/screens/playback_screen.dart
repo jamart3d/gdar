@@ -30,6 +30,7 @@ import 'package:shakedown_core/ui/widgets/rating_control.dart';
 import 'package:shakedown_core/ui/widgets/shnid_badge.dart';
 import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_activity_indicator.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_tooltip.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_scrollbar.dart';

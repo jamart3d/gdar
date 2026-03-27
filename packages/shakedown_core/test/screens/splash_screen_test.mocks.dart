@@ -834,9 +834,9 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
           as bool);
 
   @override
-  bool get enableRunDetection =>
+  bool get markPlayedOnStart =>
       (super.noSuchMethod(
-            Invocation.getter(#enableRunDetection),
+            Invocation.getter(#markPlayedOnStart),
             returnValue: false,
             returnValueForMissingStub: false,
           )
@@ -1892,8 +1892,8 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   );
 
   @override
-  void toggleEnableRunDetection() => super.noSuchMethod(
-    Invocation.method(#toggleEnableRunDetection, []),
+  void toggleMarkPlayedOnStart() => super.noSuchMethod(
+    Invocation.method(#toggleMarkPlayedOnStart, []),
     returnValueForMissingStub: null,
   );
 

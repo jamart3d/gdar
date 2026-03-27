@@ -44,6 +44,9 @@ class FruitTabBar extends StatelessWidget {
     final isDarkMode = theme.brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
     final isFruitColor = themeProvider.themeStyle == ThemeStyle.fruit;
+    final double denseMultiplier =
+        isFruitColor && !settingsProvider.fruitDenseList ? 1.3 : 1.0;
+    final double tabScaleFactor = scaleFactor * denseMultiplier;
     final bool isLiquidGlassEnabled =
         isFruitColor && settingsProvider.fruitEnableLiquidGlass;
     final bool isLiquidGlassOff = isFruitColor && !isLiquidGlassEnabled;
@@ -58,10 +61,10 @@ class FruitTabBar extends StatelessWidget {
 
     final content = Container(
       padding: EdgeInsets.fromLTRB(
-        32.0 * scaleFactor, // px-8
-        16.0 * scaleFactor, // pt-4
-        32.0 * scaleFactor, // px-8
-        16.0 * scaleFactor + MediaQuery.paddingOf(context).bottom, // pb-8
+        32.0 * tabScaleFactor, // px-8
+        16.0 * tabScaleFactor, // pt-4
+        32.0 * tabScaleFactor, // px-8
+        16.0 * tabScaleFactor + MediaQuery.paddingOf(context).bottom, // pb-8
       ),
       decoration: BoxDecoration(color: backgroundColor),
       child: Row(
@@ -72,7 +75,7 @@ class FruitTabBar extends StatelessWidget {
               icon: LucideIcons.playCircle,
               label: 'PLAY',
               isActive: selectedIndex == 0,
-              scaleFactor: scaleFactor,
+              scaleFactor: tabScaleFactor,
               onTap: () {
                 // ALLOW if currentShow is set, even if track isn't fully buffered yet
                 if (audioProvider.currentShow != null) {
@@ -88,7 +91,7 @@ class FruitTabBar extends StatelessWidget {
               icon: LucideIcons.library,
               label: 'LIBRARY',
               isActive: selectedIndex == 1,
-              scaleFactor: scaleFactor,
+              scaleFactor: tabScaleFactor,
               onTap: () {
                 onTabSelected(1);
               },
@@ -106,7 +109,7 @@ class FruitTabBar extends StatelessWidget {
               useAnimatedRandomIcon:
                   !settingsProvider.nonRandom &&
                   !settingsProvider.simpleRandomIcon,
-              scaleFactor: scaleFactor,
+              scaleFactor: tabScaleFactor,
               onTap: () {
                 AppHaptics.selectionClick(
                   context.read<DeviceService>(),
@@ -121,7 +124,7 @@ class FruitTabBar extends StatelessWidget {
               icon: LucideIcons.settings,
               label: 'SETTINGS',
               isActive: selectedIndex == 3,
-              scaleFactor: scaleFactor,
+              scaleFactor: tabScaleFactor,
               onTap: () {
                 onTabSelected(3);
               },

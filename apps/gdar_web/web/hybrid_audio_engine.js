@@ -77,6 +77,8 @@
     let _fenceHandoffPending = false;
     let _lastGapMs = null;
     let _trackBoundaryAtMs = 0; // Stamped when H5 track boundary fires, cleared when WA swap completes
+    let _lastHandoffPollCount = 0;
+    const _blockedForegroundIdentifiers = new Set();
 
     // Web Worker for background timing - now managed centrally via audio_scheduler.js
     // let _schedulerWorker = null;
@@ -106,6 +108,78 @@
         if (engine && typeof engine.setVolume === 'function') {
             engine.setVolume(volume);
         }
+    }
+
+    function _archiveIdentifierForTrack(track) {
+        try {
+            const rawUrl = track && track.url;
+            if (!rawUrl) return null;
+            const url = new URL(rawUrl, window.location.href);
+            const parts = url.pathname.split('/').filter(Boolean);
+            const downloadIndex = parts.indexOf('download');
+            if (downloadIndex !== -1 && parts.length > downloadIndex + 1) {
+                return parts[downloadIndex + 1];
+            }
+            const itemsIndex = parts.indexOf('items');
+            if (itemsIndex !== -1 && parts.length > itemsIndex + 1) {
+                return parts[itemsIndex + 1];
+            }
+        } catch (_) { }
+        return null;
+    }
+
+    function _isForegroundPrepBlocked(err) {
+        const message = String(
+            (err && (err.message || err.toString && err.toString())) || '',
+        ).toLowerCase();
+        return message.includes('failed to fetch') ||
+            message.includes('networkerror') ||
+            message.includes('unauthorized') ||
+            message.includes('cors') ||
+            message.includes('401');
+    }
+
+    function _markForegroundBlocked(track, err) {
+        const identifier = _archiveIdentifierForTrack(track);
+        if (identifier) {
+            _blockedForegroundIdentifiers.add(identifier);
+            _log.warn(
+                `[hybrid] Foreground WebAudio decode blocked for archive source ${identifier}. Staying on HTML5.`,
+                err,
+            );
+        } else {
+            _log.warn('[hybrid] Foreground WebAudio decode blocked. Staying on HTML5.', err);
+        }
+    }
+
+    function _isForegroundBlocked(track) {
+        const identifier = _archiveIdentifierForTrack(track);
+        return !!identifier && _blockedForegroundIdentifiers.has(identifier);
+    }
+
+    function _createForegroundBlockedError(track, cause) {
+        const identifier = _archiveIdentifierForTrack(track) || 'unknown';
+        const error = new Error(`Foreground decode blocked for ${identifier}`);
+        error.code = 'WA_BLOCKED';
+        error.cause = cause;
+        return error;
+    }
+
+    function _prepareForegroundTrack(index) {
+        const track = _playlist[index];
+        if (!track) {
+            return Promise.reject(new Error('No track at index ' + index));
+        }
+        if (_isForegroundBlocked(track)) {
+            return Promise.reject(_createForegroundBlockedError(track));
+        }
+        return _fgEngine.prepareToPlay(index).catch(err => {
+            if (_isForegroundPrepBlocked(err)) {
+                _markForegroundBlocked(track, err);
+                throw _createForegroundBlockedError(track, err);
+            }
+            throw err;
+        });
     }
 
     function _logRoutingDecision(source, pure, allowHandoff, useHtml5) {
@@ -234,7 +308,22 @@
         const survivalDisabled = _backgroundMode === 'none';
         state.heartbeatActive = !survivalDisabled &&
             !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive());
+
+        // Hybrid Specific Telemetry
+        state.hs = _getHandoffState();
+        state.hat = _handoffAttemptCount;
+        state.hpd = _lastHandoffPollCount;
+
         _onStateChange(state);
+    }
+
+    function _getHandoffState() {
+        if (!_playing) return 'IDLE';
+        if (_handoffInProgress) return 'PRB'; // Probing/Restoring
+        if (_instantHandoffPending) return 'ARM'; // Armed for switch
+        if (_fenceHandoffPending) return 'FNC'; // Desktop fence active
+        if (_activeEngine === _fgEngine) return 'DONE'; // Successfully on WA
+        return 'IDLE';
     }
 
     function _forwardTrack(event, sourceEngine) {
@@ -250,7 +339,7 @@
         }
 
         // Invalidate any background restoration loops for the old track
-        _handoffAttemptId++;
+        _handoffRunId++;
 
         // Prevent double forwarding for the same boundary crossing
         if (event.to === _currentIndex) return;
@@ -384,11 +473,11 @@
      */
     function _executeForegroundRestore(pollCount = 0, attemptId) {
         // Use the current handoff ID if not provided (for the starting call)
-        const id = attemptId || _handoffAttemptId;
+        const id = attemptId || _handoffRunId;
         _handoffInProgress = true;
 
         // TERMINATION GUARD: If a new handoff or seek has started, kill this loop immediately.
-        if (id !== _handoffAttemptId) {
+        if (id !== _handoffRunId) {
             _log.log('[hybrid] Terminating stale handoff loop (ID:', id, ')');
             // Silence any ghost audio the fg engine started during this attempt.
             if (_activeEngine !== _fgEngine) _fgEngine.stop();
@@ -411,7 +500,7 @@
         // Poll for readiness
         setTimeout(() => {
             // Re-check ID inside the timeout
-            if (id !== _handoffAttemptId) {
+            if (id !== _handoffRunId) {
                 // A newer handoff or track change cancelled this attempt.
                 // Stop any fg audio started during this attempt to prevent ghost playback.
                 if (_activeEngine !== _fgEngine) _fgEngine.stop();
@@ -434,6 +523,7 @@
                     _log.log(`[hybrid] LG gap (H5→WA boundary): ${_lastGapMs.toFixed(1)}ms`);
                 }
 
+                _lastHandoffPollCount = pollCount;
                 _swapEngine(_fgEngine);
                 _log.log('[hybrid] ACTIVE ENGINE SWAPPED: Now using Web Audio (Foreground)');
                 if (_handoffCrossfadeMs > 0) {
@@ -462,13 +552,22 @@
         }, pollCount === 0 ? 250 : 100);
     }
 
-    let _handoffAttemptId = 0;
+    let _handoffRunId = 0;
+    let _handoffAttemptCount = 0;
 
     async function _attemptHandoff(index, shouldPlay) {
         if (shouldPlay === undefined) shouldPlay = _playing;
         if (!shouldPlay) return;
         const track = _playlist[index];
         if (!track) return;
+        if (_isForegroundBlocked(track)) {
+            _log.log('[hybrid] Foreground decode unavailable for this archive source. Staying on HTML5.');
+            _handoffInProgress = false;
+            _instantHandoffPending = false;
+            _swapEngine(_bgEngine);
+            _fgEngine.stop();
+            return;
+        }
 
         // --- Handoff Settings Filter ---
         if (_handoffMode === 'none') {
@@ -493,7 +592,8 @@
             return;
         }
 
-        const attemptId = ++_handoffAttemptId;
+        const attemptId = ++_handoffRunId;
+        _handoffAttemptCount++;
         _log.log('[hybrid] Launching INSTANT START (HTML5) for index', index);
 
         _bgEngine.syncState(index, 0, true);
@@ -502,8 +602,8 @@
         // Silently prep foreground
         _handoffInProgress = true;
         setTimeout(() => {
-            _fgEngine.prepareToPlay(index).then(() => {
-            if (_handoffAttemptId !== attemptId) return;
+            _prepareForegroundTrack(index).then(() => {
+            if (_handoffRunId !== attemptId) return;
             if (_currentIndex !== index) return;
 
             const bgState = _bgEngine.getState();
@@ -516,7 +616,7 @@
 
                 if (index + 1 < _playlist.length) {
                     _log.log(`[hybrid] Pre-preparing next track (${index + 1}) in Web Audio...`);
-                    _fgEngine.prepareToPlay(index + 1).catch(() => { });
+                    _prepareForegroundTrack(index + 1).catch(() => { });
                 }
                 return;
             }
@@ -530,7 +630,7 @@
                 // CRITICAL: Pre-decode the NEXT track in WebAudio now
                 if (index + 1 < _playlist.length) {
                     _log.log(`[hybrid] Pre-preparing next track (${index + 1}) in Web Audio...`);
-                    _fgEngine.prepareToPlay(index + 1).catch(() => { });
+                    _prepareForegroundTrack(index + 1).catch(() => { });
                 }
             } else if (duration > 223) { // HTML5_BUFFER_LIMIT
                 _log.log(`[hybrid] Track ${index} is LONG (${duration.toFixed(1)}s). Waiting for buffer exhaustion to hand off.`);
@@ -539,11 +639,11 @@
                 // happens near the end of the current track.
                 if (index + 1 < _playlist.length) {
                     _log.log(`[hybrid] Pre-preparing next track (${index + 1}) in Web Audio...`);
-                    _fgEngine.prepareToPlay(index + 1).catch(() => { });
+                    _prepareForegroundTrack(index + 1).catch(() => { });
                 }
 
                 const onWorkerTick = () => {
-                    if (!_instantHandoffPending || index !== _currentIndex || !_playing || _activeEngine !== _bgEngine || attemptId !== _handoffAttemptId) {
+                    if (!_instantHandoffPending || index !== _currentIndex || !_playing || _activeEngine !== _bgEngine || attemptId !== _handoffRunId) {
                         window.removeEventListener('gdar-worker-tick', onWorkerTick);
                         return;
                     }
@@ -586,7 +686,7 @@
                 // transition when the HTML5 engine reaches the boundary.
                 if (index + 1 < _playlist.length) {
                     _log.log(`[hybrid] Pre-preparing next track (${index + 1}) in Web Audio...`);
-                    _fgEngine.prepareToPlay(index + 1).catch(() => { });
+                    _prepareForegroundTrack(index + 1).catch(() => { });
                 }
             }
 
@@ -598,6 +698,13 @@
                 (err.message && err.message.toLowerCase().includes('abort')));
             if (isAbort) {
                 _log.log('[hybrid] Handoff prepare aborted by seek/index change — expected.');
+                return;
+            }
+            if (err && err.code === 'WA_BLOCKED') {
+                _instantHandoffPending = false;
+                _handoffInProgress = false;
+                _swapEngine(_bgEngine);
+                _fgEngine.stop();
                 return;
             }
             _log.error('[hybrid] Failed to prepare instant handoff:', err);
@@ -693,8 +800,14 @@
 
         setPlaylist: function (tracks, startIndex) {
             _playlist = tracks || [];
+            _blockedForegroundIdentifiers.clear();
             _currentIndex = startIndex != null ? startIndex : 0;
             _playing = false;
+            _handoffRunId = 0;
+            _handoffAttemptCount = 0;
+            _lastHandoffPollCount = 0;
+            _handoffInProgress = false;
+            _instantHandoffPending = false;
 
             // Stop any background heartbeats left over
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
@@ -771,7 +884,7 @@
             _playing = false;
             if (_stallTimer) { clearTimeout(_stallTimer); _stallTimer = null; }
             // Cancel any pending restoration loop immediately
-            _handoffAttemptId++;
+            _handoffRunId++;
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
             _instantHandoffPending = false;
             _handoffInProgress = false;
@@ -782,7 +895,7 @@
             _playing = false;
             if (_stallTimer) { clearTimeout(_stallTimer); _stallTimer = null; }
             // Increment ID to cancel any pending handoff loop or buffer-check intervals
-            _handoffAttemptId++;
+            _handoffRunId++;
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
             _instantHandoffPending = false;
             _handoffInProgress = false;
@@ -799,7 +912,7 @@
         seekToIndex: function (index) {
             if (_stallTimer) { clearTimeout(_stallTimer); _stallTimer = null; }
             // Increment ID to cancel any pending handoff loop or buffer-check intervals
-            _handoffAttemptId++;
+            _handoffRunId++;
             _instantHandoffPending = false;
             _handoffInProgress = false;
             _currentIndex = index;
@@ -904,6 +1017,9 @@
             const survivalDisabled = _backgroundMode === 'none';
             state.heartbeatActive = !survivalDisabled &&
                 !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive());
+            state.hs = _getHandoffState();
+            state.hat = _handoffAttemptCount;
+            state.hpd = _lastHandoffPollCount;
             return state;
         },
 
@@ -916,16 +1032,6 @@
     window._hybridAudio = api;
 
 })();
-
-
-
-
-
-
-
-
-
-
 
 
 

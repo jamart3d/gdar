@@ -36,24 +36,11 @@ class RandomShowSelector {
       );
     }
 
-    // NEW: Session History Look-ahead
-    // If we detect a "Chronological Run" in history, we prefer the next show
-    // even in random mode (with high weight).
-    final runSuggestion = settings.enableRunDetection
-        ? _suggestFromRun(
-            candidates: candidates,
-            catalog: catalog,
-            currentShow: currentShow,
-            isSourceAllowed: isSourceAllowed,
-          )
-        : null;
-
     return _pickWeightedRandom(
       candidates: candidates,
       settings: settings,
       catalog: catalog,
       isSourceAllowed: isSourceAllowed,
-      runSuggestion: runSuggestion,
     );
   }
 
@@ -107,7 +94,6 @@ class RandomShowSelector {
     required SettingsProvider settings,
     required CatalogService catalog,
     required bool Function(Source)? isSourceAllowed,
-    Show? runSuggestion,
   }) {
     final List<Show> playCandidates = [];
     final Map<Show, int> weights = {};
@@ -167,13 +153,6 @@ class RandomShowSelector {
       }
 
       if (weight > 0) {
-        // Boost weight if this is the "Run Suggestion"
-        if (runSuggestion != null && show.date == runSuggestion.date) {
-          logger.i('History Run: Boosting weight for ${show.date}');
-          weight *=
-              10; // Make it extremely likely but still allow random "breaks"
-        }
-
         playCandidates.add(show);
         weights[show] = weight;
         selectedSourceMap[show] = source;
@@ -228,42 +207,5 @@ class RandomShowSelector {
     );
 
     return (show: selectedShow, source: sourceToPlay);
-  }
-
-  static Show? _suggestFromRun({
-    required List<Show> candidates,
-    required CatalogService catalog,
-    required Show? currentShow,
-    required bool Function(Source)? isSourceAllowed,
-  }) {
-    if (currentShow == null) return null;
-
-    final history = catalog.getSessionHistory();
-    if (history.length < 2) return null;
-
-    // Check last 2 entries
-    final last = history.last;
-    final secondLast = history[history.length - 2];
-
-    // Find indices in the full sorted candidate list
-    final lastIdx = candidates.indexWhere((s) => s.date == last.showDate);
-    final prevIdx = candidates.indexWhere((s) => s.date == secondLast.showDate);
-
-    if (lastIdx == -1 || prevIdx == -1) return null;
-
-    // Is it a forward run? (e.g. 1977-05-08 -> 1977-05-09)
-    if (lastIdx == prevIdx + 1) {
-      // Suggest the next one
-      final nextIdx = lastIdx + 1;
-      if (nextIdx < candidates.length) {
-        final suggestion = candidates[nextIdx];
-        // Ensure it has allowed sources
-        if (suggestion.sources.any((s) => isSourceAllowed?.call(s) ?? true)) {
-          return suggestion;
-        }
-      }
-    }
-
-    return null;
   }
 }

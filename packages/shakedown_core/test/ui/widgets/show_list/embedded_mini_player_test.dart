@@ -98,14 +98,11 @@ void main() {
           home: Scaffold(
             body: Row(
               children: [
-                Flexible(
-                  flex: 0,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minWidth: 254.0),
-                    child: const EmbeddedMiniPlayer(
-                      compact: true,
-                      scaleFactor: 1.0,
-                    ),
+                SizedBox(
+                  width: 350,
+                  child: const EmbeddedMiniPlayer(
+                    compact: true,
+                    scaleFactor: 1.0,
                   ),
                 ),
                 const Expanded(child: SizedBox()),

@@ -1,12 +1,18 @@
 {
-  "last_verification": "2026-03-26T12:05:00-07:00",
-  "git_sha": "0ac43a8ba2cd1a77c4eca9d6f65aa5ddd9d9da39",
+  "last_verification": "2026-03-27T00:00:00-07:00",
+  "git_sha": "pending_commit",
   "results": {
-    "analyze": "success",
-    "test": "success",
-    "format": "success",
-    "fix": "success",
+    "analyze": "passed",
+    "test": "passed",
+    "format": "passed",
+    "fix": "passed",
     "size_guard": "passed"
   },
-  "summary": "Full /shipit preflight completed successfully after formatting. All monorepo targets (gdar_mobile, gdar_tv, gdar_web, shakedown_core) analyze clean and 253 tests passed. Ready for version bump and release builds."
+  "test_counts": {
+    "total": 256,
+    "passed": 256,
+    "failed": 0,
+    "skipped": 2
+  },
+  "summary": "Checkup passed clean after 2026-03-27 session. Features: markPlayedOnStart (replaces Sequence Run Detection), Fruit font enforcement (Inter everywhere, Rock Salt for Shakedown branding), mini player polish (title size, time alignment, progress bar), show list card text size/gap. Three test regressions fixed during checkup: fruitDenseList missing from _FakeSettings, ThemeProvider nullable reads in ShakedownTitle+EmbeddedMiniPlayer, embedded_mini_player_test SizedBox width constraint. Baseline: 0ac43a8."
 }

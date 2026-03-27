@@ -84,6 +84,7 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
   }
 
   void _onJsError(String message) {
+    if (message == 'Relisten engine error') return;
     _playbackEventController.addError(
       Exception('WebAudio: $message'),
       StackTrace.current,
@@ -198,6 +199,41 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
       if (gap != null && gap.isFinite) {
         _lastGapMs = gap;
       }
+
+      _scheduledIndex = state.scheduledIndex;
+      _scheduledStartContextTime = state.scheduledStartContextTime;
+      _scheduledStartContextTimeController.add(_scheduledStartContextTime);
+
+      _ctxCurrentTime = state.ctxCurrentTime;
+      _outputLatencyMs = state.outputLatencyMs;
+      _outputLatencyMsController.add(_outputLatencyMs);
+
+      _lastDecodeMs = state.lastDecodeMs;
+      _lastDecodeMsController.add(_lastDecodeMs);
+
+      _lastConcatMs = state.lastConcatMs;
+      _lastConcatMsController.add(_lastConcatMs);
+
+      _failedTrackCount = state.failedTrackCount;
+      _failedTrackCountController.add(_failedTrackCount);
+
+      _workerTickCount = state.workerTickCount;
+      _workerTickCountController.add(_workerTickCount);
+
+      _sampleRate = state.sampleRate;
+      _sampleRateController.add(_sampleRate);
+
+      _decodedCacheSize = state.decodedCacheSize;
+      _decodedCacheSizeController.add(_decodedCacheSize);
+
+      _handoffState = state.handoffState;
+      _handoffStateController.add(_handoffState);
+
+      _handoffAttemptCount = state.handoffAttemptCount;
+      _handoffAttemptCountController.add(_handoffAttemptCount);
+
+      _lastHandoffPollCount = state.lastHandoffPollCount;
+      _lastHandoffPollCountController.add(_lastHandoffPollCount);
     } catch (error, stackTrace) {
       logger.w(
         'GaplessPlayerWeb: Error unboxing engine state: $error\n$stackTrace',

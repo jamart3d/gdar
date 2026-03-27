@@ -189,20 +189,27 @@ extension _ShowListCardControls on _ShowListCardState {
             if (shouldShowSrcBadge) {
               Widget srcBadge = SrcBadge(
                 src: badgeSrc,
-                fontSize: shouldShowBadge
-                    ? (isFruit ? 8.5 : (isTv ? 3.5 : (kIsWeb ? 7.5 : 4.5)))
-                    : (isFruit ? 10.5 : (isTv ? 5.0 : (kIsWeb ? 9.0 : 7.0))),
-                padding: (shouldShowBadge || isTv)
-                    ? EdgeInsets.symmetric(
-                        horizontal: (isTv ? 2.0 : 3.0) * effectiveScale,
-                        vertical: 0.0,
-                      )
-                    : null,
+                fontSize:
+                    (shouldShowBadge
+                        ? (isFruit ? 8.5 : (isTv ? 3.5 : (kIsWeb ? 7.5 : 4.5)))
+                        : (isFruit
+                              ? 10.5
+                              : (isTv ? 5.0 : (kIsWeb ? 9.0 : 7.0)))) *
+                    effectiveScale,
+                padding: EdgeInsets.symmetric(
+                  horizontal: (isTv ? 2.0 : 3.0) * effectiveScale,
+                  vertical: isFruit ? 1.0 * effectiveScale : 0.0,
+                ),
               );
 
               if (isTv) {
                 srcBadge = ConstrainedBox(
                   constraints: BoxConstraints(maxHeight: 9.0 * effectiveScale),
+                  child: srcBadge,
+                );
+              } else if (isFruit && !useMobileLayout) {
+                srcBadge = ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: 26.0 * effectiveScale),
                   child: srcBadge,
                 );
               }
@@ -433,7 +440,8 @@ extension _ShowListCardControls on _ShowListCardState {
                             rating: rating,
                             isPlayed: isPlayed,
                             size: isFruit
-                                ? (settings.performanceMode ? 24 : 28)
+                                ? (settings.performanceMode ? 26 : 32) *
+                                      effectiveScale
                                 : (kIsWeb ? 28 : 19),
                             compact: true,
                             enforceMinTapTarget: true,

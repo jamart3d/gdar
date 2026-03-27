@@ -121,7 +121,7 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get enableBufferAgent => false;
   @override
-  bool get enableRunDetection => false;
+  bool get markPlayedOnStart => false;
   @override
   bool get showSplashScreen => false;
   @override
@@ -330,7 +330,7 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void toggleShowDevAudioHud() {}
   @override
-  void toggleEnableRunDetection() {}
+  void toggleMarkPlayedOnStart() {}
   @override
   void setFruitEnableLiquidGlass(bool value) {}
   @override

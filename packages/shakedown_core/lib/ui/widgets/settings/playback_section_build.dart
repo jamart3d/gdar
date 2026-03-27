@@ -81,8 +81,6 @@ extension _PlaybackSectionBuild on PlaybackSection {
               isFruit ? LucideIcons.badgeInfo : Icons.developer_mode,
             ),
           ),
-        if (kIsWeb && settingsProvider.showDevAudioHud)
-          _buildDevHudAbbreviationLegend(context, scaleFactor),
         if (!isTv && !kIsWeb)
           _buildHighlightableToggle(
             context,
@@ -218,19 +216,21 @@ extension _PlaybackSectionBuild on PlaybackSection {
             isFruit ? LucideIcons.history : Icons.history_toggle_off_rounded,
           ),
         ),
+        RandomProbabilityCard(scaleFactor: scaleFactor),
         _buildToggleTile(
           context,
-          title: 'Sequence Run Detection',
-          subtitle: 'Predict next show based on chronological patterns',
-          value: settingsProvider.enableRunDetection,
+          title: 'Mark Played on Start',
+          subtitle: 'Mark a show as played when playback begins',
+          value: settingsProvider.markPlayedOnStart,
           onChanged: (value) {
-            context.read<SettingsProvider>().toggleEnableRunDetection();
+            context.read<SettingsProvider>().toggleMarkPlayedOnStart();
           },
           secondary: Icon(
-            isFruit ? LucideIcons.trendingUp : Icons.timeline_rounded,
+            isFruit
+                ? LucideIcons.checkCircle
+                : Icons.check_circle_outline_rounded,
           ),
         ),
-        RandomProbabilityCard(scaleFactor: scaleFactor),
       ],
     );
   }

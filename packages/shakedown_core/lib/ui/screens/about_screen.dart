@@ -82,6 +82,8 @@ class AboutBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isFruit =
+        context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
 
     return Padding(
       padding: const EdgeInsets.all(24.0),
@@ -107,7 +109,7 @@ class AboutBody extends StatelessWidget {
           Text(
             'Shakedown',
             style: textTheme.displayMedium?.copyWith(
-              fontFamily: context.read<DeviceService>().isTv
+              fontFamily: isFruit || context.read<DeviceService>().isTv
                   ? FontConfig.resolve('RockSalt')
                   : null,
               fontWeight: FontWeight.bold,
