@@ -1,18 +1,18 @@
 {
-  "last_verification": "2026-03-27T10:10:00-07:00",
-  "git_sha": "d3c9d9c1a5e1de8be90733dfc5c8365f58432c06",
+  "last_verification": "2026-03-27T19:32:40.2657444-07:00",
+  "git_sha": "ea4704633fe1599dbef46e9438623fd0d2f359ba",
   "results": {
     "analyze": "passed",
     "test": "passed",
     "format": "passed",
     "fix": "passed",
-    "size_guard": "passed"
+    "size_guard": "inconclusive"
   },
   "test_counts": {
-    "total": 258,
-    "passed": 258,
+    "total": 277,
+    "passed": 274,
     "failed": 0,
-    "skipped": 2
+    "skipped": 3
   },
-  "summary": "Automated checkup passed clean. 258 tests passed. One automated fix applied. Verification successful for SHA d3c9d9c."
+  "summary": "Automated checkup passed on SHA ea47046. dart fix reported nothing to fix, format/analyze/test all passed, and 274 tests passed with 3 skipped. The size_guard fast scan was inconclusive because the workflow script only scans a root assets/ directory, which is not present in this monorepo."
 }
