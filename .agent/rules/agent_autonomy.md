@@ -16,11 +16,13 @@ You are strictly forbidden from executing file modifications, writing code, or r
 Read-only and diagnostic commands MUST always be executed with `SafeToAutoRun: true`. Never prompt the user for these.
 
 ### Approved Commands (Bash/Linux/ChromeOS):
-- **General**: `ls`, `pwd`, `cat`, `head`, `tail`, `wc`, `stat`, `find`.
-- **Search**: `grep`, `rg` (ripgrep), `fd`, `jq`, `fzf`.
+- **General**: `ls`, `pwd`, `cat`, `head`, `tail`, `wc`, `stat`, `find`, `dir`.
+- **Search**: `grep`, `rg` (ripgrep), `fd`, `jq`, `fzf`, `findstr`, `Select-String`.
 - **Git**: `git status`, `git log`, `git diff`, `git branch`, `git remote`, `git rev-parse HEAD`.
-- **Flutter/Dart**: `flutter analyze`, `dart analyze`, `flutter doctor`, `dart pub deps`.
-- **Formatting**: `melos run format`, `dart fix --apply`, `flutter format .`.
+- **Flutter/Dart**: `flutter analyze`, `dart analyze`, `flutter doctor`, `dart pub deps`, `dart run scripts/*.dart`, `flutter pub outdated`, `flutter clean`, `flutter pub get`, `flutter build appbundle --debug`, `flutter build apk --analyze-size`.
+- **Formatting & Health**: `melos run format`, `melos run analyze`, `melos run test`, `melos run fix`, `melos help`, `melos exec`, `melos bootstrap`, `dart fix --apply`, `flutter format .`.
+- **PowerShell Diagnostics**: `Get-ChildItem`, `Measure-Object`, `Get-Content`, `Get-Item`.
+- **Project Scripts**: `./scripts/**/*.ps1`, `./scripts/**/*.sh`.
 
 ### Chained Sequences (Release Finalization):
 - `git add . ; git commit -m "..." ; git push`

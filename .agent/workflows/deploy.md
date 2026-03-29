@@ -24,12 +24,13 @@ GDAR is a Dart workspace monorepo. Build targets live under `apps/`:
 
 ## Workflow
 
-### 1. Automated Preflight
+### 1. Automated Preflight (Hardware-Aware)
 1. `git status`
-2. `melos run format`
-3. `melos run analyze`
-4. `melos run test`
-5. Abort automatically on any failures.
+2. Identify hardware limits: check `$MELOS_CAN_HANDLE` (or `$env:MELOS_CAN_HANDLE` on Windows).
+3. `melos run format`
+4. `melos run analyze`
+5. `melos run test`
+6. Abort automatically on any failures.
 
 ### 2. Automatic Version Bump
 1. `dart scripts/bump_version.dart patch` (Standard patch bump)
@@ -39,7 +40,11 @@ GDAR is a Dart workspace monorepo. Build targets live under `apps/`:
 2. Generate the Play Store note in `docs/PLAY_STORE_RELEASE.txt` from the new changelog block.
 3. Skip manual review of notes; assume staging is correct.
 
-### 4. Parallel Build Execution (Sequential for Safety)
+### 4. Sequential Production Builds (Hardware-Aware)
+
+> [!CAUTION]
+> **STRICT SEQUENTIAL EXECUTION**: You MUST execute the Android and Web builds sequentially. Wait for Android to finish completely before starting Web. **DO NOT** parallelize these builds, even if `$MELOS_CAN_HANDLE` is high (e.g., 8). `flutter build` maximizes all available threads by default; running two simultaneously will cause extreme system thrashing on the 16-core Windows machine and trigger OOM kills on Chromebooks.
+
 1. Build Android release artifact from `apps/gdar_mobile`:
    - `flutter build appbundle --release`
 2. Build web from `apps/gdar_web`:

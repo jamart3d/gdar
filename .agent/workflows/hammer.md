@@ -14,16 +14,18 @@ This workflow is an automated version of `/checkup` that maintains extreme trans
 > [!IMPORTANT]
 > **MONOREPO**: This is a Dart workspace. Run analysis/format/fix from the **workspace root**.
 
-## 1. Atomic Health Pass
+## 1. Atomic Health Pass (Hardware-Aware)
 1. Run the following health checks and workspace tests via individual terminal commands from the workspace root. **Each command is executed automatically (SafeToAutoRun: true) and the agent must display the full output.**
-   - `dart fix --apply`
+   - Configure concurrency using `$MELOS_CAN_HANDLE` (or `$env:MELOS_CAN_HANDLE` on Windows).
+   - `melos run fix`
    - `melos run format`
    - `melos run analyze`
    - `melos run test`
 
 ## 2. Visual/Design Check (Micro)
-1. Scan current working file for `withOpacity()` (deprecated preference) and suggest `.withValues(alpha: ...)`.
-2. Scan for hardcoded colors (e.g., `Colors.red`) and suggest using `colorScheme`.
+1. Run the Git Diff Micro-Scanner to catch styling violations automatically.
+   - Run `dart run scripts/scan_diffs.dart`
+2. If the scanner fails, halt the workflow and report the violations.
 3. **Audit App Size:** Run the `size_guard` workflow to scan workspace assets for newly added large files or unoptimized PNGs.
 
 ## 3. Summary & Finalization

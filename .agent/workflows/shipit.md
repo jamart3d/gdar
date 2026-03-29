@@ -29,7 +29,8 @@ Both Android (Phone/TV) and Web/PWA targets **MUST** be built and deployed in ev
 3. If (Current SHA == Last Verified SHA) AND (Results == Passed):
    - **SKIP** the `melos run` pass and proceed to versioning.
 4. Else:
-   - Run the health suite: `melos run fix`, `melos run format`, `melos run analyze`, `melos run test`.
+   - Identify hardware limits by checking `$MELOS_CAN_HANDLE` (or `$env:MELOS_CAN_HANDLE` on Windows).
+   - Run the health suite: `melos run fix`, `melos run format`, `melos run analyze`, and `melos run test`. Explicitly override concurrency only if required by environment constraints.
    - Update `verification_status.json` upon success.
 
 ## 2. Platform-Wide Version Bump
@@ -44,12 +45,15 @@ Both Android (Phone/TV) and Web/PWA targets **MUST** be built and deployed in ev
    > [!IMPORTANT]
    > **Sync Verification**: Ensure the version and content in `docs/PLAY_STORE_RELEASE.txt` match `CHANGELOG.md` exactly.
 
-## 4. Sequential Production Builds (Chromebook Optimization)
+## 4. Sequential Production Builds (Hardware-Aware)
+
+> [!CAUTION]
+> **STRICT SEQUENTIAL EXECUTION**: You MUST execute the Android and Web builds sequentially. Wait for Android to finish completely before starting Web. **DO NOT** parallelize these builds, even if `$MELOS_CAN_HANDLE` is high (e.g., 8). `flutter build` maximizes all available threads by default; running two simultaneously will cause extreme system thrashing on the 16-core Windows machine and trigger OOM kills on Chromebooks.
+
 1. **Target 1: Android**: Build the AAB from `apps/gdar_mobile`:
    - `flutter build appbundle --release --analyze-size`
-2. **Target 2: Web**: Build the and PWA from `apps/gdar_web`:
+2. **Target 2: Web**: Build the PWA from `apps/gdar_web`:
    - `flutter build web --release --no-wasm`
-   - *Note: Sequential builds avoid memory pressure on Chromebook/Crostini.*
 
 ## 5. Deploy & Git Finalization
 1. **Web Deploy**: Run `firebase deploy --only hosting` from the workspace root.

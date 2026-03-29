@@ -35,8 +35,9 @@ description: Rapid health check with automated fixes for linting, formatting, an
    - `melos run test` (on Linux/Windows builds, concurrency is enabled)
 
 ## 3. Visual/Design Check (Micro)
-1. Scan current working file for `withOpacity()` (deprecated preference) and suggest `.withValues(alpha: ...)`.
-2. Scan for hardcoded colors (e.g., `Colors.red`) and suggest using `colorScheme`.
+1. Run the Git Diff Micro-Scanner to catch styling violations automatically.
+   - Run `dart run scripts/scan_diffs.dart`
+2. If the scanner fails, halt the workflow and report the violations.
 3. **Audit App Size:** Run the `size_guard` workflow to scan workspace assets for newly added large files or unoptimized PNGs.
 
 ## 4. Summary & Finalization

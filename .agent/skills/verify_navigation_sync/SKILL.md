@@ -1,16 +1,24 @@
-# SKILL: Verify Navigation Sync
+---
+name: verify_navigation_sync
+description: Verifies the bridge between AudioProvider playback events and UI navigation transitions in GDAR.
+---
 
-**Description**: Automates verification of the bridge between `AudioProvider` playback events and UI navigation transitions.
+# Verify Navigation Sync
 
 ## Overview
-This skill focuses on "Play Random" and "Initial Start" scenarios where a playback attempt may trigger a redirect via `SplashScreen` or tab-switching in the `Fruit` theme.
+This skill guides the agent in verifying "Play Random" and "Initial Start" scenarios where a playback attempt triggers a redirect via `SplashScreen` or tab-switching in the `Fruit` theme.
 
-## Verification Checklist
-- **Audio Engine State**: Ensure `AudioProvider.engineState` is updated BEFORE the UI navigation completes if `delayPlayback` is active.
-- **Auto-Navigation**: Confirm that `FruitTabHostScreen` correctly switches to the Playback Tab when a track begins from search or recommendations.
-- **Splash Persistence**: Verify that `SplashScreen` does not route until `AudioProvider` is fully bootstrapped.
+## Verification Protocol
+When tasked with verifying navigation sync, the agent MUST perform the following structural checks:
 
-## Troubleshooting
-If navigation fails:
-1. Check the `SettingsProvider.activeMode` resolution (Web vs. TV vs. Mobile).
-2. Trace `AudioProvider.isNavigatingToTrack` to ensure it's reset on track load.
+1. **Audio Engine State Tracking**: 
+   - Search the codebase using `grep_search` to verify that `AudioProvider.engineState` transitions are triggered *before* the UI router completes a redirect (especially if `delayPlayback` is active).
+2. **Auto-Navigation Validation (Fruit Theme)**: 
+   - Inspect the `FruitTabHostScreen` code to confirm it observes the correct state from `AudioProvider` and routes to the Playback Tab when a track begins.
+3. **Splash Persistence**: 
+   - Verify that `SplashScreen` does not push routes until the core systems (`AudioProvider`, `SettingsProvider`) are fully bootstrapped.
+
+## Troubleshooting Logic
+If a user is stuck on a splash screen or fails to swap tabs:
+1. **Check activeMode:** Search for `SettingsProvider.activeMode` resolution (Web vs. TV vs. Mobile) to see if a strict platform constraint is interfering.
+2. **Trace State Flags:** Locate `isNavigatingToTrack` within `AudioProvider` and ensure it is properly reset to `false` within `finally` blocks or upon track load completion.

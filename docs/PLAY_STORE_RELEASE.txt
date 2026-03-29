@@ -1,3 +1,9 @@
+What's new in v1.3.33+243
+- Web Audio: Resolved "Abortion Collision" bug in the gapless engine where rapid track selection could inadvertently cancel its own fetch/decode request.
+- Web UI: Added color-coded health warnings to visualizer buffering diagnostics to improve performance monitoring on low-power devices.
+
+---
+
 What's new in v1.3.32+242
 - Core: Initialized production release workflow 'shipit' for automated monorepo builds and PWA deployment.
 - Maintenance: Completed full workspace health check; synchronized versions across gdar_mobile, gdar_tv, and gdar_web.

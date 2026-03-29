@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.33+243] - 2026-03-28
+
 ### Fixed
 - **Web Audio**: Resolved "Abortion Collision" bug in the gapless engine where rapid track selection could inadvertently cancel its own fetch/decode request.
 - **Web UI**: Added color-coded health warnings (Red/Amber/Green) to the `CAC` (Cache Depth) chip in the Dev Audio HUD to visualize at-risk buffering states.

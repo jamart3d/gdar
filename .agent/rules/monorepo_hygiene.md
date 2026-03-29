@@ -21,11 +21,12 @@ The root is a **workspace coordinator**, not an app target.
 - **.agent/appdata**: Reserved for project-specific persistent state. Never redirect `PUB_CACHE` or Flutter tool logs here.
 - **Cleanup Responsibility**: Any file generated outside of `apps/`, `packages/`, or `docs/` must be deleted before the session ends.
 
-## 3. Build Safety & Parallel Execution
-- **Parallel Builds Are Safe**: `flutter build` from separate app targets can run in parallel safely.
-  - *Exception*: On Chromebook/Crostini, always build targets sequentially to avoid VM memory pressure.
-- **Parallel Git Is Not**: The `.git/` directory is shared across the entire workspace. Running `git add`, `git commit`, or `git push` simultaneously will cause `index.lock` failures.
-- **Rule**: Always wait for ALL builds to finish before starting `git add .`.
+## 3. Build Safety & Hardware-Aware Execution
+- **Parallel Builds Are STRICTLY FORBIDDEN**: `flutter build` grabs all available system threads by default. Running builds in parallel will cause extreme system thrashing on high-core machines (e.g., Windows 16-core) and trigger OOM kills on Chromebooks.
+  - **Rule**: Always build targets strictly sequentially. Wait for one `flutter build` to finish completely before spawning the next.
+- **Concurrency Scaling**: Use explicit concurrency limits (e.g. `--concurrency 4`) in terminal commands. Run the health suite: `melos run fix`, `melos run format`, `melos run analyze`, and `melos run test`. Explicitly override concurrency only if required by environment constraints.
+- **Parallel Git Is Not Safe**: The `.git/` directory is shared across the entire workspace. Running `git add`, `git commit`, or `git push` simultaneously will cause `index.lock` failures.
+- **Rule**: Always wait for ALL builds and operations to finish before starting `git add .`.
 
 ## 4. Deployments & Version Sync
 - **Firebase Deploy**: `firebase.json` lives at the project root. Always run `firebase deploy --only hosting` from the project root.

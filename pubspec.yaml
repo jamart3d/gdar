@@ -23,6 +23,7 @@ dev_dependencies:
   mocktail: ^1.0.4
   build_runner: ^2.4.8
   hive_ce_generator: ^1.11.1
+  logger: ^2.4.0
 
 flutter:
   uses-material-design: true
@@ -37,16 +38,19 @@ melos:
   scripts:
     analyze:
       description: Run fast workspace-wide analysis.
-      run: dart analyze .
+      run: melos exec --concurrency 2 -- dart analyze .
+    bootstrap:
+      description: Bootstrap workspace using concurrency limit.
+      run: melos bootstrap --concurrency 2
     test:
       description: Run tests in all packages/apps with concurrency.
       run: melos exec -c 2 --dir-exists=test --ignore="screensaver_tv" -- flutter test
     fix:
       description: Apply automated fixes across the workspace.
-      run: melos exec -- "dart fix --apply"
+      run: melos exec -c 2 -- dart fix --apply
     format:
       description: Check formatting across the workspace.
-      run: dart format --set-exit-if-changed .
+      run: melos exec -c 2 -- dart format --set-exit-if-changed .
     clean:
       description: Clean all package/app build artifacts.
       run: melos exec -c 1 -- flutter clean
