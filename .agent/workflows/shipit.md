@@ -8,7 +8,22 @@ description: Guided production release workflow for GDAR (monorepo).
 **TRIGGERS:** shipit, release, prod
 
 > [!IMPORTANT]
-> **AUTONOMY OVERRIDE & PLANNING MODE**: When this workflow is triggered, provide a single, comprehensive **Release Plan**. Once the user approves the plan, proceed autonomously end-to-end (running analysis/tests, versioning, building, and deploying) without stopping for intermediate permission. Only pause if a critical error occurs. 
+> **AUTONOMY OVERRIDE & PLANNING MODE**: When this workflow is triggered, generate the Release Plan below instantly from current state, present it to the user, and proceed autonomously once approved. Only pause if a critical error occurs.
+>
+> **Release Plan format** (generate this before doing anything else):
+> ```
+> Release Plan
+> ─────────────────────────────
+> Current version : <dart scripts/get_current_version.dart>
+> Bump type       : patch  ← change to "minor" only if user explicitly requested it
+> New version     : <calculated>
+> Changelog items : <list [Unreleased] entries, or WARN if empty>
+> Health suite    : SKIP (SHA match) | RUN (changes detected)
+> Builds          : Android AAB + Web PWA (sequential)
+> Deploy          : Firebase hosting
+> ─────────────────────────────
+> Proceed? (yes to continue)
+> ```
 
 > [!WARNING]
 > **NO BLACK BOXES**: You are strictly forbidden from chaining multiple long-running terminal commands into a single "black box" string (e.g., `build; build; push`). Run each primary tool (Melos, Flutter build, Firebase) as its own step so progress and status are reported in real-time.
@@ -21,39 +36,52 @@ Both Android (Phone/TV) and Web/PWA targets **MUST** be built and deployed in ev
 
 | Target | Path | Build Command |
 |---|---|---|
-| Android (Phone+TV) | `apps/gdar_mobile` | `flutter build appbundle --release --analyze-size` |
+| Android (Phone+TV) | `apps/gdar_mobile` | `flutter build appbundle --release` |
 | Web/PWA (Glass) | `apps/gdar_web` | `flutter build web --release --no-wasm` |
 
 ---
 
-## 0. Platform Detection
-Follow `.agent/rules/platform_detection.md` to identify the current machine and resolve `$MELOS_CAN_HANDLE`.
+## 0. Platform Detection (MUST RUN FIRST — before Release Plan)
+1. Run this command immediately:
+   ```bash
+   uname -s 2>/dev/null || echo "Windows_NT"
+   ```
+2. **If output is `Linux` (Chromebook):**
+   - Notify the user: "Chromebook detected — health suite only. Flutter builds and Firebase deploy must run on Windows 10."
+   - Run steps 0.5 and 1 (process hygiene + health suite) then **stop**. Do not generate a Release Plan. Do not proceed to versioning, builds, or deploy.
+3. **If output is `Windows_NT` (Windows 10):**
+   - Resolve `$MELOS_CAN_HANDLE` per `.agent/rules/platform_detection.md`.
+   - Continue to Release Plan and all steps end-to-end.
 
-- **Chromebook**: Run the health suite (steps 1–4 of the Melos pass) and stop. **Do not proceed to versioning, builds, or deploy.** Notify the user: "Flutter builds and Firebase deploy must run on Windows 10."
-- **Windows 10**: Run all steps end-to-end.
+## 0.5. Process Hygiene
+Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes — lock files from a hung process can make a clean worktree appear dirty.
 
 ## 1. Preflight & Smart Skip
-1. Run `git status --porcelain` — **abort immediately if the worktree is dirty**. A release must never start from uncommitted changes.
-2. Check `.agent/notes/verification_status.json` and run `git rev-parse HEAD`.
-3. If (Current SHA == `last_verification_commit`) AND (status == "PASS"):
+1. Run `git status --porcelain` — if the worktree is dirty:
+   - Show the user what files are uncommitted.
+   - `git add . && git commit -m "chore: pre-release housekeeping [skip ci]"` — commit everything and proceed.
+   - Do **not** abort. A dirty worktree before shipit means intentional changes that belong in the repo.
+2. Read `CHANGELOG.md` — **abort immediately if `[Unreleased]` is empty**. Notify the user: "No unreleased changelog entries found. Add release notes to `[Unreleased]` before continuing." Do not proceed to versioning.
+3. Check `.agent/notes/verification_status.json` and run `git rev-parse HEAD`.
+4. If (Current SHA == `last_verification_commit`) AND (status == "PASS"):
    - **SKIP** the `melos run` pass and proceed to versioning.
    - Note: A `"PARTIAL"` result does **not** qualify for skip — run the full suite.
-4. Else:
+5. Else:
    - Resolve `$MELOS_CAN_HANDLE` per `.agent/rules/platform_detection.md`.
-   - Run the health suite: `melos run fix`, `melos run format`, `melos run analyze`, and `melos run test`. Explicitly override concurrency only if required by environment constraints.
+   - Run the health suite: `melos run format`, `melos run analyze`, and `melos run test`. Explicitly override concurrency only if required by environment constraints.
+   - Do **not** run `melos run fix` — shipit verifies, it does not auto-modify code. Run `/checkup` first if fixes are needed.
    - Update `verification_status.json` upon success.
 
 ## 2. Platform-Wide Version Bump
 1. Run the versioning script:
-   - `dart scripts/bump_version.dart patch` (Standard)
-   - `dart scripts/bump_version.dart minor` (Feature release)
-2. Verify all three app targets (`mobile`, `tv`, `web`) reflect the new version.
+   - `dart scripts/bump_version.dart patch` — default for all releases
+   - `dart scripts/bump_version.dart minor` — only if user explicitly requested `minor` in the trigger
+2. Confirm the new version: `dart scripts/get_current_version.dart`
+3. Verify all three app targets (`mobile`, `tv`, `web`) reflect the new version.
 
 ## 3. Automated Changelog & Release Notes
-1. **Check Unreleased**: Read the `[Unreleased]` block in `CHANGELOG.md`.
-   - If empty: **pause and notify the user** — "No unreleased changelog entries found. Add release notes to `[Unreleased]` before continuing."
-2. **Move Unreleased**: Move `[Unreleased]` items into a new versioned block in `CHANGELOG.md`.
-3. **Update Play Store Note**: Extract the new version's changelog block and PREPEND it to `docs/PLAY_STORE_RELEASE.txt`.
+1. **Move Unreleased**: Move `[Unreleased]` items into a new versioned block in `CHANGELOG.md`. (Empty check already enforced in step 1.)
+2. **Update Play Store Note**: Extract the new version's changelog block and PREPEND it to `docs/PLAY_STORE_RELEASE.txt`.
    > [!IMPORTANT]
    > **Sync Verification**: Ensure the version and content in `docs/PLAY_STORE_RELEASE.txt` match `CHANGELOG.md` exactly.
 
@@ -63,7 +91,7 @@ Follow `.agent/rules/platform_detection.md` to identify the current machine and 
 > **STRICT SEQUENTIAL EXECUTION**: You MUST execute the Android and Web builds sequentially. Wait for Android to finish completely before starting Web. **DO NOT** parallelize these builds, even if `$MELOS_CAN_HANDLE` is high (e.g., 8). `flutter build` maximizes all available threads by default; running two simultaneously will cause extreme system thrashing on the 16-core Windows machine and trigger OOM kills on Chromebooks.
 
 1. **Target 1: Android**: Build the AAB from `apps/gdar_mobile`:
-   - `flutter build appbundle --release --analyze-size`
+   - `flutter build appbundle --release`
 2. **Target 2: Web**: Build the PWA from `apps/gdar_web`:
    - `flutter build web --release --no-wasm`
 
@@ -71,8 +99,8 @@ Follow `.agent/rules/platform_detection.md` to identify the current machine and 
 1. **Web Deploy**: Run `firebase deploy --only hosting` from the workspace root.
 2. **Zero-Friction Staging**:
    - `git add pubspec.yaml apps/*/pubspec.yaml packages/*/pubspec.yaml CHANGELOG.md docs/PLAY_STORE_RELEASE.txt`
-   - `git commit -m "release: [new version]"`
-   - `git tag v[new version]`
+   - `git commit -m "release: $(dart scripts/get_current_version.dart)"`
+   - `git tag v$(dart scripts/get_current_version.dart)`
    - `git push && git push --tags`
 
 ## 6. Wrap-Up
@@ -83,4 +111,5 @@ Follow `.agent/rules/platform_detection.md` to identify the current machine and 
 ## Hard Rules
 - Never write release history to `docs/RELEASE_NOTES.txt`.
 - The workspace is defined by the root `pubspec.yaml`. Melos commands (`melos run *`) are the task runner — they use `melos.yaml` for script definitions, which is fine. Do not add packages to the workspace via `melos.yaml`; use the root `pubspec.yaml` `workspace:` field.
-- Never treat this workflow as safe to run blindly on a dirty worktree.
+- **Never run `git restore`, `git checkout --`, or any destructive reset to clean a dirty worktree.** If the worktree is dirty, abort and tell the user: "Worktree has uncommitted changes — please commit or stash them before releasing." The user decides what to do with their changes, not this workflow.
+- A dirty worktree is handled by a pre-release housekeeping commit — never by `git restore` or discarding changes.

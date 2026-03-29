@@ -33,13 +33,16 @@ Run Flutter size analysis from the target app directory.
 
 Mobile:
 ```powershell
-cd apps/gdar_mobile; flutter build apk --analyze-size --target-platform android-arm64
+cd apps/gdar_mobile; flutter build apk --release --analyze-size --target-platform android-arm64
 ```
 
 TV:
 ```powershell
-cd apps/gdar_tv; flutter build apk --analyze-size --target-platform android-arm64
+cd apps/gdar_tv; flutter build apk --release --analyze-size --target-platform android-arm64
 ```
+
+> [!NOTE]
+> `--analyze-size` requires a single `--target-platform`. It cannot be used with `flutter build appbundle` (multi-ABI). Use APK builds here for size diagnostics only — the release AAB is built separately by `/shipit`.
 
 ### 3. Evaluate Budgets
 Use these working thresholds as a quick review guide:
