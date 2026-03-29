@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.35+245] - 2026-03-29
+
+### Added
+- **Maintenance**: Completed a fresh monorepo health check and synchronized workspace state.
+- **Workflow**: Executed the automated `shipit` release pipeline for v1.3.35, including sequential Android and Web production builds.
+- **Hygiene**: Cleaned `scripts/archive/` and synchronized build numbers across all monorepo targets.
+
 ## [1.3.34+244] - 2026-03-29
 
 ### Added
