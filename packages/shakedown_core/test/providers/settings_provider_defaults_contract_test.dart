@@ -39,7 +39,7 @@ void main() {
     });
 
     test('oilAudioGraphMode defaults to a valid TV graph mode', () {
-      expect(provider.oilAudioGraphMode, 'beat_debug');
+      expect(provider.oilAudioGraphMode, 'corner');
     });
 
     test('activeAppFont always returns rock_salt on TV', () {

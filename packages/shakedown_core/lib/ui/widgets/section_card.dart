@@ -298,7 +298,9 @@ class _FruitSectionShell extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      const Color(0xFFFFFFFF).withValues(alpha: isDark ? 0.22 : 0.3),
+                      const Color(
+                        0xFFFFFFFF,
+                      ).withValues(alpha: isDark ? 0.22 : 0.3),
                       const Color(0x00000000),
                     ],
                   ),
@@ -314,7 +316,9 @@ class _FruitSectionShell extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        const Color(0xFFFFFFFF).withValues(alpha: isDark ? 0.07 : 0.09),
+                        const Color(
+                          0xFFFFFFFF,
+                        ).withValues(alpha: isDark ? 0.07 : 0.09),
                         const Color(0xFFFFFFFF).withValues(alpha: 0.02),
                         const Color(0x00000000),
                       ],

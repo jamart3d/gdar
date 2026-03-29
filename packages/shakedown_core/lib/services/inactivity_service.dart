@@ -92,12 +92,6 @@ class InactivityService {
     final elapsed = now.difference(_lastActivityAt);
     final remaining = _inactivityDuration - elapsed;
 
-    debugPrint(
-      'InactivityService: tick elapsed=${elapsed.inSeconds}s, '
-      'remaining=${remaining.inSeconds}s, '
-      'timeoutFired=$_timeoutFiredSinceLastActivity',
-    );
-
     if (remaining <= Duration.zero) {
       if (!_timeoutFiredSinceLastActivity) {
         _timeoutFiredSinceLastActivity = true;

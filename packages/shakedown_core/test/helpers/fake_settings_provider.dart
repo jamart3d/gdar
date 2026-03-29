@@ -109,6 +109,7 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
     _useTrueBlack = value;
     notifyListeners();
   }
+
   @override
   NeumorphicStyle get neumorphicStyle => NeumorphicStyle.convex;
   @override
@@ -147,6 +148,7 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
     _glowMode = mode;
     notifyListeners();
   }
+
   @override
   double get rgbAnimationSpeed => 1.0;
   @override
@@ -340,6 +342,7 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
     _useTrueBlack = !_useTrueBlack;
     notifyListeners();
   }
+
   @override
   void toggleHighlightPlayingWithRgb() {}
   @override

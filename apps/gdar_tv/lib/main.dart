@@ -114,11 +114,12 @@ class _GdarTvAppState extends State<GdarTvApp> {
     // don't accidentally clear the current screen context.
     if (name != null && name != _currentRouteName) {
       debugPrint('GdarTvApp: route changed name=$name');
-      if (mounted) {
-        setState(() => _currentRouteName = name);
-      } else {
-        _currentRouteName = name;
-      }
+      _currentRouteName = name;
+      // Defer setState — NavigatorObserver callbacks fire during the navigation
+      // frame and calling setState directly here triggers a framework assertion.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      });
     }
   }
 
@@ -182,6 +183,10 @@ class _GdarTvAppState extends State<GdarTvApp> {
     _setScreensaverActive(true);
     _launchError.value = null;
     try {
+      // Yield to the event loop before pushing so we don't hit the navigator
+      // lock assertion when the inactivity timer fires during a route animation.
+      await Future.delayed(Duration.zero);
+      if (!mounted || !_isScreensaverActive) return;
       await navigator.push(
         ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
       );

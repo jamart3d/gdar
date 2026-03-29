@@ -204,7 +204,7 @@ class WebDefaults extends DefaultSettings {
 class TvDefaults extends DefaultSettings {
   // Appearance
   static const bool performanceMode = false;
-  static const bool oilTvPremiumHighlight = true;
+  static const bool oilTvPremiumHighlight = false;
   static const bool hideTvScrollbars = true;
 
   // Screensaver: steal mode looks great on TV
