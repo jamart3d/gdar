@@ -1,3 +1,9 @@
+What's new in v1.3.37+247
+- Automation: Introduced process_hygiene.md rules and integrated them into the shipit workflow for better process management.
+- Automation: Optimized shipit, checkup, and deploy workflows for higher zero-friction orchestration and status reporting.
+
+---
+
 What's new in v1.3.36+246
 - TV UI: Implemented 'showScreensaverCountdown' setting to hide the debug inactivity timer by default on Google TV hardware.
 - Maintenance: Updated mock implementations for robust testing and maintained 100% test pass rate across the monorepo.

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.37+247] - 2026-03-29
+
+### Added
+- **Automation**: Introduced `process_hygiene.md` rules and integrated them into the `shipit` workflow for better process management.
+
+### Changed
+- **Automation**: Optimized `shipit`, `checkup`, and `deploy` workflows for higher zero-friction orchestration and status reporting.
+
 ## [1.3.36+246] - 2026-03-29
 
 ### Added
