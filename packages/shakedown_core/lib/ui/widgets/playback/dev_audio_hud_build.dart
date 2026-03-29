@@ -132,8 +132,16 @@ extension _DevAudioHudBuild on _DevAudioHudState {
                 'SHD',
                 'GAP',
                 'PM',
-                if (showWaTelemetry)
-                  ...['LAT', 'ERR', 'WTC', 'SR', 'CAC', 'SCH', 'DEC', 'BCT'],
+                if (showWaTelemetry) ...[
+                  'LAT',
+                  'ERR',
+                  'WTC',
+                  'SR',
+                  'CAC',
+                  'SCH',
+                  'DEC',
+                  'BCT',
+                ],
                 if (showHybridControls) ...[
                   'HS',
                   if (!waSubEngineActive) 'HAT',

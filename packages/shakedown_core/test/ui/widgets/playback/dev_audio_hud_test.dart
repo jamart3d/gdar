@@ -116,9 +116,9 @@ void main() {
     expect(find.text('WTC:'), findsOneWidget);
     expect(find.text('SR:'), findsOneWidget);
     expect(find.text('CAC:'), findsOneWidget);
-    expect(find.text('SCH'), findsOneWidget);
-    expect(find.text('DEC'), findsOneWidget);
-    expect(find.text('BCT'), findsOneWidget);
+    expect(find.text('SCH:'), findsOneWidget);
+    expect(find.text('DEC:'), findsOneWidget);
+    expect(find.text('BCT:'), findsOneWidget);
   });
 
   testWidgets('hides WA-only telemetry while hybrid is on the H5 sub-engine', (
@@ -154,9 +154,9 @@ void main() {
     expect(find.text('WTC:'), findsNothing);
     expect(find.text('SR:'), findsNothing);
     expect(find.text('CAC:'), findsNothing);
-    expect(find.text('SCH'), findsNothing);
-    expect(find.text('DEC'), findsNothing);
-    expect(find.text('BCT'), findsNothing);
+    expect(find.text('SCH:'), findsNothing);
+    expect(find.text('DEC:'), findsNothing);
+    expect(find.text('BCT:'), findsNothing);
   });
 
   testWidgets('shows tooltip text for sparkline chips', (tester) async {

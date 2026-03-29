@@ -73,63 +73,72 @@ class FruitTabBar extends StatelessWidget {
         sidePadding, // px-4 or px-8
         16.0 * tabScaleFactor, // pt-4
         sidePadding,
-        16.0 * tabScaleFactor + MediaQuery.paddingOf(context).bottom, // pb-4 + safe area
+        16.0 * tabScaleFactor +
+            MediaQuery.paddingOf(context).bottom, // pb-4 + safe area
       ),
       decoration: BoxDecoration(color: backgroundColor),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _FruitTabItem(
-            icon: LucideIcons.playCircle,
-            label: 'PLAY',
-            isActive: selectedIndex == 0,
-            scaleFactor: tabScaleFactor,
-            onTap: () {
-              // ALLOW if currentShow is set, even if track isn't fully buffered yet
-              if (audioProvider.currentShow != null) {
-                onTabSelected(0);
-              } else {
-                showMessage(context, 'No track playing');
-              }
-            },
+          Expanded(
+            child: _FruitTabItem(
+              icon: LucideIcons.playCircle,
+              label: 'PLAY',
+              isActive: selectedIndex == 0,
+              scaleFactor: tabScaleFactor,
+              onTap: () {
+                // ALLOW if currentShow is set, even if track isn't fully buffered yet
+                if (audioProvider.currentShow != null) {
+                  onTabSelected(0);
+                } else {
+                  showMessage(context, 'No track playing');
+                }
+              },
+            ),
           ),
-          _FruitTabItem(
-            icon: LucideIcons.library,
-            label: 'LIBRARY',
-            isActive: selectedIndex == 1,
-            scaleFactor: tabScaleFactor,
-            onTap: () {
-              onTabSelected(1);
-            },
+          Expanded(
+            child: _FruitTabItem(
+              icon: LucideIcons.library,
+              label: 'LIBRARY',
+              isActive: selectedIndex == 1,
+              scaleFactor: tabScaleFactor,
+              onTap: () {
+                onTabSelected(1);
+              },
+            ),
           ),
-          _FruitTabItem(
-            icon: settingsProvider.nonRandom
-                ? LucideIcons.skipForward
-                : LucideIcons.dice5,
-            label: settingsProvider.nonRandom ? 'NEXT' : 'RANDOM',
-            isActive: selectedIndex == 2,
-            isLoading: showListProvider.isChoosingRandomShow,
-            enableHaptics: settingsProvider.enableHaptics,
-            useAnimatedRandomIcon:
-                !settingsProvider.nonRandom &&
-                !settingsProvider.simpleRandomIcon,
-            scaleFactor: tabScaleFactor,
-            onTap: () {
-              AppHaptics.selectionClick(
-                context.read<DeviceService>(),
-                enabled: settingsProvider.enableHaptics,
-              );
-              onTabSelected(2);
-            },
+          Expanded(
+            child: _FruitTabItem(
+              icon: settingsProvider.nonRandom
+                  ? LucideIcons.skipForward
+                  : LucideIcons.dice5,
+              label: settingsProvider.nonRandom ? 'NEXT' : 'RANDOM',
+              isActive: selectedIndex == 2,
+              isLoading: showListProvider.isChoosingRandomShow,
+              enableHaptics: settingsProvider.enableHaptics,
+              useAnimatedRandomIcon:
+                  !settingsProvider.nonRandom &&
+                  !settingsProvider.simpleRandomIcon,
+              scaleFactor: tabScaleFactor,
+              onTap: () {
+                AppHaptics.selectionClick(
+                  context.read<DeviceService>(),
+                  enabled: settingsProvider.enableHaptics,
+                );
+                onTabSelected(2);
+              },
+            ),
           ),
-          _FruitTabItem(
-            icon: LucideIcons.settings,
-            label: 'SETTINGS',
-            isActive: selectedIndex == 3,
-            scaleFactor: tabScaleFactor,
-            onTap: () {
-              onTabSelected(3);
-            },
+          Expanded(
+            child: _FruitTabItem(
+              icon: LucideIcons.settings,
+              label: 'SETTINGS',
+              isActive: selectedIndex == 3,
+              scaleFactor: tabScaleFactor,
+              onTap: () {
+                onTabSelected(3);
+              },
+            ),
           ),
         ],
       ),
