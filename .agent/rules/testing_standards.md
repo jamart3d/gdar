@@ -44,3 +44,9 @@ dart run build_runner build --delete-conflicting-outputs
 
 ### 7. Known Local Test Failures
 `verify_data_integrity_test.dart` always fails in local development because it requires the 8MB `output.optimized_src.json` asset, which is intentionally excluded from the test environment.
+  
+### 8. High-Impact Shared Widget Verification
+**FruitTabBar**: If the `FruitTabBar` API or constructor signature changes, the agent MUST run a full `melos run analyze` and perform a manual "Fruit Tab Smoke Flow" (Playback → Library → Random → Settings) before handoff. 
+
+> [!IMPORTANT]
+> Avoid relying on focused unit tests alone for the `FruitTabBar`; its layout stability requires platform-aware visual verification in the simulator or PWA.
