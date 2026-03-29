@@ -79,9 +79,9 @@ class SectionCard extends StatelessWidget {
 
     Widget content = Theme(
       data: Theme.of(context).copyWith(
-        dividerColor: Colors.transparent,
+        dividerColor: const Color(0x00000000),
         splashColor: colorScheme.primary.withValues(alpha: 0.1),
-        highlightColor: Colors.transparent,
+        highlightColor: const Color(0x00000000),
       ),
       child: onTap != null
           ? ListTile(
@@ -206,7 +206,7 @@ class SectionCard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               color: (useTrueBlack && isDark)
-                  ? Colors.transparent
+                  ? const Color(0x00000000)
                   : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(28),
               border: (useTrueBlack && isDark)
@@ -230,11 +230,11 @@ class SectionCard extends StatelessWidget {
         child: _FruitSectionShell(
           borderRadius: BorderRadius.circular(28),
           fillColor: (useTrueBlack && isDark)
-              ? Colors.transparent
+              ? const Color(0x00000000)
               : colorScheme.surfaceContainerHighest.withValues(alpha: 0.18),
           outlineColor: (useTrueBlack && isDark)
               ? colorScheme.outline.withValues(alpha: 0.2)
-              : Colors.white.withValues(alpha: isDark ? 0.12 : 0.18),
+              : const Color(0xFFFFFFFF).withValues(alpha: isDark ? 0.12 : 0.18),
           child: content,
         ),
       );
@@ -244,7 +244,7 @@ class SectionCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       elevation: 0,
       color: (useTrueBlack && isDark)
-          ? Colors.transparent
+          ? const Color(0x00000000)
           : colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(28),
@@ -298,8 +298,8 @@ class _FruitSectionShell extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.white.withValues(alpha: isDark ? 0.22 : 0.3),
-                      Colors.transparent,
+                      const Color(0xFFFFFFFF).withValues(alpha: isDark ? 0.22 : 0.3),
+                      const Color(0x00000000),
                     ],
                   ),
                 ),
@@ -314,9 +314,9 @@ class _FruitSectionShell extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.white.withValues(alpha: isDark ? 0.07 : 0.09),
-                        Colors.white.withValues(alpha: 0.02),
-                        Colors.transparent,
+                        const Color(0xFFFFFFFF).withValues(alpha: isDark ? 0.07 : 0.09),
+                        const Color(0xFFFFFFFF).withValues(alpha: 0.02),
+                        const Color(0x00000000),
                       ],
                       stops: const [0.0, 0.12, 0.55],
                     ),

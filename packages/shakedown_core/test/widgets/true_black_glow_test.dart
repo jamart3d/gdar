@@ -44,6 +44,7 @@ void main() {
   late SharedPreferences prefs;
 
   setUp(() async {
+    ThemeProvider.reset();
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
     await prefs.clear(); // Ensure clean state between tests
@@ -132,6 +133,7 @@ void main() {
         audioProvider: mockAudio,
       ),
     );
+    await tester.pump(const Duration(milliseconds: 100));
 
     // Find the AnimatedGradientBorder widget
     final borderFinder = find.byType(AnimatedGradientBorder);

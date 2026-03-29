@@ -59,13 +59,13 @@ extension _ShowListCardBuild on _ShowListCardState {
           borderWidth: 3,
           colors: style.useRgb
               ? const [
-                  Colors.red,
-                  Colors.yellow,
-                  Colors.green,
-                  Colors.cyan,
-                  Colors.blue,
-                  Colors.purple,
-                  Colors.red,
+                  Color(0xFFFF0000), // Red
+                  Color(0xFFFFFF00), // Yellow
+                  Color(0xFF00FF00), // Green
+                  Color(0xFF00FFFF), // Cyan
+                  Color(0xFF0000FF), // Blue
+                  Color(0xFF8B00FF), // Purple
+                  Color(0xFFFF0000), // Red
                 ]
               : [
                   colorScheme.primary,
@@ -91,7 +91,7 @@ extension _ShowListCardBuild on _ShowListCardState {
                 context: context,
                 borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
                 backgroundColor: isFruit && !settingsProvider.useTrueBlack
-                    ? Colors.transparent
+                    ? const Color(0x00000000)
                     : style.backgroundColor,
                 style: style,
                 settingsProvider: settingsProvider,
@@ -110,7 +110,7 @@ extension _ShowListCardBuild on _ShowListCardState {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(isTv ? 12 : (isFruit ? 14 : 28)),
           side: BorderSide(
-            color: isTv ? Colors.transparent : style.cardBorderColor,
+            color: isTv ? const Color(0x00000000) : style.cardBorderColor,
             width: isFruit ? 0.8 : (isTv ? 0 : style.cardBorderWidth),
           ),
         ),
@@ -133,7 +133,7 @@ extension _ShowListCardBuild on _ShowListCardState {
               context: context,
               borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
               backgroundColor: isFruit && !settingsProvider.useTrueBlack
-                  ? Colors.transparent
+                  ? const Color(0x00000000)
                   : style.backgroundColor,
               style: style,
               settingsProvider: settingsProvider,
@@ -243,7 +243,7 @@ extension _ShowListCardBuild on _ShowListCardState {
         color: backgroundColor,
       ),
       child: Material(
-        color: Colors.transparent,
+        color: const Color(0x00000000),
         child: InkWell(
           canRequestFocus: !isTv,
           borderRadius: BorderRadius.circular(borderRadius),
@@ -421,7 +421,7 @@ extension _ShowListCardBuild on _ShowListCardState {
                             borderRadius: 12.0,
                             intensity: 0.4,
                             isPressed: true,
-                            color: Colors.transparent,
+                            color: const Color(0x00000000),
                             child: LiquidGlassWrapper(
                               enabled: true,
                               borderRadius: BorderRadius.circular(12.0),
@@ -475,7 +475,7 @@ extension _ShowListCardBuild on _ShowListCardState {
                                 border: Border.all(
                                   color: widget.isExpanded
                                       ? colorScheme.primary
-                                      : Colors.transparent,
+                                      : const Color(0x00000000),
                                   width: 1,
                                 ),
                               ),
@@ -554,7 +554,7 @@ extension _ShowListCardBuild on _ShowListCardState {
             color: backgroundColor,
           ),
           child: Material(
-            color: Colors.transparent,
+            color: const Color(0x00000000),
             child: InkWell(
               canRequestFocus: true,
               borderRadius: BorderRadius.circular(borderRadius),

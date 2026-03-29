@@ -15,6 +15,8 @@ enum FruitColorOption { sophisticate, minimalist, creative }
 class ThemeProvider with ChangeNotifier, WidgetsBindingObserver {
   static ThemeProvider? _instance;
   static ThemeProvider? get getInstance => _instance;
+  @visibleForTesting
+  static void reset() => _instance = null;
 
   static const String _themeModeKey = 'theme_mode_preference';
   static const String _themeStyleKey = 'theme_style_preference';

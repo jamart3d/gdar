@@ -17,6 +17,7 @@ import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/ui/screens/playback_screen.dart';
+import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/settings_screen.dart';
 import 'package:shakedown_core/ui/styles/app_typography.dart';
 import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';

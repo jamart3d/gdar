@@ -339,7 +339,11 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     }
   }
 
-  Future<dynamic> navigateTo(Widget screen, {bool instant = true}) async {
+  Future<dynamic> navigateTo(
+    Widget screen, {
+    bool instant = true,
+    String? routeName,
+  }) async {
     // Pause global clock before navigating
     try {
       context.read<AnimationController>().stop();
@@ -348,6 +352,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     final isTv = context.read<DeviceService>().isTv;
     final result = await Navigator.of(context).push(
       PageRouteBuilder(
+        settings: routeName != null ? RouteSettings(name: routeName) : null,
         pageBuilder: (context, animation, secondaryAnimation) => screen,
         transitionDuration: (instant || isTv)
             ? Duration.zero

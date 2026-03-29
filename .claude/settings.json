@@ -5,7 +5,6 @@
       "Bash(dart analyze:*)",
       "Bash(./gradlew :app:compileDebugKotlin --info)",
       "Bash(./gradlew :app:compileReleaseKotlin)",
-      "Bash(find C:/Users/jeff/StudioProjects/gdar/apps/gdar_tv/android/app/src/main/res -name *.png -o -name *.jpg -o -name *.webp)",
       "Bash(./gradlew :app:compileReleaseKotlin --stacktrace)",
       "Bash(./gradlew :app:processReleaseResources)",
       "Bash(flutter --version)",
@@ -18,30 +17,23 @@
       "Bash(flutter analyze:*)",
       "Bash(flutter sdk-path:*)",
       "Bash(xargs dirname:*)",
-      "Bash(grep -r \"onTrackChange\\\\|_updateMediaSession\" /home/jam/StudioProjects/gdar/apps/gdar_web/web/*.js)",
       "mcp__dart__analyze_files",
       "mcp__dart__run_tests",
       "mcp__dart__dart_format",
       "Bash(flutter pub:*)",
-      "Bash(grep -rn \"tap\\\\|click\\\\|event\" /home/jam/StudioProjects/gdar/apps/gdar_web/web/*.js)",
       "Bash(dart fix:*)",
       "Bash(melos run:*)",
       "Bash(dart format:*)",
-      "Bash(where melos:*)",
       "Bash(dart pub:*)",
-      "Bash(melos.bat run:*)",
+      "Bash(dart run:*)",
+      "Bash(grep:*)",
+      "Bash(bash ~/.claude/statusline-command.sh)",
       "Bash(find packages/shakedown_core -name *steal* -o -name *screensaver*)",
       "Skill(update-config)",
-      "Skill(update-config:*)",
-      "Bash(for f:*)",
-      "Bash(do)",
-      "Bash(sed -i 's/enableRunDetection/markPlayedOnStart/g; s/toggleEnableRunDetection/toggleMarkPlayedOnStart/g' \"$f\")",
-      "Bash(echo \"Updated $f\")",
-      "Bash(done)",
-      "Bash(dart run:*)",
-      "Bash(grep:*)"
+      "Skill(update-config:*)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "sequential-thinking"
   ],
@@ -56,10 +48,5 @@
         ]
       }
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "date +\"⏱ %H:%M:%S\""
-  },
-  "enableAllProjectMcpServers": true
+  }
 }

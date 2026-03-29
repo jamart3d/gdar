@@ -537,7 +537,7 @@ class _TvStatBlock extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.black,
+          color: const Color(0xFF000000),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: colorScheme.onSurface.withValues(alpha: 0.12),

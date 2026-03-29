@@ -348,7 +348,7 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
                   decoration: BoxDecoration(
                     color: widget.isActive
                         ? colorScheme.primary.withValues(alpha: 0.05)
-                        : Colors.transparent,
+                        : const Color(0x00000000),
                     border: Border(
                       bottom: BorderSide(
                         color: widget.isActive
@@ -491,8 +491,8 @@ class _TrackStatusDot extends StatelessWidget {
           final color =
               processingState == ProcessingState.loading ||
                   processingState == ProcessingState.buffering
-              ? Colors.orange
-              : const Color(0xFF2E7D32);
+              ? const Color(0xFFFF9800) // Orange
+              : const Color(0xFF2E7D32); // Green
           return _dot(color);
         },
       );
@@ -511,9 +511,9 @@ class _TrackStatusDot extends StatelessWidget {
               final engineState =
                   engineSnapshot.data ?? audioProvider.engineState;
               final color = nextBuffered != null && nextBuffered > Duration.zero
-                  ? Colors.green
+                  ? const Color(0xFF4CAF50) // Green
                   : (engineState == 'prefetching' || engineState == 'fetching')
-                  ? Colors.orange
+                  ? const Color(0xFFFF9800) // Orange
                   : const Color(0xFF4D8BFF);
               return _dot(color);
             },

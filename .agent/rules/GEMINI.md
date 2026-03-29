@@ -42,3 +42,4 @@ trigger: always_on
   a brief Task List, Implementation Plan, Testing suggestions (unit/widget),
   and a Walkthrough of the results.
 * **Smart Receipts:** When `melos run analyze`, `melos run test`, or `melos run format` pass successfully, the agent MUST update `.agent/notes/verification_status.json` with the current `git rev-parse HEAD` and results. This allows the `/shipit` workflow to skip redundant runs on an identical worktree state.
+* **Context Pulse:** At the end of every 3 conversation turns or upon completion of any Slash Command, the agent MUST report the current context usage percentage and status as defined in `.agent/rules/context_protocol.md`.

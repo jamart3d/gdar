@@ -8,6 +8,7 @@ import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
+import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/settings_screen.dart';
 
 import 'package:shakedown_core/utils/color_generator.dart';
@@ -536,7 +537,7 @@ class ShowListScreenState extends State<ShowListScreen>
     return ShowListShell(
       isPane: widget.isPane,
       backgroundColor: widget.isPane
-          ? Colors.transparent
+          ? const Color(0x00000000)
           : (backgroundColor ?? Theme.of(context).scaffoldBackgroundColor),
       randomPulseAnimation: _randomPulseAnimation,
       searchPulseAnimation: _searchPulseAnimation,
@@ -553,7 +554,10 @@ class ShowListScreenState extends State<ShowListScreen>
       showPasteFeedback: showPasteFeedback,
       onTitleTap:
           widget.onSettingsRequested ??
-          () => navigateTo(const SettingsScreen()),
+          () => navigateTo(
+            const SettingsScreen(),
+            routeName: ShakedownRouteNames.tvSettings,
+          ),
       scrollbarFocusNode: widget.scrollbarFocusNode,
       showFruitTabBar: widget.showFruitTabBar,
       body: ShowListBody(

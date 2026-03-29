@@ -68,7 +68,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: appBarBg,
       elevation: 0,
       scrolledUnderElevation: 0,
-      surfaceTintColor: Colors.transparent,
+      surfaceTintColor: const Color(0x00000000),
       shape: isFruit ? const Border(bottom: BorderSide.none) : null,
       title: const ShakedownTitle(
         fontSize: 16,

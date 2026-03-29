@@ -14,6 +14,7 @@ import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/services/inactivity_service.dart';
 import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
+import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
@@ -94,6 +95,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   late final _TvNavigationObserver _navigationObserver;
   bool _isScreensaverActive = false;
+  String? _currentRouteName;
   final ValueNotifier<String?> _launchError = ValueNotifier(null);
 
   void _setScreensaverActive(bool active) {
@@ -107,10 +109,16 @@ class _GdarTvAppState extends State<GdarTvApp> {
   }
 
   void _handleRouteChanged(Route<dynamic>? route) {
-    // Route tracking kept for diagnostics only — no longer gates the timer.
     final name = route?.settings.name;
-    if (name != null) {
+    // Preserve the last known name so anonymous routes (popups, dialogs)
+    // don't accidentally clear the current screen context.
+    if (name != null && name != _currentRouteName) {
       debugPrint('GdarTvApp: route changed name=$name');
+      if (mounted) {
+        setState(() => _currentRouteName = name);
+      } else {
+        _currentRouteName = name;
+      }
     }
   }
 
@@ -185,7 +193,6 @@ class _GdarTvAppState extends State<GdarTvApp> {
       logger.e('Screensaver launch failed', error: e);
     } finally {
       _setScreensaverActive(false);
-      _inactivityService.onUserActivity('screensaver_exit:$source');
       // Restart monitoring after screensaver exits.
       if (_settingsProvider.useOilScreensaver) {
         _inactivityService.start();
@@ -202,9 +209,12 @@ class _GdarTvAppState extends State<GdarTvApp> {
       Duration(minutes: settingsProvider.oilScreensaverInactivityMinutes),
     );
 
-    // Match v1.1.69: run whenever enabled and screensaver isn't active.
-    // No route-eligibility gate — the timeout handler checks what it needs.
-    if (settingsProvider.useOilScreensaver && !_isScreensaverActive) {
+    final isOnBlockedRoute =
+        _currentRouteName == ShakedownRouteNames.tvSettings;
+
+    if (settingsProvider.useOilScreensaver &&
+        !_isScreensaverActive &&
+        !isOnBlockedRoute) {
       _inactivityService.start();
     } else {
       _inactivityService.stop();
@@ -367,8 +377,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
                       child: child ?? const SizedBox.shrink(),
                     ),
                     // Center it to rule out overscan.
-                    if (kDebugMode &&
-                        settingsProvider.useOilScreensaver &&
+                    if (settingsProvider.useOilScreensaver &&
                         settingsProvider.showScreensaverCountdown)
                       Center(
                         child: _InactivityCountdownOverlay(
@@ -463,7 +472,7 @@ class _InactivityCountdownOverlay extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xCCFF0000), // Bright red
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: const Color(0xFFFFFFFF), width: 2),
                 ),
                 child: Text(
                   'SS: $value (TV: ${ThemeProvider.getInstance?.isTv})',

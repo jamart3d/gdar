@@ -102,8 +102,13 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get randomExcludePlayed => false;
   @override
   bool get filterHighestShnid => false;
+  bool _useTrueBlack = true;
   @override
-  bool get useTrueBlack => true;
+  bool get useTrueBlack => _useTrueBlack;
+  void setTrueBlack(bool value) {
+    _useTrueBlack = value;
+    notifyListeners();
+  }
   @override
   NeumorphicStyle get neumorphicStyle => NeumorphicStyle.convex;
   @override
@@ -134,8 +139,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get showExpandIcon => false;
   @override
   set showExpandIcon(bool value) {}
+  int _glowMode = 0;
   @override
-  int get glowMode => 0;
+  int get glowMode => _glowMode;
+  @override
+  void setGlowMode(int mode) {
+    _glowMode = mode;
+    notifyListeners();
+  }
   @override
   double get rgbAnimationSpeed => 1.0;
   @override
@@ -325,7 +336,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   void toggleUiScale() {}
   @override
-  void setGlowMode(int mode) {}
+  void toggleUseTrueBlack() {
+    _useTrueBlack = !_useTrueBlack;
+    notifyListeners();
+  }
   @override
   void toggleHighlightPlayingWithRgb() {}
   @override
@@ -429,12 +443,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
 
   @override
   Future<void> resetToDefaults() async {}
-  @override
-  void toggleUseTrueBlack() {}
-  @override
-  void toggleShowDayOfWeek() {}
-  @override
-  void toggleAbbreviateDayOfWeek() {}
   @override
   void toggleAbbreviateMonth() {}
   @override

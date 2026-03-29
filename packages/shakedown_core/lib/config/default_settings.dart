@@ -141,7 +141,7 @@ class DefaultSettings {
   /// Audio graph display mode.
   /// Valid TV modes include: 'off', 'corner', 'corner_only', 'circular',
   /// 'ekg', 'circular_ekg', 'vu', 'scope', and 'beat_debug'.
-  static const String oilAudioGraphMode = 'beat_debug';
+  static const String oilAudioGraphMode = 'corner';
 
   /// Radius multiplier for EKG (0.5x to 2.0x of base logo radius).
   static const double oilEkgRadius = 0.1;

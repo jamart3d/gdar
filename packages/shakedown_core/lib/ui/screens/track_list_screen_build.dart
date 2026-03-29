@@ -120,6 +120,9 @@ extension _TrackListScreenBuild on _TrackListScreenState {
                         unawaited(
                           Navigator.of(context).push(
                             PageRouteBuilder(
+                              settings: const RouteSettings(
+                                name: ShakedownRouteNames.tvSettings,
+                              ),
                               pageBuilder:
                                   (context, animation, secondaryAnimation) =>
                                       const SettingsScreen(),
@@ -149,7 +152,7 @@ extension _TrackListScreenBuild on _TrackListScreenState {
                           isCircle: false,
                           borderRadius: 12.0,
                           intensity: 1.2,
-                          color: Colors.transparent,
+                          color: const Color(0x00000000),
                           child: LiquidGlassWrapper(
                             enabled: !isTv,
                             borderRadius: BorderRadius.circular(12.0),
@@ -523,7 +526,7 @@ extension _TrackListScreenBuild on _TrackListScreenState {
           Widget card = Card(
             elevation: 0,
             color: usePremium
-                ? Colors.transparent
+                ? const Color(0x00000000)
                 : colorScheme.surfaceContainerHigh,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
@@ -536,7 +539,7 @@ extension _TrackListScreenBuild on _TrackListScreenState {
             card = NeumorphicWrapper(
               borderRadius: 24,
               intensity: 1.0,
-              color: Colors.transparent,
+              color: const Color(0x00000000),
               child: LiquidGlassWrapper(
                 enabled: !isTv,
                 borderRadius: BorderRadius.circular(24),
@@ -639,7 +642,7 @@ extension _TrackListScreenBuild on _TrackListScreenState {
                 borderRadius: 50,
                 intensity: 0.8,
                 isPressed: true,
-                color: Colors.transparent,
+                color: const Color(0x00000000),
                 child: LiquidGlassWrapper(
                   enabled: !isTv,
                   borderRadius: BorderRadius.circular(50),
@@ -741,7 +744,7 @@ extension _TrackListScreenBuild on _TrackListScreenState {
         final processingState = audioProvider.audioPlayer.processingState;
         if (processingState == ProcessingState.loading ||
             processingState == ProcessingState.buffering) {
-          dotColor = Colors.orange;
+          dotColor = const Color(0xFFFFA500);
         } else {
           dotColor = const Color(0xFF2E7D32);
         }
@@ -750,9 +753,9 @@ extension _TrackListScreenBuild on _TrackListScreenState {
         final engineState = audioProvider.engineState;
 
         if (nextBuffered != null && nextBuffered > Duration.zero) {
-          dotColor = Colors.green;
+          dotColor = const Color(0xFF4CAF50);
         } else if (engineState == 'prefetching' || engineState == 'fetching') {
-          dotColor = Colors.orange;
+          dotColor = const Color(0xFFFFA500);
         }
       }
 
@@ -909,7 +912,7 @@ extension _TrackListScreenBuild on _TrackListScreenState {
             child: NeumorphicWrapper(
               borderRadius: 16,
               intensity: 1.0,
-              color: Colors.transparent,
+              color: const Color(0x00000000),
               child: LiquidGlassWrapper(
                 enabled: !isTv,
                 borderRadius: BorderRadius.circular(16),
