@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.34+244] - 2026-03-29
+
+### Added
+- **Maintenance**: Successfully completed a comprehensive monorepo-wide health check with 258/258 tests passing across Mobile, TV, Web, and Core.
+- **Visual**: Audited workspace assets and archived legacy high-resolution icon binaries to the `archive/` directory to maintain a lean repository.
+- **Automation**: Hardened the **Zero-Friction Mandate** for `/checkup` and `/shipit` workflows, ensuring rapid, sequential production builds and Firebase deployments.
+- **Skills**: Introduced the `zero_friction_execution` skill to manage long-running monorepo automation tasks without timing out.
+
 ## [1.3.33+243] - 2026-03-28
 
 ### Fixed

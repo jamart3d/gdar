@@ -1,3 +1,10 @@
+What's new in v1.3.34+244
+- Maintenance: Successfully completed a comprehensive monorepo-wide health check with 258/258 tests passing across Mobile, TV, Web, and Core.
+- Visual: Audited workspace assets and archived legacy high-resolution icon binaries to the archive/ directory to maintain a lean repository.
+- Automation: Hardened the Zero-Friction Mandate for /checkup and /shipit workflows, ensuring rapid, sequential production builds and Firebase deployments.
+
+---
+
 What's new in v1.3.33+243
 - Web Audio: Resolved "Abortion Collision" bug in the gapless engine where rapid track selection could inadvertently cancel its own fetch/decode request.
 - Web UI: Added color-coded health warnings to visualizer buffering diagnostics to improve performance monitoring on low-power devices.
