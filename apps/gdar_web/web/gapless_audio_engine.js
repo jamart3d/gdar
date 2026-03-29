@@ -135,7 +135,7 @@
     _log.log('[gdar engine] setPlaylist', tracks?.length, startIndex);
     _failedTracks.clear();
     _stopCurrentSource();
-    _cancelPrefetch();
+    _cancelPrefetch(startIndex);
     _clearScheduled();
     Object.keys(_decoded).forEach(k => delete _decoded[k]);
     Object.keys(_compressed).forEach(k => delete _compressed[k]);
@@ -186,7 +186,11 @@
     _fetchInFlight = true;
     _lastFetchTtfbMs = null;
     _emitState();
-    return fetch(track.url, { signal: controller.signal })
+    return fetch(track.url, {
+      signal: controller.signal,
+      credentials: 'omit',
+      mode: 'cors',
+    })
       .then(async r => {
         _lastFetchTtfbMs = performance.now() - _fetchStartMs;
         _fetchInFlight = false;
@@ -501,7 +505,7 @@
   }
 
   function _schedulePrefetch() {
-    _cancelPrefetch();
+    _cancelPrefetch(_currentIndex);
     const nextIndex = _currentIndex + 1;
     if (nextIndex >= _playlist.length) return;
     if (_failedTracks.has(nextIndex)) {
@@ -532,19 +536,23 @@
     }, decodeIn + settleDelay);
   }
 
-  function _cancelPrefetch() {
+  function _cancelPrefetch(protectedIndex) {
     if (_prefetchTimer) { clearTimeout(_prefetchTimer); _prefetchTimer = null; }
     if (_decodeTimer) { clearTimeout(_decodeTimer); _decodeTimer = null; }
     _fetchingIndex = -1;
     _isPrefetching = false;
 
-    // Abort ongoing fetch requests EXCEPT for the next track prefetch if it's already valid.
-    // This prevents race conditions during hybrid handoffs where starting track N
-    // inadvertently kills the prefetch of N+1 that was already underway.
-    const nextIndex = _currentIndex + 1;
+    // Protection logic: we keep the fetch for the current track and the next track.
+    // If protectedIndex is provided (e.g. during a seek or manual skip), that 
+    // index is treated as the new 'current' reference for the protection window.
+    const current = protectedIndex != null ? protectedIndex : _currentIndex;
+    const next = current + 1;
+
     Object.keys(_abortControllers).forEach(indexStr => {
       const index = parseInt(indexStr, 10);
-      if (index === nextIndex) return;
+      
+      // Never abort the current track or the immediate next track prefetch.
+      if (index === current || index === next) return;
 
       try {
         _log.log('[gdar engine] Aborting orphaned fetch for index', index);
@@ -864,7 +872,7 @@
         _stopPositionTimer();
         _stopCurrentSource();
         _clearScheduled();
-        _cancelPrefetch();
+        _cancelPrefetch(_currentIndex);
         _emitState();
       });
     },
@@ -872,7 +880,7 @@
     stop: function () {
       _stopCurrentSource();
       _clearScheduled();
-      _cancelPrefetch();
+      _cancelPrefetch(_currentIndex);
       _playing = false;
       _loadingState = 'idle';
       _currentTrackDuration = 0;
@@ -891,7 +899,7 @@
       const wasPlaying = _playing;
       _stopCurrentSource();
       _clearScheduled();
-      _cancelPrefetch();
+      _cancelPrefetch(_currentIndex);
       _currentTrackStartOffset = seconds;
       if (wasPlaying) {
         _loadingState = 'loading';
@@ -910,7 +918,7 @@
       const oldIndex = _currentIndex;
       _stopCurrentSource();
       _clearScheduled();
-      _cancelPrefetch();
+      _cancelPrefetch(index);
       _currentIndex = index;
       _currentTrackStartOffset = 0;
       _evictOldBuffers();

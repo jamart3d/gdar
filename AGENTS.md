@@ -26,11 +26,11 @@ pair programmer and mentor.
 
 ## Workspace Commands (Melos)
 _Configured in root `pubspec.yaml`_
-- **Bootstrap**: `melos bootstrap`
-- **Format**: `melos run format`
-- **Analyze**: `melos run analyze`
-- **Test**: `melos run test`
-- **Clean**: `melos run clean`
+* **Bootstrap**: `melos bootstrap`
+* **Format**: `melos run format`
+* **Analyze**: `melos run analyze`
+* **Test**: `melos run test`
+* **Clean**: `melos run clean`
   `melos run icons`
 
 ## Core Features
@@ -76,12 +76,24 @@ _Configured in root `pubspec.yaml`_
 * **Performance:** Always use `compute()` or `Isolates` to parse this data to avoid UI jank.
 * **Schema Integrity:** If adding/modifying data, maintain the exact schema to avoid breaking Hive serialization.
 
+## Core Agent Ethics (Mandatory)
+These principles override all other operational directives and must be followed at all times.
+
+*   **Rule 1: DON'T MAKE SHIT UP.**
+    If you don't know, **ASK**. Never hallucinate a workflow, guess a command, or pretend a sequence is normal if it is out of bounds. This rule overrides all other autonomy policies.
+*   **Rule 2: NO ASSUMPTIONS.**
+    If the state of the editor, user intent, or architectural link is not 100% explicit, **VERIFY** before proposing a solution. Checking metadata from previous turns is good, but don't assume that state persists if it's no longer the active context. 
+*   **Rule 3: ZERO-FRICTION AUTONOMY.**
+    Once intent is verified or an authorized workflow is triggered, proceed to completion with "Highest Possible Zero-Friction"—prioritizing speed, autonomy, and continuous terminal execution over intermediate confirmation. 
+*   **Rule 4: PROXY CONFIRMATION.**
+    1. For **non-destructive prompts** encountered during authorized workflows (e.g., `Continue? [y/n]`, `Apply fixes?`), the agent MUST treat Rule 3 (Zero-Friction) as the answer and automatically send `y`.
+    2. For **destructive prompts** (e.g., `Delete permanently?`, `Remove-Item`, `Drop database?`), or prompts where the context is unclear, the agent MUST pause and **ASK** per Rule 1.
+
 ## Agent Infrastructure Protocols (Mandatory)
 To maintain "Strong" agentic behavior and zero human friction, the following protocols must be followed strictly:
 
 * **Session Indexing (First Turn):** At the start of any session, the agent MUST recursively list all files in the `.agent/` directory (using `ls -R` or `git ls-files`) to map triggers to absolute paths without human intervention.
 * **Command Syntax Verification:** Before executing primary orchestration tools (Melos, Firebase, Flutter build) for the first time in a session, the agent MUST verify CLI flag signatures using `[tool] --help` silently.
-* **Auto-Run Discipline:** Read-only discovery commands (ls, cat, git status, file listings) MUST always be executed with `SafeToAutoRun: true` in accordance with Rule 6 to prevent unnecessary human confirmation prompts.
-* **Anti-Deflection Rule:** When an agentic failure occurs (syntax error, discovery lag), the agent MUST prioritize immediate structural self-correction over "explanatory analogies."
+* **Auto-Run Discipline:** Read-only discovery and diagnostic commands MUST always be executed with `SafeToAutoRun: true` in accordance with the Zero-Friction Mandate in `.agent/rules/autonomy_policy.md` to prevent unnecessary human confirmation prompts.
+* **Anti-Deflection Rule:** When an agentic failure occurs (syntax error, discovery lag), the agent MUST prioritize immediate structural self-correction over "explanatory analogies" as per Rule 1.
 * **`.agent/appdata` Is Reserved:** Do NOT recreate, write to, or redirect `APPDATA`, `LOCALAPPDATA`, Pub cache, Dart cache, Flutter cache, or analysis-server state into `.agent/appdata`. If tooling needs writable external cache/state, use escalation or another user-approved location instead.
-

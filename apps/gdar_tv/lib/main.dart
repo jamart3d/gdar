@@ -366,9 +366,8 @@ class _GdarTvAppState extends State<GdarTvApp> {
                       color: finalTheme.scaffoldBackgroundColor,
                       child: child ?? const SizedBox.shrink(),
                     ),
-                    // DIAGNOSIS: Force overlay visibility and center it to rule out overscan.
-                    // Also removed the !_isScreensaverActive gate to see if it's "stuck" active.
-                    if (settingsProvider.useOilScreensaver)
+                    // Center it to rule out overscan.
+                    if (kDebugMode && settingsProvider.useOilScreensaver)
                       Center(
                         child: _InactivityCountdownOverlay(
                           countdown: _inactivityService.debugCountdown,

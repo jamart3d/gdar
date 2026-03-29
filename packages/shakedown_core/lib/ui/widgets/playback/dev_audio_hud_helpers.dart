@@ -593,13 +593,13 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
         }
         return 'Measured gap between the last two tracks.';
       case 'SCH':
-        return 'Schedule sparkline. Seconds until the next WebAudio start.';
+        return 'Schedule lead. Seconds until the next WebAudio start period.';
       case 'LAT':
         return 'Output latency in milliseconds.';
       case 'DEC':
-        return 'Decode sparkline. Time spent in decodeAudioData.';
+        return 'Decode time. Milliseconds spent in decodeAudioData(buffer).';
       case 'BCT':
-        return 'Concat sparkline. Time spent stitching fetch chunks together.';
+        return 'Concat time. Milliseconds spent stitching fetch chunks.';
       case 'ERR':
         return 'Count of failed fetch or decode attempts in this session.';
       case 'WTC':

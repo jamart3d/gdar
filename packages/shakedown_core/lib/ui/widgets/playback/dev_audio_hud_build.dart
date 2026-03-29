@@ -132,7 +132,8 @@ extension _DevAudioHudBuild on _DevAudioHudState {
                 'SHD',
                 'GAP',
                 'PM',
-                if (showWaTelemetry) ...['LAT', 'ERR', 'WTC', 'SR', 'CAC'],
+                if (showWaTelemetry)
+                  ...['LAT', 'ERR', 'WTC', 'SR', 'CAC', 'SCH', 'DEC', 'BCT'],
                 if (showHybridControls) ...[
                   'HS',
                   if (!waSubEngineActive) 'HAT',
@@ -206,7 +207,6 @@ extension _DevAudioHudBuild on _DevAudioHudState {
     const chipSpacing = 8.0;
     const sparklineChipWidth = 84.0;
     final showNetTelemetry = isWA || isHybrid;
-    final showWaTelemetry = isWA || (isHybrid && waSubEngineActive);
     final trendChips = <Widget>[];
     final controlChips = <Widget>[];
     final stateChips = <Widget>[];
@@ -365,36 +365,6 @@ extension _DevAudioHudBuild on _DevAudioHudState {
           Colors.amberAccent.withValues(alpha: 0.9),
           alpha: 0.9,
           currentValue: fields['NET'],
-        ),
-      );
-    }
-
-    if (showWaTelemetry) {
-      trendChips.add(
-        buildTrendChip(
-          _schHistory,
-          'SCH',
-          Colors.cyanAccent.withValues(alpha: 0.8),
-          alpha: 0.85,
-          currentValue: fields['SCH'],
-        ),
-      );
-      trendChips.add(
-        buildTrendChip(
-          _decHistory,
-          'DEC',
-          Colors.purpleAccent.withValues(alpha: 0.7),
-          alpha: 0.8,
-          currentValue: fields['DEC'],
-        ),
-      );
-      trendChips.add(
-        buildTrendChip(
-          _bctHistory,
-          'BCT',
-          Colors.indigoAccent.withValues(alpha: 0.7),
-          alpha: 0.8,
-          currentValue: fields['BCT'],
         ),
       );
     }

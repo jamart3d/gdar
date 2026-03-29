@@ -128,6 +128,7 @@ mixin _AudioProviderControls on ChangeNotifier, _AudioProviderState {
 
   void seekToTrack(int localIndex) {
     if (_currentSource == null) return;
+    _lastKnownGapMs = null;
 
     final playerState = _audioPlayer.processingState;
     final isStuck =
@@ -179,6 +180,11 @@ mixin _AudioProviderControls on ChangeNotifier, _AudioProviderState {
       }
     } catch (e) {
       logger.e('seekToTrack fallback failed: $e');
+      if (_currentShow != null) {
+        unawaited(
+          playSource(_currentShow!, _currentSource!, initialIndex: localIndex),
+        );
+      }
     }
   }
 }

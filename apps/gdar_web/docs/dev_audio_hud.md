@@ -159,7 +159,7 @@ currently Web Audio:
 | :--- | :--- |
 | `LAT` | AudioContext output latency |
 | `ERR` | Failed fetch/decode count |
-| `WTC` | Worker tick count |
+| `WTC` | Worker tick count | 4Hz (250ms) ticks from background Web Worker; used for stable positioning and watchdogs in background tabs |
 | `SR` | AudioContext sample rate |
 | `CAC` | Decoded buffer cache depth |
 | `SCH` | Schedule lead time |
@@ -202,7 +202,31 @@ The HUD hides or dims chips when their source data is not meaningful.
 - Shows WA-only telemetry only when the active sub-engine is WA
 - Keeps `HPD` visible as a hybrid-only sparkline
 
-## 5. Tooltip Behavior
+## 5. Worker Tick System (WTC)
+
+The `WTC` (Worker Tick Count) represents the heartbeat of the playback engine. 
+
+To bypass browser-level throttling of `setTimeout` and `setInterval` in background tabs (which can drop to 1Hz or stop entirely), GDAR utilizes a specialized background Web Worker (`audio_scheduler.worker.js`).
+
+- **Frequency**: Stable 4Hz (250ms).
+- **Control**: Managed by `audio_scheduler.js`. 
+- **Usage**: Authoritative position updates and "Ending Watchdog" checks that trigger the next track transition.
+- **HUD Indicator**: The `WTC` chip should always increment while audio is active. A frozen `WTC` indicates the worker or main-thread event loop is stalled.
+
+### WTC vs. Heartbeat (Survival System)
+
+It is important to distinguish between the **WTC (Clock)** and the **Heartbeat (Shield)**:
+
+| Feature | Worker Tick (`WTC`) | silent Heartbeat (`SHD`) |
+| :--- | :--- | :--- |
+| **Technology** | `Web Worker` + `onmessage` | Silent `<audio>` / `<video>` tags |
+| **Purpose** | **Timing**: Prevents 1Hz throttling. | **Survival**: Prevents OS/Browser sleep. |
+| **Role** | The clock signal used to drive UI/logic. | The permission to keep the clock running. |
+| **Visibility** | Shown in telemetry row. | Represented by the `SHD` chip in State row. |
+
+Without a **Heartbeat**, the OS may kill the process or freeze the Web Worker entirely on mobile. Without a **WTC**, the engine stays alive but lacks a stable high-frequency source for positioning and seamless gaps.
+
+## 6. Tooltip Behavior
 
 Every sparkline and chip can expose a tooltip.
 

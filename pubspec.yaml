@@ -6,7 +6,8 @@ environment:
 workspace:
   - packages/shakedown_core
   - packages/screensaver_tv
-  - packages/styles/*
+  - packages/styles/gdar_android
+  - packages/styles/gdar_fruit
   - apps/gdar_mobile
   - apps/gdar_tv
   - apps/gdar_web
@@ -35,11 +36,14 @@ melos:
       usePubspecOverrides: true
   scripts:
     analyze:
-      description: Run analysis in all packages/apps.
-      run: melos exec -c 1 -- flutter analyze
+      description: Run fast workspace-wide analysis.
+      run: dart analyze .
     test:
-      description: Run tests in all packages/apps.
-      run: melos exec -c 1 --dir-exists=test --ignore="screensaver_tv" -- flutter test -j 1
+      description: Run tests in all packages/apps with concurrency.
+      run: melos exec -c 2 --dir-exists=test --ignore="screensaver_tv" -- flutter test
+    fix:
+      description: Apply automated fixes across the workspace.
+      run: melos exec -- "dart fix --apply"
     format:
       description: Check formatting across the workspace.
       run: dart format --set-exit-if-changed .

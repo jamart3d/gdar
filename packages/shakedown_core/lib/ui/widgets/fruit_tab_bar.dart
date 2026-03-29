@@ -35,11 +35,14 @@ class FruitTabBar extends StatelessWidget {
     final audioProvider = context.watch<AudioProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final showListProvider = context.watch<ShowListProvider>();
+    final deviceService = context.watch<DeviceService>();
 
     final double scaleFactor = FontLayoutConfig.getEffectiveScale(
       context,
       settingsProvider,
     );
+
+    final double screenWidth = MediaQuery.sizeOf(context).width;
 
     final isDarkMode = theme.brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
@@ -59,76 +62,74 @@ class FruitTabBar extends StatelessWidget {
         ? (isDarkMode ? colorScheme.surface : theme.scaffoldBackgroundColor)
         : Colors.white.withValues(alpha: 0.4); // Matches liquid glass
 
+    // Reduce horizontal padding if in PWA standalone mode OR if the web window is narrow
+    // to allow items to spread closer to the edge.
+    final double sidePadding = (deviceService.isPwa || screenWidth < 600)
+        ? 8.0 * tabScaleFactor
+        : 32.0 * tabScaleFactor;
+
     final content = Container(
       padding: EdgeInsets.fromLTRB(
-        32.0 * tabScaleFactor, // px-8
+        sidePadding, // px-4 or px-8
         16.0 * tabScaleFactor, // pt-4
-        32.0 * tabScaleFactor, // px-8
-        16.0 * tabScaleFactor + MediaQuery.paddingOf(context).bottom, // pb-8
+        sidePadding,
+        16.0 * tabScaleFactor + MediaQuery.paddingOf(context).bottom, // pb-4 + safe area
       ),
       decoration: BoxDecoration(color: backgroundColor),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: _FruitTabItem(
-              icon: LucideIcons.playCircle,
-              label: 'PLAY',
-              isActive: selectedIndex == 0,
-              scaleFactor: tabScaleFactor,
-              onTap: () {
-                // ALLOW if currentShow is set, even if track isn't fully buffered yet
-                if (audioProvider.currentShow != null) {
-                  onTabSelected(0);
-                } else {
-                  showMessage(context, 'No track playing');
-                }
-              },
-            ),
+          _FruitTabItem(
+            icon: LucideIcons.playCircle,
+            label: 'PLAY',
+            isActive: selectedIndex == 0,
+            scaleFactor: tabScaleFactor,
+            onTap: () {
+              // ALLOW if currentShow is set, even if track isn't fully buffered yet
+              if (audioProvider.currentShow != null) {
+                onTabSelected(0);
+              } else {
+                showMessage(context, 'No track playing');
+              }
+            },
           ),
-          Expanded(
-            child: _FruitTabItem(
-              icon: LucideIcons.library,
-              label: 'LIBRARY',
-              isActive: selectedIndex == 1,
-              scaleFactor: tabScaleFactor,
-              onTap: () {
-                onTabSelected(1);
-              },
-            ),
+          _FruitTabItem(
+            icon: LucideIcons.library,
+            label: 'LIBRARY',
+            isActive: selectedIndex == 1,
+            scaleFactor: tabScaleFactor,
+            onTap: () {
+              onTabSelected(1);
+            },
           ),
-          Expanded(
-            child: _FruitTabItem(
-              icon: settingsProvider.nonRandom
-                  ? LucideIcons.skipForward
-                  : LucideIcons.dice5,
-              label: settingsProvider.nonRandom ? 'NEXT' : 'RANDOM',
-              isActive: selectedIndex == 2,
-              isLoading: showListProvider.isChoosingRandomShow,
-              enableHaptics: settingsProvider.enableHaptics,
-              useAnimatedRandomIcon:
-                  !settingsProvider.nonRandom &&
-                  !settingsProvider.simpleRandomIcon,
-              scaleFactor: tabScaleFactor,
-              onTap: () {
-                AppHaptics.selectionClick(
-                  context.read<DeviceService>(),
-                  enabled: settingsProvider.enableHaptics,
-                );
-                onTabSelected(2);
-              },
-            ),
+          _FruitTabItem(
+            icon: settingsProvider.nonRandom
+                ? LucideIcons.skipForward
+                : LucideIcons.dice5,
+            label: settingsProvider.nonRandom ? 'NEXT' : 'RANDOM',
+            isActive: selectedIndex == 2,
+            isLoading: showListProvider.isChoosingRandomShow,
+            enableHaptics: settingsProvider.enableHaptics,
+            useAnimatedRandomIcon:
+                !settingsProvider.nonRandom &&
+                !settingsProvider.simpleRandomIcon,
+            scaleFactor: tabScaleFactor,
+            onTap: () {
+              AppHaptics.selectionClick(
+                context.read<DeviceService>(),
+                enabled: settingsProvider.enableHaptics,
+              );
+              onTabSelected(2);
+            },
           ),
-          Expanded(
-            child: _FruitTabItem(
-              icon: LucideIcons.settings,
-              label: 'SETTINGS',
-              isActive: selectedIndex == 3,
-              scaleFactor: tabScaleFactor,
-              onTap: () {
-                onTabSelected(3);
-              },
-            ),
+          _FruitTabItem(
+            icon: LucideIcons.settings,
+            label: 'SETTINGS',
+            isActive: selectedIndex == 3,
+            scaleFactor: tabScaleFactor,
+            onTap: () {
+              onTabSelected(3);
+            },
           ),
         ],
       ),
@@ -324,7 +325,7 @@ class _FruitTabItemState extends State<_FruitTabItem> {
                     child: Transform.scale(
                       scale: _isPressed ? 0.94 : 1.0,
                       child: Container(
-                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         color: Colors.transparent,
                         child: _buildTabContent(color),
                       ),
@@ -338,7 +339,7 @@ class _FruitTabItemState extends State<_FruitTabItem> {
                       duration: const Duration(milliseconds: 100),
                       opacity: _isPressed ? 0.6 : (_isFocused ? 0.85 : 1.0),
                       child: Container(
-                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         color: Colors.transparent,
                         child: _buildTabContent(color),
                       ),

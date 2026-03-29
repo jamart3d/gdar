@@ -38,7 +38,8 @@
       "Bash(sed -i 's/enableRunDetection/markPlayedOnStart/g; s/toggleEnableRunDetection/toggleMarkPlayedOnStart/g' \"$f\")",
       "Bash(echo \"Updated $f\")",
       "Bash(done)",
-      "Bash(dart run:*)"
+      "Bash(dart run:*)",
+      "Bash(grep:*)"
     ]
   },
   "hooks": {

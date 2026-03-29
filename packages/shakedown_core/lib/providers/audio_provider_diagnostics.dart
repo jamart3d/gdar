@@ -192,7 +192,11 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
       isHandoffCountdown: dng.engineState == 'handoff_countdown',
       fetchTtfbMs: dng.fetchTtfbMs,
       fetchInFlight: dng.fetchInFlight,
-      lastGapMs: dng.lastGapMs,
+      lastGapMs: () {
+        final gap = dng.lastGapMs;
+        if (gap != null) _lastKnownGapMs = gap;
+        return _lastKnownGapMs;
+      }(),
       scheduledIndex: dng.scheduledIndex,
       scheduledStartContextTime: dng.scheduledStartContextTime,
       ctxCurrentTime: dng.ctxCurrentTime,

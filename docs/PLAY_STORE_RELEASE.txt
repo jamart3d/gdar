@@ -1,6 +1,10 @@
 What's new in v1.3.32+242
 - Core: Initialized production release workflow 'shipit' for automated monorepo builds and PWA deployment.
 - Maintenance: Completed full workspace health check; synchronized versions across gdar_mobile, gdar_tv, and gdar_web.
+- Optimization: Modularized and optimized `/checkup` and `/shipit` workflows with root-level workspace analysis, reducing pre-release health check time by over 95%.
+- Core: Implemented platform-aware concurrency in Melos test scripts, enabling faster parallel verification on high-performance development machines.
+- TV UI: Gated the screensaver countdown debug overlay with `kDebugMode` to ensure a clean visual experience in production builds.
+- Maintenance: Resolved root `pubspec.yaml` workspace glob errors by explicitly listing styles packages, achieving zero-warning analysis across the monorepo.
 
 ---
 

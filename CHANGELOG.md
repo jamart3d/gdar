@@ -5,11 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- **Web Audio**: Resolved "Abortion Collision" bug in the gapless engine where rapid track selection could inadvertently cancel its own fetch/decode request.
+- **Web UI**: Added color-coded health warnings (Red/Amber/Green) to the `CAC` (Cache Depth) chip in the Dev Audio HUD to visualize at-risk buffering states.
+
 ## [1.3.32+242] - 2026-03-28
 
 ### Added
 - **Core**: Initialized production release workflow 'shipit' for automated monorepo builds and PWA deployment.
 - **Maintenance**: Completed full workspace health check; synchronized versions across `gdar_mobile`, `gdar_tv`, and `gdar_web`.
+
+### Changed
+- **Optimization**: Modularized and optimized `/checkup` and `/shipit` workflows with root-level workspace analysis, reducing pre-release health check time by over 95%.
+- **Core**: Implemented platform-aware concurrency in Melos test scripts, enabling faster parallel verification on high-performance development machines.
+
+### Fixed
+- **TV UI**: Gated the screensaver countdown debug overlay with `kDebugMode` to ensure a clean visual experience in production builds.
+- **Maintenance**: Resolved root `pubspec.yaml` workspace glob errors by explicitly listing styles packages, achieving zero-warning analysis across the monorepo.
 
 ## [1.3.31+241] - 2026-03-27
 

@@ -1,8 +1,8 @@
 ---
 description: Guided production release workflow for GDAR (monorepo).
 ---
-// turbo-all
 # Shipit Workflow (Monorepo)
+// turbo-all
 
 
 **TRIGGERS:** shipit, release, prod
@@ -13,95 +13,55 @@ description: Guided production release workflow for GDAR (monorepo).
 > [!WARNING]
 > **NO BLACK BOXES**: You are strictly forbidden from chaining multiple long-running terminal commands into a single "black box" string (e.g., `build; build; push`). Run each primary tool (Melos, Flutter build, Firebase) as its own step so progress and status are reported in real-time.
 
-## Monorepo Layout
-
-GDAR is a Dart workspace monorepo. Build targets live under `apps/`:
+## Platform Sync Mandatory
+Both Android (Phone/TV) and Web/PWA targets **MUST** be built and deployed in every release to maintain platform synchronization across the monorepo.
 
 | Target | Path | Build Command |
 |---|---|---|
-| Android / Play Store artifact (phone + TV listing) | `apps/gdar_mobile` | `flutter build appbundle --release` |
-| Web/PWA | `apps/gdar_web` | `flutter build web` |
+| Android (Phone+TV) | `apps/gdar_mobile` | `flutter build appbundle --release --analyze-size` |
+| Web/PWA (Glass) | `apps/gdar_web` | `flutter build web --release --no-wasm` |
 
-- **Version** lives in each app target's `pubspec.yaml` - bump all of them.
-- **TV app note**: `apps/gdar_tv` stays version-synced with the other app
-  targets, but this workflow does **not** build or upload a separate TV AAB.
-  Google Play distribution for phone and TV comes from the
-  `apps/gdar_mobile` AAB.
-- **Firebase** config is at the project root. The `public` path is
-  `apps/gdar_web/build/web`.
-- **Root `pubspec.yaml`** is the workspace coordinator and has no `version:` field.
+---
 
-> **Sequential builds only:** Run builds one at a time. Do not parallelize
-> release builds.
+## 1. Preflight & Smart Skip
+1. Review `git status` to ensure a clean starting point.
+2. Check `.agent/notes/verification_status.json`.
+3. If (Current SHA == Last Verified SHA) AND (Results == Passed):
+   - **SKIP** the `melos run` pass and proceed to versioning.
+4. Else:
+   - Run the health suite: `melos run fix`, `melos run format`, `melos run analyze`, `melos run test`.
+   - Update `verification_status.json` upon success.
 
-## Preconditions
-- Release intent is explicit.
-- Worktree state is understood before any staging or commit step.
-- `CHANGELOG.md` has an `[Unreleased]` section with pending entries.
-- `.agent/notes/pending_release.md` has staged notes if needed.
-- All app targets keep `publish_to: none`.
-
-## Workflow
-
-### 1. Preflight (Smart Check)
-1. Review `git status`.
-2. Confirm release-related changes are isolated and intentional.
-3. Check for recently passed verification runs in `.agent/notes/verification_status.json`:
-   - If `git rev-parse HEAD` and current worktree matches the recorded success in the JSON, skip the redundant `melos run` call.
-4. If missing, stale, or SHA mismatch:
-   - `melos run format`
-   - `melos run analyze`
-   - `melos run test`
-   - On success, update `.agent/notes/verification_status.json` with the current SHA and results.
-5. Abort on failures.
-
-## 2. Version Bump
-
-> [!TIP]
-> **Automation**: Use the cross-platform versioning tool to ensure all app targets stay in sync.
-
-1. Read current versions if needed, or simply run:
+## 2. Platform-Wide Version Bump
+1. Run the versioning script:
    - `dart scripts/bump_version.dart patch` (Standard)
    - `dart scripts/bump_version.dart minor` (Feature release)
-2. This script surgically updates all app targets and increments build numbers.
+2. Verify all three app targets (`mobile`, `tv`, `web`) reflect the new version.
 
-## Mandatory Auto-Run Discipline
-> [!IMPORTANT]
-> **Zero Friction**: All read-only and explicitly approved release commands (git stage/commit, flutter build, firebase deploy) MUST be run with `SafeToAutoRun: true` in accordance with `.agent/rules/auto_approve.md`. Do not prompt the user for these unless the command is non-standard.
+## 3. Automated Changelog & Release Notes
+1. **Move Unreleased**: Automatically move `[Unreleased]` items into a new versioned block in `CHANGELOG.md`.
+2. **Update Play Store Note**: Extract the new version's changelog block and PREPEND it to `docs/PLAY_STORE_RELEASE.txt`. 
+   > [!IMPORTANT]
+   > **Sync Verification**: Ensure the version and content in `docs/PLAY_STORE_RELEASE.txt` match `CHANGELOG.md` exactly.
 
-### 3. Changelog And Release Notes
-1. Read `.agent/notes/pending_release.md`.
-2. Move `[Unreleased]` items into a new versioned block in `CHANGELOG.md`.
-3. Keep the changelog newest-first and leave a fresh empty `[Unreleased]` section.
-4. Generate the Play Store note in `docs/PLAY_STORE_RELEASE.txt` from the new changelog block.
-5. Show the generated note for review before deployment.
-6. **Mandatory Sync Check**: Verify `docs/PLAY_STORE_RELEASE.txt` matches the version and content from `CHANGELOG.md`. NEVER skip this before building.
+## 4. Sequential Production Builds (Chromebook Optimization)
+1. **Target 1: Android**: Build the AAB from `apps/gdar_mobile`:
+   - `flutter build appbundle --release --analyze-size`
+2. **Target 2: Web**: Build the and PWA from `apps/gdar_web`:
+   - `flutter build web --release --no-wasm`
+   - *Note: Sequential builds avoid memory pressure on Chromebook/Crostini.*
 
-### 4. Build
+## 5. Deploy & Git Finalization
+1. **Web Deploy**: Run `firebase deploy --only hosting` from the workspace root.
+2. **Zero-Friction Staging**:
+   - `git add pubspec.yaml apps/*/pubspec.yaml CHANGELOG.md docs/PLAY_STORE_RELEASE.txt`
+   - `git commit -m "release: [new version]"`
+   - `git push`
 
-> [!IMPORTANT]
-> **Build Order**: Always build Android AAB *first* to ensure artifact consistency before deploying the Web bundle.
-
-1. Build Android release artifact from `apps/gdar_mobile`:
-   - `flutter build appbundle --release`
-2. After that completes, build web from `apps/gdar_web`:
-   - `flutter build web`
-
-### 5. Deploy Web
-1. Run `firebase deploy --only hosting` from the workspace root.
-2. Ensure the deployed output matches `apps/gdar_web/build/web`.
-
-### 6. Git And Release Finalization
-1. Review `git status` again.
-2. Stage only intended release files. Do not use blanket staging unless the worktree is already intentionally clean.
-3. Commit with the release version message.
-4. Push only after the release contents are confirmed.
-
-### 7. Wrap-Up
-1. Report build and deploy status.
-2. Remind the user to upload the `apps/gdar_mobile` AAB to Google Play Console.
-3. Confirm `docs/PLAY_STORE_RELEASE.txt` is ready for Play Console release notes.
-4. Optionally run the `session_debrief` workflow afterward.
+## 6. Wrap-Up
+1. Report build and deploy status clearly.
+2. Remind the user to upload `apps/gdar_mobile/build/app/outputs/bundle/release/app-release.aab` to Google Play Console.
+3. Confirm `docs/PLAY_STORE_RELEASE.txt` is ready for the Play Console "Release Notes" section.
 
 ## Hard Rules
 - Never write release history to `docs/RELEASE_NOTES.txt`.

@@ -35,6 +35,7 @@ mixin _AudioProviderState {
   StreamController<DngSnapshot>? _diagnosticsController;
   Timer? _diagnosticsTimer;
   StreamController<HudSnapshot>? _hudSnapshotController;
+  double? _lastKnownGapMs;
 
   bool _isTransitioning = false;
   bool _hasPrequeuedNextShow = false;
