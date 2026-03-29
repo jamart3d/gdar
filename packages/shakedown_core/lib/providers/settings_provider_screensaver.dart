@@ -74,6 +74,7 @@ const String _oilColorSourceKey = 'oil_color_source';
 const String _oilColorMultiplierKey = 'oil_color_multiplier';
 const String _oilWoodstockEveryHourKey = 'oil_woodstock_every_hour';
 const String _oilTvPremiumHighlightKey = 'oil_tv_premium_highlight';
+const String _showScreensaverCountdownKey = 'show_screensaver_countdown';
 
 mixin _SettingsProviderScreensaverFields {
   late bool _useOilScreensaver;
@@ -147,6 +148,7 @@ mixin _SettingsProviderScreensaverFields {
   late bool _oilScaleSineEnabled;
   late double _oilScaleSineFreq;
   late double _oilScaleSineAmp;
+  late bool _showScreensaverCountdown;
 }
 
 mixin _SettingsProviderScreensaverExtension
@@ -227,6 +229,7 @@ mixin _SettingsProviderScreensaverExtension
   bool get oilScaleSineEnabled => _oilScaleSineEnabled;
   double get oilScaleSineFreq => _oilScaleSineFreq;
   double get oilScaleSineAmp => _oilScaleSineAmp;
+  bool get showScreensaverCountdown => _showScreensaverCountdown;
 
   void toggleUseOilScreensaver() => _updatePreference(
     _useOilScreensaverKey,
@@ -575,5 +578,10 @@ mixin _SettingsProviderScreensaverExtension
   void toggleOilTvPremiumHighlight() => _updatePreference(
     _oilTvPremiumHighlightKey,
     _oilTvPremiumHighlight = !_oilTvPremiumHighlight,
+  );
+
+  void toggleShowScreensaverCountdown() => _updatePreference(
+    _showScreensaverCountdownKey,
+    _showScreensaverCountdown = !_showScreensaverCountdown,
   );
 }

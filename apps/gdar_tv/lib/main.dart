@@ -367,7 +367,9 @@ class _GdarTvAppState extends State<GdarTvApp> {
                       child: child ?? const SizedBox.shrink(),
                     ),
                     // Center it to rule out overscan.
-                    if (kDebugMode && settingsProvider.useOilScreensaver)
+                    if (kDebugMode &&
+                        settingsProvider.useOilScreensaver &&
+                        settingsProvider.showScreensaverCountdown)
                       Center(
                         child: _InactivityCountdownOverlay(
                           countdown: _inactivityService.debugCountdown,

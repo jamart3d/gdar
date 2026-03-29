@@ -220,6 +220,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   Future<void> setOilFlatTextPlacement(String placement) async {}
 
   @override
+  bool get showScreensaverCountdown => false;
+  @override
+  void toggleShowScreensaverCountdown() {}
+
+  @override
   double get oilBannerResolution => 2.0;
   @override
   Future<void> setOilBannerResolution(double value) async {}

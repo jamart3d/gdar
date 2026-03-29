@@ -1,3 +1,10 @@
+What's new in v1.3.36+246
+- TV UI: Implemented 'showScreensaverCountdown' setting to hide the debug inactivity timer by default on Google TV hardware.
+- Maintenance: Updated mock implementations for robust testing and maintained 100% test pass rate across the monorepo.
+- Versioning: Synchronized build number 246 across all app targets.
+
+---
+
 What's new in v1.3.35+245
 - Maintenance: Completed a fresh monorepo health check and synchronized workspace state.
 - Workflow: Executed the automated shipit release pipeline for v1.3.35, including sequential Android and Web production builds.

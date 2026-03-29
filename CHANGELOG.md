@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.36+246] - 2026-03-29
+
+### Added
+- **TV UI**: Implemented `showScreensaverCountdown` setting to hide the debug inactivity timer by default on Google TV hardware.
+- **Maintenance**: Updated `FakeSettingsProvider` mock implementations to support new screensaver settings and maintained 100% test pass rate (258/258).
+- **Versioning**: Synchronized build number `246` across all app targets.
+
 ## [1.3.35+245] - 2026-03-29
 
 ### Added

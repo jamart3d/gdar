@@ -344,6 +344,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get nonRandom => false;
 
   @override
+  bool get showScreensaverCountdown => false;
+  @override
+  void toggleShowScreensaverCountdown() {}
+
+  @override
   String get devAudioHudSnapshot => '';
   @override
   WebEngineProfile get webEngineProfile => WebEngineProfile.modern;

@@ -783,6 +783,8 @@ mixin _SettingsProviderInitializationExtension
     _oilScaleSineAmp =
         _prefs.getDouble(_oilScaleSineAmpKey) ??
         DefaultSettings.oilScaleSineAmp;
+    _showScreensaverCountdown =
+        _prefs.getBool(_showScreensaverCountdownKey) ?? false;
 
     if (isTv) {
       _oilScreensaverMode = TvDefaults.oilScreensaverMode;
