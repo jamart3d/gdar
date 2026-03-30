@@ -1,6 +1,8 @@
 ---
+trigger: always_on
 description: How to detect the current dev machine (Windows 10 vs Chromebook) and set concurrency limits for build and test commands.
 ---
+
 # Platform Detection
 
 Use this rule at the start of any workflow that runs builds, tests, or deployments.

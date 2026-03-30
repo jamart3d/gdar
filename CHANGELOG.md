@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.41+251] - 2026-03-30
+
+### Fixed
+- **Web / Fruit**: Restored the RANDOM dice animation by stopping `playSource()` from clearing `isChoosingRandomShow` too early, ensuring the Fruit tab dice roll remains visible through the animation window.
+- **Web / Fruit**: Fixed the `LG` chip in the Audio HUD to persist the last measured transition gap during track selection, preventing UI blanking before new samples arrive.
+
 ## [1.3.40+250] - 2026-03-30
 
 ### Changed

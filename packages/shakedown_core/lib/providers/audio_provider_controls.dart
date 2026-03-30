@@ -128,7 +128,6 @@ mixin _AudioProviderControls on ChangeNotifier, _AudioProviderState {
 
   void seekToTrack(int localIndex) {
     if (_currentSource == null) return;
-    _lastKnownGapMs = null;
 
     final playerState = _audioPlayer.processingState;
     final isStuck =

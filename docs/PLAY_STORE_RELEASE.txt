@@ -1,3 +1,9 @@
+What's new in v1.3.41+251
+- fix(web): restored RANDOM dice animation in Fruit theme
+- fix(web): improved transition gap reporting in Fruit Audio HUD
+
+---
+
 What's new in v1.3.40+250
 - refactor(tv): extracted screensaver audio builder slice
 - refactor(ui): split playback screen into focused part files
@@ -178,7 +184,7 @@ What's new in v1.3.12+222
 ---
 
 What's new in v1.3.11+221
-- TV UI: Refined visual highlightsÃ¢â‚¬â€ now ONLY the active cursor has the rainbow RGB border for maximum clarity.
+- TV UI: Refined visual highlights—now ONLY the active cursor has the rainbow RGB border for maximum clarity.
 - TV UI: Added focus memory to the track list; it now remembers your last selected item when returning to the library.
 - Web UI: Added a "Crossfade Play/Pause" setting for smooth audio transitions on the Fruit theme.
 - Data: Conducted a major cleanup of the Grateful Dead song structural hints, removing JGB and non-GD side projects for accuracy.
