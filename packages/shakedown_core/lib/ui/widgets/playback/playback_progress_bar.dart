@@ -20,6 +20,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
   late final Animation<double> _thumbRadiusAnimation;
   bool _isInteracting = false;
   bool _pulseReverse = false;
+  bool _sweepToggle = false;
 
   static const int _timeRoleElapsed = 0;
   static const int _timeRoleTotal = 1;
@@ -65,8 +66,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final isSimple = settingsProvider.performanceMode;
-    final bool glassOn =
-        settingsProvider.fruitEnableLiquidGlass;
+    final bool glassOn = settingsProvider.fruitEnableLiquidGlass;
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     // Check for True Black mode
@@ -141,7 +141,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                   height: 12 * scaleFactor,
                                   decoration: BoxDecoration(
                                     color: isTrueBlackMode
-                                        ? Colors.white12
+                                        ? const Color(0x1FFFFFFF)
                                         : colorScheme.onSurface.withValues(
                                             alpha: 0.2,
                                           ),
@@ -151,7 +151,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                   ),
                                 ),
                                 // Shimmer / pulse across full track
-                                if (isBuffering && !isSimple)
+                                if (isBuffering)
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(
                                       6 * scaleFactor,
@@ -159,50 +159,59 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                     child: glassOn
                                         // Glass ON: gradient sweep
                                         ? TweenAnimationBuilder<double>(
-                                            tween: Tween(
-                                              begin: -0.3,
-                                              end: 1.3,
-                                            ),
+                                            key: ValueKey(_sweepToggle),
+                                            tween: Tween(begin: -0.3, end: 1.3),
                                             duration: const Duration(
                                               milliseconds: 1800,
                                             ),
-                                            builder: (context, value, child) {
-                                              return Container(
-                                                height: 12 * scaleFactor,
-                                                decoration: BoxDecoration(
-                                                  gradient: LinearGradient(
-                                                    begin:
-                                                        Alignment.centerLeft,
-                                                    end:
-                                                        Alignment.centerRight,
-                                                    stops: [
-                                                      (value - 0.25).clamp(
-                                                        0.0,
-                                                        1.0,
-                                                      ),
-                                                      value.clamp(0.0, 1.0),
-                                                      (value + 0.25).clamp(
-                                                        0.0,
-                                                        1.0,
-                                                      ),
-                                                    ],
-                                                    colors: [
-                                                      Colors.transparent,
-                                                      colorScheme.primary
-                                                          .withValues(
-                                                            alpha: 0.32,
+                                            builder:
+                                                (context, sweepValue, child) {
+                                                  return Container(
+                                                    height: 12 * scaleFactor,
+                                                    decoration: BoxDecoration(
+                                                      gradient: LinearGradient(
+                                                        begin: Alignment
+                                                            .centerLeft,
+                                                        end: Alignment
+                                                            .centerRight,
+                                                        stops: [
+                                                          (sweepValue - 0.2)
+                                                              .clamp(
+                                                                0.0,
+                                                                0.998,
+                                                              ),
+                                                          sweepValue.clamp(
+                                                            0.001,
+                                                            0.999,
                                                           ),
-                                                      Colors.transparent,
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
-                                            },
+                                                          (sweepValue + 0.2)
+                                                              .clamp(
+                                                                0.002,
+                                                                1.0,
+                                                              ),
+                                                        ],
+                                                        colors: [
+                                                          const Color(
+                                                            0x00000000,
+                                                          ),
+                                                          colorScheme.primary
+                                                              .withValues(
+                                                                alpha: 0.32,
+                                                              ),
+                                                          const Color(
+                                                            0x00000000,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
                                             onEnd: () {
                                               if (isBuffering &&
                                                   context.mounted) {
-                                                (context as Element)
-                                                    .markNeedsBuild();
+                                                setState(() {
+                                                  _sweepToggle = !_sweepToggle;
+                                                });
                                               }
                                             },
                                           )
@@ -210,14 +219,8 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                         : TweenAnimationBuilder<double>(
                                             key: ValueKey(_pulseReverse),
                                             tween: _pulseReverse
-                                                ? Tween(
-                                                    begin: 0.22,
-                                                    end: 0.06,
-                                                  )
-                                                : Tween(
-                                                    begin: 0.06,
-                                                    end: 0.22,
-                                                  ),
+                                                ? Tween(begin: 0.22, end: 0.06)
+                                                : Tween(begin: 0.06, end: 0.22),
                                             duration: const Duration(
                                               milliseconds: 900,
                                             ),
@@ -227,9 +230,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                                 height: 12 * scaleFactor,
                                                 decoration: BoxDecoration(
                                                   color: colorScheme.primary
-                                                      .withValues(
-                                                        alpha: value,
-                                                      ),
+                                                      .withValues(alpha: value),
                                                   borderRadius:
                                                       BorderRadius.circular(
                                                         6 * scaleFactor,
@@ -240,8 +241,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                             onEnd: () {
                                               if (isBuffering &&
                                                   context.mounted) {
-                                                _pulseReverse =
-                                                    !_pulseReverse;
+                                                _pulseReverse = !_pulseReverse;
                                                 (context as Element)
                                                     .markNeedsBuild();
                                               }
@@ -257,7 +257,9 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                       height: 12 * scaleFactor,
                                       child: LinearProgressIndicator(
                                         value: null,
-                                        backgroundColor: Colors.transparent,
+                                        backgroundColor: const Color(
+                                          0x00000000,
+                                        ),
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
                                               colorScheme.tertiary.withValues(
@@ -321,8 +323,12 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                         overlayShape: RoundSliderOverlayShape(
                                           overlayRadius: 22 * scaleFactor,
                                         ),
-                                        activeTrackColor: Colors.transparent,
-                                        inactiveTrackColor: Colors.transparent,
+                                        activeTrackColor: const Color(
+                                          0x00000000,
+                                        ),
+                                        inactiveTrackColor: const Color(
+                                          0x00000000,
+                                        ),
                                         thumbColor: colorScheme.primary,
                                         overlayColor: colorScheme.primary
                                             .withValues(alpha: 0.2),

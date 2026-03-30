@@ -176,6 +176,18 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
 
 class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
+  bool get hideTabText => super.noSuchMethod(
+    Invocation.getter(#hideTabText),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
+  @override
+  bool get fruitEnableLiquidGlass => super.noSuchMethod(
+    Invocation.getter(#fruitEnableLiquidGlass),
+    returnValue: false,
+    returnValueForMissingStub: false,
+  );
+  @override
   String get appFont => super.noSuchMethod(
     Invocation.getter(#appFont),
     returnValue: 'default',

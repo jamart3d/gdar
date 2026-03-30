@@ -10,12 +10,13 @@ Use this rule at the start of any workflow that runs builds, tests, or deploymen
 Run the following and inspect the output:
 
 ```bash
-uname -s 2>/dev/null || echo "Windows_NT"
+uname -a 2>/dev/null || echo "Windows_NT"
 ```
 
 | Output | Machine | Shell |
 |---|---|---|
-| `Linux` | Chromebook (Crostini) | Bash |
+| Contains `penguin` or `cros` | Chromebook (Crostini) | Bash |
+| `Linux` (Standard) | Standard Linux Dev Machine | Bash |
 | `Windows_NT` (or command not found) | Windows 10 dev machine | PowerShell / cmd |
 
 On Windows you can also confirm with `echo $env:OS` in PowerShell — it returns `Windows_NT`.
@@ -27,6 +28,7 @@ On Windows you can also confirm with `echo $env:OS` in PowerShell — it returns
 | Machine | Expected value | Fallback if unset |
 |---|---|---|
 | Windows 10 (16-core) | `8` | `4` |
+| Standard Linux | `8` | `4` |
 | Chromebook (Crostini) | `2` | `1` |
 
 Read it with:
@@ -39,7 +41,7 @@ If unset, use the fallback for the detected OS.
 
 ## 3. Per-Platform Constraints
 
-| Capability | Windows 10 | Chromebook |
+| Capability | Windows 10 / Standard Linux | Chromebook |
 |---|---|---|
 | `flutter build appbundle` | YES | NO — OOM risk |
 | `flutter build web` | YES | NO — OOM risk |
@@ -55,11 +57,11 @@ If unset, use the fallback for the detected OS.
 
 ```
 Detect OS
-├── Linux (Chromebook)
+├── Linux (Chromebook - penguin/cros)
 │   ├── Run: fix, format, analyze, test (melos)
 │   └── STOP — do not attempt flutter build or firebase deploy
-│       Notify user: "Build/deploy steps must run on Windows."
-└── Windows 10
+│       Notify user: "Build/deploy steps must run on Windows/Standard Linux."
+└── Windows 10 / Standard Linux
     ├── Run: fix, format, analyze, test (melos)
     └── Run: flutter build (sequential) → firebase deploy → git finalization
 ```

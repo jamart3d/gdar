@@ -41,7 +41,8 @@ Future<void> main() async {
   }
 
   logger.i(
-      'Scanning ${changedFiles.length} pending file(s) for styling constraints...');
+    'Scanning ${changedFiles.length} pending file(s) for styling constraints...',
+  );
 
   int violations = 0;
 
@@ -56,30 +57,38 @@ Future<void> main() async {
     final lines = await file.readAsLines();
 
     for (int i = 0; i < lines.length; i++) {
-        final line = lines[i];
+      final line = lines[i];
 
-        // Target 1: withOpacity() - Modern syntax requirement
-        if (line.contains('withOpacity(')) {
-            logger.w('Legacy \'withOpacity()\' found in $filePath:${i + 1}\n'
-                '   -> Please use the modern \'.withValues()\' method.');
-            violations++;
-        }
+      // Target 1: withOpacity() - Modern syntax requirement
+      if (line.contains('withOpacity(')) {
+        logger.w(
+          'Legacy \'withOpacity()\' found in $filePath:${i + 1}\n'
+          '   -> Please use the modern \'.withValues()\' method.',
+        );
+        violations++;
+      }
 
-        // Target 2: Colors.* - Breaks multi-platform guidelines
-        if (line.contains('Colors.')) {
-            logger.w('Hardcoded \'Colors.\' found in $filePath:${i + 1}\n'
-                '   -> Please use semantic theme variables or styles to support Dark Mode / Fruit.');
-            violations++;
-        }
+      // Target 2: Colors.* - Breaks multi-platform guidelines
+      if (line.contains('Colors.')) {
+        logger.w(
+          'Hardcoded \'Colors.\' found in $filePath:${i + 1}\n'
+          '   -> Please use semantic theme variables or styles to support Dark Mode / Fruit.',
+        );
+        violations++;
+      }
     }
   }
 
   if (violations > 0) {
-    logger.e('Micro-Scanner failed! Found $violations violation(s).\n'
-        '   Please fix the listed items to pass the checkup workflow.');
+    logger.e(
+      'Micro-Scanner failed! Found $violations violation(s).\n'
+      '   Please fix the listed items to pass the checkup workflow.',
+    );
     exit(1);
   }
 
-  logger.i('Micro-Scanner passed. No styling violations found in pending files.');
+  logger.i(
+    'Micro-Scanner passed. No styling violations found in pending files.',
+  );
   exit(0);
 }

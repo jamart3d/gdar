@@ -59,6 +59,9 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   void resetFruitFirstTimeSettings() {}
 
   @override
+  bool get hideTabText => false;
+
+  @override
   bool get highlightCurrentShowCard => false;
   @override
   bool get showDayOfWeek => true;

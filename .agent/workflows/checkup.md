@@ -22,12 +22,12 @@ description: Rapid health check with automated fixes for linting, formatting, an
 ## 0. Platform Detection (MUST RUN FIRST)
 1. Run this command immediately:
    ```bash
-   uname -s 2>/dev/null || echo "Windows_NT"
+   uname -a 2>/dev/null || echo "Windows_NT"
    ```
-2. **If output is `Linux` (Chromebook):**
+2. **If output contains `penguin` or `cros` (Chromebook):**
    - Notify the user: "Chromebook detected — skipping Visual/Design Check and auto-commit."
    - Run steps 0.5, 1, and 2 (process hygiene + smart skip + health suite) then **stop**. Do not run step 3 or commit.
-3. **If output is `Windows_NT` (Windows 10):**
+3. **If output is `Linux` (Standard) or `Windows_NT`:**
    - Resolve `$MELOS_CAN_HANDLE` per `.agent/rules/platform_detection.md`.
    - Continue all steps end-to-end.
 

@@ -11,6 +11,40 @@
     const isBrowser = typeof window !== 'undefined';
     // Memory-safe prefetch limit for long shows
     const PRELOAD_NUM_TRACKS = 2;
+    const _blockedArchiveIdentifiers = new Set();
+
+    function _archiveIdentifierForUrl(trackUrl) {
+        try {
+            if (!trackUrl) return null;
+            const baseHref = (typeof window !== 'undefined' && window.location && window.location.href)
+                ? window.location.href
+                : 'http://localhost/';
+            const url = new URL(trackUrl, baseHref);
+            const host = (url.hostname || '').toLowerCase();
+            if (!(host === 'archive.org' || host.endsWith('.archive.org'))) {
+                return null;
+            }
+            const parts = url.pathname.split('/').filter(Boolean);
+            const downloadIndex = parts.indexOf('download');
+            if (downloadIndex !== -1 && parts.length > downloadIndex + 1) {
+                return parts[downloadIndex + 1];
+            }
+            const itemsIndex = parts.indexOf('items');
+            if (itemsIndex !== -1 && parts.length > itemsIndex + 1) {
+                return parts[itemsIndex + 1];
+            }
+        } catch (_) { }
+        return null;
+    }
+
+    function _logArchiveWebAudioSkip(trackUrl) {
+        const identifier = _archiveIdentifierForUrl(trackUrl);
+        if (!identifier || _blockedArchiveIdentifiers.has(identifier)) return;
+        _blockedArchiveIdentifiers.add(identifier);
+        _log.log(
+            `[html5] Skipping Web Audio decode for archive source ${identifier}; continuing with HTML5 streaming.`,
+        );
+    }
 
     // ─── Relisten Core (gapless.cjs) ──────────────────────────────────────────
     // Ported from: https://github.com/RelistenNet/relisten-web/blob/master/public/gapless.cjs
@@ -59,8 +93,12 @@
             this.audio.preload = 'none';
             this.audio.src = trackUrl;
             this.audio.crossOrigin = 'anonymous';
+            this.webAudioFetchBlocked = !!_archiveIdentifierForUrl(trackUrl);
 
-            if (queue.state.webAudioIsDisabled) return;
+            if (queue.state.webAudioIsDisabled || this.webAudioFetchBlocked) {
+                if (this.webAudioFetchBlocked) _logArchiveWebAudioSkip(trackUrl);
+                return;
+            }
 
             this.audioContext = _ensureAudioContext(false);
             if (!this.audioContext) return;
@@ -77,6 +115,11 @@
         }
 
         loadHEAD(cb) {
+            if (this.webAudioFetchBlocked || !this.audioContext) {
+                this.loadedHEAD = true;
+                cb && cb();
+                return;
+            }
             if (this.loadedHEAD) return cb();
             fetch(this.trackUrl, { method: 'HEAD' }).then((res) => {
                 if (res.redirected) this.trackUrl = res.url;
@@ -86,6 +129,10 @@
         }
 
         loadBuffer(cb) {
+            if (this.webAudioFetchBlocked || !this.audioContext) {
+                cb && cb();
+                return;
+            }
             if (this.webAudioLoadingState !== GaplessPlaybackLoadingState.NONE) return;
             this.webAudioLoadingState = GaplessPlaybackLoadingState.LOADING;
             fetch(this.trackUrl)
@@ -120,6 +167,13 @@
         switchToWebAudio(forcePause) {
             if (!this.isActiveTrack && !forcePause) return;
             if (this.currentTime !== 0 && isNaN(this.audio.duration)) return;
+
+            // Preserve the automatic boundary gap when the next track promotes
+            // directly into Web Audio instead of starting as an HTML5 stream.
+            if (!forcePause && _trackEndedAtMs > 0) {
+                _lastGapMs = performance.now() - _trackEndedAtMs;
+                _trackEndedAtMs = 0;
+            }
 
             if (forcePause) {
                 this.bufferSourceNode.playbackRate.value = 0;
@@ -199,7 +253,8 @@
                         if (err.name === 'NotAllowedError') this.queue.onPlayBlocked();
                     });
                 }
-                if (!this.queue.state.webAudioIsDisabled) {
+                if (!this.queue.state.webAudioIsDisabled &&
+                    !this.webAudioFetchBlocked) {
                     if (this.skipHEAD) this.loadBuffer();
                     else this.loadHEAD(() => this.loadBuffer());
                 }
@@ -214,7 +269,9 @@
         preload(HTML5) {
             if (HTML5 && this.audio.preload !== 'auto') {
                 this.audio.preload = 'auto';
-            } else if (!this.audioBuffer && !this.queue.state.webAudioIsDisabled) {
+            } else if (!this.audioBuffer &&
+                !this.queue.state.webAudioIsDisabled &&
+                !this.webAudioFetchBlocked) {
                 if (this.skipHEAD) this.loadBuffer();
                 else this.loadHEAD(() => this.loadBuffer());
             }

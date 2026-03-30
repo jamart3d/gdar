@@ -41,6 +41,7 @@ Read-only and diagnostic commands MUST always be executed with `SafeToAutoRun: t
 To conserve context window and compute quota:
 - Do not perform broad searches, index the entire `lib/` directory, or read files not strictly necessary.
 - **Workspace Exceptions:** Maintenance/health workflows (`/checkup`, `/audit`, `/verify`, `/size_guard`, `/image_to_code`) are explicitly authorized to perform broad searches and root-level indexing.
+- **Discovery Firewall (Hard Constraint):** Even during Workspace Exceptions, any directory named `archive`, `temp`, or `backups` MUST be skipped by discovery tools (`grep`, `dir /s`, etc.) unless the user has explicitly requested access to a file within them.
 - **Optimization:** Always call `view_file_outline` before reading a file. Use specific line ranges (`StartLine`/`EndLine`).
 - **Surgical Edits:** When proposing a code change, only output the specific function or widget being modified.
 - **Fast Mode Default:** Provide direct, immediate answers without long-winded exploratory thinking.

@@ -80,7 +80,13 @@
     // Safe Global Mocks for Node/Browser
     const g = typeof window !== 'undefined' ? window : global;
 
+    g.__fetchCalls = [];
+    g.__resetFetchCalls = function () {
+        g.__fetchCalls = [];
+    };
+
     g.fetch = function (url, options) {
+        g.__fetchCalls.push({ url, options: options || null });
         console.log('[MOCK_LOG] fetch called: ', url);
         return Promise.resolve({
             ok: true,

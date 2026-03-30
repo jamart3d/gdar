@@ -96,7 +96,6 @@ class _GdarTvAppState extends State<GdarTvApp> {
   late final _TvNavigationObserver _navigationObserver;
   bool _isScreensaverActive = false;
   String? _currentRouteName;
-  final ValueNotifier<String?> _launchError = ValueNotifier(null);
 
   void _setScreensaverActive(bool active) {
     if (!mounted) {
@@ -151,7 +150,6 @@ class _GdarTvAppState extends State<GdarTvApp> {
   @override
   void dispose() {
     _inactivityService.dispose();
-    _launchError.dispose();
     _linkSubscription?.cancel();
     _deepLinkService?.dispose();
     super.dispose();
@@ -162,26 +160,22 @@ class _GdarTvAppState extends State<GdarTvApp> {
     required String source,
   }) async {
     if (!mounted) {
-      _launchError.value = 'widget not mounted';
       return;
     }
 
     // Guard: don't double-launch if screensaver is already active.
     if (_isScreensaverActive) {
-      _launchError.value = 'already active';
       return;
     }
 
     final navigator = _navigatorKey.currentState;
     if (navigator == null) {
-      _launchError.value = 'navigator null';
       return;
     }
 
     logger.i('Launching screensaver from $source');
     _inactivityService.stop();
     _setScreensaverActive(true);
-    _launchError.value = null;
     try {
       // Yield to the event loop before pushing so we don't hit the navigator
       // lock assertion when the inactivity timer fires during a route animation.
@@ -191,10 +185,8 @@ class _GdarTvAppState extends State<GdarTvApp> {
         ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
       );
     } on Exception catch (e) {
-      _launchError.value = e.toString().replaceFirst('Exception: ', '');
       logger.e('Screensaver launch failed', error: e);
     } catch (e) {
-      _launchError.value = e.runtimeType.toString();
       logger.e('Screensaver launch failed', error: e);
     } finally {
       _setScreensaverActive(false);
@@ -375,22 +367,9 @@ class _GdarTvAppState extends State<GdarTvApp> {
               builder: (context, child) => InactivityDetector(
                 inactivityService: _inactivityService,
                 isScreensaverActive: _isScreensaverActive,
-                child: Stack(
-                  children: [
-                    ColoredBox(
-                      color: finalTheme.scaffoldBackgroundColor,
-                      child: child ?? const SizedBox.shrink(),
-                    ),
-                    // Center it to rule out overscan.
-                    if (settingsProvider.useOilScreensaver &&
-                        settingsProvider.showScreensaverCountdown)
-                      Center(
-                        child: _InactivityCountdownOverlay(
-                          countdown: _inactivityService.debugCountdown,
-                          launchError: _launchError,
-                        ),
-                      ),
-                  ],
+                child: ColoredBox(
+                  color: finalTheme.scaffoldBackgroundColor,
+                  child: child ?? const SizedBox.shrink(),
                 ),
               ),
               home: const SplashScreen(),
@@ -431,68 +410,5 @@ class _TvNavigationObserver extends NavigatorObserver {
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didRemove(route, previousRoute);
     _notify(previousRoute);
-  }
-}
-
-/// Small semi-transparent countdown overlay in the top-left corner.
-/// Shows the inactivity timer state so you can confirm it's alive on hardware
-/// without needing logcat. Turns red with a specific message if launch fails.
-class _InactivityCountdownOverlay extends StatelessWidget {
-  const _InactivityCountdownOverlay({
-    required this.countdown,
-    required this.launchError,
-  });
-
-  final ValueNotifier<String> countdown;
-  final ValueNotifier<String?> launchError;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: ValueListenableBuilder<String?>(
-        valueListenable: launchError,
-        builder: (context, error, _) {
-          if (error != null) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0xCC990000),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'SS ERR: $error',
-                style: const TextStyle(
-                  color: Color(0xFFFFAAAA),
-                  fontSize: 10,
-                  fontFamily: 'monospace',
-                ),
-              ),
-            );
-          }
-          return ValueListenableBuilder<String>(
-            valueListenable: countdown,
-            builder: (context, value, _) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xCCFF0000), // Bright red
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFFFFFFF), width: 2),
-                ),
-                child: Text(
-                  'SS: $value (TV: ${ThemeProvider.getInstance?.isTv})',
-                  style: const TextStyle(
-                    color: Color(0xFFFFFFFF),
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'monospace',
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
   }
 }

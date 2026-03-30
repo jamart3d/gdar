@@ -68,7 +68,12 @@ class FruitNowPlayingCard extends StatelessWidget {
         child: Row(
           children: [
             if (!showCompactHud) ...[
-              _buildCompactPlayButton(context, audioProvider, colorScheme),
+              _buildCompactPlayButton(
+                context,
+                audioProvider,
+                colorScheme,
+                enableLiquidGlass,
+              ),
               SizedBox(width: 16 * scaleFactor),
             ],
             // Info & Progress
@@ -143,18 +148,22 @@ class FruitNowPlayingCard extends StatelessWidget {
                                 builder: (context, durationSnapshot) {
                                   final buffered =
                                       bufferedSnapshot.data ?? Duration.zero;
+                                  final int positionMs =
+                                      (positionSnapshot.data ?? Duration.zero)
+                                          .inMilliseconds;
+                                  final int durationMs =
+                                      (durationSnapshot.data ?? Duration.zero)
+                                          .inMilliseconds;
+                                  final int bufferedMs =
+                                      buffered.inMilliseconds;
                                   final progressBar = _buildCompactProgressBar(
                                     colorScheme,
                                     isLoading: isLoading,
                                     isBuffering: isBuffering,
-                                    bufferedPositionMs: buffered.inMilliseconds,
-                                    positionMs:
-                                        (positionSnapshot.data ?? Duration.zero)
-                                            .inMilliseconds,
-                                    durationMs:
-                                        (durationSnapshot.data ?? Duration.zero)
-                                            .inMilliseconds,
-                                    isSimple: isSimple,
+                                    bufferedPositionMs: bufferedMs,
+                                    positionMs: positionMs,
+                                    durationMs: durationMs,
+                                    glassEnabled: enableLiquidGlass,
                                   );
                                   if (!showCompactHud) return progressBar;
 
@@ -168,6 +177,7 @@ class FruitNowPlayingCard extends StatelessWidget {
                                             context,
                                             audioProvider,
                                             colorScheme,
+                                            enableLiquidGlass,
                                           ),
                                           SizedBox(width: 6 * scaleFactor),
                                           Expanded(child: progressBar),
@@ -238,6 +248,7 @@ class FruitNowPlayingCard extends StatelessWidget {
     BuildContext context,
     AudioProvider audioProvider,
     ColorScheme colorScheme,
+    bool glassEnabled,
   ) {
     void activate() {
       AppHaptics.lightImpact(context.read<DeviceService>());
@@ -255,64 +266,95 @@ class FruitNowPlayingCard extends StatelessWidget {
         final playerState =
             snapshot.data ?? audioProvider.audioPlayer.playerState;
         final processingState = playerState.processingState;
-        final bool isPending =
-            processingState == ProcessingState.loading ||
-            processingState == ProcessingState.buffering;
         final bool isPlaying = playerState.playing;
+        return StreamBuilder<Duration>(
+          stream: audioProvider.bufferedPositionStream,
+          initialData: audioProvider.audioPlayer.bufferedPosition,
+          builder: (context, bufferedSnapshot) {
+            return StreamBuilder<Duration>(
+              stream: audioProvider.positionStream,
+              initialData: audioProvider.audioPlayer.position,
+              builder: (context, positionSnapshot) {
+                return StreamBuilder<Duration?>(
+                  stream: audioProvider.durationStream,
+                  initialData: audioProvider.audioPlayer.duration,
+                  builder: (context, durationSnapshot) {
+                    final bool showPendingCue = _shouldShowPendingCue(
+                      isLoading: processingState == ProcessingState.loading,
+                      isBuffering: processingState == ProcessingState.buffering,
+                      bufferedPositionMs:
+                          (bufferedSnapshot.data ?? Duration.zero)
+                              .inMilliseconds,
+                      positionMs: (positionSnapshot.data ?? Duration.zero)
+                          .inMilliseconds,
+                      durationMs: (durationSnapshot.data ?? Duration.zero)
+                          .inMilliseconds,
+                    );
 
-        return Semantics(
-          button: true,
-          toggled: isPlaying,
-          label: isPending
-              ? 'Loading playback'
-              : (isPlaying ? 'Pause playback' : 'Resume playback'),
-          child: ExcludeSemantics(
-            child: FocusableActionDetector(
-              enabled: true,
-              mouseCursor: SystemMouseCursors.click,
-              shortcuts: const <ShortcutActivator, Intent>{
-                SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
-                SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
-              },
-              actions: <Type, Action<Intent>>{
-                ActivateIntent: CallbackAction<ActivateIntent>(
-                  onInvoke: (_) {
-                    activate();
-                    return null;
-                  },
-                ),
-              },
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: activate,
-                child: Container(
-                  width: 36 * scaleFactor,
-                  height: 36 * scaleFactor,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary,
-                    shape: BoxShape.circle,
-                    boxShadow: isWasmSafeMode()
-                        ? null
-                        : [
-                            BoxShadow(
-                              color: colorScheme.primary.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+                    return Semantics(
+                      button: true,
+                      toggled: isPlaying,
+                      label: showPendingCue
+                          ? 'Loading playback'
+                          : (isPlaying ? 'Pause playback' : 'Resume playback'),
+                      child: ExcludeSemantics(
+                        child: FocusableActionDetector(
+                          enabled: true,
+                          mouseCursor: SystemMouseCursors.click,
+                          shortcuts: const <ShortcutActivator, Intent>{
+                            SingleActivator(LogicalKeyboardKey.enter):
+                                ActivateIntent(),
+                            SingleActivator(LogicalKeyboardKey.space):
+                                ActivateIntent(),
+                          },
+                          actions: <Type, Action<Intent>>{
+                            ActivateIntent: CallbackAction<ActivateIntent>(
+                              onInvoke: (_) {
+                                activate();
+                                return null;
+                              },
                             ),
-                          ],
-                  ),
-                  child: Center(
-                    child: _LiquidTransportGlyph(
-                      isPlaying: isPlaying,
-                      isPending: isPending,
-                      color: colorScheme.onPrimary,
-                      size: 18 * scaleFactor,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+                          },
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: activate,
+                            child: Container(
+                              width: 36 * scaleFactor,
+                              height: 36 * scaleFactor,
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary,
+                                shape: BoxShape.circle,
+                                boxShadow: isWasmSafeMode()
+                                    ? null
+                                    : [
+                                        BoxShadow(
+                                          color: colorScheme.primary.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                              ),
+                              child: Center(
+                                child: _LiquidTransportGlyph(
+                                  isPlaying: isPlaying,
+                                  isPending: showPendingCue,
+                                  glassEnabled: glassEnabled,
+                                  color: colorScheme.onPrimary,
+                                  size: 18 * scaleFactor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          },
         );
       },
     );
@@ -401,7 +443,7 @@ class FruitNowPlayingCard extends StatelessWidget {
     required int bufferedPositionMs,
     required int positionMs,
     required int durationMs,
-    required bool isSimple,
+    required bool glassEnabled,
   }) {
     final duration = durationMs;
     final position = positionMs;
@@ -411,8 +453,13 @@ class FruitNowPlayingCard extends StatelessWidget {
     final double bufferedProgress = (duration > 0)
         ? (bufferedPositionMs / duration).clamp(0.0, 1.0)
         : 0.0;
-    final bool hasKnownDuration = duration > 0;
-    final bool showLoadingPulse = (isLoading || isBuffering) && !isSimple;
+    final bool showPendingState = _shouldShowPendingCue(
+      isLoading: isLoading,
+      isBuffering: isBuffering,
+      bufferedPositionMs: bufferedPositionMs,
+      positionMs: positionMs,
+      durationMs: durationMs,
+    );
 
     return Stack(
       children: [
@@ -424,7 +471,7 @@ class FruitNowPlayingCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(4 * scaleFactor),
           ),
         ),
-        if (!isLoading)
+        if (bufferedProgress > 0)
           FractionallySizedBox(
             widthFactor: bufferedProgress,
             child: Container(
@@ -435,24 +482,13 @@ class FruitNowPlayingCard extends StatelessWidget {
               ),
             ),
           ),
-        if (isLoading && !hasKnownDuration)
-          SizedBox(
-            height: 3.0 * scaleFactor,
-            width: double.infinity,
-            child: isSimple
-                ? Container(
-                    decoration: BoxDecoration(
-                      color: colorScheme.tertiary.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(4 * scaleFactor),
-                    ),
-                  )
-                : LinearProgressIndicator(
-                    value: null,
-                    backgroundColor: Colors.transparent,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      colorScheme.tertiary.withValues(alpha: 0.5),
-                    ),
-                  ),
+        if (showPendingState)
+          _FruitPendingProgressOverlay(
+            key: const Key('fruit_pending_progress_overlay'),
+            colorScheme: colorScheme,
+            scaleFactor: scaleFactor,
+            glassEnabled: glassEnabled,
+            isLoading: isLoading,
           ),
         FractionallySizedBox(
           widthFactor: progress,
@@ -464,19 +500,205 @@ class FruitNowPlayingCard extends StatelessWidget {
             ),
           ),
         ),
-        if (showLoadingPulse)
-          Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              width: 6 * scaleFactor,
-              height: 6 * scaleFactor,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isLoading ? colorScheme.primary : colorScheme.tertiary,
-              ),
-            ),
-          ),
       ],
+    );
+  }
+
+  bool _shouldShowPendingCue({
+    required bool isLoading,
+    required bool isBuffering,
+    required int bufferedPositionMs,
+    required int positionMs,
+    required int durationMs,
+  }) {
+    final int remainingMs = durationMs - positionMs;
+    final bool hasPlayableTail = durationMs <= 0 || remainingMs > 900;
+    final bool hasVisibleBufferHeadroom =
+        bufferedPositionMs > (positionMs + 350);
+    return isLoading ||
+        isBuffering ||
+        (hasPlayableTail && !hasVisibleBufferHeadroom);
+  }
+}
+
+class _FruitPendingProgressOverlay extends StatefulWidget {
+  final ColorScheme colorScheme;
+  final double scaleFactor;
+  final bool glassEnabled;
+  final bool isLoading;
+
+  const _FruitPendingProgressOverlay({
+    super.key,
+    required this.colorScheme,
+    required this.scaleFactor,
+    required this.glassEnabled,
+    required this.isLoading,
+  });
+
+  @override
+  State<_FruitPendingProgressOverlay> createState() =>
+      _FruitPendingProgressOverlayState();
+}
+
+class _FruitPendingProgressOverlayState
+    extends State<_FruitPendingProgressOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1450),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double barHeight = 4.0 * widget.scaleFactor;
+    final BorderRadius borderRadius = BorderRadius.circular(
+      4 * widget.scaleFactor,
+    );
+    final Color sweepColor = widget.isLoading
+        ? widget.colorScheme.primary
+        : widget.colorScheme.tertiary;
+
+    return RepaintBoundary(
+      child: SizedBox(
+        height: barHeight,
+        width: double.infinity,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return AnimatedBuilder(
+              animation: _controller,
+              builder: (context, _) {
+                final double travel = _controller.value;
+                final double pulse = 1.0 - ((travel - 0.5).abs() * 2.0);
+                final double sweepWidth =
+                    (widget.glassEnabled ? 84.0 : 66.0) * widget.scaleFactor;
+                final double sweepLeft =
+                    -sweepWidth +
+                    ((constraints.maxWidth + (sweepWidth * 2.0)) * travel);
+                final double beadLeft =
+                    sweepLeft +
+                    (sweepWidth * (widget.glassEnabled ? 0.76 : 0.72));
+                final double baseAlpha = widget.glassEnabled ? 0.18 : 0.24;
+                final double sweepAlpha = widget.glassEnabled ? 0.76 : 0.92;
+                final double coreAlpha = widget.glassEnabled ? 0.44 : 0.60;
+                final double haloAlpha = widget.glassEnabled ? 0.32 : 0.26;
+
+                return Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: borderRadius,
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Positioned.fill(
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      widget.colorScheme.primary.withValues(
+                                        alpha: baseAlpha,
+                                      ),
+                                      widget.colorScheme.tertiary.withValues(
+                                        alpha: baseAlpha * 0.96,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 0,
+                              bottom: 0,
+                              left: sweepLeft,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      Colors.transparent,
+                                      sweepColor.withValues(alpha: 0.0),
+                                      Colors.white.withValues(alpha: coreAlpha),
+                                      sweepColor.withValues(alpha: sweepAlpha),
+                                      Colors.white.withValues(alpha: coreAlpha),
+                                      sweepColor.withValues(alpha: 0.0),
+                                      Colors.transparent,
+                                    ],
+                                    stops: const [
+                                      0.0,
+                                      0.12,
+                                      0.28,
+                                      0.5,
+                                      0.72,
+                                      0.88,
+                                      1.0,
+                                    ],
+                                  ),
+                                ),
+                                child: SizedBox(
+                                  width: sweepWidth,
+                                  height: barHeight,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: beadLeft,
+                      top: -1.5 * widget.scaleFactor,
+                      child: Transform.scale(
+                        scale: 0.92 + (pulse * 0.24),
+                        child: Container(
+                          width: 10.0 * widget.scaleFactor,
+                          height: 7.0 * widget.scaleFactor,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                              999 * widget.scaleFactor,
+                            ),
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.95),
+                                sweepColor.withValues(alpha: 0.96),
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: sweepColor.withValues(alpha: haloAlpha),
+                                blurRadius: widget.glassEnabled ? 14 : 9,
+                                spreadRadius:
+                                    (widget.glassEnabled ? 1.8 : 1.0) * pulse,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+      ),
     );
   }
 }
@@ -484,12 +706,14 @@ class FruitNowPlayingCard extends StatelessWidget {
 class _LiquidTransportGlyph extends StatefulWidget {
   final bool isPlaying;
   final bool isPending;
+  final bool glassEnabled;
   final Color color;
   final double size;
 
   const _LiquidTransportGlyph({
     required this.isPlaying,
     required this.isPending,
+    required this.glassEnabled,
     required this.color,
     required this.size,
   });
@@ -555,19 +779,51 @@ class _LiquidTransportGlyphState extends State<_LiquidTransportGlyph>
               animation: _shimmerController,
               builder: (context, _) {
                 final t = _shimmerController.value;
+                final pulse = 1.0 - ((t - 0.5).abs() * 2.0);
                 final shimmerX = ((t * 2.0) - 1.0) * (widget.size * 0.6);
                 return SizedBox(
+                  key: const Key('fruit_pending_transport_halo'),
                   width: widget.size,
                   height: widget.size,
                   child: Stack(
+                    clipBehavior: Clip.none,
                     alignment: Alignment.center,
                     children: [
+                      Transform.scale(
+                        scale: 0.92 + (pulse * 0.18),
+                        child: Container(
+                          width: widget.size * 1.04,
+                          height: widget.size * 1.04,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                widget.color.withValues(
+                                  alpha: widget.glassEnabled ? 0.26 : 0.20,
+                                ),
+                                widget.color.withValues(alpha: 0.0),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                       Container(
                         width: widget.size * 0.9,
                         height: widget.size * 0.9,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: widget.color.withValues(alpha: 0.14),
+                          color: widget.color.withValues(
+                            alpha: widget.glassEnabled ? 0.18 : 0.14,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: widget.color.withValues(
+                                alpha: widget.glassEnabled ? 0.18 : 0.12,
+                              ),
+                              blurRadius: widget.glassEnabled ? 10 : 6,
+                              spreadRadius: pulse * 0.8,
+                            ),
+                          ],
                         ),
                       ),
                       Container(

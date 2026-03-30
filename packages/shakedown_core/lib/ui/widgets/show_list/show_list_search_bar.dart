@@ -51,7 +51,7 @@ class ShowListSearchBar extends StatelessWidget {
                 border: Border.all(
                   color: hasFocus
                       ? primaryColor.withValues(alpha: 0.5)
-                      : Colors.transparent,
+                      : const Color(0x00000000),
                   width: 1.5,
                 ),
               ),
@@ -80,11 +80,13 @@ class ShowListSearchBar extends StatelessWidget {
                         style: Theme.of(
                           context,
                         ).textTheme.bodyLarge?.copyWith(fontSize: 16),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           hintText: 'Search venue, date, location...',
                           hintStyle: TextStyle(
                             fontSize: 16,
-                            color: Colors.black38,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.38),
                           ),
                           border: InputBorder.none,
                           isDense: true,
@@ -99,10 +101,9 @@ class ShowListSearchBar extends StatelessWidget {
                           size: 18,
                           color: hasFocus
                               ? primaryColor.withValues(alpha: 0.7)
-                              : Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.5),
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.5),
                         ),
                       ),
                   ],

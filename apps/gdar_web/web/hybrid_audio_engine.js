@@ -128,10 +128,22 @@
         return null;
     }
 
-    function _isForegroundPrepBlocked(err) {
-        const message = String(
+    function _errorMessage(err) {
+        return String(
             (err && (err.message || err.toString && err.toString())) || '',
         ).toLowerCase();
+    }
+
+    function _isAbortError(err) {
+        if (!err) return false;
+        return err.name === 'AbortError' || _errorMessage(err).includes('abort');
+    }
+
+    function _isForegroundPrepBlocked(err) {
+        if (err && err.code === 'WA_BLOCKED') {
+            return true;
+        }
+        const message = _errorMessage(err);
         return message.includes('failed to fetch') ||
             message.includes('networkerror') ||
             message.includes('unauthorized') ||
@@ -165,6 +177,21 @@
         return error;
     }
 
+    function _stayOnHtml5AfterForegroundFailure(reason, err) {
+        _trackBoundaryAtMs = 0;
+        _handoffInProgress = false;
+        _instantHandoffPending = false;
+        if (reason) {
+            if (err) {
+                _log.warn(`[hybrid] ${reason}. Staying on HTML5.`, err);
+            } else {
+                _log.log(`[hybrid] ${reason}. Staying on HTML5.`);
+            }
+        }
+        _swapEngine(_bgEngine);
+        _fgEngine.stop();
+    }
+
     function _prepareForegroundTrack(index) {
         const track = _playlist[index];
         if (!track) {
@@ -179,6 +206,38 @@
                 throw _createForegroundBlockedError(track, err);
             }
             throw err;
+        });
+    }
+
+    function _attemptForegroundRestoreFromHtml5(index) {
+        const track = _playlist[index];
+        if (!track) return;
+
+        if (_isForegroundBlocked(track)) {
+            _stayOnHtml5AfterForegroundFailure(
+                'Foreground decode unavailable for this archive source at track boundary',
+            );
+            return;
+        }
+
+        _handoffInProgress = true;
+        _prepareForegroundTrack(index).then(() => {
+            if (!_playing || _currentIndex !== index || _activeEngine !== _bgEngine) {
+                _handoffInProgress = false;
+                return;
+            }
+            _executeForegroundRestore(0);
+        }).catch(err => {
+            if (_isAbortError(err)) {
+                _trackBoundaryAtMs = 0;
+                _handoffInProgress = false;
+                _log.log('[hybrid] Boundary restore prep aborted by seek/index change.');
+                return;
+            }
+            _stayOnHtml5AfterForegroundFailure(
+                'Foreground restore prep failed at track boundary',
+                err,
+            );
         });
     }
 
@@ -358,7 +417,7 @@
                 _trackBoundaryAtMs = performance.now();
                 // We keep _bgEngine as the active engine (reporting 'ready')
                 // and use the restore loop to swap to Web Audio ONLY once it's decoded.
-                _executeForegroundRestore(0);
+                _attemptForegroundRestoreFromHtml5(_currentIndex);
             } else {
                 _log.log('[hybrid] Track Boundary: Staying in Background (HTML5) while tab is hidden.');
             }
@@ -375,6 +434,15 @@
     }
 
     function _forwardError(err, sourceEngine) {
+        if (sourceEngine === _fgEngine &&
+            (_activeEngine !== _fgEngine || _handoffInProgress) &&
+            _isForegroundPrepBlocked(err)) {
+            _stayOnHtml5AfterForegroundFailure(
+                'Suppressing non-fatal foreground Web Audio error during HTML5 playback',
+                err,
+            );
+            return;
+        }
         if (_onError) _onError(err);
     }
 
@@ -1032,9 +1100,6 @@
     window._hybridAudio = api;
 
 })();
-
-
-
 
 
 

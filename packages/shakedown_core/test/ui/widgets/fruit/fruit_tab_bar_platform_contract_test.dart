@@ -37,6 +37,9 @@ class _FakeSettings extends ChangeNotifier implements SettingsProvider {
   bool get fruitDenseList => false;
 
   @override
+  bool get hideTabText => false;
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 

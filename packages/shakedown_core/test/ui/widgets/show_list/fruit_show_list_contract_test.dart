@@ -8,6 +8,7 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/show_list/show_list_app_bar.dart';
 import 'package:shakedown_core/ui/widgets/show_list/show_list_search_bar.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
   final ThemeStyle _themeStyle = ThemeStyle.fruit;
@@ -43,6 +44,9 @@ class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
 }
 
 class _FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
+  @override
+  bool get hideTabText => false;
+
   @override
   bool get fruitEnableLiquidGlass => true;
 
@@ -151,7 +155,7 @@ void main() {
 
     expect(find.byType(SearchBar), findsNothing);
     expect(find.byType(TextField), findsOneWidget);
-    expect(find.byType(FruitActionButton), findsWidgets);
+    expect(find.byIcon(LucideIcons.xCircle), findsOneWidget);
   });
 
   testWidgets('Fruit app bar does not render M3 text/search widgets', (

@@ -225,10 +225,12 @@ class FakeTvScreensaverSettingsProvider extends FakeTvSettingsProvider {
   FakeTvScreensaverSettingsProvider({
     required this.screensaverEnabled,
     required this.inactivityMinutes,
+    this.showCountdown = false,
   });
 
   final bool screensaverEnabled;
   final int inactivityMinutes;
+  final bool showCountdown;
 
   @override
   bool get useOilScreensaver => screensaverEnabled;
@@ -238,6 +240,9 @@ class FakeTvScreensaverSettingsProvider extends FakeTvSettingsProvider {
 
   @override
   bool get oilEnableAudioReactivity => false;
+
+  @override
+  bool get showScreensaverCountdown => showCountdown;
 }
 
 void main() {
@@ -330,6 +335,36 @@ void main() {
       await tester.pumpWidget(const SizedBox());
       await tester.pump(const Duration(seconds: 2));
     });
+
+    testWidgets(
+      'TV app does not render the screensaver countdown overlay on the main screen',
+      (WidgetTester tester) async {
+        await tester.pumpWidget(
+          GdarTvApp(
+            prefs: prefs,
+            isTv: true,
+            showListProvider: MockShowListProvider(),
+            audioProvider: MockAudioProvider(),
+            audioCacheService: MockAudioCacheService(),
+            settingsProvider: FakeTvScreensaverSettingsProvider(
+              screensaverEnabled: true,
+              inactivityMinutes: 1,
+              showCountdown: true,
+            ),
+            deviceService: FakeTvDeviceService(),
+            enableDeepLinks: false,
+          ),
+        );
+
+        await tester.pump();
+
+        expect(find.textContaining('SS:'), findsNothing);
+        expect(find.textContaining('SS ERR:'), findsNothing);
+
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(const Duration(seconds: 1));
+      },
+    );
 
     testWidgets(
       'TV app does not launch screensaver after inactivity when disabled',

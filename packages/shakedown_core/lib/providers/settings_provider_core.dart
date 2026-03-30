@@ -418,10 +418,8 @@ mixin _SettingsProviderCoreExtension
     _enableSwipeToBlock = !_enableSwipeToBlock,
   );
 
-  void toggleHideTabText() => _updatePreference(
-    _hideTabTextKey,
-    _hideTabText = !_hideTabText,
-  );
+  void toggleHideTabText() =>
+      _updatePreference(_hideTabTextKey, _hideTabText = !_hideTabText);
 
   void toggleOmitHttpPathInCopy() => _updatePreference(
     _omitHttpPathInCopyKey,

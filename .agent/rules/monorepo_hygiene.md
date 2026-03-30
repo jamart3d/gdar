@@ -20,6 +20,7 @@ The root is a **workspace coordinator**, not an app target.
 - **Repo-Relative Paths**: Always prefer repo-relative paths in documentation and rules (e.g., `apps/gdar_web`). NEVER use machine-specific absolute paths unless temporarily required.
 - **.agent/appdata**: Reserved for project-specific persistent state. Never redirect `PUB_CACHE` or Flutter tool logs here.
 - **Cleanup Responsibility**: Any file generated outside of `apps/`, `packages/`, or `docs/` must be deleted before the session ends.
+- **Data Cleanup & Privacy**: Directories named `archive`, `temp`, and `backups` are excluded from the active monorepo health map and must not be audited, verified, or proactively searched by agents unless the user passes a direct file reference.
 
 ## 3. Build Safety & Hardware-Aware Execution
 - **Parallel Builds Are STRICTLY FORBIDDEN**: `flutter build` grabs all available system threads by default. Running builds in parallel will cause extreme system thrashing on high-core machines (e.g., Windows 16-core) and trigger OOM kills on Chromebooks.

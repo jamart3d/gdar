@@ -385,8 +385,7 @@ mixin _SettingsProviderInitializationExtension
         _prefs.getBool(_enableSwipeToBlockKey) ??
         DefaultSettings.enableSwipeToBlock;
     _hideTabText =
-        _prefs.getBool(_hideTabTextKey) ??
-        DefaultSettings.hideTabText;
+        _prefs.getBool(_hideTabTextKey) ?? DefaultSettings.hideTabText;
     _omitHttpPathInCopy =
         _prefs.getBool(_omitHttpPathInCopyKey) ??
         DefaultSettings.omitHttpPathInCopy;

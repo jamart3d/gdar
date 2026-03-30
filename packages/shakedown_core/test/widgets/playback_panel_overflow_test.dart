@@ -114,6 +114,10 @@ class MockAudioProvider extends Mock implements AudioProvider {
 
 class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
+  bool get hideTabText => false;
+  @override
+  bool get fruitEnableLiquidGlass => false;
+  @override
   bool get uiScale => false;
   @override
   bool get useTrueBlack => false;

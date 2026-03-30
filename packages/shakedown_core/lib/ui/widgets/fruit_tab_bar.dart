@@ -368,8 +368,7 @@ class _FruitTabItemState extends State<_FruitTabItem> {
   }
 
   Widget _buildTabContent(Color color) {
-    final double iconSize =
-        (widget.hideText ? 30 : 24) * widget.scaleFactor;
+    final double iconSize = (widget.hideText ? 30 : 24) * widget.scaleFactor;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -384,11 +383,7 @@ class _FruitTabItemState extends State<_FruitTabItem> {
             iconColor: color,
           )
         else
-          Icon(
-            widget.icon,
-            color: color,
-            size: iconSize,
-          ),
+          Icon(widget.icon, color: color, size: iconSize),
         if (!widget.hideText) ...[
           SizedBox(height: 6 * widget.scaleFactor),
           Text(

@@ -515,9 +515,7 @@ class InterfaceSection extends StatelessWidget {
                 'Hide Tab Text',
                 style: Theme.of(
                   context,
-                ).textTheme.titleMedium?.copyWith(
-                  fontSize: 16 * scaleFactor,
-                ),
+                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
               ),
             ),
             subtitle: FittedBox(
@@ -527,9 +525,7 @@ class InterfaceSection extends StatelessWidget {
                 'Hide labels under tab bar icons',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(
-                  fontSize: 12 * scaleFactor,
-                ),
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
               ),
             ),
             value: settingsProvider.hideTabText,
