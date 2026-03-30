@@ -72,6 +72,7 @@ class DefaultSettings {
   // Misc
   static const bool showSplashScreen = true;
   static const bool enableSwipeToBlock = false;
+  static const bool hideTabText = true;
   static const bool showDebugLayout = false;
 
   // Screensaver (steal)

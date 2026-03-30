@@ -501,6 +501,45 @@ class InterfaceSection extends StatelessWidget {
               vertical: 4,
             ),
           ),
+        if (isFruit) ...[
+          const SizedBox(height: 8),
+          const Divider(),
+          const SizedBox(height: 8),
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Hide Tab Text',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(
+                  fontSize: 16 * scaleFactor,
+                ),
+              ),
+            ),
+            subtitle: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Hide labels under tab bar icons',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(
+                  fontSize: 12 * scaleFactor,
+                ),
+              ),
+            ),
+            value: settingsProvider.hideTabText,
+            onChanged: (value) {
+              AppHaptics.lightImpact(context.read<DeviceService>());
+              context.read<SettingsProvider>().toggleHideTabText();
+            },
+            secondary: const Icon(LucideIcons.eyeOff),
+          ),
+        ],
       ],
     );
   }

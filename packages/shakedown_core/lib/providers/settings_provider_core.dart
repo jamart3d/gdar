@@ -40,6 +40,7 @@ const String _markPlayedOnStartKey = 'mark_played_on_start';
 const String _hideTvScrollbarsKey = 'hide_tv_scrollbars';
 const String _marqueeEnabledKey = 'marquee_enabled';
 const String _enableSwipeToBlockKey = 'enable_swipe_to_block';
+const String _hideTabTextKey = 'hide_tab_text';
 const String _omitHttpPathInCopyKey = 'omit_http_path_in_copy';
 const String _showSplashScreenKey = 'show_splash_screen';
 const String _forceTvKey = 'force_tv';
@@ -90,6 +91,7 @@ mixin _SettingsProviderCoreFields {
   late bool _fruitDenseList;
   late bool _marqueeEnabled;
   late bool _enableSwipeToBlock;
+  late bool _hideTabText;
   late bool _omitHttpPathInCopy;
   late bool _useNeumorphism;
   late bool _fruitEnableLiquidGlass;
@@ -157,6 +159,7 @@ mixin _SettingsProviderCoreExtension
   bool get fruitDenseList => _fruitDenseList;
   bool get marqueeEnabled => _marqueeEnabled;
   bool get enableSwipeToBlock => _enableSwipeToBlock;
+  bool get hideTabText => _hideTabText;
   bool get omitHttpPathInCopy => _omitHttpPathInCopy;
   bool get useNeumorphism => _useNeumorphism;
   bool get fruitEnableLiquidGlass =>
@@ -413,6 +416,11 @@ mixin _SettingsProviderCoreExtension
   void toggleEnableSwipeToBlock() => _updatePreference(
     _enableSwipeToBlockKey,
     _enableSwipeToBlock = !_enableSwipeToBlock,
+  );
+
+  void toggleHideTabText() => _updatePreference(
+    _hideTabTextKey,
+    _hideTabText = !_hideTabText,
   );
 
   void toggleOmitHttpPathInCopy() => _updatePreference(

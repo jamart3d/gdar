@@ -81,9 +81,8 @@ class FruitNowPlayingCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Flexible(
+                            Expanded(
                               child: Text(
                                 track?.title ?? 'Picking show...',
                                 style: TextStyle(
@@ -98,12 +97,10 @@ class FruitNowPlayingCard extends StatelessWidget {
                             ),
                             if (!showCompactHud) ...[
                               SizedBox(width: 8 * scaleFactor),
-                              const Flexible(
-                                child: PlaybackMessages(
-                                  textAlign: TextAlign.left,
-                                  showDivider: false,
-                                  showDevHudInline: false,
-                                ),
+                              const PlaybackMessages(
+                                textAlign: TextAlign.left,
+                                showDivider: false,
+                                showDevHudInline: false,
                               ),
                             ],
                           ],

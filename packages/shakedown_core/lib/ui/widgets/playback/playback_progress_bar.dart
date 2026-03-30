@@ -19,6 +19,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
   late final AnimationController _thumbAnimationController;
   late final Animation<double> _thumbRadiusAnimation;
   bool _isInteracting = false;
+  bool _pulseReverse = false;
 
   static const int _timeRoleElapsed = 0;
   static const int _timeRoleTotal = 1;
@@ -64,6 +65,8 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.watch<SettingsProvider>();
     final isSimple = settingsProvider.performanceMode;
+    final bool glassOn =
+        settingsProvider.fruitEnableLiquidGlass;
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     // Check for True Black mode
@@ -147,6 +150,104 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                     ),
                                   ),
                                 ),
+                                // Shimmer / pulse across full track
+                                if (isBuffering && !isSimple)
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                      6 * scaleFactor,
+                                    ),
+                                    child: glassOn
+                                        // Glass ON: gradient sweep
+                                        ? TweenAnimationBuilder<double>(
+                                            tween: Tween(
+                                              begin: -0.3,
+                                              end: 1.3,
+                                            ),
+                                            duration: const Duration(
+                                              milliseconds: 1800,
+                                            ),
+                                            builder: (context, value, child) {
+                                              return Container(
+                                                height: 12 * scaleFactor,
+                                                decoration: BoxDecoration(
+                                                  gradient: LinearGradient(
+                                                    begin:
+                                                        Alignment.centerLeft,
+                                                    end:
+                                                        Alignment.centerRight,
+                                                    stops: [
+                                                      (value - 0.25).clamp(
+                                                        0.0,
+                                                        1.0,
+                                                      ),
+                                                      value.clamp(0.0, 1.0),
+                                                      (value + 0.25).clamp(
+                                                        0.0,
+                                                        1.0,
+                                                      ),
+                                                    ],
+                                                    colors: [
+                                                      Colors.transparent,
+                                                      colorScheme.primary
+                                                          .withValues(
+                                                            alpha: 0.32,
+                                                          ),
+                                                      Colors.transparent,
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            onEnd: () {
+                                              if (isBuffering &&
+                                                  context.mounted) {
+                                                (context as Element)
+                                                    .markNeedsBuild();
+                                              }
+                                            },
+                                          )
+                                        // Glass OFF: simple opacity pulse
+                                        : TweenAnimationBuilder<double>(
+                                            key: ValueKey(_pulseReverse),
+                                            tween: _pulseReverse
+                                                ? Tween(
+                                                    begin: 0.22,
+                                                    end: 0.06,
+                                                  )
+                                                : Tween(
+                                                    begin: 0.06,
+                                                    end: 0.22,
+                                                  ),
+                                            duration: const Duration(
+                                              milliseconds: 900,
+                                            ),
+                                            curve: Curves.easeInOut,
+                                            builder: (context, value, child) {
+                                              return Container(
+                                                height: 12 * scaleFactor,
+                                                decoration: BoxDecoration(
+                                                  color: colorScheme.primary
+                                                      .withValues(
+                                                        alpha: value,
+                                                      ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        6 * scaleFactor,
+                                                      ),
+                                                ),
+                                              );
+                                            },
+                                            onEnd: () {
+                                              if (isBuffering &&
+                                                  context.mounted) {
+                                                _pulseReverse =
+                                                    !_pulseReverse;
+                                                (context as Element)
+                                                    .markNeedsBuild();
+                                              }
+                                            },
+                                          ),
+                                  ),
                                 if (!hasKnownDuration && isBuffering)
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(
@@ -189,71 +290,19 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                   alignment: Alignment.centerLeft,
                                   child: FractionallySizedBox(
                                     widthFactor: positionPercentage,
-                                    child: Stack(
-                                      children: [
-                                        Container(
-                                          height: 12 * scaleFactor,
-                                          decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                colorScheme.primary,
-                                                colorScheme.tertiary,
-                                              ],
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              6 * scaleFactor,
-                                            ),
-                                          ),
+                                    child: Container(
+                                      height: 12 * scaleFactor,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            colorScheme.primary,
+                                            colorScheme.tertiary,
+                                          ],
                                         ),
-                                        if (isBuffering)
-                                          TweenAnimationBuilder<double>(
-                                            tween: Tween(begin: 0.0, end: 1.0),
-                                            duration: const Duration(
-                                              milliseconds: 1500,
-                                            ),
-                                            builder: (context, value, child) {
-                                              return Container(
-                                                height: 12 * scaleFactor,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        6 * scaleFactor,
-                                                      ),
-                                                  gradient: LinearGradient(
-                                                    begin: Alignment.centerLeft,
-                                                    end: Alignment.centerRight,
-                                                    stops: [
-                                                      (value - 0.2).clamp(
-                                                        0.0,
-                                                        1.0,
-                                                      ),
-                                                      value,
-                                                      (value + 0.2).clamp(
-                                                        0.0,
-                                                        1.0,
-                                                      ),
-                                                    ],
-                                                    colors: [
-                                                      Colors.transparent,
-                                                      colorScheme.onPrimary
-                                                          .withValues(
-                                                            alpha: 0.4,
-                                                          ),
-                                                      Colors.transparent,
-                                                    ],
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            onEnd: () {
-                                              if (isBuffering &&
-                                                  context.mounted) {
-                                                (context as Element)
-                                                    .markNeedsBuild();
-                                              }
-                                            },
-                                          ),
-                                      ],
+                                        borderRadius: BorderRadius.circular(
+                                          6 * scaleFactor,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),

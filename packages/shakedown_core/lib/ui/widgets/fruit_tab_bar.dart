@@ -50,6 +50,7 @@ class FruitTabBar extends StatelessWidget {
     final double denseMultiplier =
         isFruitColor && !settingsProvider.fruitDenseList ? 1.3 : 1.0;
     final double tabScaleFactor = scaleFactor * denseMultiplier;
+    final bool hideTabText = settingsProvider.hideTabText;
     final bool isLiquidGlassEnabled =
         isFruitColor && settingsProvider.fruitEnableLiquidGlass;
     final bool isLiquidGlassOff = isFruitColor && !isLiquidGlassEnabled;
@@ -83,9 +84,10 @@ class FruitTabBar extends StatelessWidget {
           Expanded(
             child: _FruitTabItem(
               icon: LucideIcons.playCircle,
-              label: 'PLAY',
+              label: 'PLAYING',
               isActive: selectedIndex == 0,
               scaleFactor: tabScaleFactor,
+              hideText: hideTabText,
               onTap: () {
                 // ALLOW if currentShow is set, even if track isn't fully buffered yet
                 if (audioProvider.currentShow != null) {
@@ -102,6 +104,7 @@ class FruitTabBar extends StatelessWidget {
               label: 'LIBRARY',
               isActive: selectedIndex == 1,
               scaleFactor: tabScaleFactor,
+              hideText: hideTabText,
               onTap: () {
                 onTabSelected(1);
               },
@@ -120,6 +123,7 @@ class FruitTabBar extends StatelessWidget {
                   !settingsProvider.nonRandom &&
                   !settingsProvider.simpleRandomIcon,
               scaleFactor: tabScaleFactor,
+              hideText: hideTabText,
               onTap: () {
                 AppHaptics.selectionClick(
                   context.read<DeviceService>(),
@@ -135,6 +139,7 @@ class FruitTabBar extends StatelessWidget {
               label: 'SETTINGS',
               isActive: selectedIndex == 3,
               scaleFactor: tabScaleFactor,
+              hideText: hideTabText,
               onTap: () {
                 onTabSelected(3);
               },
@@ -245,6 +250,7 @@ class _FruitTabItem extends StatefulWidget {
   final bool isActive;
   final double scaleFactor;
   final VoidCallback onTap;
+  final bool hideText;
 
   final bool isLoading;
   final bool enableHaptics;
@@ -256,6 +262,7 @@ class _FruitTabItem extends StatefulWidget {
     required this.isActive,
     required this.scaleFactor,
     required this.onTap,
+    this.hideText = false,
     this.isLoading = false,
     this.enableHaptics = false,
     this.useAnimatedRandomIcon = true,
@@ -361,6 +368,8 @@ class _FruitTabItemState extends State<_FruitTabItem> {
   }
 
   Widget _buildTabContent(Color color) {
+    final double iconSize =
+        (widget.hideText ? 30 : 24) * widget.scaleFactor;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -378,19 +387,21 @@ class _FruitTabItemState extends State<_FruitTabItem> {
           Icon(
             widget.icon,
             color: color,
-            size: 24 * widget.scaleFactor, // w-6 h-6
+            size: iconSize,
           ),
-        SizedBox(height: 6 * widget.scaleFactor), // gap-1.5
-        Text(
-          widget.label.toUpperCase(),
-          style: TextStyle(
-            fontFamily: FontConfig.resolve('Inter'),
-            fontSize: 9 * widget.scaleFactor, // text-[9px]
-            fontWeight: FontWeight.w700, // font-bold
-            letterSpacing: 2.0, // tracking-widest
-            color: color,
+        if (!widget.hideText) ...[
+          SizedBox(height: 6 * widget.scaleFactor),
+          Text(
+            widget.label.toUpperCase(),
+            style: TextStyle(
+              fontFamily: FontConfig.resolve('Inter'),
+              fontSize: 9 * widget.scaleFactor,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2.0,
+              color: color,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

@@ -83,7 +83,7 @@ class ShowListSearchBar extends StatelessWidget {
                         decoration: const InputDecoration(
                           hintText: 'Search venue, date, location...',
                           hintStyle: TextStyle(
-                            fontSize: 14,
+                            fontSize: 16,
                             color: Colors.black38,
                           ),
                           border: InputBorder.none,
@@ -92,10 +92,18 @@ class ShowListSearchBar extends StatelessWidget {
                       ),
                     ),
                     if (controller.text.isNotEmpty)
-                      FruitActionButton(
-                        icon: LucideIcons.xCircle,
-                        tooltip: 'Clear',
-                        onPressed: controller.clear,
+                      GestureDetector(
+                        onTap: controller.clear,
+                        child: Icon(
+                          LucideIcons.xCircle,
+                          size: 18,
+                          color: hasFocus
+                              ? primaryColor.withValues(alpha: 0.7)
+                              : Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.5),
+                        ),
                       ),
                   ],
                 ),

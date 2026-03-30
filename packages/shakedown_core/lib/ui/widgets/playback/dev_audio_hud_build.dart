@@ -353,7 +353,7 @@ extension _DevAudioHudBuild on _DevAudioHudState {
         'DFT',
         baseTextColor,
         alpha: 1.0,
-        currentValue: fields['DFT'],
+        currentValue: isPlaying ? fields['DFT'] : '--',
       ),
     );
     trendChips.add(
