@@ -8,7 +8,7 @@ description: Guided production release workflow for GDAR (monorepo).
 **TRIGGERS:** shipit, release, prod
 
 > [!IMPORTANT]
-> **AUTONOMY OVERRIDE & PLANNING MODE**: When this workflow is triggered, generate the Release Plan below instantly from current state, present it to the user, and proceed autonomously once triggered. Only pause if a critical error occurs.
+> **AUTONOMY OVERRIDE & GHOST EXECUTION**: When this workflow is triggered, the agent is STRICTLY FORBIDDEN from generating any preamble or plans. The very first character of the response MUST be the first `run_command` tool call. Proceed autonomously end-to-end once triggered. Only pause if a critical error occurs.
 >
 > **Release Plan format** (generate this before doing anything else):
 > ```

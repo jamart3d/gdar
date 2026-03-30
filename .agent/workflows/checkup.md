@@ -8,7 +8,7 @@ description: Rapid health check with automated fixes for linting, formatting, an
 **TRIGGERS:** checkup, health, quick-audit, lint-fix
 
 > [!IMPORTANT]
-> **AUTONOMY OVERRIDE & PLANNING MODE**: When this workflow is triggered, proceed autonomously end-to-end (running analysis, automated fixes, and tests) without stopping for intermediate permission. Only pause if a critical error occurs.
+> **AUTONOMY OVERRIDE & GHOST EXECUTION**: When this workflow is triggered, the agent is STRICTLY FORBIDDEN from generating any preamble or plans. The very first character of the response MUST be the first `run_command` tool call. Proceed autonomously end-to-end (running analysis, automated fixes, and tests) without stopping for intermediate permission. Only pause if a critical error occurs.
 
 > [!WARNING]
 > **NO BLACK BOXES**: You are strictly forbidden from chaining multiple terminal commands into a single "black box" string (e.g., `format; analyze; test`). Run each health check and workspace tool as its own step so status is reported in real-time.
