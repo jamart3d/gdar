@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.40+250] - 2026-03-30
+
+### Changed
+- Extracted the TV screensaver audio/performance builder slice into `packages/shakedown_core/lib/ui/widgets/settings/tv_screensaver_section_audio_build.dart`, reducing `tv_screensaver_section_build.dart` from 1,296 lines to 1,050 lines.
+- Split `packages/shakedown_core/lib/ui/screens/playback_screen_build.dart` into focused playback part files:
+  - `packages/shakedown_core/lib/ui/screens/playback_screen_build.dart`
+  - `packages/shakedown_core/lib/ui/screens/playback_screen_fruit_build.dart`
+  - `packages/shakedown_core/lib/ui/screens/playback_screen_layout_build.dart`
+- Updated the safe dependency batch in `pubspec.yaml`:
+  - `logger` -> `2.7.0`
+  - `shared_preferences` -> `2.5.5`
+  - `build_runner` -> `2.13.1`
+  - `melos` -> `7.5.0`
+  - `mockito` -> `5.6.4`
+
+### Docs
+- Added refreshed workspace-state scorecard: `docs/monorepo_scorecard_2026-03-30.md`
+
 ## [1.3.39+249] - 2026-03-30
 ### Added
 - **Maintenance**: General maintenance, workflow synchronization, and zero-friction orchestration updates.

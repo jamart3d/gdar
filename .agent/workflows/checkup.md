@@ -20,14 +20,13 @@ description: Rapid health check with automated fixes for linting, formatting, an
 > **EXECUTION MECHANICS**: Follow `.agent/skills/zero_friction_execution/SKILL.md` for async command handling (`WaitMsBeforeAsync: 5000`), polling loop, and fail-fast protocol.
 
 ## 0. Platform Detection (MUST RUN FIRST)
-1. Run this command immediately:
-   ```bash
-   uname -a 2>/dev/null || echo "Windows_NT"
-   ```
-2. **If output contains `penguin` or `cros` (Chromebook):**
-   - Notify the user: "Chromebook detected — skipping Visual/Design Check and auto-commit."
-   - Run steps 0.5, 1, and 2 (process hygiene + smart skip + health suite) then **stop**. Do not run step 3 or commit.
-3. **If output is `Linux` (Standard) or `Windows_NT`:**
+1. Run the shared preflight in `.agent/workflows/toolchain_preflight.md`.
+   - Required commands for `checkup`: `git`, `dart`, `flutter`
+   - Use the host detection result from `.agent/rules/platform_detection.md`
+2. **If output is `CHROMEBOOK`:**
+   - Notify the user: "Chromebook detected - skipping Visual/Design Check and auto-commit."
+   - Run steps 0.5, 1, and 2 (process hygiene + smart skip + health suite) and then **stop**. Do not run step 3 or commit.
+3. **If output is `WINDOWS_10`:**
    - Resolve `$MELOS_CAN_HANDLE` per `.agent/rules/platform_detection.md`.
    - Continue all steps end-to-end.
 
@@ -72,6 +71,6 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
    | Format changes needed | -1 |
 2. If Errors = 0 and Tests = Pass:
    - Update `.agent/notes/verification_status.json` with the current SHA, "passed" status, and health score.
-   - `git add . && git commit -m "chore: checkup pass [score: <N>/100] [skip ci]" && git push`
+   - git add . ; git commit -m "chore: checkup pass [score: <N>/100] [skip ci]" ; git push
 3. List all automated fixes applied.
 4. If tests failed, offer to trigger the `/issue_report` workflow.

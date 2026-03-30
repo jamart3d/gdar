@@ -5,6 +5,7 @@ trigger: always_on
 # Project Rules: GDAR Audio Player
 
 * **Action:** When a workflow is triggered (e.g., /checkup), strictly follow every step as defined in its `.md` file, including `// turbo` auto-approval logic.
+* **Action:** Before any workflow that depends on CLI orchestration tools (`/checkup`, `/verify`, `/shipit`, `/deploy`), run `.agent/workflows/toolchain_preflight.md` first and fail fast if required commands are missing.
 
 ### 1. CODING STANDARDS & ARCHITECTURE
 * **Stack:** Latest Stable Flutter / Dart SDK. Strictly follow modern syntax

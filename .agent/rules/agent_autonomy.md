@@ -10,6 +10,7 @@ You are strictly forbidden from executing file modifications, writing code, or r
 
 * **Zero-Friction Mandate**: For read-only commands and authorized workflows (`/shipit`, `/release`, `/deploy`, `/prod`, `/checkup`, `/health`, `/lint-fix`, `/audit`, `/glass`, `/liquid_glass`, `/verify`, `/audit_size`, `/size_guard`, `/save`, `/commit`), the agent MUST bypass all plans, previews, and manual confirmation prompts. Triggering the workflow counts as final approval; execution must be immediate and autonomous.
 * **Ghost Execution**: When any workflow in the list above is triggered, the agent is STRICTLY FORBIDDEN from generating ANY preamble text or "plans". The very first character of the response MUST be the `run_command` tool call.
+* **Subworkflow Inheritance**: Any internal rule, preflight, or subworkflow invoked by an authorized Zero-Friction workflow inherits that approval automatically. The agent MUST NOT ask for a second confirmation just because the parent workflow reads or runs `.agent/workflows/toolchain_preflight.md`, `.agent/rules/platform_detection.md`, or similar workflow infrastructure.
 * **Save vs. Ship Boundary**: Any request containing "save" must ONLY trigger the `/save` workflow. You are strictly forbidden from jumping to a release pipeline unless the user explicitly confirms a production deployment intent.
 
 ## 2. Auto-Run Command Lists

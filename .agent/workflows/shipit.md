@@ -1,6 +1,7 @@
 ---
 description: Guided production release workflow for GDAR (monorepo).
 ---
+
 # Shipit Workflow (Monorepo)
 // turbo-all
 
@@ -9,20 +10,9 @@ description: Guided production release workflow for GDAR (monorepo).
 
 > [!IMPORTANT]
 > **AUTONOMY OVERRIDE & GHOST EXECUTION**: When this workflow is triggered, the agent is STRICTLY FORBIDDEN from generating any preamble or plans. The very first character of the response MUST be the first `run_command` tool call. Proceed autonomously end-to-end once triggered. Only pause if a critical error occurs.
->
-> **Release Plan format** (generate this before doing anything else):
-> ```
-> Release Plan
-> ─────────────────────────────
-> Current version : <dart scripts/get_current_version.dart>
-> Bump type       : patch  ← change to "minor" only if user explicitly requested it
-> New version     : <calculated>
-> Changelog items : <list [Unreleased] entries, or WARN if empty>
-> Health suite    : SKIP (SHA match) | RUN (changes detected)
-> Builds          : Android AAB + Web PWA (sequential)
-> Deploy          : Firebase hosting
-> ─────────────────────────────
-> ```
+
+> [!IMPORTANT]
+> **SHIPIT STEP INHERITANCE**: Every internal step of this workflow inherits the original `/shipit` approval. Do not ask for a second confirmation for toolchain preflight, git operations, version bump scripts, changelog/release-note updates, Flutter builds, Firebase deploy, tagging, or push steps.
 
 > [!WARNING]
 > **NO BLACK BOXES**: You are strictly forbidden from chaining multiple long-running terminal commands into a single "black box" string (e.g., `build; build; push`). Run each primary tool (Melos, Flutter build, Firebase) as its own step so progress and status are reported in real-time.
@@ -40,17 +30,16 @@ Both Android (Phone/TV) and Web/PWA targets **MUST** be built and deployed in ev
 
 ---
 
-## 0. Platform Detection (MUST RUN FIRST — before Release Plan)
-1. Run this command immediately:
-   ```bash
-   uname -s 2>/dev/null || echo "Windows_NT"
-   ```
-2. **If output is `Linux` (Chromebook):**
-   - Notify the user: "Chromebook detected — health suite only. Flutter builds and Firebase deploy must run on Windows 10."
-   - Run steps 0.5 and 1 (process hygiene + health suite) then **stop**. Do not generate a Release Plan. Do not proceed to versioning, builds, or deploy.
-3. **If output is `Windows_NT` (Windows 10):**
+## 0. Platform Detection (MUST RUN FIRST)
+1. Run the shared preflight in `.agent/workflows/toolchain_preflight.md`.
+   - Required commands for `shipit`: `git`, `dart`, `flutter`, `firebase`
+   - Use the host detection result from `.agent/rules/platform_detection.md`
+2. **If output is `CHROMEBOOK`:**
+   - Notify the user: "Chromebook detected - health suite only. Flutter builds and Firebase deploy must run on Windows 10."
+   - Run steps 0.5 and 1 (process hygiene + health suite) and then **stop**. Do not proceed to versioning, builds, or deploy.
+3. **If output is `WINDOWS_10`:**
    - Resolve `$MELOS_CAN_HANDLE` per `.agent/rules/platform_detection.md`.
-   - Continue to Release Plan and all steps end-to-end.
+   - Continue to all steps end-to-end.
 
 ## 0.5. Process Hygiene
 Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes — lock files from a hung process can make a clean worktree appear dirty.
@@ -97,7 +86,7 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 1. **Target 1: Android**: Build the AAB from `apps/gdar_mobile`:
    - `flutter build appbundle --release`
 2. **Target 2: Web**: Build the PWA from `apps/gdar_web`:
-   - `flutter build web --release --no-wasm`
+   - `flutter build web --release`
 
 ## 5. Deploy & Git Finalization
 1. **Web Deploy**: Run `firebase deploy --only hosting` from the workspace root.
@@ -105,7 +94,7 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
    - `git add .` (Ensures all housekeeping, versioning, and changelog edits are captured together).
    - `git commit -m "release: $(dart scripts/get_current_version.dart)"`
    - `git tag v$(dart scripts/get_current_version.dart)`
-   - `git push && git push --tags`
+   - git push ; git push --tags
 
 ## 6. Wrap-Up
 1. Report build and deploy status clearly.

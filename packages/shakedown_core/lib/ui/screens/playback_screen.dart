@@ -42,7 +42,9 @@ import 'package:sliding_up_panel2/sliding_up_panel2.dart';
 
 part 'playback_screen_build.dart';
 part 'playback_screen_controls.dart';
+part 'playback_screen_fruit_build.dart';
 part 'playback_screen_helpers.dart';
+part 'playback_screen_layout_build.dart';
 
 class PlaybackScreen extends StatefulWidget {
   final bool initiallyOpen;
