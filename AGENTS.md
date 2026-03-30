@@ -94,7 +94,7 @@ To maintain "Strong" agentic behavior and zero human friction, the following pro
 
 * **Session Indexing (First Turn):** At the start of any session, the agent MUST recursively list all files in the `.agent/` directory (using `ls -R` or `git ls-files`) to map triggers to absolute paths without human intervention.
 * **Command Syntax Verification:** Before executing primary orchestration tools (Melos, Firebase, Flutter build) for the first time in a session, the agent MUST verify CLI flag signatures using `[tool] --help` silently.
-* **Auto-Run Discipline:** Read-only discovery and diagnostic commands MUST always be executed with `SafeToAutoRun: true` in accordance with the Zero-Friction Mandate in `.agent/rules/autonomy_policy.md` to prevent unnecessary human confirmation prompts.
+* **Auto-Run Discipline:** Read-only discovery and diagnostic commands MUST always follow the Zero-Friction Mandate in `.agent/rules/agent_autonomy.md` to prevent unnecessary human confirmation prompts.
 * **Anti-Deflection Rule:** When an agentic failure occurs (syntax error, discovery lag), the agent MUST prioritize immediate structural self-correction over "explanatory analogies" as per Rule 1.
 * **Context Pulse:** The agent MUST maintain diagnostic transparency by reporting context usage at intervals defined in `.agent/rules/context_protocol.md`.
 * **Proactive Discovery No-Fly Zones:** Directories named `archive`, `temp`, and `backups` are STRICTLY OFF-LIMITS to broad search, indexing, or auditing tools. These folders are ONLY accessible if the user explicitly provides a direct file path or instruction targeting them.

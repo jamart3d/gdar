@@ -3,10 +3,10 @@ description: Comprehensive code quality, design, TV flow, and spec conformance a
 ---
 # Unified Audit Workflow (Monorepo)
 
-**TRIGGERS:** audit, checkup, glass, liquid glass, tv audit, spec audit, quality, lint
+**TRIGGERS:** audit, glass, liquid glass, tv audit, spec audit, quality, lint
 
 > [!IMPORTANT]
-> **AUTONOMY & PLANNING MODE**: Proceed autonomously end-to-end — read specs, scan code, run analysis, and generate reports without pausing for intermediate permission.
+> **AUTONOMY & PLANNING MODE**: Proceed autonomously end-to-end - read specs, scan code, run analysis, and generate reports without pausing for intermediate permission.
 
 > [!NOTE]
 > **MONOREPO**: Analysis and formatting run from the workspace root. Build commands must target specific apps under `apps/`.
@@ -17,20 +17,20 @@ Run the sections relevant to the user's request. If the user just says "audit", 
 
 ## Section 1: General Health Check
 // turbo
-1. **Analyze**: `mcp_dart-mcp-server_analyze_files` on workspace root.
+1. **Analyze**: Run workspace analysis from the root (`melos run analyze` or equivalent Dart workspace analysis).
 // turbo
-2. **Test**: `mcp_dart-mcp-server_run_tests`. **(Arlo handles < 5 files locally; for full suites, use Jules).**
+2. **Test**: Run the relevant test scope from the workspace root (`melos run test` for full health, narrower runs when the user asks for a targeted audit).
 // turbo
-3. **Format**: `mcp_dart-mcp-server_dart_format` on workspace root.
+3. **Format**: Run workspace formatting from the root (`melos run format` or equivalent Dart formatting).
 4. **Debug Clean**: Scan for `print(` and `logger.` statements across `apps/` and `packages/`.
 5. **Dependencies**: `flutter pub outdated` (from workspace root).
 
 ## Section 2: Glass & Theme Design Audit
 // turbo
-1. Scan for raw Material 3 patterns WITHOUT conditional gating in `packages/gdar_fruit/` and `apps/gdar_web/`:
+1. Scan for raw Material 3 patterns WITHOUT conditional gating in `packages/shakedown_core/` and `apps/gdar_web/`:
    - `InkWell`, `ElevatedButton`, or `Card` not wrapped in `if (themeStyle == ThemeStyle.fruit)`.
    - Flag Material shadows (`elevation > 0`) in Fruit mode.
-2. Scan for Fruit Mode Coverage in `packages/gdar_fruit/`:
+2. Scan for Fruit Mode Coverage in `packages/shakedown_core/`:
    - Ensure primary containers have `BackdropFilter` or `LiquidGlassWrapper` path.
 3. Rule Enforcement:
    - **Fruit Mode**: No breathing ripples or morphing. Use bounce/scale physics.
@@ -58,17 +58,16 @@ Run the sections relevant to the user's request. If the user just says "audit", 
    - **Interaction Flows**: `TvInteractionModal` and `TvReloadDialog` on TV only.
 3. Categorize findings: Aligned, Drifted, Violation, Undocumented.
 
-
 ## Section 5: Optimization Audit
 1. **Size Analysis**: `flutter build appbundle --analyze-size` (from `apps/gdar_mobile`).
-2. **Assets**: Find files > 500KB across `packages/shakedown_core/assets/`.
+2. **Assets**: Find files over 500 KB across `packages/shakedown_core/assets/`.
 3. **Deep Links**: Scan `apps/gdar_mobile/android/app/src/main/AndroidManifest.xml` for intent filters and App Actions.
 
 ## Section 6: Architecture & Refactor Audit
-1. **Large Files**: `Get-ChildItem -Recurse -Filter *.dart | Measure-Lines` (find files > 800 lines).
+1. **Large Files**: Identify Dart files over 800 lines.
 2. **Complex Providers**: Identify Providers or Services that are "God Classes" (too many responsibilities).
 3. **Deep Build Metrics**: Identify widgets with overly complex build methods or deep nesting.
-4. **Mock Parity**: Run the `check_mock_parity` workflow to ensure test mocks match the real providers. 
+4. **Mock Parity**: Run the `check_mock_parity` workflow to ensure test mocks match the real providers.
 
 ## Output
 1. Generate or update a single `AUDIT_REPORT.md`.

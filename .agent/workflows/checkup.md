@@ -4,20 +4,19 @@ description: Rapid health check with automated fixes for linting, formatting, an
 # Checkup Workflow (Monorepo)
 // turbo-all
 
-
 **TRIGGERS:** checkup, health, quick-audit, lint-fix
 
 > [!IMPORTANT]
-> **AUTONOMY OVERRIDE & GHOST EXECUTION**: When this workflow is triggered, the agent is STRICTLY FORBIDDEN from generating any preamble or plans. The very first character of the response MUST be the first `run_command` tool call. Proceed autonomously end-to-end (running analysis, automated fixes, and tests) without stopping for intermediate permission. Only pause if a critical error occurs.
+> **AUTONOMY OVERRIDE & GHOST EXECUTION**: When this workflow is triggered, the agent is STRICTLY FORBIDDEN from generating plans or asking for intermediate confirmation. Begin executing the workflow immediately and proceed end-to-end (running analysis, automated fixes, and tests). Only pause if a critical error occurs.
 
 > [!WARNING]
-> **NO BLACK BOXES**: You are strictly forbidden from chaining multiple terminal commands into a single "black box" string (e.g., `format; analyze; test`). Run each health check and workspace tool as its own step so status is reported in real-time.
+> **NO BLACK BOXES**: You are strictly forbidden from chaining multiple terminal commands into a single "black box" string (for example, `format; analyze; test`). Run each health check and workspace tool as its own step so status is reported in real time.
 
 > [!NOTE]
-> **MONOREPO**: This is a Dart workspace. Run analysis/format/fix from the **workspace root** - the Dart tools will recurse into `apps/` and `packages/` automatically.
+> **MONOREPO**: This is a Dart workspace. Run analysis, format, and fix from the workspace root. The Dart tools will recurse into `apps/` and `packages/` automatically.
 
 > [!IMPORTANT]
-> **EXECUTION MECHANICS**: Follow `.agent/skills/zero_friction_execution/SKILL.md` for async command handling (`WaitMsBeforeAsync: 5000`), polling loop, and fail-fast protocol.
+> **EXECUTION MECHANICS**: Follow `.agent/skills/zero_friction_execution/SKILL.md` for long-running command handling, explicit completion checks, and fail-fast protocol.
 
 ## 0. Platform Detection (MUST RUN FIRST)
 1. Run the shared preflight in `.agent/workflows/toolchain_preflight.md`.
@@ -31,7 +30,7 @@ description: Rapid health check with automated fixes for linting, formatting, an
    - Continue all steps end-to-end.
 
 ## 0.5. Process Hygiene
-Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes — lock files from a hung process can make a clean worktree appear dirty.
+Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes - lock files from a hung process can make a clean worktree appear dirty.
 
 ## 1. Smart Skip (Pre-flight)
 1. Check if we can skip the full verification:
@@ -40,7 +39,7 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
    - Compare current `git rev-parse HEAD` with `last_verification_commit` in the status file.
 2. If (Status is Clean) AND (Current SHA == `last_verification_commit`) AND (status == "PASS"):
    - **SKIP** to Summary. Report "No changes since last verified pass." and display the cached `results` from `verification_status.json` as the last known Health Score.
-   - Note: A `"PARTIAL"` result does **not** qualify for skip — run the full suite.
+   - Note: A `"PARTIAL"` result does **not** qualify for skip - run the full suite.
 
 ## 2. Atomic Health Pass (Fail-Fast)
 1. Resolve `$MELOS_CAN_HANDLE` per `.agent/rules/platform_detection.md`.
@@ -57,7 +56,7 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 1. Run the Git Diff Micro-Scanner to catch styling violations automatically.
    - Run `dart run scripts/scan_diffs.dart`
 2. If the scanner fails, halt the workflow and report the violations.
-3. **Audit App Size:** Run only **Step 1 (Fast Asset Scan)** of the `size_guard` workflow — flag files over 500 KB, unoptimized images, and dead assets. Do **not** run the binary size build step; that belongs in `shipit`.
+3. **Audit App Size:** Run only **Step 1 (Fast Asset Scan)** of the `size_guard` workflow - flag files over 500 KB, unoptimized images, and dead assets. Do **not** run the binary size build step; that belongs in `shipit`.
 
 ## 4. Summary & Finalization
 1. Compute the **Health Score** (start at 100, apply deductions):
@@ -71,6 +70,8 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
    | Format changes needed | -1 |
 2. If Errors = 0 and Tests = Pass:
    - Update `.agent/notes/verification_status.json` with the current SHA, "passed" status, and health score.
-   - git add . ; git commit -m "chore: checkup pass [score: <N>/100] [skip ci]" ; git push
+   - `git add .`
+   - `git commit -m "chore: checkup pass [score: <N>/100] [skip ci]"`
+   - `git push`
 3. List all automated fixes applied.
 4. If tests failed, offer to trigger the `/issue_report` workflow.

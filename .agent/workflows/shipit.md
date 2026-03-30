@@ -5,20 +5,19 @@ description: Guided production release workflow for GDAR (monorepo).
 # Shipit Workflow (Monorepo)
 // turbo-all
 
-
 **TRIGGERS:** shipit, release, prod
 
 > [!IMPORTANT]
-> **AUTONOMY OVERRIDE & GHOST EXECUTION**: When this workflow is triggered, the agent is STRICTLY FORBIDDEN from generating any preamble or plans. The very first character of the response MUST be the first `run_command` tool call. Proceed autonomously end-to-end once triggered. Only pause if a critical error occurs.
+> **AUTONOMY OVERRIDE & GHOST EXECUTION**: When this workflow is triggered, the agent is STRICTLY FORBIDDEN from generating plans or asking for intermediate confirmation. Begin executing the workflow immediately and proceed autonomously end-to-end once triggered. Only pause if a critical error occurs.
 
 > [!IMPORTANT]
 > **SHIPIT STEP INHERITANCE**: Every internal step of this workflow inherits the original `/shipit` approval. Do not ask for a second confirmation for toolchain preflight, git operations, version bump scripts, changelog/release-note updates, Flutter builds, Firebase deploy, tagging, or push steps.
 
 > [!WARNING]
-> **NO BLACK BOXES**: You are strictly forbidden from chaining multiple long-running terminal commands into a single "black box" string (e.g., `build; build; push`). Run each primary tool (Melos, Flutter build, Firebase) as its own step so progress and status are reported in real-time.
+> **NO BLACK BOXES**: You are strictly forbidden from chaining multiple long-running terminal commands into a single "black box" string (for example, `build; build; push`). Run each primary tool (Melos, Flutter build, Firebase) as its own step so progress and status are reported in real time.
 
 > [!IMPORTANT]
-> **EXECUTION MECHANICS**: Follow `.agent/skills/zero_friction_execution/SKILL.md` for async command handling (`WaitMsBeforeAsync: 5000`), polling loop, and fail-fast protocol.
+> **EXECUTION MECHANICS**: Follow `.agent/skills/zero_friction_execution/SKILL.md` for long-running command handling, explicit completion checks, and fail-fast protocol.
 
 ## Platform Sync Mandatory
 Both Android (Phone/TV) and Web/PWA targets **MUST** be built and deployed in every release to maintain platform synchronization across the monorepo.
@@ -26,7 +25,7 @@ Both Android (Phone/TV) and Web/PWA targets **MUST** be built and deployed in ev
 | Target | Path | Build Command |
 |---|---|---|
 | Android (Phone+TV) | `apps/gdar_mobile` | `flutter build appbundle --release` |
-| Web/PWA (Glass) | `apps/gdar_web` | `flutter build web --release --no-wasm` |
+| Web/PWA (Glass) | `apps/gdar_web` | `flutter build web --release` |
 
 ---
 
@@ -42,7 +41,7 @@ Both Android (Phone/TV) and Web/PWA targets **MUST** be built and deployed in ev
    - Continue to all steps end-to-end.
 
 ## 0.5. Process Hygiene
-Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes — lock files from a hung process can make a clean worktree appear dirty.
+Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes - lock files from a hung process can make a clean worktree appear dirty.
 
 ## 1. Preflight Verification (Smart Skip)
 1. Run `git status --porcelain` to check workspace status.
@@ -54,15 +53,14 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 3. Check `.agent/notes/verification_status.json` and run `git rev-parse HEAD`.
 4. If (Current SHA == `last_verification_commit`) AND (status == "PASS"):
    - **SKIP** the `melos run` pass and proceed to versioning.
-   - Note: A `"PARTIAL"` result does **not** qualify for skip — run the full suite.
+   - Note: A `"PARTIAL"` result does **not** qualify for skip - run the full suite.
 5. Else:
    - Resolve `$MELOS_CAN_HANDLE` per `.agent/rules/platform_detection.md`.
    - Run the health suite: `melos run format`, `melos run analyze`, and `melos run test`. Explicitly override concurrency only if required by environment constraints.
-   - Do **not** run `melos run fix` — shipit verifies, it does not auto-modify code. Run `/checkup` first if fixes are needed.
+   - Do **not** run `melos run fix` - shipit verifies, it does not auto-modify code. Run `/checkup` first if fixes are needed.
    - Update `verification_status.json` upon success.
 
 ## 2. Unified Release Housekeeping (Turbo)
-
 // turbo
 1. Run the unified housekeeping script:
    - `dart scripts/finalize_release.dart patch` (default)
@@ -75,9 +73,8 @@ This script atomically handles:
 - Resetting the pending notes buffer.
 
 ## 4. Sequential Production Builds (Hardware-Aware)
-
 > [!CAUTION]
-> **STRICT SEQUENTIAL EXECUTION**: You MUST execute the Android and Web builds sequentially. Wait for Android to finish completely before starting Web. **DO NOT** parallelize these builds, even if `$MELOS_CAN_HANDLE` is high (e.g., 8). `flutter build` maximizes all available threads by default; running two simultaneously will cause extreme system thrashing on the 16-core Windows machine and trigger OOM kills on Chromebooks.
+> **STRICT SEQUENTIAL EXECUTION**: You MUST execute the Android and Web builds sequentially. Wait for Android to finish completely before starting Web. **DO NOT** parallelize these builds, even if `$MELOS_CAN_HANDLE` is high (for example, 8). `flutter build` maximizes all available threads by default; running two simultaneously will cause extreme system thrashing on the 16-core Windows machine and trigger OOM kills on Chromebooks.
 
 1. **Target 1: Android**: Build the AAB from `apps/gdar_mobile`:
    - `flutter build appbundle --release`
@@ -87,10 +84,11 @@ This script atomically handles:
 ## 5. Web Deploy & Final Check-in
 1. **Web Deploy**: Run `firebase deploy --only hosting` from the workspace root.
 2. **Unified Release Commit (THE FINAL STEP)**:
-   - `git add .` (Capture versioning, changelog, and doc history updates).
+   - `git add .` (capture versioning, changelog, and doc history updates)
    - `git commit -m "release: $(dart scripts/get_current_version.dart)"`
    - `git tag v$(dart scripts/get_current_version.dart)`
-   - `git push origin main ; git push --tags`
+   - `git push origin main`
+   - `git push --tags`
 
 ## 6. Wrap-Up
 1. Report build and deploy status clearly.
@@ -99,6 +97,6 @@ This script atomically handles:
 
 ## Hard Rules
 - Never write release history to `docs/RELEASE_NOTES.txt`.
-- The workspace is defined by the root `pubspec.yaml`. Melos commands (`melos run *`) are the task runner — they use `melos.yaml` for script definitions, which is fine. Do not add packages to the workspace via `melos.yaml`; use the root `pubspec.yaml` `workspace:` field.
+- The workspace is defined by the root `pubspec.yaml`. Melos commands (`melos run *`) are the task runner - they use `melos.yaml` for script definitions, which is fine. Do not add packages to the workspace via `melos.yaml`; use the root `pubspec.yaml` `workspace:` field.
 - **Dirty Worktree Handling**: If the worktree is dirty, DO NOT abort. Instead, proceed with the builds and include these changes in the final unified release commit. This ensures a zero-friction path while capturing all intended changes in the release history.
-- A dirty worktree is handled by a pre-release housekeeping commit — never by `git restore` or discarding changes.
+- A dirty worktree is handled by the release housekeeping flow - never by `git restore` or discarding changes.

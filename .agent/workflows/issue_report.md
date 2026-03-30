@@ -11,9 +11,9 @@ description: Investigate a specific codebase issue and generate a standardized r
 ## Investigation & Reporting Steps
 1. **Get App Version**: Read `pubspec.yaml` to explicitly get the current app version.
 2. **Current Time**: Get the current local time.
-3. **Investigate**: Use codebase search, `view_file`, `mcp_dart-mcp-server_analyze_files`, etc. to investigate the issue provided by the user.
+3. **Investigate**: Use codebase search, file reads, targeted analysis/test commands, and repo inspection tools to investigate the issue provided by the user.
 4. **Format Name**: Generate a filename using the current date, time, and app version (e.g., `reports/YYYY-MM-DD_HH-MM_v1.0.3+3_issue_name.md`).
-5. **Generate Report**: Create the markdown file in the `reports/` directory using the `write_to_file` tool. create the directory if it doesn't exist.
+5. **Generate Report**: Create the markdown file in the `reports/` directory using the available file-editing workflow. Create the directory if it doesn't exist.
 6. **Content**: The report must include:
     - Issue Summary
     - Files Affected
