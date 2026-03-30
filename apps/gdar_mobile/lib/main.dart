@@ -114,7 +114,6 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
   StreamSubscription? _linkSubscription;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool _isScreensaverActive = false;
-  final ValueNotifier<String?> _launchError = ValueNotifier(null);
 
   void _setScreensaverActive(bool active) {
     if (!mounted) {
@@ -155,7 +154,6 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
   @override
   void dispose() {
     _inactivityService?.dispose();
-    _launchError.dispose();
     _linkSubscription?.cancel();
     _deepLinkService?.dispose();
     super.dispose();
@@ -167,23 +165,19 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
   }) async {
     final navigator = _navigatorKey.currentState;
     if (navigator == null) {
-      _launchError.value = 'navigator null';
       return;
     }
 
     logger.i('Launching screensaver from mobile/$source');
     _inactivityService?.stop();
     _setScreensaverActive(true);
-    _launchError.value = null;
     try {
       await navigator.push(
         ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
       );
     } on Exception catch (e) {
-      _launchError.value = e.toString().replaceFirst('Exception: ', '');
       logger.e('Screensaver launch failed', error: e);
     } catch (e) {
-      _launchError.value = e.runtimeType.toString();
       logger.e('Screensaver launch failed', error: e);
     } finally {
       _setScreensaverActive(false);
@@ -403,86 +397,14 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
                 return InactivityDetector(
                   inactivityService: _inactivityService,
                   isScreensaverActive: _isScreensaverActive,
-                  child: Stack(
-                    children: [
-                      ColoredBox(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        child: child ?? const SizedBox.shrink(),
-                      ),
-                      if (settingsProvider.useOilScreensaver)
-                        Center(
-                          child: _InactivityCountdownOverlay(
-                            countdown: _inactivityService!.debugCountdown,
-                            launchError: _launchError,
-                          ),
-                        ),
-                    ],
+                  child: ColoredBox(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: child ?? const SizedBox.shrink(),
                   ),
                 );
               },
               home: const SplashScreen(),
             ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _InactivityCountdownOverlay extends StatelessWidget {
-  const _InactivityCountdownOverlay({
-    required this.countdown,
-    required this.launchError,
-  });
-
-  final ValueNotifier<String> countdown;
-  final ValueNotifier<String?> launchError;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: ValueListenableBuilder<String?>(
-        valueListenable: launchError,
-        builder: (context, error, _) {
-          if (error != null) {
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0xCC990000),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'SS ERR: $error',
-                style: const TextStyle(
-                  color: Color(0xFFFFAAAA),
-                  fontSize: 10,
-                  fontFamily: 'monospace',
-                ),
-              ),
-            );
-          }
-
-          return ValueListenableBuilder<String>(
-            valueListenable: countdown,
-            builder: (context, value, _) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xCCFF0000),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: Text(
-                  'SS: $value (TV: ${ThemeProvider.getInstance?.isTv})',
-                  style: const TextStyle(
-                    color: Color(0xFFFFFFFF),
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'monospace',
-                  ),
-                ),
-              );
-            },
           );
         },
       ),

@@ -284,7 +284,7 @@ void main() {
     await tester.pump();
   });
 
-  testWidgets('Forced TV mobile shell shows SS overlay', (
+  testWidgets('Forced TV mobile shell hides SS overlay', (
     WidgetTester tester,
   ) async {
     SharedPreferences.setMockInitialValues({
@@ -314,7 +314,8 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 10));
 
-    expect(find.textContaining('SS:'), findsOneWidget);
+    expect(find.textContaining('SS:'), findsNothing);
+    expect(find.textContaining('SS ERR:'), findsNothing);
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
   });
