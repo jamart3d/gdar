@@ -61,22 +61,18 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
    - Do **not** run `melos run fix` — shipit verifies, it does not auto-modify code. Run `/checkup` first if fixes are needed.
    - Update `verification_status.json` upon success.
 
-## 2. Platform-Wide Version Bump
-1. Run the versioning script:
-   - `dart scripts/bump_version.dart patch` — default for all releases
-   - `dart scripts/bump_version.dart minor` — only if user explicitly requested `minor` in the trigger
-2. Confirm the new version: `dart scripts/get_current_version.dart`
-3. Verify all three app targets (`mobile`, `tv`, `web`) reflect the new version.
+## 2. Unified Release Housekeeping (Turbo)
 
-## 3. Automated Changelog & Release Notes
-1. **Move Unreleased**:
-   - Merge any content from `.agent/notes/pending_release.md` into the `[Unreleased]` section of `CHANGELOG.md`.
-   - Clear `.agent/notes/pending_release.md` (reset to header).
-   - **Default Entry**: If the section is empty after merging, add `- **Maintenance**: General maintenance and version synchronization.`
-   - Move all `[Unreleased]` items into a new versioned block in `CHANGELOG.md`.
-2. **Update Play Store Note**: Extract the new version's changelog block and PREPEND it to `docs/PLAY_STORE_RELEASE.txt`.
-   > [!IMPORTANT]
-   > **Sync Verification**: Ensure the version and content in `docs/PLAY_STORE_RELEASE.txt` match `CHANGELOG.md` exactly.
+// turbo
+1. Run the unified housekeeping script:
+   - `dart scripts/finalize_release.dart patch` (default)
+   - `dart scripts/finalize_release.dart minor` (if requested)
+
+This script atomically handles:
+- Platform-wide version bump.
+- Migration of notes from `pending_release.md` to `CHANGELOG.md`.
+- Automated Play Store note prepending to `docs/PLAY_STORE_RELEASE.txt`.
+- Resetting the pending notes buffer.
 
 ## 4. Sequential Production Builds (Hardware-Aware)
 

@@ -21,6 +21,14 @@ Follow `.agent/rules/platform_detection.md` and resolve one of:
 - `WINDOWS_10`
 - `CHROMEBOOK`
 
+### Unified Detection (Zero-Friction)
+
+Run this single, whitelisted command on both platforms:
+
+```bash
+dart scripts/detect_platform.dart
+```
+
 ## 2. Resolve Required Commands
 
 Use shell-native command lookup before running the real workflow steps.

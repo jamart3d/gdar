@@ -20,40 +20,20 @@ Use a conservative rule:
 - Otherwise, fail closed to `CHROMEBOOK`.
 - Never assume a generic Linux desktop for this repo's workflow decisions.
 
-### PowerShell / cmd
+### Unified Detection (Zero-Friction)
 
-Run:
+Run this single, whitelisted command on both platforms:
 
-```powershell
-if ($env:OS -eq 'Windows_NT') { 'WINDOWS_10' } else { 'CHROMEBOOK' }
+```bash
+dart scripts/detect_platform.dart
 ```
 
-Expected result in the normal Windows 10 environment:
+Expected result:
 
 ```text
 WINDOWS_10
 ```
-
-### Bash
-
-Run:
-
-```bash
-if uname -s 2>/dev/null | grep -qiE 'mingw|msys|cygwin'; then
-  echo WINDOWS_10
-elif [ -f /dev/.cros_milestone ] || \
-     grep -qiE 'penguin|cros|chromeos' /etc/hostname /proc/version /proc/sys/kernel/osrelease 2>/dev/null; then
-  echo CHROMEBOOK
-else
-  echo CHROMEBOOK
-fi
-```
-
-Expected result in the normal Chromebook/Crostini environment:
-
-```text
-CHROMEBOOK
-```
+*(or `CHROMEBOOK` if on Linux/Crostini)*
 
 ## 2. Resolve Concurrency (`$MELOS_CAN_HANDLE`)
 

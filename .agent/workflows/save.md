@@ -7,16 +7,17 @@ description: Quick-save workflow to commit and push changes.
 
 // turbo-all
 
-## Usage
-Run this workflow whenever you want to quickly backup your work.
+## 1. Unified Save & Sync (Turbo)
 
-1. **Check Status**: `git status`
-2. **Add Files**: `git add .`
-3. **Commit**: `git commit -m "[Auto-Save] <generate descriptive message here>"`
-4. **Push**: `git push`
+// turbo
+1. Run the unified sync script:
+   - `dart scripts/save_sync.dart "[Auto-Save] <generate descriptive message here>"`
 
-## Post-Save Hygiene
-1. **Prune Notes**: The agent MUST delete any empty `.agent/notes/*.md` files to maintain workspace hygiene.
-2. **Update Receipt**: The agent MUST update `.agent/notes/verification_status.json` with the new Git SHA and mark the status as `saved` to ensure the "Smart Receipt" accurately tracks the current codebase state.
+This script atomically handles:
+- `git add .`
+- `git commit` with a descriptive message.
+- `git push` to origin.
+- Pruning empty `.agent/notes/*.md` files.
+- Updating `.agent/notes/verification_status.json` with the new Git SHA and `saved` status.
 
 **POST-SAVE:** If this session involved test fixes or core model changes, you MUST suggest the `/jules` handoff workflow to the user.
