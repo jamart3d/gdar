@@ -48,4 +48,18 @@ The root is a **workspace coordinator**, not an app target.
 | `flutter build web` | Windows |
 
 - **Linux**: Run `melos` from the repo root. Build commands must run from the specific app directory. Never leave background processes running. Do not use interactive shells.
-- **Windows**: Build and deploy commands run on Windows. Use `cmd /c` to assure process terminates. Flutter and Firebase CLI paths are on the Windows PATH.
+- **Windows**: Build and deploy commands run on Windows. Use `powershell` compatible syntax. Flutter and Firebase CLI paths are on the Windows PATH.
+
+## 7. Shell Syntax Compliance
+To maintain zero-friction execution, the following syntax rules MUST be followed strictly:
+
+| Shell | Multi-Command Chaining | Comment Style |
+|---|---|---|
+| **Bash (Linux/ChromeOS)** | `&&` | `# comment` |
+| **PowerShell (Windows)** | `;` | `# comment` |
+
+### PowerShell Constraints:
+- **Separation**: NEVER use `&&` or `||` for command chaining; always use `;`.
+- **Variables**: Use `$(...)` for sub-command results within a string (e.g., `git commit -m "release: $(dart get_version.dart)"`).
+- **Paths**: Use standard relative paths with forward slashes `/` where possible, as modern PowerShell handles them correctly and it maintains cross-platform legibility.
+- **Fail-Fast**: If a sequence requires a success-only next step in PowerShell, use a conditional `if ($?) { ... }` rather than assuming `;` behaves like `&&`.
