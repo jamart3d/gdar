@@ -88,13 +88,13 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 2. **Target 2: Web**: Build the PWA from `apps/gdar_web`:
    - `flutter build web --release`
 
-## 5. Deploy & Git Finalization
+## 5. Web Deploy & Final Check-in
 1. **Web Deploy**: Run `firebase deploy --only hosting` from the workspace root.
-2. **Unified Release Commit**:
-   - `git add .` (Ensures all housekeeping, versioning, and changelog edits are captured together).
+2. **Unified Release Commit (THE FINAL STEP)**:
+   - `git add .` (Capture versioning, changelog, and doc history updates).
    - `git commit -m "release: $(dart scripts/get_current_version.dart)"`
    - `git tag v$(dart scripts/get_current_version.dart)`
-   - git push ; git push --tags
+   - `git push origin main ; git push --tags`
 
 ## 6. Wrap-Up
 1. Report build and deploy status clearly.
