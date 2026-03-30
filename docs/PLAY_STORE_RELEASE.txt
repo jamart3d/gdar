@@ -1,5 +1,8 @@
-[1.3.39+249] - 2026-03-30
+What's new in v1.3.39+249
 - Maintenance: General maintenance, workflow synchronization, and zero-friction orchestration updates.
+
+---
+
 What's new in v1.3.38+248
 - Testing: Resolved NoSuchMethodError in Provider tests by injecting missing SettingsProvider stubs for hideTabText and fruitEnableLiquidGlass.
 - UI/UX (Design Scanner): Replaced hardcoded Colors legacy values with semantic and hex equivalents to satisfy the micro-scanner guidelines across UI components.
@@ -168,7 +171,7 @@ What's new in v1.3.12+222
 ---
 
 What's new in v1.3.11+221
-- TV UI: Refined visual highlightsÃ¢â‚¬â€now ONLY the active cursor has the rainbow RGB border for maximum clarity.
+- TV UI: Refined visual highlightsÃ¢â‚¬â€ now ONLY the active cursor has the rainbow RGB border for maximum clarity.
 - TV UI: Added focus memory to the track list; it now remembers your last selected item when returning to the library.
 - Web UI: Added a "Crossfade Play/Pause" setting for smooth audio transitions on the Fruit theme.
 - Data: Conducted a major cleanup of the Grateful Dead song structural hints, removing JGB and non-GD side projects for accuracy.
@@ -456,4 +459,3 @@ What's new in v1.1.52
 - Refined playing track border to be a crisp line without glow.
 - Changed playback header rating stars to filled yellow for better visibility.
 - Fixed several focus and navigation issues on Google TV.
-
