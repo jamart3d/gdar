@@ -1,3 +1,5 @@
+[1.3.39+249] - 2026-03-30
+- Maintenance: General maintenance, workflow synchronization, and zero-friction orchestration updates.
 What's new in v1.3.38+248
 - Testing: Resolved NoSuchMethodError in Provider tests by injecting missing SettingsProvider stubs for hideTabText and fruitEnableLiquidGlass.
 - UI/UX (Design Scanner): Replaced hardcoded Colors legacy values with semantic and hex equivalents to satisfy the micro-scanner guidelines across UI components.

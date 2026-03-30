@@ -56,12 +56,13 @@ Both Android (Phone/TV) and Web/PWA targets **MUST** be built and deployed in ev
 ## 0.5. Process Hygiene
 Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes — lock files from a hung process can make a clean worktree appear dirty.
 
-## 1. Preflight & Smart Skip
-1. Run `git status --porcelain` — if the worktree is dirty:
-   - Show the user what files are uncommitted.
-   - `git add . && git commit -m "chore: pre-release housekeeping [skip ci]"` — commit everything and proceed.
-   - Do **not** abort. A dirty worktree before shipit means intentional changes that belong in the repo.
-2. Read `CHANGELOG.md` — **abort immediately if `[Unreleased]` is empty**. Notify the user: "No unreleased changelog entries found. Add release notes to `[Unreleased]` before continuing." Do not proceed to versioning.
+## 1. Preflight Verification (Smart Skip)
+1. Run `git status --porcelain` to check workspace status.
+   - Note: If the worktree is dirty, those changes will be included in the final release commit after the build. Do **not** commit them now.
+2. **Notes Verification**:
+   - Check `CHANGELOG.md` for `[Unreleased]` entries.
+   - Read `.agent/notes/pending_release.md`.
+   - If BOTH are empty, the release will proceed as a pure maintenance version bump.
 3. Check `.agent/notes/verification_status.json` and run `git rev-parse HEAD`.
 4. If (Current SHA == `last_verification_commit`) AND (status == "PASS"):
    - **SKIP** the `melos run` pass and proceed to versioning.
@@ -80,7 +81,11 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 3. Verify all three app targets (`mobile`, `tv`, `web`) reflect the new version.
 
 ## 3. Automated Changelog & Release Notes
-1. **Move Unreleased**: Move `[Unreleased]` items into a new versioned block in `CHANGELOG.md`. (Empty check already enforced in step 1.)
+1. **Move Unreleased**:
+   - Merge any content from `.agent/notes/pending_release.md` into the `[Unreleased]` section of `CHANGELOG.md`.
+   - Clear `.agent/notes/pending_release.md` (reset to header).
+   - **Default Entry**: If the section is empty after merging, add `- **Maintenance**: General maintenance and version synchronization.`
+   - Move all `[Unreleased]` items into a new versioned block in `CHANGELOG.md`.
 2. **Update Play Store Note**: Extract the new version's changelog block and PREPEND it to `docs/PLAY_STORE_RELEASE.txt`.
    > [!IMPORTANT]
    > **Sync Verification**: Ensure the version and content in `docs/PLAY_STORE_RELEASE.txt` match `CHANGELOG.md` exactly.
@@ -97,8 +102,8 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 
 ## 5. Deploy & Git Finalization
 1. **Web Deploy**: Run `firebase deploy --only hosting` from the workspace root.
-2. **Zero-Friction Staging**:
-   - `git add pubspec.yaml apps/*/pubspec.yaml packages/*/pubspec.yaml CHANGELOG.md docs/PLAY_STORE_RELEASE.txt`
+2. **Unified Release Commit**:
+   - `git add .` (Ensures all housekeeping, versioning, and changelog edits are captured together).
    - `git commit -m "release: $(dart scripts/get_current_version.dart)"`
    - `git tag v$(dart scripts/get_current_version.dart)`
    - `git push && git push --tags`
