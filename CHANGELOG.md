@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.38+248] - 2026-03-30
+
 ### Fixed
 - **Testing**: Resolved `NoSuchMethodError` in Provider tests by injecting missing `SettingsProvider` stubs for `hideTabText` and `fruitEnableLiquidGlass`.
 - **UI/UX (Design Scanner)**: Replaced hardcoded `Colors` legacy values with semantic and hex equivalents to satisfy the micro-scanner guidelines across UI components.
