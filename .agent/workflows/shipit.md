@@ -115,5 +115,5 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 ## Hard Rules
 - Never write release history to `docs/RELEASE_NOTES.txt`.
 - The workspace is defined by the root `pubspec.yaml`. Melos commands (`melos run *`) are the task runner — they use `melos.yaml` for script definitions, which is fine. Do not add packages to the workspace via `melos.yaml`; use the root `pubspec.yaml` `workspace:` field.
-- **Never run `git restore`, `git checkout --`, or any destructive reset to clean a dirty worktree.** If the worktree is dirty, abort and tell the user: "Worktree has uncommitted changes — please commit or stash them before releasing." The user decides what to do with their changes, not this workflow.
+- **Dirty Worktree Handling**: If the worktree is dirty, DO NOT abort. Instead, proceed with the builds and include these changes in the final unified release commit. This ensures a zero-friction path while capturing all intended changes in the release history.
 - A dirty worktree is handled by a pre-release housekeeping commit — never by `git restore` or discarding changes.
