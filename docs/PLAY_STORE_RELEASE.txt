@@ -1,3 +1,10 @@
+What's new in v1.3.40+250
+- refactor(tv): extracted screensaver audio builder slice
+- refactor(ui): split playback screen into focused part files
+- chore(deps): minor dependency updates (logger, shared_prefs, build_runner)
+
+---
+
 What's new in v1.3.39+249
 - Maintenance: General maintenance, workflow synchronization, and zero-friction orchestration updates.
 
