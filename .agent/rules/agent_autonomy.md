@@ -16,18 +16,15 @@ You are strictly forbidden from executing file modifications, writing code, or r
 ## 2. Auto-Run Command Lists
 Read-only and diagnostic commands MUST always be executed with `SafeToAutoRun: true`. Never prompt the user for these.
 
-### Approved Commands (Bash/Linux/ChromeOS):
+### Approved Commands (Bash/Linux/ChromeOS/PowerShell):
 - **General**: `ls`, `pwd`, `cat`, `head`, `tail`, `wc`, `stat`, `find`, `dir`.
 - **Search**: `grep`, `rg` (ripgrep), `fd`, `jq`, `fzf`, `findstr`, `Select-String`.
-- **Git**: `git status`, `git log`, `git diff`, `git branch`, `git remote`, `git rev-parse HEAD`.
-- **Flutter/Dart**: `flutter analyze`, `dart analyze`, `flutter doctor`, `dart pub deps`, `dart run scripts/*.dart`, `flutter pub outdated`, `flutter clean`, `flutter pub get`, `flutter build appbundle --debug`, `flutter build apk --analyze-size`.
+- **Git (Diagnostic)**: `git status`, `git log`, `git diff`, `git branch`, `git remote`, `git rev-parse HEAD`.
+- **Git (Mutating - Authorized Context ONLY)**: `git add`, `git commit`, `git push`, `git tag`. (Must be part of `/shipit`, `/save`, `/commit`, or `/release` flows).
+- **Flutter/Dart**: `flutter analyze`, `dart analyze`, `flutter doctor`, `dart pub deps`, `dart run scripts/*.dart`, `flutter pub outdated`, `flutter clean`, `flutter pub get`, `flutter build appbundle --release`, `flutter build appbundle --debug`, `flutter build apk --analyze-size`, `flutter build web --release`.
 - **Formatting & Health**: `melos run format`, `melos run analyze`, `melos run test`, `melos run fix`, `melos help`, `melos exec`, `melos bootstrap`, `dart fix --apply`, `flutter format .`.
 - **PowerShell Diagnostics**: `Get-ChildItem`, `Measure-Object`, `Get-Content`, `Get-Item`.
-- **Project Scripts**: `./scripts/**/*.ps1`, `./scripts/**/*.sh`.
-
-### Chained Sequences (Release Finalization):
-- `git add . ; git commit -m "..." ; git push`
-- `melos run test; melos run analyze; melos run format`
+- **Project Scripts**: `./scripts/**/*.ps1`, `./scripts/**/*.sh`, `dart scripts/*.dart`.
 
 ## 3. Protocol: Fail Fast, No Black Boxes
 - **No Black Boxes**: Every primary step in an autonomous chain MUST be run as a discrete tool call to provide real-time status visibility.
@@ -36,6 +33,7 @@ Read-only and diagnostic commands MUST always be executed with `SafeToAutoRun: t
 
 ## 4. Prohibited Actions (Always Prompt)
 - `rm`, `Remove-Item`, `del` (Filesystem deletion of project files).
+- `git restore`, `git reset --hard` (Destructive worktree modification).
 - Multi-step destructive mutations outside of the `/shipit` or `/checkup` scope.
 
 ## 5. Scope Containment & Efficiency
