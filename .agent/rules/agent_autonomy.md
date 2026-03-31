@@ -16,6 +16,19 @@ You are strictly forbidden from executing file modifications, writing code, or r
 ## 2. Auto-Run Command Lists
 Read-only and diagnostic commands MUST always run under the Zero-Friction Mandate without extra confirmation. Never prompt the user for these.
 
+### 0. Unified Preflight (Turbo)
+// turbo
+1. Run the unified preflight script:
+   - `dart scripts/preflight_check.dart --release`
+2. **If output is `CHROMEBOOK`:**
+   - Notify the user: "Chromebook detected - health suite only. Flutter builds and Firebase deploy must run on Windows 10."
+   - Run step 1 (health suite) and then **stop**. Do not proceed to versioning, builds, or deploy.
+3. **If output is `WINDOWS_10`:**
+   - Continue to all steps end-to-end.
+
+### 0.5. Process Hygiene
+Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes.
+
 ### Approved Commands (Bash/Linux/ChromeOS/PowerShell):
 - **General**: `ls`, `pwd`, `cat`, `head`, `tail`, `wc`, `stat`, `find`, `dir`.
 - **Search**: `grep`, `rg` (ripgrep), `fd`, `jq`, `fzf`, `findstr`, `Select-String`.
@@ -48,7 +61,7 @@ To conserve context window and compute quota:
 
 ## 6. Constraint Integrity
 - **Negative Constraint Integrity:** When a user explicitly rejects a term or feature, perform a search across active artifacts (`task.md`, `implementation_plan.md`) and remove every instance immediately. Never request review on an artifact containing rejected concepts.
-- **Documentation Integrity:** When refactoring technical manuals, you are STRICTLY FORBIDDEN from summarizing or omitting technical blocks. Content must be moved ATOMICALLY.
+- **Documentation Integrity:** When refactoring technical manuals, workflows, or rules, you are STRICTLY FORBIDDEN from summarizing, omitting, or deleting technical blocks, logic gates, hard rules, or caution banners. Content must be moved ATOMICALLY and verified for logical parity.
 
 ## 7. Anti-Apology Protocol
 - **Auto-Correction Over Apology**: When a mistake is made, or a constraint is violated (e.g., using print instead of logger), you are STRICTLY FORBIDDEN from generating an apology. Instead, you MUST automatically find a one-line structural constraint to prevent the mistake, update the appropriate `.md` rule or workflow file to permanently codify it, and inform the user that the system has learned from the error.

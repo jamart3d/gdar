@@ -29,19 +29,18 @@ Both Android (Phone/TV) and Web/PWA targets **MUST** be built and deployed in ev
 
 ---
 
-## 0. Platform Detection (MUST RUN FIRST)
-1. Run the shared preflight in `.agent/workflows/toolchain_preflight.md`.
-   - Required commands for `shipit`: `git`, `dart`, `flutter`, `firebase`
-   - Use the host detection result from `.agent/rules/platform_detection.md`
+## 0. Unified Preflight (Turbo)
+// turbo
+1. Run the unified preflight script:
+   - `dart scripts/preflight_check.dart --release`
 2. **If output is `CHROMEBOOK`:**
    - Notify the user: "Chromebook detected - health suite only. Flutter builds and Firebase deploy must run on Windows 10."
-   - Run steps 0.5 and 1 (process hygiene + health suite) and then **stop**. Do not proceed to versioning, builds, or deploy.
+   - Run step 1 (health suite) and then **stop**. Do not proceed to versioning, builds, or deploy.
 3. **If output is `WINDOWS_10`:**
-   - Resolve `$MELOS_CAN_HANDLE` per `.agent/rules/platform_detection.md`.
    - Continue to all steps end-to-end.
 
 ## 0.5. Process Hygiene
-Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes - lock files from a hung process can make a clean worktree appear dirty.
+Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes.
 
 ## 1. Preflight Verification (Smart Skip)
 1. Run `git status --porcelain` to check workspace status.
@@ -81,17 +80,20 @@ This script atomically handles:
 2. **Target 2: Web**: Build the PWA from `apps/gdar_web`:
    - `flutter build web --release`
 
-## 5. Web Deploy & Final Check-in
-1. **Web Deploy**: Run `firebase deploy --only hosting` from the workspace root.
-2. **Unified Release Commit (THE FINAL STEP)**:
-   - `git add .` (capture versioning, changelog, and doc history updates)
-   - `git commit -m "release: $(dart scripts/get_current_version.dart)"`
-   - `git tag v$(dart scripts/get_current_version.dart)`
-   - `git push origin main`
-   - `git push --tags`
+## 4. Web Deploy & Final Sync
+// turbo
+1. **Web Deploy**: `firebase deploy --only hosting`
+2. **Unified Release Sync**:
+   - `dart scripts/release_sync.dart`
 
-## 6. Wrap-Up
-1. Report build and deploy status clearly.
+This script handles:
+- Final `git add .` to capture version history.
+- Release commit (`release: x.y.z`).
+- Automated version tagging (`v.x.y.z`).
+- Final `push` to origin main and tags.
+
+## 5. Wrap-Up
+1. Report build and deploy status.
 2. Remind the user to upload `apps/gdar_mobile/build/app/outputs/bundle/release/app-release.aab` to Google Play Console.
 3. Confirm `docs/PLAY_STORE_RELEASE.txt` is ready for the Play Console "Release Notes" section.
 
