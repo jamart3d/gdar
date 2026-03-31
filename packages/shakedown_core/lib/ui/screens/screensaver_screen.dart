@@ -213,6 +213,57 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     await VisualizerAudioReactor.stopStereoCapture();
   }
 
+  bool _shouldDeferMicrophonePermission(
+    SettingsProvider settings,
+    DeviceService deviceService,
+  ) {
+    if (defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
+    return deviceService.isTv && settings.oilBeatDetectorMode == 'pcm';
+  }
+
+  Future<PermissionStatus?> _getMicrophonePermissionStatus() async {
+    try {
+      return await Permission.microphone.status;
+    } catch (error) {
+      debugPrint(
+        'Screensaver: Failed to read microphone permission status: $error',
+      );
+      return null;
+    }
+  }
+
+  Future<PermissionStatus?> _requestMicrophonePermission() async {
+    try {
+      return await _runPermissionFlow(Permission.microphone.request);
+    } catch (error) {
+      debugPrint(
+        'Screensaver: Failed to request microphone permission: $error',
+      );
+      return null;
+    }
+  }
+
+  Future<AudioReactor?> _createStartedAudioReactor({
+    required int? audioSessionId,
+    required bool isTv,
+  }) async {
+    final reactor = await AudioReactorFactory.create(
+      audioSessionId: audioSessionId,
+      isTv: isTv,
+    );
+    if (reactor == null) {
+      return null;
+    }
+    final started = await reactor.start();
+    if (!started) {
+      reactor.dispose();
+      return null;
+    }
+    return reactor;
+  }
+
   Future<void> _loadSongHintCatalog() async {
     try {
       final catalog = await _songHintService.loadCatalog();
@@ -290,10 +341,25 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       // Web never has the real visualizer, and if reactivity is off skip entirely.
       if (kIsWeb || !settings.oilEnableAudioReactivity) return;
 
-      // MANDATORY for Android: Record Audio permission is required for the Visualizer API.
+      PermissionStatus? microphoneStatus;
+      final deferMicrophonePermission = _shouldDeferMicrophonePermission(
+        settings,
+        deviceService,
+      );
+
+      // Most Android visualizer paths still need RECORD_AUDIO. For explicit
+      // TV Enhanced/PCM mode, try to start first and only prompt if we
+      // actually need the runtime grant.
       if (defaultTargetPlatform == TargetPlatform.android) {
-        final status = await Permission.microphone.status;
-        if (!status.isGranted) {
+        microphoneStatus = await _getMicrophonePermissionStatus();
+        if (microphoneStatus == null) {
+          debugPrint(
+            'Screensaver: Microphone permission state unavailable. '
+            'Reactivity disabled for this session.',
+          );
+          return;
+        }
+        if (!deferMicrophonePermission && !microphoneStatus.isGranted) {
           if (!widget.allowPermissionPrompts) {
             debugPrint(
               'Screensaver: Skipping microphone permission request during '
@@ -301,15 +367,22 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
             );
             return;
           }
-          final result = await _runPermissionFlow(
-            Permission.microphone.request,
-          );
-          if (!result.isGranted) {
+          microphoneStatus = await _requestMicrophonePermission();
+          if (microphoneStatus?.isGranted != true) {
             debugPrint(
               'Screensaver: Audio permission denied. Reactivity disabled.',
             );
             return;
           }
+        } else if (deferMicrophonePermission &&
+            !widget.allowPermissionPrompts &&
+            !microphoneStatus.isGranted) {
+          debugPrint(
+            'Screensaver: Skipping deferred microphone permission request '
+            'during non-interactive launch. Enhanced reactivity disabled '
+            'for this session.',
+          );
+          return;
         }
       }
 
@@ -352,18 +425,51 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       }
 
       // Factory only returns a real reactor when isTv == true AND on Android.
-      final reactor = await AudioReactorFactory.create(
+      AudioReactor? reactor = await _createStartedAudioReactor(
         audioSessionId: sessionId,
         isTv: deviceService.isTv,
       );
+
+      if (reactor == null &&
+          defaultTargetPlatform == TargetPlatform.android &&
+          deferMicrophonePermission &&
+          microphoneStatus != null &&
+          !microphoneStatus.isGranted) {
+        if (!widget.allowPermissionPrompts) {
+          debugPrint(
+            'Screensaver: Skipping deferred microphone permission request '
+            'during non-interactive launch. Enhanced reactivity disabled '
+            'for this session.',
+          );
+          return;
+        }
+        microphoneStatus = await _requestMicrophonePermission();
+        if (microphoneStatus?.isGranted != true) {
+          debugPrint(
+            'Screensaver: Audio permission denied. Reactivity disabled.',
+          );
+          return;
+        }
+        reactor = await _createStartedAudioReactor(
+          audioSessionId: sessionId,
+          isTv: deviceService.isTv,
+        );
+      }
 
       if (!mounted) {
         reactor?.dispose();
         return;
       }
 
+      if (reactor == null) {
+        debugPrint(
+          'Screensaver: Audio reactor unavailable. Reactivity disabled '
+          'for this session.',
+        );
+        return;
+      }
+
       setState(() => _audioReactor = reactor);
-      await reactor?.start();
       if (reactor is VisualizerAudioReactor) {
         _pushAudioConfig(settings);
         await _syncStereoCapture(settings);

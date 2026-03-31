@@ -48,6 +48,9 @@
     /** Tracker for the currently active play() promise to avoid interruptions. */
     let _playPromise = null;
 
+    /** Last measured inter-track gap in milliseconds. */
+    let _lastGapMs = null;
+
     // ─── Audio Element Management ──────────────────────────────────────────────
 
     function _createAudio() {
@@ -189,6 +192,7 @@
         _playPromise.then(() => {
             _playPromise = null;
             const gapMs = performance.now() - transitionGapStart;
+            _lastGapMs = gapMs;
             _log.log(`[passive engine] Transition executed successfully. Exact gap: ${gapMs.toFixed(2)}ms`);
 
             _playing = true;
@@ -265,7 +269,8 @@
                 heartbeatActive: _backgroundMode !== 'none' &&
                     !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
                 heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
-                contextState: 'passive (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb'
+                contextState: 'passive (H5)' + (window._gdarIsHeartbeatNeeded() ? ' [HBN]' : ' [HBO]') + ' v1.1.hb',
+                lastGapMs: _lastGapMs,
             });
         } catch (_) { }
     }
@@ -304,6 +309,7 @@
             _currentIndex = startIndex != null ? startIndex : 0;
             _playing = false;
             _loadingState = 'idle';
+            _lastGapMs = null;
             _emitState();
         },
 
@@ -370,6 +376,7 @@
             _playing = false;
             _loadingState = 'idle';
             _isTransitioning = false;
+            _lastGapMs = null;
             _emitState();
             if (window._gdarMediaSession) {
                 window._gdarMediaSession.updatePlaybackState(false);
@@ -378,12 +385,14 @@
 
         seek: function (seconds) {
             if (!_audio || _currentIndex < 0) return;
+            _lastGapMs = null;
             _audio.currentTime = seconds;
             _emitState();
         },
 
         seekToIndex: function (index) {
             if (index < 0 || index >= _playlist.length) return;
+            _lastGapMs = null;
             _stopPositionTimer();
             _isTransitioning = false;
 
@@ -444,6 +453,7 @@
                 heartbeatActive: _backgroundMode !== 'none' &&
                     !!(window._gdarHeartbeat && window._gdarHeartbeat.isActive()),
                 heartbeatNeeded: window._gdarIsHeartbeatNeeded(),
+                lastGapMs: _lastGapMs,
             };
         },
 

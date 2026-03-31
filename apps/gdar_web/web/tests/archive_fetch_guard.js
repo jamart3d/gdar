@@ -47,16 +47,10 @@ async function main() {
     gapless.stop();
     gapless.setPlaylist([archiveTrack], 0);
 
-    let blocked = false;
-    try {
-        await gapless.prepareToPlay(0);
-    } catch (err) {
-        blocked = /cors|blocked/i.test(String(err && err.message));
-    }
+    await gapless.prepareToPlay(0);
 
-    assert(blocked, 'Gapless engine rejects archive WebAudio prep before fetch.');
-    assert(global.__fetchCalls.length === 0,
-        'Gapless engine does not issue fetch() for archive WebAudio decode.');
+    assert(global.__fetchCalls.length > 0,
+        'Gapless engine attempts fetch() for archive WebAudio decode.');
 
     if (global.__resetFetchCalls) global.__resetFetchCalls();
 
@@ -66,8 +60,8 @@ async function main() {
 
     await new Promise(resolve => setTimeout(resolve, 25));
 
-    assert(global.__fetchCalls.length === 0,
-        'Hybrid HTML5 worker does not issue HEAD/fetch decode for archive tracks.');
+    assert(global.__fetchCalls.length > 0,
+        'Hybrid HTML5 worker attempts HEAD/fetch decode for archive tracks.');
 
     let hybridErrors = 0;
     hybrid.onError(() => {
@@ -81,15 +75,15 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 25));
 
     hybridHtml5.seekToIndex(1);
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise(resolve => setTimeout(resolve, 250));
 
     const hybridState = hybrid.getState();
     assert(hybridErrors === 0,
-        'Hybrid boundary restore keeps archive track changes on HTML5 without surfacing playback errors.');
+        'Hybrid boundary restore does not surface playback errors for archive tracks.');
     assert(hybridState.playing === true && hybridState.index === 1,
-        'Hybrid continues playback after archive track boundary restore fallback.');
+        'Hybrid continues playback after archive track boundary restore.');
 
-    console.log('All archive fetch guard tests passing.');
+    console.log('All archive WebAudio restore tests passing.');
     process.exit(0);
 }
 

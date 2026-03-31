@@ -1,3 +1,10 @@
+What's new in v1.3.42+252
+- fix(tv): hardened PCM permission flow and refined header layout
+- fix(web): improved Audio HUD gap stability and restricted Android-theme players
+- fix(ui): smoothed playback auto-scrolling with proportional safe-area scaling
+
+---
+
 What's new in v1.3.41+251
 - fix(web): restored RANDOM dice animation in Fruit theme
 - fix(web): improved transition gap reporting in Fruit Audio HUD

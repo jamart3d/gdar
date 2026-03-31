@@ -30,8 +30,8 @@ class VisualizerAudioReactor implements AudioReactor {
   Stream<AudioEnergy> get energyStream => _energyController.stream;
 
   @override
-  Future<void> start() async {
-    if (_isRunning || _isDisposed) return;
+  Future<bool> start() async {
+    if (_isRunning || _isDisposed) return _isRunning;
 
     try {
       final result = await _methodChannel.invokeMethod('initialize', {
@@ -47,10 +47,12 @@ class VisualizerAudioReactor implements AudioReactor {
         );
 
         await _methodChannel.invokeMethod('start');
+        return true;
       }
     } catch (e) {
       _safeAdd(const AudioEnergy.zero());
     }
+    return false;
   }
 
   /// Push updated tuning knobs to the native side in real time.

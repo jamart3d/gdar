@@ -70,82 +70,82 @@ class FruitTabBar extends StatelessWidget {
         : 32.0 * tabScaleFactor;
 
     final content = Container(
-      padding: EdgeInsets.fromLTRB(
-        sidePadding, // px-4 or px-8
-        16.0 * tabScaleFactor, // pt-4
-        sidePadding,
-        16.0 * tabScaleFactor +
-            MediaQuery.paddingOf(context).bottom, // pb-4 + safe area
-      ),
       decoration: BoxDecoration(color: backgroundColor),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: _FruitTabItem(
-              icon: LucideIcons.playCircle,
-              label: 'PLAYING',
-              isActive: selectedIndex == 0,
-              scaleFactor: tabScaleFactor,
-              hideText: hideTabText,
-              onTap: () {
-                // ALLOW if currentShow is set, even if track isn't fully buffered yet
-                if (audioProvider.currentShow != null) {
-                  onTabSelected(0);
-                } else {
-                  showMessage(context, 'No track playing');
-                }
-              },
-            ),
+      padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+      child: SizedBox(
+        height: (48.0 + 32.0) * tabScaleFactor, // Base content + padding space
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: sidePadding),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: _FruitTabItem(
+                  icon: LucideIcons.playCircle,
+                  label: 'PLAYING',
+                  isActive: selectedIndex == 0,
+                  scaleFactor: tabScaleFactor,
+                  hideText: hideTabText,
+                  onTap: () {
+                    if (audioProvider.currentShow != null) {
+                      onTabSelected(0);
+                    } else {
+                      showMessage(context, 'No track playing');
+                    }
+                  },
+                ),
+              ),
+              Expanded(
+                child: _FruitTabItem(
+                  icon: LucideIcons.library,
+                  label: 'LIBRARY',
+                  isActive: selectedIndex == 1,
+                  scaleFactor: tabScaleFactor,
+                  hideText: hideTabText,
+                  onTap: () {
+                    onTabSelected(1);
+                  },
+                ),
+              ),
+              Expanded(
+                child: _FruitTabItem(
+                  icon: settingsProvider.nonRandom
+                      ? LucideIcons.skipForward
+                      : LucideIcons.dice5,
+                  label: settingsProvider.nonRandom ? 'NEXT' : 'RANDOM',
+                  isActive: selectedIndex == 2,
+                  isLoading: showListProvider.isChoosingRandomShow,
+                  enableHaptics: settingsProvider.enableHaptics,
+                  useAnimatedRandomIcon:
+                      !settingsProvider.nonRandom &&
+                      !settingsProvider.simpleRandomIcon,
+                  scaleFactor: tabScaleFactor,
+                  hideText: hideTabText,
+                  onTap: () {
+                    AppHaptics.selectionClick(
+                      context.read<DeviceService>(),
+                      enabled: settingsProvider.enableHaptics,
+                    );
+                    onTabSelected(2);
+                  },
+                ),
+              ),
+              Expanded(
+                child: _FruitTabItem(
+                  icon: LucideIcons.settings,
+                  label: 'SETTINGS',
+                  isActive: selectedIndex == 3,
+                  scaleFactor: tabScaleFactor,
+                  hideText: hideTabText,
+                  onTap: () {
+                    onTabSelected(3);
+                  },
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: _FruitTabItem(
-              icon: LucideIcons.library,
-              label: 'LIBRARY',
-              isActive: selectedIndex == 1,
-              scaleFactor: tabScaleFactor,
-              hideText: hideTabText,
-              onTap: () {
-                onTabSelected(1);
-              },
-            ),
-          ),
-          Expanded(
-            child: _FruitTabItem(
-              icon: settingsProvider.nonRandom
-                  ? LucideIcons.skipForward
-                  : LucideIcons.dice5,
-              label: settingsProvider.nonRandom ? 'NEXT' : 'RANDOM',
-              isActive: selectedIndex == 2,
-              isLoading: showListProvider.isChoosingRandomShow,
-              enableHaptics: settingsProvider.enableHaptics,
-              useAnimatedRandomIcon:
-                  !settingsProvider.nonRandom &&
-                  !settingsProvider.simpleRandomIcon,
-              scaleFactor: tabScaleFactor,
-              hideText: hideTabText,
-              onTap: () {
-                AppHaptics.selectionClick(
-                  context.read<DeviceService>(),
-                  enabled: settingsProvider.enableHaptics,
-                );
-                onTabSelected(2);
-              },
-            ),
-          ),
-          Expanded(
-            child: _FruitTabItem(
-              icon: LucideIcons.settings,
-              label: 'SETTINGS',
-              isActive: selectedIndex == 3,
-              scaleFactor: tabScaleFactor,
-              hideText: hideTabText,
-              onTap: () {
-                onTabSelected(3);
-              },
-            ),
-          ),
-        ],
+        ),
       ),
     );
 
@@ -369,35 +369,66 @@ class _FruitTabItemState extends State<_FruitTabItem> {
 
   Widget _buildTabContent(Color color) {
     final double iconSize = (widget.hideText ? 30 : 24) * widget.scaleFactor;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (widget.label == 'RANDOM' && widget.useAnimatedRandomIcon)
-          AnimatedDiceIcon(
-            onPressed: widget.onTap,
-            isLoading: widget.isLoading,
-            enableHaptics: widget.enableHaptics,
-            naked: true,
-            disableSquash: true,
-            useLucide: true,
-            iconColor: color,
-          )
-        else
-          Icon(widget.icon, color: color, size: iconSize),
-        if (!widget.hideText) ...[
-          SizedBox(height: 6 * widget.scaleFactor),
-          Text(
-            widget.label.toUpperCase(),
-            style: TextStyle(
-              fontFamily: FontConfig.resolve('Inter'),
-              fontSize: 9 * widget.scaleFactor,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 2.0,
-              color: color,
+
+    // Fixed layout slots to prevent vertical drift
+    final double iconSlotHeight = 32.0 * widget.scaleFactor;
+    final double textSlotHeight = 16.0 * widget.scaleFactor;
+    final double totalHeight = (48.0) * widget.scaleFactor;
+
+    return SizedBox(
+      height: totalHeight,
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Icon Slot: Always centered in the same vertical range
+          SizedBox(
+            height: iconSlotHeight,
+            child: Center(
+              child: (widget.label == 'RANDOM' && widget.useAnimatedRandomIcon)
+                  ? AnimatedDiceIcon(
+                      onPressed: widget.onTap,
+                      isLoading: widget.isLoading,
+                      enableHaptics: widget.enableHaptics,
+                      naked: true,
+                      disableSquash: true,
+                      useLucide: true,
+                      iconColor: color,
+                    )
+                  : Icon(widget.icon, color: color, size: iconSize),
             ),
           ),
+
+          // Label Slot: Occupies fixed space if visible, otherwise empty but stable
+          if (!widget.hideText)
+            SizedBox(
+              height: textSlotHeight,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: 2 * widget.scaleFactor), // Reduced gap
+                  Text(
+                    widget.label.toUpperCase(),
+                    style: TextStyle(
+                      fontFamily: FontConfig.resolve('Inter'),
+                      fontSize: 8.5 * widget.scaleFactor,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2.0,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            // Reserve invisible space if you want ZERO movement,
+            // but usually we allow the item to center slightly if the bar height is fixed.
+            // Since we already fixed the TabBar height to 80,
+            // the 48px slot is already centered.
+            const SizedBox.shrink(),
         ],
-      ],
+      ),
     );
   }
 }

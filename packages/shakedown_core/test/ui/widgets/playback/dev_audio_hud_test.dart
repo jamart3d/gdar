@@ -71,7 +71,13 @@ void main() {
 
   setUp(() {
     settingsProvider = FakeSettingsProvider();
-    audioProvider = _FakeAudioProvider(HudSnapshot.empty());
+    settingsProvider.showDevAudioHud = true;
+    final initialHud = HudSnapshot.empty().copyWith(
+      engine: 'HYB',
+      activeEngine: 'WA',
+      isPlaying: true,
+    );
+    audioProvider = _FakeAudioProvider(initialHud);
   });
 
   tearDown(() async {
@@ -103,6 +109,7 @@ void main() {
     );
 
     await tester.pumpWidget(createWidget());
+    await tester.pump(const Duration(milliseconds: 100));
     await tester.pump();
 
     expect(find.text('AE:'), findsOneWidget);
@@ -121,13 +128,13 @@ void main() {
     expect(find.text('BCT:'), findsOneWidget);
   });
 
-  testWidgets('hides WA-only telemetry while hybrid is on the H5 sub-engine', (
+  testWidgets('hides WA-only telemetry while hybrid is on the H5B sub-engine', (
     tester,
   ) async {
     audioProvider.emit(
       HudSnapshot.empty().copyWith(
         engine: 'HYB',
-        activeEngine: 'H5',
+        activeEngine: 'H5B',
         visibility: 'VIS(0m)',
         processing: 'RDY',
         engineState: 'ACT',
@@ -139,8 +146,10 @@ void main() {
     );
 
     await tester.pumpWidget(createWidget());
+    await tester.pump(const Duration(milliseconds: 100));
     await tester.pump();
 
+    expect(find.text('H5B'), findsOneWidget);
     expect(find.text('HF:'), findsOneWidget);
     expect(find.text('BG:'), findsOneWidget);
     expect(find.text('PF:'), findsOneWidget);
@@ -159,6 +168,61 @@ void main() {
     expect(find.text('BCT:'), findsNothing);
   });
 
+  testWidgets('reports pure H5 engine without B suffix', (tester) async {
+    audioProvider.emit(
+      HudSnapshot.empty().copyWith(
+        engine: 'H5',
+        activeEngine: 'H5',
+        isPlaying: true,
+      ),
+    );
+
+    await tester.pumpWidget(createWidget());
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump();
+
+    // Expecting 2 widgets with text "H5": one for ENG and one for AE
+    expect(find.text('H5'), findsNWidgets(2));
+    expect(find.text('H5B'), findsNothing);
+  });
+
+  testWidgets(
+    'LG chip shows -- when lastGapMs is null and value when not null',
+    (tester) async {
+      // 1. Null case
+      audioProvider.emit(
+        HudSnapshot.empty().copyWith(
+          engine: 'HYB',
+          activeEngine: 'WA',
+          lastGapMs: null,
+          isPlaying: true,
+        ),
+      );
+
+      await tester.pumpWidget(createWidget());
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump();
+
+      expect(find.textContaining('LG:'), findsOneWidget);
+      expect(find.textContaining('BUF:'), findsOneWidget);
+      expect(find.textContaining('NX:'), findsOneWidget);
+      expect(find.text('--'), findsAtLeastNWidgets(1));
+
+      // 2. Value case
+      audioProvider.emit(
+        HudSnapshot.empty().copyWith(
+          engine: 'HYB',
+          activeEngine: 'WA',
+          lastGapMs: 12.0,
+          isPlaying: true,
+        ),
+      );
+
+      await tester.pump();
+      expect(find.textContaining('LG:'), findsOneWidget);
+    },
+  );
+
   testWidgets('shows tooltip text for sparkline chips', (tester) async {
     audioProvider.emit(
       HudSnapshot.empty().copyWith(
@@ -172,6 +236,7 @@ void main() {
     );
 
     await tester.pumpWidget(createWidget());
+    await tester.pump(const Duration(milliseconds: 100));
     await tester.pump();
 
     await tester.longPress(find.text('DFT'));

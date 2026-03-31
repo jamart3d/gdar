@@ -72,7 +72,7 @@ class RatingControl extends StatelessWidget {
             )
           : RatingBar(
               initialRating: (rating == 0 && isPlayed)
-                  ? 1.0
+                  ? 3.0
                   : rating.toDouble(),
               minRating: 1,
               direction: Axis.horizontal,
@@ -143,7 +143,7 @@ class RatingControl extends StatelessWidget {
               ? 'Played, unrated'
               : 'Rated $rating stars',
           child: RatingBar(
-            initialRating: (rating == 0 && isPlayed) ? 1.0 : rating.toDouble(),
+            initialRating: (rating == 0 && isPlayed) ? 3.0 : rating.toDouble(),
             minRating: 1,
             direction: Axis.horizontal,
             allowHalfRating: false,
@@ -438,7 +438,7 @@ class _RatingDialogState extends State<RatingDialog> {
                               Widget ratingBar = RatingBar(
                                 initialRating:
                                     (_currentRating == 0 && _isPlayed)
-                                    ? 1.0
+                                    ? 3.0
                                     : (_currentRating > 0
                                           ? _currentRating.toDouble()
                                           : 0.0),

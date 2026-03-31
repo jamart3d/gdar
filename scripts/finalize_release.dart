@@ -1,4 +1,16 @@
 import 'dart:io';
+import 'package:logger/logger.dart';
+
+final logger = Logger(
+  printer: PrettyPrinter(
+    methodCount: 0,
+    errorMethodCount: 5,
+    lineLength: 80,
+    colors: true,
+    printEmojis: true,
+    dateTimeFormat: DateTimeFormat.none,
+  ),
+);
 
 /// Finalizes the release housekeeping for GDAR.
 /// 1. Bumps the version (patch/minor).
@@ -9,7 +21,7 @@ void main(List<String> args) async {
   final type = args.isNotEmpty ? args[0] : 'patch';
   final date = DateTime.now().toIso8601String().split('T')[0];
 
-  print('--- Starting Release Housekeeping ($type) ---');
+  logger.i('--- Starting Release Housekeeping ($type) ---');
 
   // 1. Run bump_version.dart
   final bumpProcess = await Process.run(
@@ -17,7 +29,7 @@ void main(List<String> args) async {
     ['scripts/bump_version.dart', type],
   );
   if (bumpProcess.exitCode != 0) {
-    print('Error bumping version: ${bumpProcess.stderr}');
+    logger.e('Error bumping version: ${bumpProcess.stderr}');
     exit(1);
   }
 
@@ -27,7 +39,7 @@ void main(List<String> args) async {
     ['scripts/get_current_version.dart'],
   );
   final newVersion = versionProcess.stdout.toString().trim();
-  print('New Version: $newVersion');
+  logger.i('New Version: $newVersion');
 
   // 3. Read pending notes
   final pendingFile = File('.agent/notes/pending_release.md');
@@ -63,7 +75,7 @@ void main(List<String> args) async {
       '## [Unreleased]\n\n$newBlock',
     );
     changelogFile.writeAsStringSync(changelog);
-    print('Updated CHANGELOG.md');
+    logger.i('Updated CHANGELOG.md');
   }
 
   // 5. Update docs/PLAY_STORE_RELEASE.txt
@@ -76,14 +88,14 @@ void main(List<String> args) async {
         .join('\n');
     final newPlayEntry = "What's new in v$newVersion\n$lines\n\n---\n\n$oldPlayStore";
     playStoreFile.writeAsStringSync(newPlayEntry);
-    print('Updated docs/PLAY_STORE_RELEASE.txt');
+    logger.i('Updated docs/PLAY_STORE_RELEASE.txt');
   }
 
   // 6. Reset pending_release.md
   pendingFile.writeAsStringSync(
     '# Pending Release Notes\n[Unreleased] entries will be moved to CHANGELOG.md during the next /shipit run.\n\n## [Unreleased]\n',
   );
-  print('Reset pending_release.md');
+  logger.i('Reset pending_release.md');
 
-  print('--- Housekeeping Complete ---');
+  logger.i('--- Housekeeping Complete ---');
 }

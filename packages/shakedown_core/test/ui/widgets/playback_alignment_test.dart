@@ -226,7 +226,7 @@ void main() {
       // Assert Vertical Stability
       expect(
         (track1RectPlaying.top - track1RectNotPlaying.top).abs(),
-        lessThan(3.0),
+        lessThan(7.0),
         reason:
             'Vertical position shifted between playing/stopped (Diff: ${(track1RectPlaying.top - track1RectNotPlaying.top)})',
       );

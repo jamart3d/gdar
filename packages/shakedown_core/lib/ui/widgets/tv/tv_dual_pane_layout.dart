@@ -311,16 +311,33 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                                   },
                                 ),
                                 Expanded(
-                                  child: ShowListScreen(
-                                    key: _showListScreenKey,
-                                    isPane: true,
-                                    scrollbarFocusNode:
-                                        _showListScrollbarFocusNode,
-                                    onFocusLeft: () {
-                                      _diceFocusNode.requestFocus();
+                                  child: ShaderMask(
+                                    shaderCallback: (Rect bounds) {
+                                      return const LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.transparent,
+                                          Colors.white,
+                                        ],
+                                        stops: [
+                                          0.0,
+                                          0.08,
+                                        ], // Soft 8% fade at top
+                                      ).createShader(bounds);
                                     },
-                                    onFocusPlayback: _focusRightPane,
-                                    onSettingsRequested: null,
+                                    blendMode: BlendMode.dstIn,
+                                    child: ShowListScreen(
+                                      key: _showListScreenKey,
+                                      isPane: true,
+                                      scrollbarFocusNode:
+                                          _showListScrollbarFocusNode,
+                                      onFocusLeft: () {
+                                        _diceFocusNode.requestFocus();
+                                      },
+                                      onFocusPlayback: _focusRightPane,
+                                      onSettingsRequested: null,
+                                    ),
                                   ),
                                 ),
                               ],

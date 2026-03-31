@@ -38,8 +38,8 @@ void main() {
       expect(provider.oilScreensaverMode, 'steal');
     });
 
-    test('oilAudioGraphMode defaults to a valid TV graph mode', () {
-      expect(provider.oilAudioGraphMode, 'corner');
+    test('oilAudioGraphMode defaults to off on TV', () {
+      expect(provider.oilAudioGraphMode, 'off');
     });
 
     test('activeAppFont always returns rock_salt on TV', () {

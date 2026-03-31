@@ -10,6 +10,12 @@ This workflow is for workspace-root hygiene in the GDAR monorepo. Treat it as
 an audit-first workflow. Do not delete or move files blindly on a dirty
 worktree.
 
+## 0. Preflight & Platform Detection
+// turbo
+1. Run `.agent/workflows/toolchain_preflight.md` to establish host class and shell syntax rules.
+2. Ensure you are using the correct OS-specific commands for discovery (`dir` vs `ls`) and deletion (`del` vs `rm`).
+
+
 ## Monorepo Awareness
 
 GDAR is a Dart workspace monorepo coordinated from the root `pubspec.yaml`.

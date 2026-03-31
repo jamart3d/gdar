@@ -228,7 +228,7 @@ extension _ShowListCardBuild on _ShowListCardState {
         : 58.0;
     final double cardHeight = baseHeight * style.effectiveScale;
     final bool isDesktopInlinePlaying =
-        kIsWeb && !useMobileLayout && !isTv && widget.isPlaying;
+        kIsWeb && isFruit && !useMobileLayout && !isTv && widget.isPlaying;
     final double controlZoneWidth = (kIsWeb)
         ? ((isFruit || !useMobileLayout)
                   ? (useMobileLayout ? 84.0 : (isFruit ? 180.0 : 140.0))

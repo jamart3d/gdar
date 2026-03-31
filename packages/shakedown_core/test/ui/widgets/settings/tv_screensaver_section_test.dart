@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
@@ -50,29 +51,62 @@ class _FakeDeviceService extends ChangeNotifier implements DeviceService {
 }
 
 class _FakeSettings extends FakeSettingsProvider {
-  _FakeSettings(this._graphMode, {this.beatDetectorMode = 'auto'}) {
+  _FakeSettings(
+    this._graphMode, {
+    String beatDetectorMode = 'auto',
+    bool enableAudioReactivity = true,
+    this.scaleSineEnabled = false,
+  }) : _beatDetectorMode = beatDetectorMode,
+       _enableAudioReactivity = enableAudioReactivity {
     isTv = true;
   }
 
   final String _graphMode;
-  final String beatDetectorMode;
+  final bool scaleSineEnabled;
+  String _beatDetectorMode;
+  bool _enableAudioReactivity;
 
   @override
   String get oilAudioGraphMode => _graphMode;
 
   @override
-  String get oilBeatDetectorMode => beatDetectorMode;
+  String get oilBeatDetectorMode => _beatDetectorMode;
+
+  @override
+  bool get oilEnableAudioReactivity => _enableAudioReactivity;
+
+  @override
+  bool get oilScaleSineEnabled => scaleSineEnabled;
+
+  @override
+  Future<void> setOilBeatDetectorMode(String mode) async {
+    _beatDetectorMode = mode;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> toggleOilEnableAudioReactivity() async {
+    _enableAudioReactivity = !_enableAudioReactivity;
+    notifyListeners();
+  }
 }
 
 Widget _buildSection(
   String graphMode, {
   String beatDetectorMode = 'auto',
+  bool enableAudioReactivity = true,
+  bool scaleSineEnabled = false,
   ScreensaverLaunchDelegate? launchDelegate,
 }) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider<SettingsProvider>.value(
-        value: _FakeSettings(graphMode, beatDetectorMode: beatDetectorMode),
+        value: _FakeSettings(
+          graphMode,
+          beatDetectorMode: beatDetectorMode,
+          enableAudioReactivity: enableAudioReactivity,
+          scaleSineEnabled: scaleSineEnabled,
+        ),
       ),
       ChangeNotifierProvider<ThemeProvider>.value(value: _FakeThemeProvider()),
       ChangeNotifierProvider<DeviceService>.value(value: _FakeDeviceService()),
@@ -93,6 +127,13 @@ Widget _buildSection(
 }
 
 void main() {
+  const stereoChannel = MethodChannel('shakedown/stereo');
+
+  tearDown(() {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(stereoChannel, null);
+  });
+
   group('TvScreensaverSection audio graph mode — control visibility', () {
     testWidgets(
       'circular: shows Radius, hides Line Replication and Line Spread',
@@ -139,6 +180,31 @@ void main() {
       expect(find.text('DEF'), findsNWidgets(2));
     });
 
+    testWidgets(
+      'audio reactivity off hides frequency-isolation controls but keeps sine drive',
+      (tester) async {
+        await tester.pumpWidget(
+          _buildSection(
+            'corner',
+            enableAudioReactivity: false,
+            scaleSineEnabled: true,
+          ),
+        );
+
+        expect(find.text('Frequency Isolation'), findsNothing);
+        expect(find.text('Logo Scale Source'), findsNothing);
+        expect(find.text('Scale Multiplier'), findsNothing);
+        expect(find.text('Logo Color Source'), findsNothing);
+        expect(find.text('Color Pulse Multiplier'), findsNothing);
+        expect(find.text('Audio Graph'), findsNothing);
+        expect(find.text('Reactivity Strength'), findsNothing);
+        expect(find.text('Sine Wave Drive'), findsOneWidget);
+        expect(find.text('Sine Frequency'), findsOneWidget);
+        expect(find.text('Sine Amplitude'), findsOneWidget);
+        expect(find.textContaining('Audio reactive:'), findsNothing);
+      },
+    );
+
     testWidgets('pcm mode shows enhanced audio capture hint', (tester) async {
       await tester.pumpWidget(_buildSection('off', beatDetectorMode: 'pcm'));
       expect(find.text('Enhanced'), findsOneWidget);
@@ -181,6 +247,92 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+
+    testWidgets(
+      'selecting enhanced requests audio capture immediately when reactivity is on',
+      (tester) async {
+        var requestCaptureCount = 0;
+        var stopCaptureCount = 0;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(stereoChannel, (call) async {
+              switch (call.method) {
+                case 'requestCapture':
+                  requestCaptureCount++;
+                  return true;
+                case 'stopCapture':
+                  stopCaptureCount++;
+                  return true;
+              }
+              return null;
+            });
+
+        await tester.pumpWidget(_buildSection('off', beatDetectorMode: 'auto'));
+        await tester.ensureVisible(find.text('Enhanced'));
+        await tester.tap(find.text('Enhanced'));
+        await tester.pump();
+
+        expect(requestCaptureCount, 1);
+        expect(stopCaptureCount, 0);
+      },
+    );
+
+    testWidgets(
+      'enabling audio reactivity requests audio capture when enhanced is already selected',
+      (tester) async {
+        var requestCaptureCount = 0;
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(stereoChannel, (call) async {
+              if (call.method == 'requestCapture') {
+                requestCaptureCount++;
+                return true;
+              }
+              if (call.method == 'stopCapture') {
+                return true;
+              }
+              return null;
+            });
+
+        await tester.pumpWidget(
+          _buildSection(
+            'off',
+            beatDetectorMode: 'pcm',
+            enableAudioReactivity: false,
+          ),
+        );
+
+        final toggle = find.ancestor(
+          of: find.text('Enable Audio Reactivity'),
+          matching: find.byType(TvFocusWrapper),
+        );
+        await tester.ensureVisible(toggle);
+        await tester.tap(toggle);
+        await tester.pump();
+
+        expect(requestCaptureCount, 1);
+      },
+    );
+
+    testWidgets('leaving enhanced stops audio capture session', (tester) async {
+      var stopCaptureCount = 0;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(stereoChannel, (call) async {
+            if (call.method == 'requestCapture') {
+              return true;
+            }
+            if (call.method == 'stopCapture') {
+              stopCaptureCount++;
+              return true;
+            }
+            return null;
+          });
+
+      await tester.pumpWidget(_buildSection('off', beatDetectorMode: 'pcm'));
+      await tester.ensureVisible(find.text('Auto'));
+      await tester.tap(find.text('Auto'));
+      await tester.pump();
+
+      expect(stopCaptureCount, 1);
     });
 
     testWidgets('start button prefers shared launch delegate', (tester) async {

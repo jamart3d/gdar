@@ -38,9 +38,6 @@ melos:
     analyze:
       description: Run fast workspace-wide analysis.
       run: melos exec --concurrency 2 -- dart analyze .
-    bootstrap:
-      description: Bootstrap workspace using concurrency limit.
-      run: melos bootstrap --concurrency 2
     test:
       description: Run tests in all packages/apps with concurrency.
       run: melos exec -c 2 --dir-exists=test --ignore="screensaver_tv" -- flutter test

@@ -113,5 +113,9 @@ class _DevAudioHudState extends State<DevAudioHud> {
   }
 
   @override
-  Widget build(BuildContext context) => _buildHud(context);
+  Widget build(BuildContext context) {
+    // Note: In production, this is usually gated by kIsWeb at the call site.
+    // We allow it here regardless of kIsWeb to enable unit testing on all platforms.
+    return _buildHud(context);
+  }
 }

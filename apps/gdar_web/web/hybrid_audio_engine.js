@@ -347,8 +347,8 @@
 
         let __tech = '??';
         if (_activeEngine === _fgEngine) { __tech = '(WA)'; }
-        else if (_activeEngine === _bgEngine) { __tech = '(H5)'; }
-        else if (_backgroundMode === 'html5') { __tech = '(H5)'; }
+        else if (_activeEngine === _bgEngine) { __tech = '(H5B)'; }
+        else if (_backgroundMode === 'html5') { __tech = '(H5B)'; }
         else if (_backgroundMode === 'video') { __tech = '(VI)'; }
         else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
         else { __tech = 'OFF'; }
@@ -357,7 +357,7 @@
         // Keep AE pinned to HTML5 while the restore loop is still settling so
         // the HUD does not advertise WA before the swap has actually completed.
         if (_handoffInProgress && _activeEngine === _fgEngine) {
-            __tech = '(H5)';
+            __tech = '(H5B)';
         }
         state.heartbeatNeeded = hbNeeded;
         state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
@@ -396,9 +396,18 @@
             // but we ensure the playback state is synced here too.
             window._gdarMediaSession.updatePlaybackState(state.playing);
         }
+        if (typeof state.lastGapMs === 'number' && Number.isFinite(state.lastGapMs)) {
+            // Capture boundary gap immediately from the engine that just
+            // transitioned tracks so LG survives even if the subsequent state
+            // tick is delayed or a restore attempt starts right away.
+            _lastGapMs = state.lastGapMs;
+        }
 
         // Invalidate any background restoration loops for the old track
         _handoffRunId++;
+        // Preserve the most recent measured gap until the new boundary gap is
+        // published. Clearing here can blank the LG chip during hybrid handoff
+        // before the replacement state reaches Flutter.
 
         // Prevent double forwarding for the same boundary crossing
         if (event.to === _currentIndex) return;
@@ -592,6 +601,8 @@
                 }
 
                 _lastHandoffPollCount = pollCount;
+                _handoffInProgress = false; // Reset flag before swap to ensure FIRST broadcast shows WA
+
                 _swapEngine(_fgEngine);
                 _log.log('[hybrid] ACTIVE ENGINE SWAPPED: Now using Web Audio (Foreground)');
                 if (_handoffCrossfadeMs > 0) {
@@ -610,7 +621,6 @@
                 }
 
                 _forwardState(fgState, _fgEngine);
-                _handoffInProgress = false;
             } else {
                 if (pollCount % 10 === 0) {
                     _log.log(`[hybrid] Waiting for foreground... (ID: ${id}, state: ${fgState.processingState})`);
@@ -876,6 +886,8 @@
             _lastHandoffPollCount = 0;
             _handoffInProgress = false;
             _instantHandoffPending = false;
+            _lastGapMs = null;
+            _trackBoundaryAtMs = 0;
 
             // Stop any background heartbeats left over
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
@@ -967,6 +979,7 @@
             if (window._gdarHeartbeat) window._gdarHeartbeat.stopHeartbeat();
             _instantHandoffPending = false;
             _handoffInProgress = false;
+            _lastGapMs = null;
             _activeEngine.stop();
             if (_activeEngine === _fgEngine) _bgEngine.stop();
             else _fgEngine.stop();
@@ -983,6 +996,7 @@
             _handoffRunId++;
             _instantHandoffPending = false;
             _handoffInProgress = false;
+            _trackBoundaryAtMs = 0;
             _currentIndex = index;
 
             const pure = _isPureWebAudio();
@@ -1067,8 +1081,8 @@
             state.playing = _playing;
             let __tech = '??';
             if (_activeEngine === _fgEngine) { __tech = '(WA)'; }
-            else if (_activeEngine === _bgEngine) { __tech = '(H5)'; }
-            else if (_backgroundMode === 'html5') { __tech = '(H5)'; }
+            else if (_activeEngine === _bgEngine) { __tech = '(H5B)'; }
+            else if (_backgroundMode === 'html5') { __tech = '(H5B)'; }
             else if (_backgroundMode === 'video') { __tech = '(VI)'; }
             else if (_backgroundMode === 'heartbeat') { __tech = '(HBT)'; }
             else { __tech = 'OFF'; }
@@ -1077,7 +1091,7 @@
             // Keep AE on H5 during an in-flight restore until the foreground
             // handoff has been forwarded and the flag is cleared.
             if (_handoffInProgress && _activeEngine === _fgEngine) {
-                __tech = '(H5)';
+                __tech = '(H5B)';
             }
             state.heartbeatNeeded = hbNeeded;
             state.contextState = 'hybrid ' + __tech + (hbNeeded ? ' [HBN]' : ' [HBO]') + ' v1.1.hb';
@@ -1100,6 +1114,4 @@
     window._hybridAudio = api;
 
 })();
-
-
 

@@ -40,12 +40,13 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
           textTheme: textTheme,
           isFruit: isFruit,
         ),
-        ..._buildFrequencyIsolationSection(
-          settings: settings,
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-          isFruit: isFruit,
-        ),
+        if (settings.oilEnableAudioReactivity)
+          ..._buildFrequencyIsolationSection(
+            settings: settings,
+            colorScheme: colorScheme,
+            textTheme: textTheme,
+            isFruit: isFruit,
+          ),
         ..._buildPerformanceSection(
           settings: settings,
           colorScheme: colorScheme,
@@ -224,13 +225,15 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
         onChanged: (v) => settings.setOilLogoScale(v),
       ),
       const SizedBox(height: 8),
-      _ReactiveHint(
-        message:
-            'Audio reactive: beat pulses are applied on top of this base size.',
-        colorScheme: colorScheme,
-        textTheme: textTheme,
-        isFruit: isFruit,
-      ),
+      if (settings.oilEnableAudioReactivity)
+        _ReactiveHint(
+          message:
+              'Audio reactive: beat pulses are applied on top of this base '
+              'size.',
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+          isFruit: isFruit,
+        ),
       const SizedBox(height: 16),
       TvStepperRow(
         label: 'Trail Intensity',
@@ -347,14 +350,17 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
         rightLabel: 'Strong',
         onChanged: (v) => settings.setOilPulseIntensity(v),
       ),
-      const SizedBox(height: 8),
-      _ReactiveHint(
-        message:
-            'Audio reactive: higher values amplify bass-driven logo expansion.',
-        colorScheme: colorScheme,
-        textTheme: textTheme,
-        isFruit: isFruit,
-      ),
+      if (settings.oilEnableAudioReactivity) ...[
+        const SizedBox(height: 8),
+        _ReactiveHint(
+          message:
+              'Audio reactive: higher values amplify bass-driven logo '
+              'expansion.',
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+          isFruit: isFruit,
+        ),
+      ],
       const SizedBox(height: 16),
       TvStepperRow(
         label: 'Heat Drift',
@@ -366,6 +372,44 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
         rightLabel: 'Wavy',
         onChanged: (v) => settings.setOilHeatDrift(v),
       ),
+      const SizedBox(height: 24),
+      _ToggleRow(
+        label: 'Sine Wave Drive',
+        subtitle: 'Modulate logo scale with a periodic wave',
+        value: settings.oilScaleSineEnabled,
+        onChanged: (_) => settings.toggleOilScaleSineEnabled(),
+        colorScheme: colorScheme,
+        textTheme: textTheme,
+      ),
+      if (settings.oilScaleSineEnabled) ...[
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              TvStepperRow(
+                label: 'Sine Frequency',
+                value: settings.oilScaleSineFreq,
+                min: 0.01,
+                max: 10.0,
+                step: 0.05,
+                onChanged: settings.setOilScaleSineFreq,
+                valueFormatter: (v) => '${v.toStringAsFixed(2)} Hz',
+              ),
+              const SizedBox(height: 12),
+              TvStepperRow(
+                label: 'Sine Amplitude',
+                value: settings.oilScaleSineAmp,
+                min: 0.0,
+                max: 1.0,
+                step: 0.05,
+                onChanged: settings.setOilScaleSineAmp,
+                valueFormatter: (v) => '${(v * 100).round()}%',
+              ),
+            ],
+          ),
+        ),
+      ],
       const SizedBox(height: 24),
     ];
   }
@@ -689,7 +733,7 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
         subtitle:
             'Sync visuals to the music being played (requires audio permission)',
         value: settings.oilEnableAudioReactivity,
-        onChanged: (_) => settings.toggleOilEnableAudioReactivity(),
+        onChanged: (_) => _handleAudioReactivityToggle(settings),
         colorScheme: colorScheme,
         textTheme: textTheme,
       ),
@@ -829,44 +873,6 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
         valueFormatter: (v) => '${v.toStringAsFixed(1)}x',
         onChanged: (v) => settings.setOilScaleMultiplier(v),
       ),
-      const SizedBox(height: 24),
-      _ToggleRow(
-        label: 'Sine Wave Drive',
-        subtitle: 'Modulate logo scale with a periodic wave',
-        value: settings.oilScaleSineEnabled,
-        onChanged: (_) => settings.toggleOilScaleSineEnabled(),
-        colorScheme: colorScheme,
-        textTheme: textTheme,
-      ),
-      if (settings.oilScaleSineEnabled) ...[
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              TvStepperRow(
-                label: 'Sine Frequency',
-                value: settings.oilScaleSineFreq,
-                min: 0.01,
-                max: 10.0,
-                step: 0.05,
-                onChanged: settings.setOilScaleSineFreq,
-                valueFormatter: (v) => '${v.toStringAsFixed(2)} Hz',
-              ),
-              const SizedBox(height: 12),
-              TvStepperRow(
-                label: 'Sine Amplitude',
-                value: settings.oilScaleSineAmp,
-                min: 0.0,
-                max: 1.0,
-                step: 0.05,
-                onChanged: settings.setOilScaleSineAmp,
-                valueFormatter: (v) => '${(v * 100).round()}%',
-              ),
-            ],
-          ),
-        ),
-      ],
       const SizedBox(height: 24),
       Text(
         'Logo Color Source',

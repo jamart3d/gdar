@@ -336,7 +336,8 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
   String _computeLastGap(HudSnapshot hud) {
     final ms = hud.lastGapMs;
     if (ms == null) return '--';
-    if (ms < 1) return '0ms';
+    if (ms < 1) return '${ms.toStringAsFixed(2)}ms';
+    if (ms < 10) return '${ms.toStringAsFixed(1)}ms';
     if (ms < 1000) return '${ms.round()}ms';
     return '${(ms / 1000.0).toStringAsFixed(1)}s';
   }

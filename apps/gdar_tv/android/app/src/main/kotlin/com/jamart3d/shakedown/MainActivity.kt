@@ -1,6 +1,7 @@
 package com.jamart3d.shakedown
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
@@ -78,9 +79,34 @@ class MainActivity: FlutterActivity() {
                         result.success(true)
                         return@setMethodCallHandler
                     }
+                    if (pendingStereoResult != null) {
+                        Log.w(TAG, "Stereo capture request already pending")
+                        result.success(false)
+                        return@setMethodCallHandler
+                    }
                     pendingStereoResult = result
-                    val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                    startActivityForResult(mgr.createScreenCaptureIntent(), REQUEST_CAPTURE)
+                    try {
+                        val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as? MediaProjectionManager
+                        if (mgr == null) {
+                            pendingStereoResult = null
+                            Log.w(TAG, "MediaProjectionManager unavailable")
+                            result.success(false)
+                            return@setMethodCallHandler
+                        }
+                        startActivityForResult(mgr.createScreenCaptureIntent(), REQUEST_CAPTURE)
+                    } catch (e: ActivityNotFoundException) {
+                        pendingStereoResult = null
+                        Log.w(TAG, "Stereo capture activity unavailable: ${e.message}")
+                        result.success(false)
+                    } catch (e: SecurityException) {
+                        pendingStereoResult = null
+                        Log.w(TAG, "Stereo capture permission launch blocked: ${e.message}")
+                        result.success(false)
+                    } catch (e: Exception) {
+                        pendingStereoResult = null
+                        Log.e(TAG, "Failed to launch stereo capture permission", e)
+                        result.success(false)
+                    }
                 }
                 "stopCapture" -> {
                     stereoCapture.stop()
@@ -100,7 +126,14 @@ class MainActivity: FlutterActivity() {
             val result = pendingStereoResult
             pendingStereoResult = null
             if (resultCode == Activity.RESULT_OK && data != null) {
-                MediaProjectionForegroundService.start(this)
+                try {
+                    MediaProjectionForegroundService.start(this)
+                } catch (e: Exception) {
+                    MediaProjectionForegroundService.stop(this)
+                    result?.success(false)
+                    Log.e(TAG, "Failed to start capture foreground service", e)
+                    return
+                }
                 MediaProjectionForegroundService.runWhenReady {
                     try {
                         val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager

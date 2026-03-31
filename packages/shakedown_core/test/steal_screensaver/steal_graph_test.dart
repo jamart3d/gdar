@@ -14,7 +14,7 @@ class FakeAudioReactor implements AudioReactor {
   @override
   Stream<AudioEnergy> get energyStream => _controller.stream;
   @override
-  Future<void> start() async {}
+  Future<bool> start() async => true;
   @override
   void stop() {}
   @override

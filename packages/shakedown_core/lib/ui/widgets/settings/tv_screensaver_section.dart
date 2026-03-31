@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -11,6 +12,7 @@ import 'package:shakedown_core/ui/widgets/section_card.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_stepper_row.dart';
+import 'package:shakedown_core/visualizer/visualizer_audio_reactor.dart';
 
 part 'tv_screensaver_section_build.dart';
 part 'tv_screensaver_section_audio_build.dart';
@@ -49,6 +51,65 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
   final FocusNode _firstFocusNode = FocusNode();
   final FocusNode _lastFocusNode = FocusNode();
   int _wrapKey = 0;
+  bool _isEnhancedCaptureRequestPending = false;
+
+  bool _supportsEnhancedCapture() {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
+      return false;
+    }
+    return true;
+  }
+
+  bool _wantsEnhancedCapture(SettingsProvider settings) {
+    return _supportsEnhancedCapture() &&
+        settings.oilEnableAudioReactivity &&
+        settings.oilBeatDetectorMode == 'pcm';
+  }
+
+  Future<void> _syncEnhancedCaptureForSettings(
+    SettingsProvider settings,
+  ) async {
+    if (!_supportsEnhancedCapture()) {
+      return;
+    }
+
+    if (!_wantsEnhancedCapture(settings)) {
+      await VisualizerAudioReactor.stopStereoCapture();
+      return;
+    }
+
+    if (_isEnhancedCaptureRequestPending) {
+      return;
+    }
+
+    _isEnhancedCaptureRequestPending = true;
+    try {
+      final started = await VisualizerAudioReactor.requestStereoCapture();
+      if (!started) {
+        debugPrint(
+          'TV Settings: Enhanced audio capture unavailable or permission denied.',
+        );
+      }
+    } finally {
+      _isEnhancedCaptureRequestPending = false;
+    }
+  }
+
+  Future<void> _handleAudioReactivityToggle(SettingsProvider settings) async {
+    await settings.toggleOilEnableAudioReactivity();
+    await _syncEnhancedCaptureForSettings(settings);
+  }
+
+  Future<void> _handleBeatDetectorModeSelected(
+    SettingsProvider settings,
+    String mode,
+  ) async {
+    if (mode == settings.oilBeatDetectorMode) {
+      return;
+    }
+    await settings.setOilBeatDetectorMode(mode);
+    await _syncEnhancedCaptureForSettings(settings);
+  }
 
   @override
   void dispose() {

@@ -442,7 +442,7 @@ extension _DevAudioHudBuild on _DevAudioHudState {
             chipWidth = 36;
             break;
           case 'LG':
-            chipWidth = 58;
+            chipWidth = 72;
             break;
           case 'SCH':
             chipWidth = 66;

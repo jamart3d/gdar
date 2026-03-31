@@ -120,11 +120,11 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get useDynamicColor => false;
   @override
-  bool get showPlaybackMessages => false;
+  bool showPlaybackMessages = false;
   @override
-  bool get showDevAudioHud => false;
+  bool showDevAudioHud = false;
   @override
-  bool get highlightPlayingWithRgb => true;
+  bool highlightPlayingWithRgb = true;
   @override
   bool get offlineBuffering => false;
   @override

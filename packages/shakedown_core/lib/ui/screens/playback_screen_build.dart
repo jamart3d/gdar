@@ -160,8 +160,10 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
         audioProvider.currentTrack?.title != _lastTrackTitle;
     final bool stickyToggledOn = stickyNowPlaying && _lastStickyState == false;
     final bool isInitialBuild = _lastStickyState == null;
+    final bool shouldScrollOnInitial =
+        isInitialBuild && (isFruit || !widget.isPane);
 
-    if (!(trackChanged || stickyToggledOn || (isInitialBuild && isFruit))) {
+    if (!(trackChanged || stickyToggledOn || shouldScrollOnInitial)) {
       return;
     }
 
@@ -173,7 +175,7 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
       final bool listHasFocus = capturedIsTv && _trackListFocusNode.hasFocus;
       final bool isPanelOpen = _panelPositionNotifier.value > 0.1;
       _scrollToCurrentTrack(
-        true,
+        !isInitialBuild,
         maxVisibleY: isPanelOpen ? 0.4 : 1.0,
         syncFocus: !listHasFocus,
       );

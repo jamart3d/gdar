@@ -183,7 +183,8 @@ abstract class AudioReactor {
   Stream<AudioEnergy> get energyStream;
 
   /// Start listening to audio data.
-  Future<void> start();
+  /// Returns `true` when the reactor successfully starts emitting data.
+  Future<bool> start();
 
   /// Stop listening to audio data.
   void stop();

@@ -77,7 +77,8 @@ extension _TvScreensaverSectionAudioBuild on _TvScreensaverSectionState {
             alignment: Alignment.centerLeft,
             child: _BeatDetectorSegmentedButton(
               selected: settings.oilBeatDetectorMode,
-              onSelect: (mode) => settings.setOilBeatDetectorMode(mode),
+              onSelect: (mode) =>
+                  _handleBeatDetectorModeSelected(settings, mode),
             ),
           ),
           const SizedBox(height: 8),

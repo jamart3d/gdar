@@ -160,7 +160,7 @@ void main() {
   testWidgets(
     'tapping Library during pending RANDOM play does not force PLAY tab',
     (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(400, 800);
+      tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);

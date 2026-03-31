@@ -8,7 +8,7 @@ This policy defines the authority boundaries, efficiency guardrails, and executi
 ## 1. Zero-Friction Workflows & Mandatory Preview
 You are strictly forbidden from executing file modifications, writing code, or running terminal commands without user approval **EXCEPT** under the Zero-Friction Mandate:
 
-* **Zero-Friction Mandate**: For read-only commands and authorized workflows (`/shipit`, `/release`, `/deploy`, `/prod`, `/checkup`, `/health`, `/lint-fix`, `/audit`, `/glass`, `/liquid_glass`, `/verify`, `/audit_size`, `/size_guard`, `/save`, `/commit`), the agent MUST bypass all plans, previews, and manual confirmation prompts. Triggering the workflow counts as final approval; execution must be immediate and autonomous.
+* **Zero-Friction Mandate**: For read-only commands and authorized workflows (`/shipit`, `/release`, `/deploy`, `/prod`, `/checkup`, `/health`, `/lint-fix`, `/audit`, `/clean`, `/glass`, `/liquid_glass`, `/verify`, `/audit_size`, `/size_guard`, `/save`, `/commit`), the agent MUST bypass all plans, previews, and manual confirmation prompts. Triggering the workflow counts as final approval; execution must be immediate and autonomous.
 * **Ghost Execution**: When any workflow in the list above is triggered, the agent is STRICTLY FORBIDDEN from generating ANY preamble text or "plans". Workflow execution must begin immediately with the first concrete tool step.
 * **Subworkflow Inheritance**: Any internal rule, preflight, or subworkflow invoked by an authorized Zero-Friction workflow inherits that approval automatically. The agent MUST NOT ask for a second confirmation just because the parent workflow reads or runs `.agent/workflows/toolchain_preflight.md`, `.agent/rules/platform_detection.md`, or similar workflow infrastructure.
 * **Save vs. Ship Boundary**: Any request containing "save" must ONLY trigger the `/save` workflow. You are strictly forbidden from jumping to a release pipeline unless the user explicitly confirms a production deployment intent.
@@ -32,14 +32,14 @@ Read-only and diagnostic commands MUST always run under the Zero-Friction Mandat
 - **Plan First**: For complex release/audit tasks not in the Zero-Friction list, provide a single plan **once** before starting the autonomous chain.
 
 ## 4. Prohibited Actions (Always Prompt)
-- `rm`, `Remove-Item`, `del` (Filesystem deletion of project files).
+- `rm`, `Remove-Item`, `del` (Filesystem deletion of project source/config files outside of authorized cleanup/release workflows).
 - `git restore`, `git reset --hard` (Destructive worktree modification).
-- Multi-step destructive mutations outside of the `/shipit` or `/checkup` scope.
+- Multi-step destructive mutations outside of the `/shipit`, `/checkup`, or `/clean` scope.
 
 ## 5. Scope Containment & Efficiency
 To conserve context window and compute quota:
 - Do not perform broad searches, index the entire `lib/` directory, or read files not strictly necessary.
-- **Workspace Exceptions:** Maintenance/health workflows (`/checkup`, `/audit`, `/verify`, `/size_guard`, `/image_to_code`) are explicitly authorized to perform broad searches and root-level indexing.
+- **Workspace Exceptions:** Maintenance/health workflows (`/checkup`, `/audit`, `/clean`, `/verify`, `/size_guard`, `/image_to_code`) are explicitly authorized to perform broad searches and root-level indexing.
 - **Discovery Firewall (Hard Constraint):** Even during Workspace Exceptions, any directory named `archive`, `temp`, or `backups` MUST be skipped by discovery tools (`grep`, `dir /s`, etc.) unless the user has explicitly requested access to a file within them.
 - **Optimization:** Always call `view_file_outline` before reading a file. Use specific line ranges (`StartLine`/`EndLine`).
 - **Surgical Edits:** When proposing a code change, only output the specific function or widget being modified.
@@ -49,3 +49,6 @@ To conserve context window and compute quota:
 ## 6. Constraint Integrity
 - **Negative Constraint Integrity:** When a user explicitly rejects a term or feature, perform a search across active artifacts (`task.md`, `implementation_plan.md`) and remove every instance immediately. Never request review on an artifact containing rejected concepts.
 - **Documentation Integrity:** When refactoring technical manuals, you are STRICTLY FORBIDDEN from summarizing or omitting technical blocks. Content must be moved ATOMICALLY.
+
+## 7. Anti-Apology Protocol
+- **Auto-Correction Over Apology**: When a mistake is made, or a constraint is violated (e.g., using print instead of logger), you are STRICTLY FORBIDDEN from generating an apology. Instead, you MUST automatically find a one-line structural constraint to prevent the mistake, update the appropriate `.md` rule or workflow file to permanently codify it, and inform the user that the system has learned from the error.

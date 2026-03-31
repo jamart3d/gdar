@@ -292,12 +292,15 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
   ) {
     final state = engineContextState ?? '';
     // The hybrid JS engine emits contextState as 'hybrid (WA) ...' or
-    // 'hybrid (H5) ...', NOT the bare keywords 'webaudio'/'html5'.
-    // Non-hybrid engines emit 'html5 ...' or 'standard'. Check both forms.
+    // 'hybrid (H5B) ...', NOT the bare keywords 'webaudio'/'html5'.
+    // Non-hybrid engines emit 'html5 (H5) ...' or 'standard'. Check both forms.
     final isWA = state.contains('webaudio') || state.contains('(WA)');
+    final isH5B = state.contains('(H5B)');
     final isH5 = state.contains('html5') || state.contains('(H5)');
     final isSTD = state.contains('standard');
+
     if (isWA) return heartbeatActive ? 'WA+' : 'WA';
+    if (isH5B) return heartbeatActive ? 'H5B+' : 'H5B';
     if (isH5) return heartbeatActive ? 'H5+' : 'H5';
     if (isSTD) return 'STD';
     // Context not yet populated — fall back to the resolved mode label.

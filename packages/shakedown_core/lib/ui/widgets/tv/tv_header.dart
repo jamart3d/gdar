@@ -76,17 +76,20 @@ class TvHeader extends StatelessWidget {
             },
             borderRadius: BorderRadius.circular(12 * scaleFactor),
             child: SizedBox(
-              width: 56 * scaleFactor,
-              height: 56 * scaleFactor,
-              child: AnimatedDiceIcon(
-                onPressed: onRandomPlay,
-                isLoading: isChoosingRandomShow,
-                enableHaptics: enableDiceHaptics,
-                tooltip: 'Play Random Show',
+              width: 44 * scaleFactor,
+              height: 44 * scaleFactor,
+              child: Center(
+                child: AnimatedDiceIcon(
+                  onPressed: onRandomPlay,
+                  isLoading: isChoosingRandomShow,
+                  enableHaptics: enableDiceHaptics,
+                  tooltip: 'Play Random Show',
+                  naked: true,
+                ),
               ),
             ),
           ),
-          SizedBox(width: 16 * scaleFactor),
+          SizedBox(width: 20 * scaleFactor),
           // 2. Title Text
           Expanded(
             child: Column(

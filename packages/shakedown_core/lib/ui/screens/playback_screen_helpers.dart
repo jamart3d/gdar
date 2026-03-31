@@ -70,6 +70,18 @@ extension _PlaybackScreenHelpers on PlaybackScreenState {
 
     if (targetIndex == -1) return;
 
+    // To prevent physics bounce on top-level tracks, we gracefully scale the requested alignment
+    // proportionally, so the scrollable list natively maps the target index beneath
+    // the UI's topPadding safe-areas without over-requesting scroll space.
+    double safeAlignment = alignment;
+    if (targetIndex == 0) {
+      safeAlignment = 0.05;
+    } else if (targetIndex == 1) {
+      safeAlignment = 0.15;
+    } else if (targetIndex == 2) {
+      safeAlignment = 0.22;
+    }
+
     if (_itemScrollController.isAttached) {
       final positions = _itemPositionsListener.itemPositions.value;
 
@@ -100,11 +112,11 @@ extension _PlaybackScreenHelpers on PlaybackScreenState {
               index: targetIndex,
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOutCubic,
-              alignment: alignment,
+              alignment: safeAlignment,
             ),
           );
         } else {
-          _safeItemJumpTo(index: targetIndex, alignment: alignment);
+          _safeItemJumpTo(index: targetIndex, alignment: safeAlignment);
         }
       }
     }

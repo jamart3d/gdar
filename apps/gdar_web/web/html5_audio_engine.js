@@ -42,7 +42,7 @@
         if (!identifier || _blockedArchiveIdentifiers.has(identifier)) return;
         _blockedArchiveIdentifiers.add(identifier);
         _log.log(
-            `[html5] Skipping Web Audio decode for archive source ${identifier}; continuing with HTML5 streaming.`,
+            `[html5] Web Audio decode failed for archive source ${identifier}; continuing with HTML5 streaming.`,
         );
     }
 
@@ -93,10 +93,9 @@
             this.audio.preload = 'none';
             this.audio.src = trackUrl;
             this.audio.crossOrigin = 'anonymous';
-            this.webAudioFetchBlocked = !!_archiveIdentifierForUrl(trackUrl);
+            this.webAudioFetchBlocked = false;
 
-            if (queue.state.webAudioIsDisabled || this.webAudioFetchBlocked) {
-                if (this.webAudioFetchBlocked) _logArchiveWebAudioSkip(trackUrl);
+            if (queue.state.webAudioIsDisabled) {
                 return;
             }
 
@@ -153,6 +152,8 @@
                             _log.error('[html5] WA decode failed for track', this.idx, '— staying on HTML5 stream');
                             this.webAudioLoadingState = GaplessPlaybackLoadingState.NONE;
                             this.queue.onError();
+                            this.webAudioFetchBlocked = true;
+                            _logArchiveWebAudioSkip(this.trackUrl);
                         }
                     )
                 )
@@ -160,6 +161,8 @@
                     _log.warn('[html5] Fetch error for track', this.idx, e && e.message);
                     this.webAudioLoadingState = GaplessPlaybackLoadingState.NONE;
                     this.queue.onError();
+                    this.webAudioFetchBlocked = true;
+                    _logArchiveWebAudioSkip(this.trackUrl);
                 });
         }
 

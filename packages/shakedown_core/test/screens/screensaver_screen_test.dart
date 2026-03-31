@@ -345,6 +345,74 @@ void main() {
     );
 
     testWidgets(
+      'interactive pcm mode can skip microphone prompt when visualizer starts without it',
+      (WidgetTester tester) async {
+        final reactiveSettings = FakeReactiveScreensaverSettingsProvider()
+          ..isTv = true;
+        var permissionRequestCount = 0;
+        var visualizerInitializeCount = 0;
+        var stereoRequestCount = 0;
+
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(permissionChannel, (call) async {
+              switch (call.method) {
+                case 'checkPermissionStatus':
+                  return 0; // denied
+                case 'requestPermissions':
+                  permissionRequestCount++;
+                  return <int, int>{7: 0};
+              }
+              return null;
+            });
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(visualizerChannel, (call) async {
+              switch (call.method) {
+                case 'isAvailable':
+                case 'initialize':
+                case 'start':
+                case 'stop':
+                case 'release':
+                case 'updateConfig':
+                  if (call.method == 'initialize') {
+                    visualizerInitializeCount++;
+                  }
+                  return true;
+              }
+              return null;
+            });
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(stereoChannel, (call) async {
+              if (call.method == 'requestCapture') {
+                stereoRequestCount++;
+              }
+              return true;
+            });
+
+        await tester.pumpWidget(
+          MultiProvider(
+            providers: [
+              ChangeNotifierProvider<SettingsProvider>.value(
+                value: reactiveSettings,
+              ),
+              ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
+              ChangeNotifierProvider<DeviceService>.value(value: deviceService),
+              Provider<WakelockService>.value(value: wakelockService),
+            ],
+            child: const MaterialApp(home: ScreensaverScreen()),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+        await tester.pump(const Duration(milliseconds: 600));
+
+        expect(find.byType(StealVisualizer), findsOneWidget);
+        expect(permissionRequestCount, 0);
+        expect(visualizerInitializeCount, greaterThanOrEqualTo(1));
+        expect(stereoRequestCount, 1);
+      },
+    );
+
+    testWidgets(
       'non-interactive launch skips permission and enhanced capture prompts',
       (WidgetTester tester) async {
         final reactiveSettings = FakeReactiveScreensaverSettingsProvider()

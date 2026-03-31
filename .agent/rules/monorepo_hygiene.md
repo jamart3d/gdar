@@ -63,3 +63,6 @@ To maintain zero-friction execution, the following syntax rules MUST be followed
 - **Variables**: Use `$(...)` for sub-command results within a string (e.g., `git commit -m "release: $(dart get_version.dart)"`).
 - **Paths**: Use standard relative paths with forward slashes `/` where possible, as modern PowerShell handles them correctly and it maintains cross-platform legibility.
 - **Fail-Fast**: If a sequence requires a success-only next step in PowerShell, use a conditional `if ($?) { ... }` rather than assuming `;` behaves like `&&`.
+
+## 8. Scripting & Logging Standards
+- **Logging Rule**: ALL Dart scripts under `scripts/` MUST use the `logger` package instead of native `print()` for terminal output. Use `logger.i()` for milestones, `logger.e()` for failures, and `logger.d()` for raw command output. This ensures consistent, colorful, and filterable diagnostic output across all automation tasks.

@@ -12,7 +12,7 @@ class WebAudioEngine implements GdarAudioInterface {
 
   // Internal state
   String? _currentUrl;
-  String _activeEngine = 'WA'; // WA (Web Audio) or H5 (HTML5)
+  String _activeEngine = 'WA'; // WA (Web Audio) or H5B (HTML5)
   String _contextState = 'suspended';
 
   // High-Fidelity Diagnostics (Observability)
@@ -105,7 +105,7 @@ class WebAudioEngine implements GdarAudioInterface {
   }
 
   void _handleStall() {
-    _activeEngine = 'H5';
+    _activeEngine = 'H5B';
     _recoveryCount++;
     // In a real app, this would instantiate or trigger the HTML5 <audio> element path
     _emitTelemetry();

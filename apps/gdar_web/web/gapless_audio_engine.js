@@ -74,37 +74,10 @@
   let _lastGapMs = null;
   let _lastDecodeMs = null;      // Time taken for decodeAudioData
   let _lastConcatMs = null;      // Time taken for buffer concatenation
-  const _blockedArchiveIdentifiers = new Set();
-
   // Callbacks registered by Dart.
   let _onStateChange = null;
   let _onTrackChange = null;
   let _onError = null;
-
-  function _archiveIdentifierForTrack(track) {
-    try {
-      const rawUrl = track && track.url;
-      if (!rawUrl) return null;
-      const baseHref = (typeof window !== 'undefined' && window.location && window.location.href)
-        ? window.location.href
-        : 'http://localhost/';
-      const url = new URL(rawUrl, baseHref);
-      const host = (url.hostname || '').toLowerCase();
-      if (!(host === 'archive.org' || host.endsWith('.archive.org'))) {
-        return null;
-      }
-      const parts = url.pathname.split('/').filter(Boolean);
-      const downloadIndex = parts.indexOf('download');
-      if (downloadIndex !== -1 && parts.length > downloadIndex + 1) {
-        return parts[downloadIndex + 1];
-      }
-      const itemsIndex = parts.indexOf('items');
-      if (itemsIndex !== -1 && parts.length > itemsIndex + 1) {
-        return parts[itemsIndex + 1];
-      }
-    } catch (_) { }
-    return null;
-  }
 
   // Safe Logger Utility
 
@@ -199,21 +172,6 @@
     }
     const track = _playlist[index];
     if (!track) return Promise.reject(new Error('No track at index ' + index));
-
-    const archiveIdentifier = _archiveIdentifierForTrack(track);
-    if (archiveIdentifier) {
-      if (!_blockedArchiveIdentifiers.has(archiveIdentifier)) {
-        _blockedArchiveIdentifiers.add(archiveIdentifier);
-        _log.warn(
-          `[gdar engine] Skipping Web Audio fetch for archive source ${archiveIdentifier}; browser fetch/decode is blocked, so HTML5 must stay primary.`,
-        );
-      }
-      const blockedError = new Error(
-        `Archive Web Audio fetch blocked by CORS for ${archiveIdentifier}`,
-      );
-      blockedError.code = 'WA_BLOCKED';
-      return Promise.reject(blockedError);
-    }
 
     if (_abortControllers[index]) {
       try { _abortControllers[index].abort(); } catch (_) { }
@@ -348,10 +306,7 @@
     // own .catch can attach.
     const handled = p.catch(err => {
       delete _decodingPromises[index];
-      if (err && err.code === 'WA_BLOCKED') {
-        _log.log('[gdar engine] Web Audio decode intentionally skipped:', err.message);
-        _failedTracks.add(index);
-      } else if (err.message !== 'Aborted') {
+      if (err.message !== 'Aborted') {
         _log.error('[gdar engine] Decode failed for index', index, err);
         _failedTracks.add(index);
       }
@@ -941,6 +896,7 @@
     seek: function (seconds) {
       if (_currentIndex < 0 || _currentIndex >= _playlist.length) return;
       const wasPlaying = _playing;
+      _lastGapMs = null;
       _stopCurrentSource();
       _clearScheduled();
       _cancelPrefetch(_currentIndex);
@@ -960,6 +916,7 @@
       if (index < 0 || index >= _playlist.length) return;
       const wasPlaying = _playing;
       const oldIndex = _currentIndex;
+      _lastGapMs = null;
       _stopCurrentSource();
       _clearScheduled();
       _cancelPrefetch(index);
@@ -1038,6 +995,4 @@
 
   window._gdarAudio = api;
 })();
-
-
 

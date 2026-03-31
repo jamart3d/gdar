@@ -5,7 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.3.42+252] - 2026-03-31
+
+### Added
+- **TV / Google TV**: Hardened the `Enhanced` PCM permission path by making MediaProjection launch and foreground-service startup fail closed instead of crashing on flaky hardware permission flows.
+- **TV Settings**: Moved `Enhanced` audio-capture prompting into the settings flow. Selecting `Enhanced`, or enabling audio reactivity while `Enhanced` is already selected, now requests PCM capture immediately.
+- **TV Header**: Added a soft transparency falloff (8% ShaderMask) to the top of the dual-pane scroll areas to smoothly fade tracks and shows under the header.
+
+### Changed
+- **TV Settings**: Simplified the screensaver audio section when reactivity is off. Audio-only controls now stay hidden until audio reactivity is enabled.
+- **Web / Fruit**: Improved the `LG` chip in the Audio HUD so measured gaps survive track changes more reliably and render in a more compact format.
+- **Web / Hybrid**: Restored Archive.org WebAudio handoff attempts by removing the blanket pre-block, enabling higher fidelity playback when fetch/decode succeeds.
+- **TV Settings**: Disabled the 'corner' Audio Graph mode by default (`oilAudioGraphMode`).
+- **Playback UX**: Updated "Played but Unrated" source indicator to display three theme-appropriate dimmed stars instead of a single star.
+- **TV Header**: Refined the dice layout in the TV header by reducing the wrapper size to 44x44, resulting in a tighter RGB focus border.
+- **Testing**: Aligned `FakeAudioReactor.start()` with the new `Future<bool>` contract and increased regression test viewport size to 800x1200.
+
+### Fixed
+- **Web / Android**: Fixed an issue where the inline mini-player on the wide show list screen incorrectly rendered in the M3 layout; it is now properly restricted to Fruit.
+- **Playback UI**: Fixed an issue where the track list failed to automatically scroll to the currently playing track when navigating directly to the Playback Screen.
+- **Playback UX**: Removed the jerky bounce animation when auto-scrolling to tracks at the very top of the list, replaced by proportional safe-area scaling.
 
 ## [1.3.41+251] - 2026-03-30
 
