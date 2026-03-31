@@ -36,6 +36,11 @@ class MainActivity: FlutterActivity() {
     // Pending Flutter result waiting for activity-result callback.
     private var pendingStereoResult: MethodChannel.Result? = null
 
+    private fun resetStereoCaptureSession() {
+        stereoCapture.stop()
+        MediaProjectionForegroundService.stop(this)
+    }
+
     // This is the crucial part.
     // It connects the AudioService plugin to your app's FlutterEngine.
     override fun provideFlutterEngine(context: Context): FlutterEngine? {
@@ -86,6 +91,9 @@ class MainActivity: FlutterActivity() {
                     }
                     pendingStereoResult = result
                     try {
+                        // Clear any leftover projection/service state before
+                        // launching a fresh system capture permission flow.
+                        resetStereoCaptureSession()
                         val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as? MediaProjectionManager
                         if (mgr == null) {
                             pendingStereoResult = null
@@ -109,8 +117,7 @@ class MainActivity: FlutterActivity() {
                     }
                 }
                 "stopCapture" -> {
-                    stereoCapture.stop()
-                    MediaProjectionForegroundService.stop(this)
+                    resetStereoCaptureSession()
                     result.success(true)
                 }
                 else -> result.notImplemented()
@@ -127,9 +134,10 @@ class MainActivity: FlutterActivity() {
             pendingStereoResult = null
             if (resultCode == Activity.RESULT_OK && data != null) {
                 try {
+                    resetStereoCaptureSession()
                     MediaProjectionForegroundService.start(this)
                 } catch (e: Exception) {
-                    MediaProjectionForegroundService.stop(this)
+                    resetStereoCaptureSession()
                     result?.success(false)
                     Log.e(TAG, "Failed to start capture foreground service", e)
                     return
@@ -141,27 +149,27 @@ class MainActivity: FlutterActivity() {
                         if (projection != null) {
                             val ok = stereoCapture.start(projection)
                             if (!ok) {
-                                MediaProjectionForegroundService.stop(this)
+                                resetStereoCaptureSession()
                             }
                             result?.success(ok)
                             Log.d(TAG, "Stereo capture started: $ok")
                         } else {
-                            MediaProjectionForegroundService.stop(this)
+                            resetStereoCaptureSession()
                             result?.success(false)
                             Log.w(TAG, "getMediaProjection returned null")
                         }
                     } catch (e: SecurityException) {
-                        MediaProjectionForegroundService.stop(this)
+                        resetStereoCaptureSession()
                         result?.success(false)
                         Log.w(TAG, "Stereo capture unavailable on this device: ${e.message}")
                     } catch (e: Exception) {
-                        MediaProjectionForegroundService.stop(this)
+                        resetStereoCaptureSession()
                         result?.success(false)
                         Log.e(TAG, "Failed to start stereo capture", e)
                     }
                 }
             } else {
-                MediaProjectionForegroundService.stop(this)
+                resetStereoCaptureSession()
                 result?.success(false)
                 Log.d(TAG, "Stereo capture permission denied")
             }
@@ -183,8 +191,7 @@ class MainActivity: FlutterActivity() {
     }
 
     override fun onDestroy() {
-        stereoCapture.stop()
-        MediaProjectionForegroundService.stop(this)
+        resetStereoCaptureSession()
         super.onDestroy()
     }
 

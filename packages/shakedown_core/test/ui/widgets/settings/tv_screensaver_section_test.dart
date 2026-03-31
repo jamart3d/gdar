@@ -34,6 +34,10 @@ class _FakeAudioProvider extends ChangeNotifier implements AudioProvider {
 }
 
 class _FakeDeviceService extends ChangeNotifier implements DeviceService {
+  _FakeDeviceService({this.name = 'Android TV'});
+
+  final String name;
+
   @override
   bool get isTv => true;
   @override
@@ -45,7 +49,7 @@ class _FakeDeviceService extends ChangeNotifier implements DeviceService {
   @override
   bool get isPwa => false;
   @override
-  String? get deviceName => 'Android TV';
+  String? get deviceName => name;
   @override
   Future<void> refresh() async {}
 }
@@ -97,6 +101,7 @@ Widget _buildSection(
   bool enableAudioReactivity = true,
   bool scaleSineEnabled = false,
   ScreensaverLaunchDelegate? launchDelegate,
+  String deviceName = 'Android TV',
 }) {
   return MultiProvider(
     providers: [
@@ -109,7 +114,9 @@ Widget _buildSection(
         ),
       ),
       ChangeNotifierProvider<ThemeProvider>.value(value: _FakeThemeProvider()),
-      ChangeNotifierProvider<DeviceService>.value(value: _FakeDeviceService()),
+      ChangeNotifierProvider<DeviceService>.value(
+        value: _FakeDeviceService(name: deviceName),
+      ),
       ChangeNotifierProvider<AudioProvider>.value(value: _FakeAudioProvider()),
       Provider<ScreensaverLaunchDelegate?>.value(value: launchDelegate),
     ],

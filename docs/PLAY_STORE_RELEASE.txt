@@ -1,3 +1,8 @@
+What's new in v1.3.43+253
+- **Maintenance**: General maintenance and version synchronization.
+
+---
+
 What's new in v1.3.42+252
 - fix(tv): hardened PCM permission flow and refined header layout
 - fix(web): improved Audio HUD gap stability and restricted Android-theme players

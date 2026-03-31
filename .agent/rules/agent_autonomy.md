@@ -22,7 +22,7 @@ Read-only and diagnostic commands MUST always run under the Zero-Friction Mandat
 - **Git (Diagnostic)**: `git status`, `git log`, `git diff`, `git branch`, `git remote`, `git rev-parse HEAD`.
 - **Git (Mutating - Authorized Context ONLY)**: `git add`, `git commit`, `git push`, `git tag`. (Must be part of `/shipit`, `/save`, `/commit`, or `/release` flows).
 - **Flutter/Dart**: `flutter analyze`, `dart analyze`, `flutter doctor`, `dart pub deps`, `dart run scripts/*.dart`, `flutter pub outdated`, `flutter clean`, `flutter pub get`, `flutter build appbundle --release`, `flutter build appbundle --debug`, `flutter build apk --analyze-size`, `flutter build web --release`.
-- **Formatting & Health**: `melos run format`, `melos run analyze`, `melos run test`, `melos run fix`, `melos help`, `melos exec`, `melos bootstrap`, `dart fix --apply`, `flutter format .`.
+- **Formatting & Health**: `melos run format`, `melos run analyze`, `melos run test`, `melos run fix`, `melos help`, `melos exec`, `melos bootstrap`, `dart fix --apply`, `flutter format .`, `flutter test`, `jules`.
 - **PowerShell Diagnostics**: `Get-ChildItem`, `Measure-Object`, `Get-Content`, `Get-Item`.
 - **Project Scripts**: `./scripts/**/*.ps1`, `./scripts/**/*.sh`, `dart scripts/*.dart`.
 

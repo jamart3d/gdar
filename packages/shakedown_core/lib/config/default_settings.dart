@@ -104,7 +104,7 @@ class DefaultSettings {
       0.85; // â”€â”€ Steal Screensaver Flat/Rings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static const String oilBannerDisplayMode = 'flat'; // 'flat' or 'rings'
   static const String oilBannerFont = 'RockSalt'; // Primary font
-  static const double oilFlatTextProximity = 0.75; // Middle proximity
+  static const double oilFlatTextProximity = 0.65; // Middle proximity
   static const String oilFlatTextPlacement = 'above'; // below the logo
   static const double oilBannerResolution = 2.0;
   static const bool oilBannerPixelSnap = false;
