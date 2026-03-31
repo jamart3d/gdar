@@ -37,7 +37,7 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 - **Flutter/Dart**: `flutter analyze`, `dart analyze`, `flutter doctor`, `dart pub deps`, `dart run scripts/*.dart`, `flutter pub outdated`, `flutter clean`, `flutter pub get`, `flutter build appbundle --release`, `flutter build appbundle --debug`, `flutter build apk --analyze-size`, `flutter build web --release`.
 - **Formatting & Health**: `melos run format`, `melos run analyze`, `melos run test`, `melos run fix`, `melos help`, `melos exec`, `melos bootstrap`, `dart fix --apply`, `flutter format .`, `flutter test`, `jules`.
 - **PowerShell Diagnostics**: `Get-ChildItem`, `Measure-Object`, `Get-Content`, `Get-Item`.
-- **Project Scripts**: `./scripts/**/*.ps1`, `./scripts/**/*.sh`, `dart scripts/*.dart`.
+- **Project Scripts**: `./scripts/**/*.ps1`, `./scripts/**/*.sh`, `dart scripts/*.dart`, `dart scripts/save_sync.dart`, `dart scripts/release_sync.dart`, `dart scripts/finalize_release.dart`.
 
 ## 3. Protocol: Fail Fast, No Black Boxes
 - **No Black Boxes**: Every primary step in an autonomous chain MUST be run as a discrete tool call to provide real-time status visibility.
@@ -47,7 +47,7 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 ## 4. Prohibited Actions (Always Prompt)
 - `rm`, `Remove-Item`, `del` (Filesystem deletion of project source/config files outside of authorized cleanup/release workflows).
 - `git restore`, `git reset --hard` (Destructive worktree modification).
-- Multi-step destructive mutations outside of the `/shipit`, `/checkup`, or `/clean` scope.
+- Multi-step destructive mutations outside of the `/shipit`, `/checkup`, `/clean`, `/save`, or `/commit` scope.
 
 ## 5. Scope Containment & Efficiency
 To conserve context window and compute quota:

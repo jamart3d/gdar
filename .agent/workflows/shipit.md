@@ -80,7 +80,7 @@ This script atomically handles:
 2. **Target 2: Web**: Build the PWA from `apps/gdar_web`:
    - `flutter build web --release`
 
-## 4. Web Deploy & Final Sync
+## 5. Web Deploy & Final Sync
 // turbo
 1. **Web Deploy**: `firebase deploy --only hosting`
 2. **Unified Release Sync**:
@@ -92,7 +92,7 @@ This script handles:
 - Automated version tagging (`v.x.y.z`).
 - Final `push` to origin main and tags.
 
-## 5. Wrap-Up
+## 6. Wrap-Up
 1. Report build and deploy status.
 2. Remind the user to upload `apps/gdar_mobile/build/app/outputs/bundle/release/app-release.aab` to Google Play Console.
 3. Confirm `docs/PLAY_STORE_RELEASE.txt` is ready for the Play Console "Release Notes" section.
