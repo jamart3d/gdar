@@ -1,3 +1,27 @@
+What's new in v1.3.44+254
+- Hardened Google TV `Enhanced` / PCM permission handling on Android TV:
+- moved the explicit PCM permission request into TV settings when `Enhanced` is selected or when audio reactivity is enabled with `Enhanced` already selected
+- kept non-interactive screensaver launches prompt-free
+- Refined the Android native MediaProjection path in [MainActivity.kt](/C:/Users/jeff/StudioProjects/gdar/apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/MainActivity.kt):
+- fail closed if permission launch or foreground-service startup fails
+- clear stale stereo-capture / foreground-service state before fresh PCM permission attempts
+- reuse the same cleanup on stop, denial, and activity destroy
+- Removed the temporary blanket Google TV / Chromecast block after hardware feedback showed the PCM permission dialog can succeed at least once, shifting the fix toward lifecycle hardening instead of device exclusion
+- Hardened post-approval PCM capture in [StereoCapture.kt](/C:/Users/jeff/StudioProjects/gdar/apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/StereoCapture.kt):
+- wrapped the `AudioRecord` read loop so runtime failures log and exit instead of crashing the app
+- treat negative read results as graceful failure
+- avoid blocking `join(500)` on the UI thread during capture teardown
+- Updated related tests and fakes:
+- `AudioReactor.start()` test doubles now match the `Future<bool>` signature
+- TV settings/screensaver tests cover the settings-owned `Enhanced` flow
+- Verification completed in this session:
+- `flutter test packages/shakedown_core/test/ui/widgets/settings/tv_screensaver_section_test.dart`
+- `flutter test packages/shakedown_core/test/screens/screensaver_screen_test.dart`
+- `flutter test packages/shakedown_core/test/steal_screensaver/steal_graph_test.dart`
+- `.\gradlew.bat :app:compileDebugKotlin`
+
+---
+
 What's new in v1.3.43+253
 - **Maintenance**: General maintenance and version synchronization.
 

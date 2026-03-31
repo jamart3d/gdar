@@ -6,6 +6,7 @@ import android.media.AudioRecord
 import android.media.AudioPlaybackCaptureConfiguration
 import android.media.projection.MediaProjection
 import android.os.Build
+import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import kotlin.math.max
@@ -73,6 +74,19 @@ class StereoCapture {
     private var monoSlowEnv = 0.0
     private var prevMonoLevel = 0.0
 
+    private fun resetAnalysisState() {
+        waveformL = emptyList()
+        waveformR = emptyList()
+        monoLevelRms = 0.0
+        monoOnset = 0.0
+        monoFlux = 0.0
+        analysisFrames = 0
+        lastAnalysisMs = 0L
+        monoFastEnv = 0.0
+        monoSlowEnv = 0.0
+        prevMonoLevel = 0.0
+    }
+
     /**
      * Start stereo capture using [projection].
      * Returns true on success; false if the device is below API 29, AudioRecord failed to
@@ -125,9 +139,21 @@ class StereoCapture {
 
             val shortBuf = ShortArray(bufferSize / 2) // buffer in shorts (2 bytes each)
             captureThread = Thread {
-                while (isRunning) {
-                    val read = record.read(shortBuf, 0, shortBuf.size)
-                    if (read > 1) processBuffer(shortBuf, read)
+                try {
+                    while (isRunning) {
+                        val read = record.read(shortBuf, 0, shortBuf.size)
+                        if (read > 1) {
+                            processBuffer(shortBuf, read)
+                        } else if (read < 0 && isRunning) {
+                            Log.w(TAG, "StereoCapture read failed with code=$read")
+                            break
+                        }
+                    }
+                } catch (t: Throwable) {
+                    Log.e(TAG, "StereoCapture read loop crashed", t)
+                } finally {
+                    isRunning = false
+                    isActive = false
                 }
             }.also {
                 it.isDaemon = true
@@ -192,8 +218,14 @@ class StereoCapture {
     fun stop() {
         isRunning = false
         isActive = false
-        captureThread?.interrupt()
-        captureThread?.join(500)
+        val thread = captureThread
+        thread?.interrupt()
+        if (thread != null &&
+            thread !== Thread.currentThread() &&
+            Looper.myLooper() != Looper.getMainLooper()
+        ) {
+            thread.join(500)
+        }
         captureThread = null
         try {
             audioRecord?.stop()
@@ -208,15 +240,6 @@ class StereoCapture {
             Log.w(TAG, "Error stopping MediaProjection: ${e.message}")
         }
         mediaProjection = null
-        waveformL = emptyList()
-        waveformR = emptyList()
-        monoLevelRms = 0.0
-        monoOnset = 0.0
-        monoFlux = 0.0
-        analysisFrames = 0
-        lastAnalysisMs = 0L
-        monoFastEnv = 0.0
-        monoSlowEnv = 0.0
-        prevMonoLevel = 0.0
+        resetAnalysisState()
     }
 }
