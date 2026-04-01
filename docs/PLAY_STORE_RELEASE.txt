@@ -1,3 +1,11 @@
+What's new in v1.3.45+255
+- Hardened the Android TV media-projection foreground-service path for `Enhanced` / PCM capture:
+- in [MediaProjectionForegroundService.kt](/C:/Users/jeff/StudioProjects/gdar/apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/MediaProjectionForegroundService.kt), wrapped `startForeground(...)` startup so failures log, notify waiting callbacks, and stop the service instead of crashing the app process
+- in [MainActivity.kt](/C:/Users/jeff/StudioProjects/gdar/apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/MainActivity.kt), treat “foreground service never became ready” as a graceful `false` result and tear down PCM capture state cleanly
+- verified with `.\gradlew.bat :app:compileDebugKotlin`
+
+---
+
 What's new in v1.3.44+254
 - Hardened Google TV `Enhanced` / PCM permission handling on Android TV:
 - moved the explicit PCM permission request into TV settings when `Enhanced` is selected or when audio reactivity is enabled with `Enhanced` already selected

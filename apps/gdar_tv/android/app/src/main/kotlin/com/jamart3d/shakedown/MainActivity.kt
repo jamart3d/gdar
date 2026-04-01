@@ -142,7 +142,8 @@ class MainActivity: FlutterActivity() {
                     Log.e(TAG, "Failed to start capture foreground service", e)
                     return
                 }
-                MediaProjectionForegroundService.runWhenReady {
+                MediaProjectionForegroundService.runWhenReady(
+                    onReady = {
                     try {
                         val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                         val projection = mgr.getMediaProjection(resultCode, data)
@@ -167,7 +168,13 @@ class MainActivity: FlutterActivity() {
                         result?.success(false)
                         Log.e(TAG, "Failed to start stereo capture", e)
                     }
-                }
+                    },
+                    onUnavailable = {
+                        resetStereoCaptureSession()
+                        result?.success(false)
+                        Log.w(TAG, "MediaProjection foreground service never became ready")
+                    },
+                )
             } else {
                 resetStereoCaptureSession()
                 result?.success(false)

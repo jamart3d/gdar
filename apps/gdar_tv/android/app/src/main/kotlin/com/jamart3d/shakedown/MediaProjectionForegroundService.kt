@@ -11,16 +11,23 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import androidx.core.app.NotificationCompat
 
 class MediaProjectionForegroundService : Service() {
     companion object {
+        private const val TAG = "MediaProjFgService"
         private const val CHANNEL_ID = "enhanced_audio_capture"
         private const val NOTIFICATION_ID = 4107
         private const val ACTION_START =
             "com.jamart3d.shakedown.action.START_ENHANCED_CAPTURE"
         private val mainHandler = Handler(Looper.getMainLooper())
-        private val pendingReadyCallbacks = mutableListOf<() -> Unit>()
+        private data class PendingCallback(
+            val onReady: () -> Unit,
+            val onUnavailable: () -> Unit,
+        )
+
+        private val pendingReadyCallbacks = mutableListOf<PendingCallback>()
         @Volatile
         private var isForegroundReady = false
 
@@ -38,17 +45,25 @@ class MediaProjectionForegroundService : Service() {
             context.stopService(Intent(context, MediaProjectionForegroundService::class.java))
         }
 
-        fun runWhenReady(action: () -> Unit) {
+        fun runWhenReady(
+            onReady: () -> Unit,
+            onUnavailable: () -> Unit,
+        ) {
             val runNow = synchronized(pendingReadyCallbacks) {
                 if (isForegroundReady) {
                     true
                 } else {
-                    pendingReadyCallbacks.add(action)
+                    pendingReadyCallbacks.add(
+                        PendingCallback(
+                            onReady = onReady,
+                            onUnavailable = onUnavailable,
+                        ),
+                    )
                     false
                 }
             }
             if (runNow) {
-                mainHandler.post(action)
+                mainHandler.post(onReady)
             }
         }
 
@@ -57,7 +72,15 @@ class MediaProjectionForegroundService : Service() {
                 isForegroundReady = true
                 pendingReadyCallbacks.toList().also { pendingReadyCallbacks.clear() }
             }
-            callbacks.forEach { callback -> mainHandler.post(callback) }
+            callbacks.forEach { callback -> mainHandler.post(callback.onReady) }
+        }
+
+        private fun markStartFailed() {
+            val callbacks = synchronized(pendingReadyCallbacks) {
+                isForegroundReady = false
+                pendingReadyCallbacks.toList().also { pendingReadyCallbacks.clear() }
+            }
+            callbacks.forEach { callback -> mainHandler.post(callback.onUnavailable) }
         }
 
         private fun markStopped() {
@@ -71,7 +94,13 @@ class MediaProjectionForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startCaptureForeground()
+        try {
+            startCaptureForeground()
+        } catch (t: Throwable) {
+            Log.e(TAG, "Failed to enter mediaProjection foreground service", t)
+            markStartFailed()
+            stopSelf(startId)
+        }
         return START_NOT_STICKY
     }
 
