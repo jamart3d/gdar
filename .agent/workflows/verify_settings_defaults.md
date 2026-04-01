@@ -4,6 +4,8 @@ description: Ensure all experimental/premium settings are disabled before a rele
 
 # Workflow: Verify Settings Defaults (Monorepo)
 
+**TRIGGERS:** verify_settings_defaults, verify_metadata
+
 This workflow ensures the application's initial state remains clean and un-opinionated for new installations.
 
 > [!NOTE]

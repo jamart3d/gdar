@@ -13,6 +13,7 @@ import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_stepper_row.dart';
 import 'package:shakedown_core/visualizer/visualizer_audio_reactor.dart';
+import 'dart:async';
 
 part 'tv_screensaver_section_build.dart';
 part 'tv_screensaver_section_audio_build.dart';
@@ -52,6 +53,13 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
   final FocusNode _lastFocusNode = FocusNode();
   int _wrapKey = 0;
   bool _isEnhancedCaptureRequestPending = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+
 
   bool _supportsEnhancedCapture() {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {

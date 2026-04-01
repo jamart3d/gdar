@@ -72,6 +72,22 @@ vec4 sampleBlurred(sampler2D tex, vec2 uv, float blurRadius) {
     return col / 9.0;
 }
 
+// 4-Tap Rotated Grid Supersampling (RGSS) to eliminate pixel crawl on downscale
+vec4 sampleAA(sampler2D tex, vec2 uv, vec2 pxSize) {
+    if (uAntiAlias < 0.5) return texture(tex, uv);
+    
+    vec2 off1 = vec2(-0.375, -0.125) * pxSize;
+    vec2 off2 = vec2( 0.125, -0.375) * pxSize;
+    vec2 off3 = vec2( 0.375,  0.125) * pxSize;
+    vec2 off4 = vec2(-0.125,  0.375) * pxSize;
+    
+    vec4 c1 = texture(tex, uv + off1);
+    vec4 c2 = texture(tex, uv + off2);
+    vec4 c3 = texture(tex, uv + off3);
+    vec4 c4 = texture(tex, uv + off4);
+    return (c1 + c2 + c3 + c4) * 0.25;
+}
+
 float hash(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
     p += dot(p, p + 45.32);
@@ -91,6 +107,7 @@ void main() {
     float safeTime = max(uTime, 0.0);
 
     // Use smoothed position passed from Dart (StealBackground.update())
+    // Audio nudges are already applied in Dart so trails can follow them exactly.
     vec2 pos = vec2(uLogoPosX, uLogoPosY);
 
     float pulse  = clamp(uPulseIntensity, 0.0, 2.0);
@@ -98,11 +115,6 @@ void main() {
     float emid   = clamp(uMidEnergy,      0.0, 2.0);
     float eover  = clamp(uOverallEnergy,  0.0, 2.0);
     float etreble = clamp(uTrebleEnergy,  0.0, 2.0);
-
-    // Audio nudge applied on top of smoothed pos
-    if (eover > 0.01) {
-        pos += vec2(ebass - 0.5, emid - 0.5) * 0.05 * pulse;
-    }
 
     vec2 centeredUV = uv - pos;
     centeredUV.x *= aspect;
@@ -125,29 +137,35 @@ void main() {
     float blurRadius = clamp(uBlurAmount, 0.0, 1.0) * 0.018;
 
     vec4 texColor;
+    
+    // UV space pixel size for true anti-aliasing
+    vec2 pxSize = vec2(aspect / resolution.x, 1.0 / resolution.y) / scale;
 
     if (uPerformanceLevel > 1.5) {
-        // Fast: 1 sample
-        texColor = texture(uTexture, texUV);
+        // Fast: 1 sample (or 4 if AA enabled)
+        texColor = sampleAA(uTexture, texUV, pxSize);
     } else if (uPerformanceLevel > 0.5) {
-        // Balanced: 9 samples
-        texColor = sampleBlurred(uTexture, texUV, blurRadius);
+        // Balanced: 9 box samples (or 1 supersample)
+        if (blurRadius < 0.0001) {
+            texColor = sampleAA(uTexture, texUV, pxSize);
+        } else {
+            texColor = sampleBlurred(uTexture, texUV, blurRadius);
+        }
     } else {
-        // High: 36 samples (Chromatic Aberration + Blur)
-        float r = sampleBlurred(uTexture, texUV + vec2(shift, 0.0), blurRadius).r;
-        float g = sampleBlurred(uTexture, texUV,                    blurRadius).g;
-        float b = sampleBlurred(uTexture, texUV - vec2(shift, 0.0), blurRadius).b;
-        float a = sampleBlurred(uTexture, texUV,                    blurRadius).a;
-        texColor = vec4(r, g, b, a);
-    }
-
-    // Anti-alias: smooth the logo edge using fwidth for sub-pixel crisp edges.
-    // Only active when uAntiAlias > 0.5. Uses the raw center alpha (not blurred)
-    // so the edge is always crisp regardless of the blur setting.
-    if (uAntiAlias > 0.5) {
-        float rawA = texColor.a; // Use the blurred alpha so AA doesn't fight blur
-        float fw = fwidth(rawA) * 1.5 + 0.001;
-        texColor.a = smoothstep(0.5 - fw, 0.5 + fw, rawA);
+        // High: Chromatic Aberration
+        if (blurRadius < 0.0001) {
+             float r = sampleAA(uTexture, texUV + vec2(shift, 0.0), pxSize).r;
+             float g = sampleAA(uTexture, texUV,                    pxSize).g;
+             float b = sampleAA(uTexture, texUV - vec2(shift, 0.0), pxSize).b;
+             float a = sampleAA(uTexture, texUV,                    pxSize).a;
+             texColor = vec4(r, g, b, a);
+        } else {
+             float r = sampleBlurred(uTexture, texUV + vec2(shift, 0.0), blurRadius).r;
+             float g = sampleBlurred(uTexture, texUV,                    blurRadius).g;
+             float b = sampleBlurred(uTexture, texUV - vec2(shift, 0.0), blurRadius).b;
+             float a = sampleBlurred(uTexture, texUV,                    blurRadius).a;
+             texColor = vec4(r, g, b, a);
+        }
     }
 
     texColor.rgb += vec3(etreble) * 0.3 * pulse;

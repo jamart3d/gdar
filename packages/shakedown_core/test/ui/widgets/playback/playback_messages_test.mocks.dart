@@ -831,6 +831,11 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
           as bool);
 
   @override
+  bool get hideTabText =>
+      (super.noSuchMethod(Invocation.getter(#hideTabText), returnValue: false)
+          as bool);
+
+  @override
   bool get omitHttpPathInCopy =>
       (super.noSuchMethod(
             Invocation.getter(#omitHttpPathInCopy),
@@ -1596,6 +1601,14 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
           as double);
 
   @override
+  bool get showScreensaverCountdown =>
+      (super.noSuchMethod(
+            Invocation.getter(#showScreensaverCountdown),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
   bool get randomOnlyUnplayed =>
       (super.noSuchMethod(
             Invocation.getter(#randomOnlyUnplayed),
@@ -1939,6 +1952,12 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
   @override
   void toggleEnableSwipeToBlock() => super.noSuchMethod(
     Invocation.method(#toggleEnableSwipeToBlock, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void toggleHideTabText() => super.noSuchMethod(
+    Invocation.method(#toggleHideTabText, []),
     returnValueForMissingStub: null,
   );
 
@@ -2687,6 +2706,12 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
   @override
   void toggleOilTvPremiumHighlight() => super.noSuchMethod(
     Invocation.method(#toggleOilTvPremiumHighlight, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void toggleShowScreensaverCountdown() => super.noSuchMethod(
+    Invocation.method(#toggleShowScreensaverCountdown, []),
     returnValueForMissingStub: null,
   );
 

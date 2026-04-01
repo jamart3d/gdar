@@ -1,0 +1,98 @@
+﻿Resolving dependencies in `C:\Users\jeff\StudioProjects\gdar`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (98.0.0 available)
+  analyzer 10.0.1 (12.0.0 available)
+  async 2.13.0 (2.13.1 available)
+  audio_session 0.2.2 (0.2.3 available)
+  build 4.0.4 (4.0.5 available)
+  built_value 8.12.3 (8.12.5 available)
+  connectivity_plus 6.1.5 (7.1.0 available)
+  connectivity_plus_platform_interface 2.0.1 (2.1.0 available)
+  dart_style 3.1.7 (3.1.8 available)
+  device_info_plus 11.5.0 (12.4.0 available)
+  ffi 2.1.5 (2.2.0 available)
+  flame_test 1.19.2 (2.2.3 available)
+  flutter_launcher_icons 0.13.1 (0.14.4 available)
+  json_annotation 4.10.0 (4.11.0 available)
+  matcher 0.12.18 (0.12.19 available)
+  meta 1.17.0 (1.18.2 available)
+  mustache_template 2.0.3 (2.0.4 available)
+  package_info_plus 8.3.1 (9.0.1 available)
+  path_provider_android 2.2.22 (2.2.23 available)
+  path_provider_foundation 2.5.1 (2.6.0 available)
+  permission_handler 11.4.0 (12.0.1 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  shared_preferences_android 2.4.21 (2.4.23 available)
+  shared_preferences_platform_interface 2.4.1 (2.4.2 available)
+  shelf_web_socket 2.0.1 (3.0.0 available)
+  source_gen 4.2.0 (4.2.2 available)
+  source_helper 1.3.10 (1.3.11 available)
+  test 1.29.0 (1.31.0 available)
+  test_api 0.7.9 (0.7.11 available)
+  test_core 0.6.15 (0.6.17 available)
+  url_launcher_android 6.3.28 (6.3.29 available)
+  vector_math 2.2.0 (2.3.0 available)
+  wakelock_plus 1.3.3 (1.5.1 available)
+  win32 5.15.0 (6.0.0 available)
+  win32_registry 2.1.0 (3.0.2 available)
+Got dependencies in `C:\Users\jeff\StudioProjects\gdar`!
+35 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/jeff/StudioProjects/gdar/packages/shakedown_core/test/ui/widgets/tv/tv_dual_pane_layout_random_test.dart
+00:00 +0: TvDualPaneLayout avoids duplicate playback when random selection starts early
+TvDualPaneLayout: Random show request received!
+[D]  AnimatedDiceIcon: Roll STARTED (isLoading=true, enableHaptics=false)
+[I]  Attempting to scroll to "Cornell 77" at index 0.
+TvDualPaneLayout: Stage 1 complete (1200ms)
+TvDualPaneLayout: Stage 2 complete (2000ms)
+TvDualPaneLayout: Stage 3 complete (2000ms), checking if playback needed
+TvDualPaneLayout: Requested show is already playing. Skipping explicit playPendingSelection.
+00:01 +1: TvDualPaneLayout orchestrates random playback when triggered from playback pane
+ΓòÉΓòÉΓòí EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK Γò₧ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+The following assertion was thrown running a test:
+Tried to use Provider with a subtype of Listenable/Stream (DeviceService).
+
+This is likely a mistake, as Provider will not automatically update dependents
+when DeviceService is updated. Instead, consider changing Provider for more specific
+implementation that handles the update mechanism, such as:
+
+- ListenableProvider
+- ChangeNotifierProvider
+- ValueListenableProvider
+- StreamProvider
+
+Alternatively, if you are making your own provider, consider using InheritedProvider.
+
+If you think that this is not an error, you can disable this check by setting
+Provider.debugCheckInvalidValueType to `null` in your main file:
+
+```
+void main() {
+  Provider.debugCheckInvalidValueType = null;
+
+  runApp(MyApp());
+}
+```
+
+
+When the exception was thrown, this was the stack:
+#0      Provider.debugCheckInvalidValueType.<anonymous closure>.<anonymous closure> (package:provider/src/provider.dart:421:9)
+#1      Provider.debugCheckInvalidValueType.<anonymous closure> (package:provider/src/provider.dart:448:6)
+#2      new Provider.value.<anonymous closure> (package:provider/src/provider.dart:278:48)
+#3      new Provider.value (package:provider/src/provider.dart:280:10)
+#4      main.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/packages/shakedown_core/test/ui/widgets/tv/tv_dual_pane_layout_random_test.dart:444:13)
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  TvDualPaneLayout orchestrates random playback when triggered from playback pane
+ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
+00:01 +1 -1: TvDualPaneLayout orchestrates random playback when triggered from playback pane [E]
+  Test failed. See exception logs above.
+  The test description was: TvDualPaneLayout orchestrates random playback when triggered from playback pane
+  
+00:01 +1 -1: Some tests failed.

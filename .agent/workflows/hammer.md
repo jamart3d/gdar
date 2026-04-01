@@ -8,15 +8,11 @@ description: Verbose health check — runs /checkup with full log output, forced
 
 Run the `/checkup` workflow with the following overrides:
 
-## Overrides
-
 | Behaviour | Checkup default | Hammer override |
 |---|---|---|
-| Smart skip (full) | Skips everything if SHA matches + PASS | Never fully skips — always runs step 3 (Visual/Design Check) even on SHA match |
-| Output | Concise summary | Full verbose: print complete output of every command, including stack traces |
-| Commit message | `chore: automated checkup pass [skip ci]` | `chore: hammer pass [score: <N>/100]` |
+| Smart skip | Skips melos if SHA matches + PASS | Never skips — always runs full suite and design scan |
+| Output | Concise summary | Full verbose: print complete output of every command |
+| Commit message | `chore: checkup pass [score: <N>/100] [skip ci]` | `chore: hammer pass [score: <N>/100]` |
 
-## Notes
-- The Health Score rubric is defined in `/checkup` step 4 — hammer uses the same scoring.
-- All platform detection, smart skip logic, and Chromebook stop conditions are inherited from `/checkup` unchanged.
-- Use hammer when something feels wrong and you need to see every line of output, or when automated fixes require human oversight.
+To force full melos execution, pass `--force` to the preflight script:
+`dart scripts/preflight_check.dart --force`

@@ -91,10 +91,12 @@ class _StealVisualizerState extends State<StealVisualizer> {
     return GestureDetector(
       onTap: widget.onExit,
       behavior: HitTestBehavior.opaque,
-      child: GameWidget(
-        game: _game,
-        loadingBuilder: (context) => const ColoredBox(color: Colors.black),
-        backgroundBuilder: (context) => Container(color: Colors.black),
+      child: ExcludeFocus(
+        child: GameWidget(
+          game: _game,
+          loadingBuilder: (context) => const ColoredBox(color: Colors.black),
+          backgroundBuilder: (context) => Container(color: Colors.black),
+        ),
       ),
     );
   }

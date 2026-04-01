@@ -35,56 +35,6 @@ class StealGame extends FlameGame {
   String _lastPalette = '';
   double _beatPulse = 0.0;
 
-  // -- Trail position ring buffer ---------------------------------------------
-  // Stores recent smoothed logo positions for ghost slice rendering.
-  // Store recent slices for ghost trails. Capacity currently 16.
-  static const int _trailBufferCapacity = 16;
-  final List<Offset> _trailBuffer = List.filled(
-    _trailBufferCapacity,
-    const Offset(0.5, 0.5),
-  );
-  int _trailHead = 0;
-  int _trailFrameCount = 0;
-
-  /// Returns up to [count] trail positions, newest first, with temporal interpolation
-  /// to eliminate "stepping" as the logo moves.
-  List<Offset> getTrailPositions(int count) {
-    final interval = (1 + (config.logoTrailLength * 14.5).round()).clamp(1, 30);
-    final frac = _trailFrameCount / interval.toDouble();
-
-    final clamped = count.clamp(0, _trailBufferCapacity - 1);
-    final result = <Offset>[];
-
-    // Position 0 is always the "live" position (i=0)
-    result.add(smoothedLogoPos);
-
-    if (clamped <= 1) return result;
-
-    for (int i = 1; i < clamped; i++) {
-      // Find the two buffer indices to interpolate between
-      // If i=1 (first ghost), we want it to be at 'interval' frames ago.
-      // Current head is 'frameCount' frames ago.
-      // k is the offset relative to head in samples.
-      final findK = i - frac;
-      final k = findK.floor();
-      final t = findK - k;
-
-      final idx1 =
-          ((_trailHead - k) % _trailBufferCapacity + _trailBufferCapacity) %
-          _trailBufferCapacity;
-      final idx2 =
-          ((_trailHead - (k + 1)) % _trailBufferCapacity +
-              _trailBufferCapacity) %
-          _trailBufferCapacity;
-
-      final p1 = _trailBuffer[idx1];
-      final p2 = _trailBuffer[idx2];
-
-      result.add(Offset.lerp(p1, p2, t.clamp(0.0, 1.0))!);
-    }
-    return result;
-  }
-
   int? debugAudioSessionId;
 
   StealGame({
@@ -117,12 +67,6 @@ class StealGame extends FlameGame {
 
     _lastPalette = config.palette;
     _resetHoldTimer();
-
-    // Fill buffer with current smoothed position so trails don't start at (0.5, 0.5)
-    final startPos = smoothedLogoPos;
-    for (int i = 0; i < _trailBufferCapacity; i++) {
-      _trailBuffer[i] = startPos;
-    }
   }
 
   void _subscribeToReactor(AudioReactor? reactor) {
@@ -173,7 +117,6 @@ class StealGame extends FlameGame {
     }
 
     _tickWoodstock(dt);
-    _tickTrailBuffer();
     _tickPulse(dt);
   }
 
@@ -189,23 +132,6 @@ class StealGame extends FlameGame {
     } else {
       _beatPulse *= pow(0.04, dt).clamp(0.0, 1.0).toDouble();
       if (_beatPulse < 0.01) _beatPulse = 0.0;
-    }
-  }
-
-  // -- Trail buffer -----------------------------------------------------------
-
-  void _tickTrailBuffer() {
-    // Keep buffer polling even if intensity is 0 so it's ready when toggled on
-
-    // Sample interval: higher logoTrailLength = more frames between snapshots
-    // = positions spread further apart = longer visible trail.
-    // At 0.0 - every frame. At 2.0 - every ~30 frames.
-    final interval = (1 + (config.logoTrailLength * 14.5).round()).clamp(1, 30);
-    _trailFrameCount++;
-    if (_trailFrameCount >= interval) {
-      _trailFrameCount = 0;
-      _trailHead = (_trailHead + 1) % _trailBufferCapacity;
-      _trailBuffer[_trailHead] = smoothedLogoPos;
     }
   }
 
@@ -249,6 +175,7 @@ class StealGame extends FlameGame {
     final newConfig = config.copyWith(palette: next);
     config = newConfig;
 
+    _background?.updateConfig(newConfig);
     _applyBannerConfig(newConfig);
 
     _resetHoldTimer();
@@ -322,6 +249,7 @@ class StealGame extends FlameGame {
 
   void updateConfig(StealConfig newConfig) {
     config = newConfig;
+    _background?.updateConfig(newConfig);
     _applyBannerConfig(newConfig);
     _applyGraphConfig(newConfig);
   }
@@ -359,6 +287,9 @@ class StealGame extends FlameGame {
   /// Used by StealBanner to keep rings locked to the logo center.
   Offset get smoothedLogoPos =>
       _background?.smoothedLogoPos ?? const Offset(0.5, 0.5);
+
+  Offset get renderedLogoPos =>
+      _background?.renderedLogoPos ?? const Offset(0.5, 0.5);
 
   /// Unified beat pulse factor (0.0 to 1.0) with exponential decay.
   double get beatPulse => _beatPulse;

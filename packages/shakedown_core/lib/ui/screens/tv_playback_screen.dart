@@ -129,6 +129,8 @@ class PlaybackScreenState extends State<PlaybackScreen>
     super.dispose();
   }
 
+  void focusCurrentTrack() => _scrollToCurrentTrack(true, syncFocus: true);
+
   void _refreshTrackFocusNodes() {
     if (mounted) {
       setState(() {});

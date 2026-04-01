@@ -317,11 +317,17 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                 ),
                 const SizedBox(height: 32),
                 if (!isFruit)
-                  ElevatedButton.icon(
+                  TextButton.icon(
                     onPressed: () =>
-                        context.read<AudioProvider>().playRandomShow(),
-                    icon: const Icon(LucideIcons.dice5),
-                    label: const Text('Play Random Show'),
+                        context.read<AudioProvider>().playRandomShow(delayPlayback: true),
+                    icon: Icon(LucideIcons.dice5, color: colorScheme.primary),
+                    label: Text(
+                      'PLAY RANDOM SHOW',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: colorScheme.primary,
+                        fontFamily: settingsProvider.activeAppFont,
+                      ),
+                    ),
                   ),
               ],
             ],

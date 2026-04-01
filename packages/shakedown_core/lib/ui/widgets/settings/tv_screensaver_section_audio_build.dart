@@ -127,6 +127,8 @@ extension _TvScreensaverSectionAudioBuild on _TvScreensaverSectionState {
     );
   }
 
+
+
   Widget _buildAudioGraphSection({
     required SettingsProvider settings,
     required ColorScheme colorScheme,
@@ -155,7 +157,8 @@ extension _TvScreensaverSectionAudioBuild on _TvScreensaverSectionState {
               color: colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
+
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,

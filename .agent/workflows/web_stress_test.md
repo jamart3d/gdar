@@ -8,8 +8,10 @@ This workflow verifies web performance, Simple Theme constraints, and detects UI
 > [!NOTE]
 > **MONOREPO**: Web app lives in `apps/gdar_web/`. Build output is at `apps/gdar_web/build/web`.
 
+## Manual Checklist
+
 1.  **Environment Check**:
-    - Run from the web app target:
+    - Launch the web server from the web app target (note: this is interactive, so launch it and do not wait for it):
     ```powershell
     cd apps/gdar_web; flutter run -d web-server --web-port=8080
     ```
@@ -24,6 +26,8 @@ This workflow verifies web performance, Simple Theme constraints, and detects UI
     - Toggle between **HTML5** and **Web Audio** engines.
     - **Verify**: No UI stalls during the switch.
     - **Verify**: Metadata remains in sync after engine handoff.
+
+## Automated Test
 
 4.  **Wasm Runtime Smoke Test**:
     - Build the application for Wasm from the web app target:

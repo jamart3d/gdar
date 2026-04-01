@@ -1,4 +1,5 @@
 ---
+---
 description: Investigate a specific codebase issue and generate a standardized report.
 ---
 # Issue Report Workflow
@@ -6,7 +7,7 @@ description: Investigate a specific codebase issue and generate a standardized r
 **TRIGGERS:** /issue_report, investigate, bug report, dig into
 
 > [!IMPORTANT]
-> **AUTONOMY OVERRIDE & PLANNING MODE**: When this workflow is triggered, switch to **Planning Mode** (`/plan` or toggling the UI) to guarantee a deep architectural investigation. Proceed autonomously end-to-end (reading files, testing, and writing the final report markdown file) without stopping for intermediate permission. Only pause and ask the user if you encounter a blocking issue, need clarification on the bug, or have fully completed the report.
+> **AUTONOMY OVERRIDE**: When this workflow is triggered, guarantee a deep architectural investigation. Proceed autonomously end-to-end (reading files, testing, and writing the final report markdown file) without stopping for intermediate permission. Only pause and ask the user if you encounter a blocking issue, need clarification on the bug, or have fully completed the report.
 
 ## Investigation & Reporting Steps
 1. **Get App Version**: Read `pubspec.yaml` to explicitly get the current app version.

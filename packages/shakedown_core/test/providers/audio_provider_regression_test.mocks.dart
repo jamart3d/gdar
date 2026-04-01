@@ -397,6 +397,105 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i5.GaplessPlayer {
           as _i7.Stream<String>);
 
   @override
+  _i7.Stream<double?> get scheduledStartContextTimeStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#scheduledStartContextTimeStream),
+            returnValue: _i7.Stream<double?>.empty(),
+            returnValueForMissingStub: _i7.Stream<double?>.empty(),
+          )
+          as _i7.Stream<double?>);
+
+  @override
+  _i7.Stream<double?> get outputLatencyMsStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#outputLatencyMsStream),
+            returnValue: _i7.Stream<double?>.empty(),
+            returnValueForMissingStub: _i7.Stream<double?>.empty(),
+          )
+          as _i7.Stream<double?>);
+
+  @override
+  _i7.Stream<double?> get lastDecodeMsStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#lastDecodeMsStream),
+            returnValue: _i7.Stream<double?>.empty(),
+            returnValueForMissingStub: _i7.Stream<double?>.empty(),
+          )
+          as _i7.Stream<double?>);
+
+  @override
+  _i7.Stream<double?> get lastConcatMsStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#lastConcatMsStream),
+            returnValue: _i7.Stream<double?>.empty(),
+            returnValueForMissingStub: _i7.Stream<double?>.empty(),
+          )
+          as _i7.Stream<double?>);
+
+  @override
+  _i7.Stream<int?> get failedTrackCountStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#failedTrackCountStream),
+            returnValue: _i7.Stream<int?>.empty(),
+            returnValueForMissingStub: _i7.Stream<int?>.empty(),
+          )
+          as _i7.Stream<int?>);
+
+  @override
+  _i7.Stream<int?> get workerTickCountStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#workerTickCountStream),
+            returnValue: _i7.Stream<int?>.empty(),
+            returnValueForMissingStub: _i7.Stream<int?>.empty(),
+          )
+          as _i7.Stream<int?>);
+
+  @override
+  _i7.Stream<int?> get sampleRateStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#sampleRateStream),
+            returnValue: _i7.Stream<int?>.empty(),
+            returnValueForMissingStub: _i7.Stream<int?>.empty(),
+          )
+          as _i7.Stream<int?>);
+
+  @override
+  _i7.Stream<int?> get decodedCacheSizeStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#decodedCacheSizeStream),
+            returnValue: _i7.Stream<int?>.empty(),
+            returnValueForMissingStub: _i7.Stream<int?>.empty(),
+          )
+          as _i7.Stream<int?>);
+
+  @override
+  _i7.Stream<String?> get handoffStateStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#handoffStateStream),
+            returnValue: _i7.Stream<String?>.empty(),
+            returnValueForMissingStub: _i7.Stream<String?>.empty(),
+          )
+          as _i7.Stream<String?>);
+
+  @override
+  _i7.Stream<int?> get handoffAttemptCountStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#handoffAttemptCountStream),
+            returnValue: _i7.Stream<int?>.empty(),
+            returnValueForMissingStub: _i7.Stream<int?>.empty(),
+          )
+          as _i7.Stream<int?>);
+
+  @override
+  _i7.Stream<int?> get lastHandoffPollCountStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#lastHandoffPollCountStream),
+            returnValue: _i7.Stream<int?>.empty(),
+            returnValueForMissingStub: _i7.Stream<int?>.empty(),
+          )
+          as _i7.Stream<int?>);
+
+  @override
   _i7.Stream<int?> get currentIndexStream =>
       (super.noSuchMethod(
             Invocation.getter(#currentIndexStream),
@@ -1295,6 +1394,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   bool get enableSwipeToBlock =>
       (super.noSuchMethod(
             Invocation.getter(#enableSwipeToBlock),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get hideTabText =>
+      (super.noSuchMethod(
+            Invocation.getter(#hideTabText),
             returnValue: false,
             returnValueForMissingStub: false,
           )
@@ -2240,6 +2348,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as double);
 
   @override
+  bool get showScreensaverCountdown =>
+      (super.noSuchMethod(
+            Invocation.getter(#showScreensaverCountdown),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   bool get randomOnlyUnplayed =>
       (super.noSuchMethod(
             Invocation.getter(#randomOnlyUnplayed),
@@ -2589,6 +2706,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   void toggleEnableSwipeToBlock() => super.noSuchMethod(
     Invocation.method(#toggleEnableSwipeToBlock, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void toggleHideTabText() => super.noSuchMethod(
+    Invocation.method(#toggleHideTabText, []),
     returnValueForMissingStub: null,
   );
 
@@ -3337,6 +3460,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   void toggleOilTvPremiumHighlight() => super.noSuchMethod(
     Invocation.method(#toggleOilTvPremiumHighlight, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void toggleShowScreensaverCountdown() => super.noSuchMethod(
+    Invocation.method(#toggleShowScreensaverCountdown, []),
     returnValueForMissingStub: null,
   );
 

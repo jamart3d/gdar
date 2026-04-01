@@ -48,17 +48,16 @@ Use this when the UI freezes or behaves oddly and audio keeps playing.
 2. Go to the Console tab.
 3. Run:
 
-`js
+```javascript
 gdarDumpErrors()
-``r
+```
 
 This prints and returns the in-memory error log captured by the app. You can copy the output or paste it into a bug report.
 
 Optional:
 
-`js
+```javascript
 gdarClearErrors()
-``r
+```
 
 This clears the stored log. Logs are stored in localStorage under the key gdar_web_error_log_v1.
-

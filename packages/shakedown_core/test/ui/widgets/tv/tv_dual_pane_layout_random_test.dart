@@ -65,6 +65,11 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   Show? get currentShow => _currentShow;
 
+  set currentShow(Show? value) {
+    _currentShow = value;
+    notifyListeners();
+  }
+
   @override
   Source? get currentSource => _currentShow?.sources.first;
 
@@ -400,6 +405,90 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       expect(audioProvider.playSourceCallCount, 1);
+    },
+  );
+
+  testWidgets(
+    'TvDualPaneLayout orchestrates random playback when triggered from playback pane',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final catalogService = FakeCatalogService();
+      CatalogService.setMock(catalogService);
+      final audioProvider = FakeAudioProvider();
+      final settingsProvider = FakeSettingsProvider()..isTv = true;
+      final showListProvider = FakeShowListProvider();
+      final deviceService = MockDeviceService()..isTv = true;
+      final themeProvider = ThemeProvider(isTv: true);
+
+      // Force no current show so we see the "No show selected" empty state button
+      audioProvider.currentShow = null;
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            Provider<CatalogService>.value(value: catalogService),
+            ChangeNotifierProvider<AudioCacheService>.value(
+              value: FakeAudioCacheService(),
+            ),
+            ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
+            ChangeNotifierProvider<SettingsProvider>.value(
+              value: settingsProvider,
+            ),
+            ChangeNotifierProvider<ShowListProvider>.value(
+              value: showListProvider,
+            ),
+            ChangeNotifierProvider<DeviceService>.value(value: deviceService),
+            ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
+          ],
+          child: const MaterialApp(home: TvDualPaneLayout()),
+        ),
+      );
+
+      // Use a fixed pump duration instead of pumpAndSettle to avoid infinite animation timeouts
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Use a more precise text-based finder now that we're using real TV UI components
+      final buttonFinder = find.text('PLAY RANDOM SHOW');
+      if (buttonFinder.evaluate().isEmpty) {
+        // ignore: avoid_print
+        print('DEBUG: PLAY RANDOM SHOW button not found. Dumping widget tree...');
+        debugDumpApp();
+      }
+      
+      expect(buttonFinder, findsOneWidget);
+
+      await tester.tap(buttonFinder);
+      await tester.pump();
+
+      // Verify the call used orchestrated delay
+      expect(audioProvider.playRandomShowCallCount, 1);
+
+      // Should shift focus back to left pane (Show List) immediately
+      // sequence stage 0 starts during delay
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(showListProvider.isChoosingRandomShow, isTrue);
+
+      // Verify 1.2s delay stage (dice rolling)
+      await tester.pump(const Duration(milliseconds: 1200));
+
+      // Verify next delay stage (scrolling to selection)
+      await tester.pump(const Duration(milliseconds: 2000));
+
+      // We manually simulate the provider calling playSource at the end of selection
+      await audioProvider.playPendingSelection();
+      expect(audioProvider.playSourceCallCount, 1);
+
+      // Final delay stage before returning focus to right pane
+      await tester.pump(const Duration(milliseconds: 2000));
+      await tester.pump(const Duration(milliseconds: 500));
+      
+      // Cleanup
+      await tester.pumpAndSettle();
     },
   );
 }

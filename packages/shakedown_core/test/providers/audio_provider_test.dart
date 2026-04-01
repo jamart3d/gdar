@@ -300,6 +300,46 @@ void main() {
         });
       },
     );
+    
+    testWidgets(
+      'playRandomShow(delayPlayback: true) sets selection and emits event but does not start playback',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          final show = createDummyShow(1);
+          when(mockShowListProvider.filteredShows).thenReturn([show]);
+
+          // Listen to the stream for orchestration verification
+          final selectionCompleter = Completer<({Show show, Source source})>();
+          final sub = audioProvider.randomShowRequestStream.listen(
+            selectionCompleter.complete,
+          );
+
+          final playedShow = await audioProvider.playRandomShow(
+            delayPlayback: true,
+          );
+
+          expect(playedShow, equals(show));
+          expect(audioProvider.currentShow, equals(show));
+          expect(audioProvider.pendingRandomShowRequest, isNotNull);
+
+          // Verify stream emitted correctly for TV orchestrator
+          final selection = await selectionCompleter.future;
+          expect(selection.show, equals(show));
+
+          // Verify playback NOT started directly (waits for TV sequence)
+          verifyNever(
+            mockAudioPlayer.setAudioSources(
+              any,
+              initialIndex: anyNamed('initialIndex'),
+              preload: anyNamed('preload'),
+            ),
+          );
+          verifyNever(mockAudioPlayer.play());
+
+          await sub.cancel();
+        });
+      },
+    );
 
     testWidgets('playSource sets current show/source and plays audio', (
       WidgetTester tester,

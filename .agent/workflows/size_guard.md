@@ -3,6 +3,8 @@ description: Audit asset and build size budgets for the GDAR monorepo.
 ---
 # Size Guard Workflow (Monorepo)
 
+**TRIGGERS:** size_guard, audit_size
+
 Use this workflow to audit asset growth and release artifact size, especially
 for Android and TV targets where storage pressure matters most.
 

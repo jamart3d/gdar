@@ -6,22 +6,14 @@ description: Comprehensive code quality, design, TV flow, and spec conformance a
 **TRIGGERS:** audit, glass, liquid glass, tv audit, spec audit, quality, lint
 
 > [!IMPORTANT]
-> **AUTONOMY & PLANNING MODE**: Proceed autonomously end-to-end - read specs, scan code, run analysis, and generate reports without pausing for intermediate permission.
-
-> [!NOTE]
-> **MONOREPO**: Analysis and formatting run from the workspace root. Build commands must target specific apps under `apps/`.
+> **AUTONOMY**: Proceed autonomously end-to-end - read specs, scan code, run analysis, and generate reports without pausing for intermediate permission. **MONOREPO**: Analysis and formatting run from the workspace root. Build commands must target specific apps under `apps/`.
 
 Run the sections relevant to the user's request. If the user just says "audit", run all sections.
 
 ---
 
 ## Section 1: General Health Check
-// turbo
-1. **Analyze**: Run workspace analysis from the root (`melos run analyze` or equivalent Dart workspace analysis).
-// turbo
-2. **Test**: Run the relevant test scope from the workspace root (`melos run test` for full health, narrower runs when the user asks for a targeted audit).
-// turbo
-3. **Format**: Run workspace formatting from the root (`melos run format` or equivalent Dart formatting).
+1. **Preflight**: Run `dart scripts/preflight_check.dart` or `/checkup` first rather than running manual checks.
 4. **Debug Clean**: Scan for `print(` and `logger.` statements across `apps/` and `packages/`.
 5. **Dependencies**: `flutter pub outdated` (from workspace root).
 
@@ -59,7 +51,7 @@ Run the sections relevant to the user's request. If the user just says "audit", 
 3. Categorize findings: Aligned, Drifted, Violation, Undocumented.
 
 ## Section 5: Optimization Audit
-1. **Size Analysis**: `flutter build appbundle --analyze-size` (from `apps/gdar_mobile`).
+1. **Size Analysis**: `flutter build appbundle --analyze-size` (from `apps/gdar_mobile`). Run only if user requests size analysis.
 2. **Assets**: Find files over 500 KB across `packages/shakedown_core/assets/`.
 3. **Deep Links**: Scan `apps/gdar_mobile/android/app/src/main/AndroidManifest.xml` for intent filters and App Actions.
 

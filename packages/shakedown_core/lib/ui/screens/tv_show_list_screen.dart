@@ -309,7 +309,7 @@ class ShowListScreenState extends State<ShowListScreen>
           _randomShowPlayed = true;
         });
         logger.i('Startup setting enabled, playing random show.');
-        audioProvider.playRandomShow();
+        audioProvider.playRandomShow(delayPlayback: true);
         showListProvider.removeListener(playRandomShowAndRemoveListener);
       } else if (!showListProvider.isLoading) {
         showListProvider.removeListener(playRandomShowAndRemoveListener);
@@ -412,6 +412,13 @@ class ShowListScreenState extends State<ShowListScreen>
 
   void _showErrorSnackBar(String msg) {
     showMessage(context, msg);
+  }
+
+  void focusCurrentShow() {
+    final show = _audioProvider.currentShow;
+    if (show != null) {
+      focusShowByObject(show);
+    }
   }
 
   @override

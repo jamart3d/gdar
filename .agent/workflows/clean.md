@@ -10,24 +10,6 @@ This workflow is for workspace-root hygiene in the GDAR monorepo. Treat it as
 an audit-first workflow. Do not delete or move files blindly on a dirty
 worktree.
 
-## 0. Preflight & Platform Detection
-// turbo
-1. Run `.agent/workflows/toolchain_preflight.md` to establish host class and shell syntax rules.
-2. Ensure you are using the correct OS-specific commands for discovery (`dir` vs `ls`) and deletion (`del` vs `rm`).
-
-
-## Monorepo Awareness
-
-GDAR is a Dart workspace monorepo coordinated from the root `pubspec.yaml`.
-Build targets live under `apps/` and shared code lives under `packages/`.
-
-Important current repo facts:
-- Root orchestration uses `pubspec.yaml`, not `melos.yaml`.
-- Approved top-level product directories include `apps/`, `packages/`, `docs/`,
-  `scripts/`, and `.agent/`.
-- Temporary build/test artifacts may appear at root during local debugging and
-  should be reviewed before deletion.
-
 ## 1. Root Directory Audit
 1. List all files and directories in the project root.
 2. Recursively search `apps/` and `packages/` for transient artifacts (*.log, *.tmp, test_out.txt, etc).

@@ -7,6 +7,7 @@ import 'package:shakedown_core/ui/widgets/settings/playback_section.dart';
 import 'package:shakedown_core/ui/widgets/settings/source_filter_settings.dart';
 import 'package:shakedown_core/ui/widgets/settings/usage_instructions_section.dart';
 import 'package:shakedown_core/ui/widgets/settings/tv_screensaver_section.dart';
+import 'package:shakedown_core/ui/widgets/settings/tv_screensaver_preview_panel.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown_core/ui/screens/rated_shows_screen.dart';
 import 'package:shakedown_core/ui/screens/about_screen.dart';
@@ -212,6 +213,14 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
                       },
                     ),
                   ),
+                  if (_selectedIndex == 3)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 32,
+                      ),
+                      child: TvScreensaverPreviewPanel(),
+                    ),
                 ],
               ),
             ),

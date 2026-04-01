@@ -1,3 +1,24 @@
+What's new in v1.3.46+256
+- Temporarily restored the older direct Android TV PCM approval path in [MainActivity.kt](/C:/Users/jeff/StudioProjects/gdar/apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/MainActivity.kt):
+- after the PCM permission dialog returns `OK`, the app now goes straight to `getMediaProjection()` and `stereoCapture.start(...)`
+- this bypasses the `MediaProjectionForegroundService` startup layer to A/B test whether that service path is the source of the instant crash on Chromecast with Google TV 2020
+- verified with `.\gradlew.bat :app:compileDebugKotlin`
+- **[TV Screensaver Refinement]**
+- Relocated live screensaver preview to the **TV Settings Navigation Rail**; now only renders when the Screensaver section is selected, optimizing CPU/Audio overhead.
+- Implemented **4-Tap RGSS Anti-Aliasing** (Rotated Grid Supersampling) in `steal.frag` to eliminate logo "pixel crawl" when scaled.
+- Refactored logo motion path to use **incremental path time**, ensuring smooth, continuous movement during flow speed adjustments with zero jumping.
+- Implemented **Historical Trail Snapshots**; the trail now captures position, size (including bass-shaking pulses), and color for each ghost slice, creating a physics-based "ripple" wave.
+- Fixed **Auto Palette Cycle** synchronization; background shader now correctly receives color updates from the game engine.
+- Added verification tests for **Trail Snapshot** interpolation and **Preview Panel** lifecycle in `shakedown_core`.
+- **[TV Random Show Flow Unification]**
+- Unified the "Play Random Show" behavior across the TV UI to ensure all entry points (dice icon and playback pane buttons) initiate the premium animated sequence.
+- Implemented **Delayed Playback Orchestration** for the right-pane empty state button; triggering it now correctly starts the header dice animation, auto-scrolls to the selection, and shifts focus before starting audio.
+- Styled the TV playback empty state button with **Rock Salt Typography** and all-caps "PLAY RANDOM SHOW" to match the premium "Dice Control" aesthetic.
+- Updated startup logic to respect the animated TV sequence if "Play Random Show on Startup" is enabled.
+- Added unit and widget tests to verify the `delayPlayback` orchestration and focus-shifting logic.
+
+---
+
 What's new in v1.3.45+255
 - Hardened the Android TV media-projection foreground-service path for `Enhanced` / PCM capture:
 - in [MediaProjectionForegroundService.kt](/C:/Users/jeff/StudioProjects/gdar/apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/MediaProjectionForegroundService.kt), wrapped `startForeground(...)` startup so failures log, notify waiting callbacks, and stop the service instead of crashing the app process

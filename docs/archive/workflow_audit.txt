@@ -1,0 +1,115 @@
+# Workflow Audit — All 22 Workflows
+
+Audited every `.agent/workflows/*.md` file. Grouped into tiers by health.
+
+---
+
+## ✅ Tier 1: Good Shape (No changes needed)
+
+These follow the established pattern — script-driven, concise, no agent-side logic.
+
+| Workflow | Lines | Notes |
+|---|---|---|
+| `/save` | 24 | Gold standard. One script call, done. |
+| `/verify` | 23 | Clean. Points to `scripts/verify.dart`, no bloat. |
+| `/chromebook` | 33 | Reference doc, not an automation workflow. Correctly scoped. |
+| `/windows_wasm` | 65 | Reference doc with setup recipes. Fine as-is. Has a minor markdown formatting bug (unclosed code fences on lines 51-53 and 59-61) — cosmetic only. |
+| `/screenshot_audit` | 16 | Clean investigative workflow. No automation to simplify. |
+| `/session_debrief` | 20 | Clean analysis workflow. |
+| `/image_to_code` | 16 | Clean. References Stitch MCP. |
+| `/refresh_native` | 30 | Sequential turbo steps. Clean and appropriate. |
+
+---
+
+## 🟡 Tier 2: Minor Improvements
+
+Small fixes — stale references, light cleanup, or duplicate functionality.
+
+### `/audit_size` → **Merge into `/size_guard`**
+- **Problem:** `audit_size` (26 lines) is just "run `/size_guard` and then do the same thing `/size_guard` already does." Step 1 literally says "Run the size_guard workflow." Steps 2-5 duplicate size_guard's own steps.
+- **Suggestion:** **Delete `audit_size.md`**. Add `audit_size` as a trigger alias on `/size_guard`. One less workflow to maintain.
+
+### `/verify_metadata` → **Merge into `/verify_settings_defaults`**
+- **Problem:** `verify_metadata` (25 lines) does version parity check + calls `/verify_settings_defaults`. But version parity is already guaranteed by `finalize_release.dart` (it bumps all three atomically). The only unique value is the settings defaults check, which it delegates to the other workflow anyway.
+- **Suggestion:** **Delete `verify_metadata.md`**. The version parity check is now structurally guaranteed by the release scripts. Add `verify_metadata` as a trigger alias on `/verify_settings_defaults`.
+
+### `/hammer` → Already updated (previous turn)
+- Updated to reference simplified `/checkup` + `--force` flag. No further action.
+
+### `/deploy` → Already updated (previous turn)
+- Simplified to 12 lines. No further action.
+
+### `/issue_report`
+- **Problem:** The `> [!IMPORTANT]` banner tells the agent to "switch to Planning Mode (`/plan` or toggling the UI)" — this references a capability that doesn't exist in the current toolchain.
+- **Suggestion:** Remove the planning mode reference. The rest is clean.
+
+### `/windows_wasm`
+- **Problem:** Broken markdown — unclosed code fences on lines 51-53 and 59-61 (triple backticks are missing the third backtick).
+- **Suggestion:** Fix the code fence syntax.
+
+---
+
+## 🟠 Tier 3: Structural Improvements
+
+These have the same anti-patterns we fixed in shipit/checkup — agent-side logic, redundant sub-steps, or excessive banners.
+
+### `/audit` (76 lines) → Trim to ~50
+- **Problem:**
+  - Section 1 (General Health) duplicates `/checkup` — runs the same melos format/analyze/test suite.
+  - Banner noise: 2 blocks saying "proceed autonomously."
+  - Section 5 (Optimization) includes `flutter build apk --analyze-size` which is a long build — it should warn about that or be opt-in.
+- **Suggestion:**
+  - Section 1 should say "Run `/checkup` first" or `dart scripts/preflight_check.dart` rather than re-listing melos commands.
+  - Collapse banners to one line.
+  - Make Section 5 (binary size analysis) opt-in: "Run only if user requests size analysis."
+
+### `/clean` (86 lines) → Trim to ~50
+- **Problem:**
+  - Step 0 references `toolchain_preflight.md` for platform detection — now just `dart scripts/preflight_check.dart` (without melos, just for platform info). But `/clean` doesn't actually need melos verification at all — it just needs to know the OS for `dir` vs `ls`. Could skip the script entirely and just check the platform inline.
+  - The approved file/directory lists (Steps 1-2) are useful reference but long. These could be extracted to a data file.
+  - "Monorepo Awareness" section repeats facts already in AGENTS.md.
+- **Suggestion:**
+  - Remove Step 0 preflight — `/clean` doesn't need toolchain verification. Just detect the OS natively.
+  - Remove the "Monorepo Awareness" section (already in AGENTS.md).
+  - Keep the approved file lists — they're the actual value of this workflow.
+
+### `/web_stress_test` (52 lines) → Trim to ~35
+- **Problem:**
+  - Mostly clean, but starts `flutter run -d web-server` as Step 1 which is interactive and long-running. Not really automatable in the current tool environment.
+  - Mixes manual browser testing (Steps 2-3) with automated Puppeteer testing (Step 5).
+- **Suggestion:**
+  - Split into "Manual Checklist" (steps 2-3) and "Automated Test" (steps 4-5).
+  - Add a note that Step 1 is interactive and the agent should just launch it, not wait for it.
+
+---
+
+## 🔴 Tier 4: Candidates for Deletion or Major Rework
+
+### `/audit_specs` → **Consider deleting**
+- **Problem:** Tells the agent to `search_web` for "Google Antigravity Release Notes" and check [jules.google](https://jules.google) for breaking changes. This is speculative web searching that rarely produces useful results. The "SPEC_VERSION" concept isn't actually tracked anywhere.
+- **Suggestion:** **Delete.** If spec drift matters, it should be a manual check by the user, not an agent web search. The `/audit` workflow's Section 4 (Spec Conformance) already covers the code-side of this.
+
+### `/prune_shadows` → **Consider archiving**
+- **Problem:** This was written for the monorepo migration. The migration is complete — `apps/gdar_tv`, `apps/gdar_mobile`, and `apps/gdar_web` should no longer have shadow copies of `shakedown_core` widgets. If they do, it's a one-off fix, not a recurring workflow.
+- **Suggestion:** Move to `.agent/workflows/archive/` or delete. If it's ever needed again, the steps are simple enough to recreate.
+
+---
+
+## Summary
+
+| Action | Workflows | Impact |
+|---|---|---|
+| **No change** | 8 (save, verify, chromebook, windows_wasm, screenshot_audit, session_debrief, image_to_code, refresh_native) | — |
+| **Already updated** | 4 (shipit, checkup, toolchain_preflight, hammer, deploy) | Done in previous turns |
+| **Minor fix** | 3 (issue_report, windows_wasm code fences, audit_size/verify_metadata merges) | ~30 min |
+| **Trim/refactor** | 3 (audit, clean, web_stress_test) | ~1 hr |
+| **Delete** | 2-3 (audit_specs, prune_shadows, audit_size as merge) | Immediate |
+
+### Recommended Priority
+1. **Delete `audit_size`** (merge trigger into `size_guard`) — zero effort.
+2. **Delete `verify_metadata`** (merge trigger into `verify_settings_defaults`) — zero effort.
+3. **Delete `audit_specs`** — speculative web search that doesn't help.
+4. **Trim `/audit`** — remove Section 1 duplication with checkup.
+5. **Trim `/clean`** — remove redundant preflight and monorepo awareness.
+6. **Fix `windows_wasm` code fences** and **`issue_report` planning mode** — cosmetic.
+7. **Archive `/prune_shadows`** — migration is done.

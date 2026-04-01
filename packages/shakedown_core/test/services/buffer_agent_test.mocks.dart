@@ -305,6 +305,94 @@ class MockGaplessPlayer extends _i1.Mock implements _i3.GaplessPlayer {
           as _i5.Stream<String>);
 
   @override
+  _i5.Stream<double?> get scheduledStartContextTimeStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#scheduledStartContextTimeStream),
+            returnValue: _i5.Stream<double?>.empty(),
+          )
+          as _i5.Stream<double?>);
+
+  @override
+  _i5.Stream<double?> get outputLatencyMsStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#outputLatencyMsStream),
+            returnValue: _i5.Stream<double?>.empty(),
+          )
+          as _i5.Stream<double?>);
+
+  @override
+  _i5.Stream<double?> get lastDecodeMsStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#lastDecodeMsStream),
+            returnValue: _i5.Stream<double?>.empty(),
+          )
+          as _i5.Stream<double?>);
+
+  @override
+  _i5.Stream<double?> get lastConcatMsStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#lastConcatMsStream),
+            returnValue: _i5.Stream<double?>.empty(),
+          )
+          as _i5.Stream<double?>);
+
+  @override
+  _i5.Stream<int?> get failedTrackCountStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#failedTrackCountStream),
+            returnValue: _i5.Stream<int?>.empty(),
+          )
+          as _i5.Stream<int?>);
+
+  @override
+  _i5.Stream<int?> get workerTickCountStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#workerTickCountStream),
+            returnValue: _i5.Stream<int?>.empty(),
+          )
+          as _i5.Stream<int?>);
+
+  @override
+  _i5.Stream<int?> get sampleRateStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#sampleRateStream),
+            returnValue: _i5.Stream<int?>.empty(),
+          )
+          as _i5.Stream<int?>);
+
+  @override
+  _i5.Stream<int?> get decodedCacheSizeStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#decodedCacheSizeStream),
+            returnValue: _i5.Stream<int?>.empty(),
+          )
+          as _i5.Stream<int?>);
+
+  @override
+  _i5.Stream<String?> get handoffStateStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#handoffStateStream),
+            returnValue: _i5.Stream<String?>.empty(),
+          )
+          as _i5.Stream<String?>);
+
+  @override
+  _i5.Stream<int?> get handoffAttemptCountStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#handoffAttemptCountStream),
+            returnValue: _i5.Stream<int?>.empty(),
+          )
+          as _i5.Stream<int?>);
+
+  @override
+  _i5.Stream<int?> get lastHandoffPollCountStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#lastHandoffPollCountStream),
+            returnValue: _i5.Stream<int?>.empty(),
+          )
+          as _i5.Stream<int?>);
+
+  @override
   _i5.Stream<int?> get currentIndexStream =>
       (super.noSuchMethod(
             Invocation.getter(#currentIndexStream),

@@ -8,6 +8,8 @@ import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/ui/screens/tv_settings_screen.dart';
 import 'package:shakedown_core/ui/screens/about_screen.dart';
+import 'package:shakedown_core/ui/widgets/settings/tv_screensaver_preview_panel.dart';
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:shakedown_core/models/rating.dart';
@@ -20,6 +22,13 @@ import 'package:shakedown_core/services/device_service.dart';
 import '../../helpers/test_helpers.dart';
 
 // Mock Providers (Simple versions for testing)
+class FakeGaplessPlayer extends Fake implements GaplessPlayer {
+  @override
+  int? get androidAudioSessionId => 123;
+  @override
+  bool get playing => false;
+}
+
 class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   int get cachedTrackCount => 0;
@@ -29,6 +38,9 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   Show? get currentShow => null;
   @override
   bool get isPlaying => false;
+
+  @override
+  GaplessPlayer get audioPlayer => FakeGaplessPlayer();
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -174,6 +186,41 @@ void main() {
       // Verify Swipe to Block is NOT present (using text segments to be safe)
       expect(find.text('Enable Swipe to Block'), findsNothing);
       expect(find.textContaining('swipe list items to block'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'Screensaver Preview Panel is visible only when Screensaver category is selected',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final settingsProvider = SettingsProvider(prefs);
+
+      await tester.pumpWidget(createTestableWidget(settingsProvider));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Initial state (Library selected) -> Preview Panel should NOT be present
+      expect(find.byType(TvScreensaverPreviewPanel), findsNothing);
+
+      // Select Screensaver category
+      final screensaverCategoryFinder = find.text('Screensaver');
+      final scrollable = find.byType(Scrollable).first;
+      await tester.scrollUntilVisible(screensaverCategoryFinder, 50, scrollable: scrollable);
+      await tester.tap(screensaverCategoryFinder);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Verify Preview Panel is now visible
+      expect(find.byType(TvScreensaverPreviewPanel), findsOneWidget);
+
+      // Switch back to Interface category (index 1)
+      final interfaceCategoryFinder = find.text('Interface');
+      await tester.tap(interfaceCategoryFinder);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // Verify Preview Panel is removed (and disposed)
+      expect(find.byType(TvScreensaverPreviewPanel), findsNothing);
     },
   );
 }
