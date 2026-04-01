@@ -1,3 +1,11 @@
+What's new in v1.3.48+258
+- **TV Screensaver → Beat Detector: "Enhanced" (PCM) crash on confirmation** — Clicking the
+- The stereo PCM beat-detection pipeline (`StereoCapture` → `VisualizerPlugin` PCM onset
+- Once capture is active, a persistent notification badge ("Enhanced audio capture is active")
+- Falls back to `HYBRID` detector automatically while PCM warms up (requires ≥ 12 analysis
+
+---
+
 What's new in v1.3.47+257
 - Screensaver 4K limiting is now device-aware: only the 2020 Chromecast
 - Removed `oilScreensaver4kSupport` user-facing setting from

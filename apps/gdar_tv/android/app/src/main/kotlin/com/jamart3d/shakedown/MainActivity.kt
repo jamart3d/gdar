@@ -133,30 +133,59 @@ class MainActivity: FlutterActivity() {
             val result = pendingStereoResult
             pendingStereoResult = null
             if (resultCode == Activity.RESULT_OK && data != null) {
+                // Keep a reference to the intent data — it cannot be reused after this
+                // callback returns, so we must call getMediaProjection() before leaving.
+                val captureResultCode = resultCode
+                val captureData = data
                 try {
                     resetStereoCaptureSession()
-                    val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                    val projection = mgr.getMediaProjection(resultCode, data)
-                    if (projection != null) {
-                        val ok = stereoCapture.start(projection)
-                        if (!ok) {
+                    // API 29+: AudioPlaybackCaptureConfiguration requires an active
+                    // FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION service before the
+                    // MediaProjection token can drive an AudioRecord. Start the service
+                    // first and wait for it to enter the foreground, then create the
+                    // projection token and hand it to StereoCapture.
+                    MediaProjectionForegroundService.start(this)
+                    MediaProjectionForegroundService.runWhenReady(
+                        onReady = {
+                            try {
+                                val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                                val projection = mgr.getMediaProjection(captureResultCode, captureData)
+                                if (projection != null) {
+                                    val ok = stereoCapture.start(projection)
+                                    if (!ok) {
+                                        resetStereoCaptureSession()
+                                    }
+                                    result?.success(ok)
+                                    Log.d(TAG, "Stereo capture started: $ok")
+                                } else {
+                                    resetStereoCaptureSession()
+                                    result?.success(false)
+                                    Log.w(TAG, "getMediaProjection returned null")
+                                }
+                            } catch (e: SecurityException) {
+                                resetStereoCaptureSession()
+                                result?.success(false)
+                                Log.w(TAG, "Stereo capture unavailable on this device: ${e.message}")
+                            } catch (e: Exception) {
+                                resetStereoCaptureSession()
+                                result?.success(false)
+                                Log.e(TAG, "Failed to start stereo capture after foreground ready", e)
+                            }
+                        },
+                        onUnavailable = {
                             resetStereoCaptureSession()
-                        }
-                        result?.success(ok)
-                        Log.d(TAG, "Stereo capture started: $ok")
-                    } else {
-                        resetStereoCaptureSession()
-                        result?.success(false)
-                        Log.w(TAG, "getMediaProjection returned null")
-                    }
+                            result?.success(false)
+                            Log.w(TAG, "MediaProjectionForegroundService failed to enter foreground")
+                        },
+                    )
                 } catch (e: SecurityException) {
                     resetStereoCaptureSession()
                     result?.success(false)
-                    Log.w(TAG, "Stereo capture unavailable on this device: ${e.message}")
+                    Log.w(TAG, "Stereo capture service launch blocked: ${e.message}")
                 } catch (e: Exception) {
                     resetStereoCaptureSession()
                     result?.success(false)
-                    Log.e(TAG, "Failed to start stereo capture", e)
+                    Log.e(TAG, "Failed to start stereo capture foreground service", e)
                 }
             } else {
                 resetStereoCaptureSession()

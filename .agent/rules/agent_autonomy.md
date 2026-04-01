@@ -31,13 +31,18 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 
 ### Approved Commands (Bash/Linux/ChromeOS/PowerShell):
 - **General**: `ls`, `pwd`, `cat`, `head`, `tail`, `wc`, `stat`, `find`, `dir`.
-- **Search**: `grep`, `rg` (ripgrep), `fd`, `jq`, `fzf`, `findstr`, `Select-String`.
+- Search (Unix): `grep`, `rg` (ripgrep), `fd`, `jq`, `fzf`. (Bash/Linux/ChromeOS only).
+- Search (Windows): `Select-String`, `findstr`. (PowerShell only).
+- Search (Cross-Platform): Use `grep_search` or `list_dir` tools where possible to avoid shell-specific syntax.
 - **Git (Diagnostic)**: `git status`, `git log`, `git diff`, `git branch`, `git remote`, `git rev-parse HEAD`.
 - **Git (Mutating - Authorized Context ONLY)**: `git add`, `git commit`, `git push`, `git tag`. (Must be part of `/shipit`, `/save`, `/commit`, or `/release` flows).
 - **Flutter/Dart**: `flutter analyze`, `dart analyze`, `flutter doctor`, `dart pub deps`, `dart run scripts/*.dart`, `flutter pub outdated`, `flutter clean`, `flutter pub get`, `flutter build appbundle --release`, `flutter build appbundle --debug`, `flutter build apk --analyze-size`, `flutter build web --release`.
 - **Formatting & Health**: `melos run format`, `melos run analyze`, `melos run test`, `melos run fix`, `melos help`, `melos exec`, `melos bootstrap`, `dart fix --apply`, `flutter format .`, `flutter test`, `jules`.
 - **PowerShell Diagnostics**: `Get-ChildItem`, `Measure-Object`, `Get-Content`, `Get-Item`, `Get-Process`, `$env:MELOS_CAN_HANDLE`.
 - **Project Scripts**: `./scripts/**/*.ps1`, `./scripts/**/*.sh`, `dart scripts/*.dart`, `dart scripts/save_sync.dart`, `dart scripts/release_sync.dart`, `dart scripts/finalize_release.dart`.
+
+## 2.5 Windows Syntax Enforcement
+- **MANDATORY**: When executing search/filter commands on Windows (detected as `WINDOWS_10`), you are STRICTLY FORBIDDEN from using `grep`, `awk`, `sed`, or other Unix-only binaries. Use native PowerShell commandlets or the `grep_search` tool to maintain zero-friction execution.
 
 ## 3. Protocol: Fail Fast, No Black Boxes
 - **No Black Boxes**: Every primary step in an autonomous chain MUST be run as a discrete tool call to provide real-time status visibility.
