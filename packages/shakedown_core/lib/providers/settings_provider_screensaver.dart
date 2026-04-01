@@ -64,7 +64,6 @@ const String _oilOuterRingSpacingMultiplierKey =
     'oil_outer_ring_spacing_multiplier';
 const String _oilMiddleRingFontScaleKey = 'oil_middle_ring_font_scale';
 const String _oilOuterRingFontScaleKey = 'oil_outer_ring_font_scale';
-const String _oilScreensaver4kSupportKey = 'oil_screensaver_4k_support';
 const String _oilScaleSourceKey = 'oil_scale_source';
 const String _oilScaleMultiplierKey = 'oil_scale_multiplier';
 const String _oilScaleSineEnabledKey = 'oil_scale_sine_enabled';
@@ -135,7 +134,6 @@ mixin _SettingsProviderScreensaverFields {
   late double _oilInnerRingSpacingMultiplier;
   late double _oilMiddleRingSpacingMultiplier;
   late double _oilOuterRingSpacingMultiplier;
-  late bool _oilScreensaver4kSupport;
   late bool _oilTvPremiumHighlight;
   late int _oilScaleSource;
   late double _oilScaleMultiplier;
@@ -219,7 +217,6 @@ mixin _SettingsProviderScreensaverExtension
   double get oilInnerRingSpacingMultiplier => _oilInnerRingSpacingMultiplier;
   double get oilMiddleRingSpacingMultiplier => _oilMiddleRingSpacingMultiplier;
   double get oilOuterRingSpacingMultiplier => _oilOuterRingSpacingMultiplier;
-  bool get oilScreensaver4kSupport => _oilScreensaver4kSupport;
   bool get oilTvPremiumHighlight => _oilTvPremiumHighlight;
   int get oilScaleSource => _oilScaleSource;
   double get oilScaleMultiplier => _oilScaleMultiplier;

@@ -57,7 +57,7 @@ class StealBackground extends PositionComponent
 
   /// Current smoothed logo position (0-1 UV space). Used by StealBanner.
   Offset get smoothedLogoPos => _smoothedPos;
-  
+
   /// The final exact logo position including audio nudges (for trails).
   Offset get renderedLogoPos => _renderedLogoPos;
 
@@ -128,7 +128,11 @@ class StealBackground extends PositionComponent
           ? _currentColors[0]
           : const ui.Color(0xFFFFFFFF);
       final currentSize = (config.logoScale + _sharedBeatPulseBoost) * 110.0;
-      final snap = TrailSnapshot(_renderedLogoPos, currentSize, currentBaseColor);
+      final snap = TrailSnapshot(
+        _renderedLogoPos,
+        currentSize,
+        currentBaseColor,
+      );
       for (int i = 0; i < _trailBufferCapacity; i++) {
         _trailBuffer[i] = snap;
       }
@@ -252,7 +256,7 @@ class StealBackground extends PositionComponent
     // Compute raw logo target position using incremental path time.
     // This prevents instantaneous jumping when the user changes flow speed.
     _pathTime += dt * config.flowSpeed.clamp(0.0, 2.0) * 0.5;
-    
+
     // Keep angle arguments bounded to avoid floating-point precision drift
     // during very long sessions (which can present as occasional jumps).
     final t = _pathTime + _phaseOffset;
@@ -297,34 +301,44 @@ class StealBackground extends PositionComponent
         0,
       );
     }
-    
+
     // Apply audio nudge to get rendered position
-    final react = !(config.audioGraphMode == 'corner_only') && config.enableAudioReactivity;
+    final react =
+        !(config.audioGraphMode == 'corner_only') &&
+        config.enableAudioReactivity;
     double ebass = 0.0;
     if (react) {
-       final sE = switch (config.scaleSource) {
-         -2 => 0.0,
-         -1 => game.currentEnergy.bass,
-         _ => game.currentEnergy.bands[config.scaleSource.clamp(0, 7)],
-       } * config.scaleMultiplier;
-       
-       double sineAmp = 0.0;
-       if (config.scaleSineEnabled) {
-         final double t = DateTime.now().millisecondsSinceEpoch / 1000.0;
-         sineAmp = math.sin(t * 2.0 * math.pi * config.scaleSineFreq) * config.scaleSineAmp;
-       }
-       ebass = (sE + sineAmp).clamp(0.0, 5.0);
+      final sE =
+          switch (config.scaleSource) {
+            -2 => 0.0,
+            -1 => game.currentEnergy.bass,
+            _ => game.currentEnergy.bands[config.scaleSource.clamp(0, 7)],
+          } *
+          config.scaleMultiplier;
+
+      double sineAmp = 0.0;
+      if (config.scaleSineEnabled) {
+        final double t = DateTime.now().millisecondsSinceEpoch / 1000.0;
+        sineAmp =
+            math.sin(t * 2.0 * math.pi * config.scaleSineFreq) *
+            config.scaleSineAmp;
+      }
+      ebass = (sE + sineAmp).clamp(0.0, 5.0);
     }
-    
-    final emid = react && _useSecondaryLogoAudioMotion ? game.currentEnergy.mid.clamp(0.0, 5.0) : 0.0;
-    final eover = react && _useSecondaryLogoAudioMotion ? game.currentEnergy.overall.clamp(0.0, 5.0) : 0.0;
+
+    final emid = react && _useSecondaryLogoAudioMotion
+        ? game.currentEnergy.mid.clamp(0.0, 5.0)
+        : 0.0;
+    final eover = react && _useSecondaryLogoAudioMotion
+        ? game.currentEnergy.overall.clamp(0.0, 5.0)
+        : 0.0;
     final pulse = config.pulseIntensity.clamp(0.0, 5.0);
-    
+
     ui.Offset nudge = ui.Offset.zero;
     if (eover > 0.01) {
       nudge = ui.Offset(ebass - 0.5, emid - 0.5) * 0.05 * pulse;
     }
-    
+
     _renderedLogoPos = _smoothedPos + nudge;
     _tickTrailBuffer();
   }
@@ -379,7 +393,7 @@ class StealBackground extends PositionComponent
         ? _currentColors[0]
         : const ui.Color(0xFFFFFFFF);
     final currentSize = (config.logoScale + _sharedBeatPulseBoost) * 110.0;
-    
+
     result.add(TrailSnapshot(_renderedLogoPos, currentSize, currentBaseColor));
 
     if (clamped <= 1) return result;
@@ -411,13 +425,17 @@ class StealBackground extends PositionComponent
     if (_trailFrameCount >= interval) {
       _trailFrameCount = 0;
       _trailHead = (_trailHead + 1) % _trailBufferCapacity;
-      
+
       final currentBaseColor = _currentColors.isNotEmpty
           ? _currentColors[0]
           : const ui.Color(0xFFFFFFFF);
       final currentSize = (config.logoScale + _sharedBeatPulseBoost) * 110.0;
-      
-      _trailBuffer[_trailHead] = TrailSnapshot(_renderedLogoPos, currentSize, currentBaseColor);
+
+      _trailBuffer[_trailHead] = TrailSnapshot(
+        _renderedLogoPos,
+        currentSize,
+        currentBaseColor,
+      );
     }
   }
 
@@ -461,11 +479,12 @@ class StealBackground extends PositionComponent
       // Dynamic scale reduction toward older slices
       // We apply the initialScale as the starting size (1.0 = native logo size)
       final scaleToApply = 1.0 - t * config.logoTrailScale.clamp(0.0, 0.9);
-      final renderSize = snap.size * config.logoTrailInitialScale * scaleToApply;
+      final renderSize =
+          snap.size * config.logoTrailInitialScale * scaleToApply;
 
       final cx = snap.pos.dx * w;
       final cy = snap.pos.dy * h;
-      
+
       final hsl = HSLColor.fromColor(snap.color);
       final ghostTint = hsl
           .withSaturation((hsl.saturation * 0.5).clamp(0.0, 1.0))

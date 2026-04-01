@@ -1,72 +1,69 @@
 import 'dart:io';
-import 'dart:convert';
-import 'package:logger/logger.dart';
 
-final logger = Logger(
-  printer: PrettyPrinter(
-    methodCount: 0,
-    errorMethodCount: 5,
-    lineLength: 80,
-    colors: true,
-    printEmojis: true,
-    dateTimeFormat: DateTimeFormat.none,
-  ),
-);
+// ── Zero-dependency ANSI logger ─────────────────────────
+const _reset = '\x1B[0m';
+const _green = '\x1B[32m';
+const _red = '\x1B[31m';
+const _dim = '\x1B[2m';
+
+void _log(String icon, String color, String msg) =>
+    stdout.writeln('$color$icon $msg$_reset');
+void _info(String msg) => _log('ℹ️', _green, msg);
+void _err(String msg) => _log('❌', _red, msg);
+void _debug(String msg) => _log('  ', _dim, msg);
 
 /// Unified Save & Sync script for GDAR.
-/// Performs git add/commit/push, prunes empty notes, and updates status receipts.
+/// Performs git add/commit/push and prunes empty notes.
 void main(List<String> args) async {
-  final message = args.isNotEmpty ? args.join(' ') : '[Auto-Save] Workspace synchronization';
+  final message = args.isNotEmpty
+      ? args.join(' ')
+      : '[Auto-Save] Workspace synchronization';
 
-  logger.i('--- Starting Atomic Save ---');
+  _info('--- Starting Atomic Save ---');
 
   // 1. Git Sequence
-  logger.i('Step 1: Git Sync...');
+  _info('Step 1: Git Sync...');
   await _run('git', ['add', '.']);
-  final commitRes = await _run('git', ['commit', '-m', message]);
+  final commitRes =
+      await _run('git', ['commit', '-m', message]);
   if (commitRes.exitCode == 0) {
     await _run('git', ['push']);
   } else {
-    logger.e('No changes to commit or commit failed.');
+    _err('No changes to commit or commit failed.');
   }
 
   // 2. Prune Notes
-  logger.i('Step 2: Pruning empty notes...');
+  _info('Step 2: Pruning empty notes...');
   final notesDir = Directory('.agent/notes');
   if (notesDir.existsSync()) {
-    for (final file in notesDir.listSync().whereType<File>()) {
+    for (final file
+        in notesDir.listSync().whereType<File>()) {
       if (file.path.endsWith('.md')) {
         final content = file.readAsStringSync().trim();
         // Check if it's effectively empty (header only)
-        if (content.isEmpty || (content.split('\n').length <= 2 && content.startsWith('#'))) {
-          logger.i('Deleting empty note: ${file.path}');
+        if (content.isEmpty ||
+            (content.split('\n').length <= 2 &&
+                content.startsWith('#'))) {
+          _info('Deleting empty note: ${file.path}');
           file.deleteSync();
         }
       }
     }
   }
 
-  // 3. Update Verification Receipt (Smart Receipt)
-  logger.i('Step 3: Updating verification receipt...');
-  final shaProcess = await Process.run('git', ['rev-parse', 'HEAD']);
-  final sha = shaProcess.stdout.toString().trim();
-
-  final statusFile = File('.agent/notes/verification_status.json');
-  if (statusFile.existsSync()) {
-    final Map<String, dynamic> data = jsonDecode(statusFile.readAsStringSync());
-    data['last_verification_commit'] = sha;
-    data['status'] = 'saved';
-    data['timestamp'] = DateTime.now().toIso8601String();
-    statusFile.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(data));
-    logger.i('Updated verification_status.json to SHA: $sha');
-  }
-
-  logger.i('--- Save & Sync Complete ---');
+  _info('--- Save & Sync Complete ---');
 }
 
-Future<ProcessResult> _run(String cmd, List<String> args) async {
+Future<ProcessResult> _run(
+  String cmd,
+  List<String> args,
+) async {
   final res = await Process.run(cmd, args);
-  if (res.stdout.toString().isNotEmpty) logger.d(res.stdout);
-  if (res.stderr.toString().isNotEmpty) logger.e(res.stderr);
+  if (res.stdout.toString().isNotEmpty) {
+    _debug(res.stdout.toString());
+  }
+  if (res.stderr.toString().isNotEmpty) {
+    _err(res.stderr.toString());
+  }
   return res;
 }

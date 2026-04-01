@@ -8,6 +8,11 @@ import 'dart:io';
 ///   dart scripts/bump_version.dart minor  # increments minor and build (+1)
 void main(List<String> args) {
   if (args.isEmpty) {
+    stderr.writeln(
+      'Error: No version argument provided.\n'
+      'Usage: dart scripts/bump_version.dart '
+      '<patch|minor|major|x.y.z+build>',
+    );
     exit(1);
   }
 
@@ -21,6 +26,10 @@ void main(List<String> args) {
   // 1. Get current version from mobile (canonical source)
   final mobilePubspec = File(appTargets[0]);
   if (!mobilePubspec.existsSync()) {
+    stderr.writeln(
+      'Error: ${appTargets[0]} not found. '
+      'Are you running from the repo root?',
+    );
     exit(1);
   }
 
@@ -30,6 +39,10 @@ void main(List<String> args) {
     multiLine: true,
   ).firstMatch(content);
   if (versionMatch == null) {
+    stderr.writeln(
+      'Error: No "version:" line found in '
+      '${appTargets[0]}.',
+    );
     exit(1);
   }
 
@@ -54,12 +67,21 @@ void main(List<String> args) {
       file.writeAsStringSync(newContent);
     }
   }
+
+  // ignore: avoid_print
+  print('$currentVersion → $nextVersion');
 }
 
 String _calculateNext(String current, String type) {
   // Pattern: major.minor.patch+build
-  final match = RegExp(r'^(\d+)\.(\d+)\.(\d+)\+(\d+)$').firstMatch(current);
+  final match = RegExp(
+    r'^(\d+)\.(\d+)\.(\d+)\+(\d+)$',
+  ).firstMatch(current);
   if (match == null) {
+    stderr.writeln(
+      'Error: Could not parse version "$current". '
+      'Expected format: major.minor.patch+build',
+    );
     exit(1);
   }
 

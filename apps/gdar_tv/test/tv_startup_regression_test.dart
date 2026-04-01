@@ -213,6 +213,8 @@ class FakeTvDeviceService extends ChangeNotifier implements DeviceService {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
   @override
   bool get isTv => true;
+  @override
+  bool get isLowEndTvDevice => false;
 }
 
 class FakeTvSettingsProvider extends FakeSettingsProvider {

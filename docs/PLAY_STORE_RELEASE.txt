@@ -1,3 +1,13 @@
+What's new in v1.3.47+257
+- Screensaver 4K limiting is now device-aware: only the 2020 Chromecast
+- Removed `oilScreensaver4kSupport` user-facing setting from
+- `DeviceService.isLowEndTvDevice` getter that checks
+- New `screensaver_architecture.md` documentation replacing the
+- `oilScreensaver4kSupport` field, getter, preference key, and
+- `oil_screensaver_4k_support` SharedPreferences key (orphaned keys
+
+---
+
 What's new in v1.3.46+256
 - Temporarily restored the older direct Android TV PCM approval path in [MainActivity.kt](/C:/Users/jeff/StudioProjects/gdar/apps/gdar_tv/android/app/src/main/kotlin/com/jamart3d/shakedown/MainActivity.kt):
 - after the PCM permission dialog returns `OK`, the app now goes straight to `getMediaProjection()` and `stereoCapture.start(...)`

@@ -59,8 +59,6 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
     super.initState();
   }
 
-
-
   bool _supportsEnhancedCapture() {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return false;

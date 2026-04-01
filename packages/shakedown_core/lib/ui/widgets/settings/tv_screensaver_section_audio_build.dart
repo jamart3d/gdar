@@ -127,8 +127,6 @@ extension _TvScreensaverSectionAudioBuild on _TvScreensaverSectionState {
     );
   }
 
-
-
   Widget _buildAudioGraphSection({
     required SettingsProvider settings,
     required ColorScheme colorScheme,

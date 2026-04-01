@@ -207,7 +207,11 @@ void main() {
       // Select Screensaver category
       final screensaverCategoryFinder = find.text('Screensaver');
       final scrollable = find.byType(Scrollable).first;
-      await tester.scrollUntilVisible(screensaverCategoryFinder, 50, scrollable: scrollable);
+      await tester.scrollUntilVisible(
+        screensaverCategoryFinder,
+        50,
+        scrollable: scrollable,
+      );
       await tester.tap(screensaverCategoryFinder);
       await tester.pump(const Duration(milliseconds: 500));
 

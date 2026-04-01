@@ -308,8 +308,6 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   double get oilLogoTrailInitialScale => 0.92;
   @override
-  bool get oilScreensaver4kSupport => false;
-  @override
   bool get oilTvPremiumHighlight => false;
   @override
   void toggleOilTvPremiumHighlight() {}

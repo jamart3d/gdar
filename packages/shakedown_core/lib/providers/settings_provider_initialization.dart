@@ -753,8 +753,6 @@ mixin _SettingsProviderInitializationExtension
     _oilInnerRingSpacingMultiplier =
         _prefs.getDouble(_oilInnerRingSpacingMultiplierKey) ??
         DefaultSettings.oilInnerRingSpacingMultiplier;
-    _oilScreensaver4kSupport =
-        _prefs.getBool(_oilScreensaver4kSupportKey) ?? false;
     _oilTvPremiumHighlight =
         _prefs.getBool(_oilTvPremiumHighlightKey) ??
         (isTv

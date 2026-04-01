@@ -89,7 +89,27 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
     bool delayPlayback = false,
   }) async {
     playRandomShowCallCount++;
-    if (delayPlayback) {
+    _currentShow ??= Show(
+      date: '1977-05-08',
+      venue: 'Cornell',
+      name: 'Cornell 77',
+      artist: 'Grateful Dead',
+      sources: [
+        Source(
+          id: '123',
+          tracks: [
+            Track(
+              trackNumber: 1,
+              title: 'Track 1',
+              duration: 180,
+              url: 'http://example.com/track.mp3',
+              setName: 'Set 1',
+            ),
+          ],
+        ),
+      ],
+    );
+    if (delayPlayback && currentShow != null && currentSource != null) {
       _pendingRequest = (show: currentShow!, source: currentSource!);
       _randomShowRequestController.add((
         show: currentShow!,
@@ -456,10 +476,12 @@ void main() {
       final buttonFinder = find.text('PLAY RANDOM SHOW');
       if (buttonFinder.evaluate().isEmpty) {
         // ignore: avoid_print
-        print('DEBUG: PLAY RANDOM SHOW button not found. Dumping widget tree...');
+        print(
+          'DEBUG: PLAY RANDOM SHOW button not found. Dumping widget tree...',
+        );
         debugDumpApp();
       }
-      
+
       expect(buttonFinder, findsOneWidget);
 
       await tester.tap(buttonFinder);
@@ -486,9 +508,10 @@ void main() {
       // Final delay stage before returning focus to right pane
       await tester.pump(const Duration(milliseconds: 2000));
       await tester.pump(const Duration(milliseconds: 500));
-      
+
       // Cleanup
-      await tester.pumpAndSettle();
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(seconds: 1));
     },
   );
 }

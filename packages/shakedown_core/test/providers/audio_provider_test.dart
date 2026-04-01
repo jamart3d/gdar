@@ -300,7 +300,7 @@ void main() {
         });
       },
     );
-    
+
     testWidgets(
       'playRandomShow(delayPlayback: true) sets selection and emits event but does not start playback',
       (WidgetTester tester) async {

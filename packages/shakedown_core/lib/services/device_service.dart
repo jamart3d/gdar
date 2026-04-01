@@ -15,6 +15,13 @@ class DeviceService extends ChangeNotifier {
   String? _deviceName;
   String? get deviceName => _deviceName;
 
+  String _deviceCode = '';
+
+  /// True when the device is a known low-end TV dongle that cannot
+  /// sustain 4K shader rendering (e.g. 2020 Chromecast with Google TV,
+  /// codename "sabrina").
+  bool get isLowEndTvDevice => _isTv && _deviceCode == 'sabrina';
+
   bool _isSafari = false;
   bool get isSafari => _isSafari;
 
@@ -96,6 +103,7 @@ class DeviceService extends ChangeNotifier {
 
         final androidInfo = await deviceInfo.androidInfo;
         _deviceName = '${androidInfo.brand} ${androidInfo.model}';
+        _deviceCode = androidInfo.device;
       } else if (defaultTargetPlatform == TargetPlatform.iOS) {
         final iosInfo = await deviceInfo.iosInfo;
         if (!_lockIsTv) {

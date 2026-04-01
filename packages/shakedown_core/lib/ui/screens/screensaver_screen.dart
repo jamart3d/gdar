@@ -633,8 +633,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     );
 
     final screenSize = MediaQuery.sizeOf(context);
+    final deviceService = Provider.of<DeviceService>(context, listen: false);
     final bool limit4k =
-        !settings.oilScreensaver4kSupport && screenSize.height > 1080;
+        deviceService.isLowEndTvDevice && screenSize.height > 1080;
 
     Widget visualizer = StealVisualizer(
       config: config,

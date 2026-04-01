@@ -318,8 +318,9 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                 const SizedBox(height: 32),
                 if (!isFruit)
                   TextButton.icon(
-                    onPressed: () =>
-                        context.read<AudioProvider>().playRandomShow(delayPlayback: true),
+                    onPressed: () => context
+                        .read<AudioProvider>()
+                        .playRandomShow(delayPlayback: true),
                     icon: Icon(LucideIcons.dice5, color: colorScheme.primary),
                     label: Text(
                       'PLAY RANDOM SHOW',

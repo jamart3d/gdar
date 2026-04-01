@@ -96,6 +96,8 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override
   String? get deviceName => 'Mock Device';
   @override
+  bool get isLowEndTvDevice => false;
+  @override
   Future<void> refresh() async {}
 }
 

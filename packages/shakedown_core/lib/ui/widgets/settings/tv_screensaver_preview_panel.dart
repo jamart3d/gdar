@@ -15,7 +15,8 @@ class TvScreensaverPreviewPanel extends StatefulWidget {
   const TvScreensaverPreviewPanel({super.key});
 
   @override
-  State<TvScreensaverPreviewPanel> createState() => _TvScreensaverPreviewPanelState();
+  State<TvScreensaverPreviewPanel> createState() =>
+      _TvScreensaverPreviewPanelState();
 }
 
 class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel> {

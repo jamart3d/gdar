@@ -2258,15 +2258,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as double);
 
   @override
-  bool get oilScreensaver4kSupport =>
-      (super.noSuchMethod(
-            Invocation.getter(#oilScreensaver4kSupport),
-            returnValue: false,
-            returnValueForMissingStub: false,
-          )
-          as bool);
-
-  @override
   bool get oilTvPremiumHighlight =>
       (super.noSuchMethod(
             Invocation.getter(#oilTvPremiumHighlight),

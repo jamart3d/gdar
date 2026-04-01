@@ -72,6 +72,8 @@ class FakeDeviceService extends ChangeNotifier implements DeviceService {
 
   @override
   String? get deviceName => 'Android TV';
+  @override
+  bool get isLowEndTvDevice => false;
 
   @override
   Future<void> refresh() async {}
