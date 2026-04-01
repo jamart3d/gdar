@@ -9,6 +9,7 @@ import 'package:shakedown_core/ui/widgets/tv/tv_exit_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/ui/widgets/playback/playback_messages.dart';
 
@@ -62,6 +63,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
         }
 
         _isProcessingRandomRequest = true;
+        context.read<ShowListProvider>().setIsChoosingRandomShow(true);
 
         // Sequence:
         // 1. Show the "Picking Random Show..." UI / Dice Animation
@@ -123,7 +125,11 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                   // Sequence complete, allow new requests
                   // Add a small buffer to ensure playback has definitely started/stabilized
                   Future.delayed(const Duration(milliseconds: 500), () {
-                    if (mounted) _isProcessingRandomRequest = false;
+                    if (!mounted) return;
+                    context.read<ShowListProvider>().setIsChoosingRandomShow(
+                      false,
+                    );
+                    _isProcessingRandomRequest = false;
                   });
                 } else {
                   _isProcessingRandomRequest = false;
@@ -153,18 +159,21 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
     setState(() => _focusedPane = 1);
 
     // Only request physical focus if we are the current route.
-    // This prevents background focus-stealing during track changes while in Settings.
     final isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
     if (!isCurrent) return;
 
-    // Give it a frame to ensure AudioProvider state has propagated to PlaybackScreen
-    // and that its internal track list logic has updated its indices.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (_playbackScreenKey.currentState != null) {
-        _playbackScreenKey.currentState!.focusCurrentTrack();
+      final playbackState = _playbackScreenKey.currentState;
+      if (playbackState == null) return;
+
+      final audioProvider = context.read<AudioProvider>();
+      if (audioProvider.currentShow != null) {
+        // Show is playing — focus the active track in the track list
+        playbackState.focusCurrentTrack();
       } else {
-        _rightScrollbarFocusNode.requestFocus();
+        // No show selected yet — focus the "Play random show" button
+        playbackState.focusRandomButton();
       }
     });
   }
@@ -176,6 +185,14 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
     final isCurrent = ModalRoute.of(context)?.isCurrent ?? true;
     if (!isCurrent) return;
     _diceFocusNode.requestFocus();
+  }
+
+  void _onRandomPlay() {
+    _focusLeftPane(); // Shift focus + highlight dice in header
+    // animationOnly: true means _currentShow is NOT set immediately.
+    // The empty state stays visible until TvDualPaneLayout Stage 3
+    // calls playPendingSelection() -- identical to the physical dice sequence.
+    context.read<AudioProvider>().playRandomShow(animationOnly: true);
   }
 
   void _togglePane() {
@@ -294,11 +311,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                                   autofocusDice: true,
                                   diceFocusNode: _diceFocusNode,
                                   gearsFocusNode: _gearsFocusNode,
-                                  onRandomPlay: () {
-                                    context
-                                        .read<AudioProvider>()
-                                        .playRandomShow(delayPlayback: true);
-                                  },
+                                  onRandomPlay: _onRandomPlay,
                                   onLeft: () {
                                     // Wrap around from Dice (far left) to Right Pane
                                     if (audioProvider.currentShow != null) {
@@ -363,6 +376,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                               isPane: true,
                               isActive: _focusedPane == 1,
                               scrollbarFocusNode: _rightScrollbarFocusNode,
+                              onRandomPlay: _onRandomPlay,
                               onScrollbarRight: () {
                                 // Wrap around from Right Scrollbar (far right) to Dice (far left)
                                 _diceFocusNode.requestFocus();

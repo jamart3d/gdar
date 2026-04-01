@@ -31,6 +31,8 @@ import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
+import 'package:shakedown_core/ui/widgets/show_list/animated_dice_icon.dart';
+import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_scrollbar.dart';
 import 'package:shakedown_core/utils/color_generator.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
@@ -53,6 +55,7 @@ class PlaybackScreen extends StatefulWidget {
   final bool isActive;
   final bool showFruitTabBar;
   final VoidCallback? onBackRequested;
+  final VoidCallback? onRandomPlay;
 
   const PlaybackScreen({
     super.key,
@@ -67,6 +70,7 @@ class PlaybackScreen extends StatefulWidget {
     this.isActive = true,
     this.showFruitTabBar = true,
     this.onBackRequested,
+    this.onRandomPlay,
   });
 
   @override
@@ -87,6 +91,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
   bool? _lastStickyState;
   final Map<int, FocusNode> _trackFocusNodes = {};
   final FocusNode _trackListFocusNode = FocusNode(canRequestFocus: false);
+  final FocusNode _randomPlayFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -126,10 +131,19 @@ class PlaybackScreenState extends State<PlaybackScreen>
       node.dispose();
     }
     _trackListFocusNode.dispose();
+    _randomPlayFocusNode.dispose();
     super.dispose();
   }
 
   void focusCurrentTrack() => _scrollToCurrentTrack(true, syncFocus: true);
+
+  /// Called by TvDualPaneLayout when the right pane is empty (no show selected)
+  /// to place D-pad focus squarely on the random play button.
+  void focusRandomButton() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _randomPlayFocusNode.requestFocus();
+    });
+  }
 
   void _refreshTrackFocusNodes() {
     if (mounted) {

@@ -316,17 +316,38 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                   ),
                 ),
                 const SizedBox(height: 32),
-                if (!isFruit)
-                  TextButton.icon(
-                    onPressed: () => context
-                        .read<AudioProvider>()
-                        .playRandomShow(delayPlayback: true),
-                    icon: Icon(LucideIcons.dice5, color: colorScheme.primary),
-                    label: Text(
-                      'PLAY RANDOM SHOW',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: colorScheme.primary,
-                        fontFamily: settingsProvider.activeAppFont,
+                if (!isFruit && widget.onRandomPlay != null)
+                  TvFocusWrapper(
+                    onTap: widget.onRandomPlay,
+                    focusNode: _randomPlayFocusNode,
+                    borderRadius: BorderRadius.circular(12),
+                    useUnderGlow: true,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedDiceIcon(
+                            onPressed: widget.onRandomPlay!,
+                            naked: true,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Play random show',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: colorScheme.primary,
+                              fontFamily: FontConfig.resolve(
+                                settingsProvider.activeAppFont,
+                              ),
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

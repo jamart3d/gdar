@@ -89,35 +89,49 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
     bool delayPlayback = false,
   }) async {
     playRandomShowCallCount++;
-    _currentShow ??= Show(
-      date: '1977-05-08',
-      venue: 'Cornell',
-      name: 'Cornell 77',
-      artist: 'Grateful Dead',
-      sources: [
-        Source(
-          id: '123',
-          tracks: [
-            Track(
-              trackNumber: 1,
-              title: 'Track 1',
-              duration: 180,
-              url: 'http://example.com/track.mp3',
-              setName: 'Set 1',
+    final selectedShow =
+        _currentShow ??
+        Show(
+          date: '1977-05-08',
+          venue: 'Cornell',
+          name: 'Cornell 77',
+          artist: 'Grateful Dead',
+          sources: [
+            Source(
+              id: '123',
+              tracks: [
+                Track(
+                  trackNumber: 1,
+                  title: 'Track 1',
+                  duration: 180,
+                  url: 'http://example.com/track.mp3',
+                  setName: 'Set 1',
+                ),
+              ],
             ),
           ],
-        ),
-      ],
-    );
-    if (delayPlayback && currentShow != null && currentSource != null) {
-      _pendingRequest = (show: currentShow!, source: currentSource!);
-      _randomShowRequestController.add((
-        show: currentShow!,
-        source: currentSource!,
-      ));
+        );
+
+    final selectedSource = selectedShow.sources.first;
+    _pendingRequest = (show: selectedShow, source: selectedSource);
+    _randomShowRequestController.add((
+      show: selectedShow,
+      source: selectedSource,
+    ));
+
+    if (animationOnly) {
+      notifyListeners();
+      return selectedShow;
     }
+
+    if (delayPlayback) {
+      _currentShow = selectedShow;
+      notifyListeners();
+      return selectedShow;
+    }
+
     notifyListeners();
-    return currentShow;
+    return selectedShow;
   }
 
   @override
@@ -473,7 +487,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Use a more precise text-based finder now that we're using real TV UI components
-      final buttonFinder = find.text('PLAY RANDOM SHOW');
+      final buttonFinder = find.text('Play random show');
       if (buttonFinder.evaluate().isEmpty) {
         // ignore: avoid_print
         print(

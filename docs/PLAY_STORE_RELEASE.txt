@@ -1,3 +1,22 @@
+What's new in v1.3.49+259
+- **TV — Play Random Show button: D-pad focus flow** (`tv_dual_pane_layout.dart`)
+  - `_focusRightPane()` now detects empty state (no show selected) and explicitly
+  - Navigating **right** from the show list now reliably lands on the button.
+- **TV — Play Random Show button: D-pad selectability** (`tv_playback_screen_build.dart`)
+  - Replaced unfocusable `GestureDetector` with `TvFocusWrapper` + dedicated
+  - Removed `autofocus: true` to prevent the button from stealing focus on mount.
+- **TV — Play Random Show button: visual parity with header dice**
+  - Both header dice and "Play random show" button now call the shared
+  - `animationOnly: true` ensures `_currentShow` is **not** set immediately,
+- **TV — Play Random Show button: styling**
+  - Label forced to lowercase `'Play random show'` with an explicit `TextStyle`
+  - Font size reduced to `10sp`; padding tightened (`16×8`) and border radius
+  - Font resolved via `FontConfig.resolve(settingsProvider.activeAppFont)` to
+- **TV — PlaybackScreenState: `focusRandomButton()` API** (`tv_playback_screen.dart`)
+  - New public method and `_randomPlayFocusNode` added so `TvDualPaneLayout`
+
+---
+
 What's new in v1.3.48+258
 - **TV Screensaver → Beat Detector: "Enhanced" (PCM) crash on confirmation** — Clicking the
 - The stereo PCM beat-detection pipeline (`StereoCapture` → `VisualizerPlugin` PCM onset
