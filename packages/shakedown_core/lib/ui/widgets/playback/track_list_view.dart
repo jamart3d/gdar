@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gdar_design/typography/font_config.dart';
 import 'package:provider/provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown_core/models/source.dart';
@@ -13,7 +14,6 @@ import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:shakedown_core/ui/styles/font_config.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/utils/utils.dart';

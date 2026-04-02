@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  gdar_design:
+    path: ../gdar_design
   flame: ^1.16.0
   hive_ce: ^2.19.3
   hive_ce_flutter: ^2.3.4
@@ -58,27 +60,3 @@ flutter:
 
   shaders:
     - assets/shaders/steal.frag
-
-  fonts:
-    - family: RockSalt
-      fonts:
-        - asset: assets/fonts/RockSalt-Regular.ttf
-          weight: 400
-    - family: Caveat
-      fonts:
-        - asset: assets/fonts/Caveat-Regular.ttf
-    - family: Permanent Marker
-      fonts:
-        - asset: assets/fonts/PermanentMarker-Regular.ttf
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Inter-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Inter-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Inter-ExtraBold.ttf
-          weight: 800

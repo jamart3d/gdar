@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gdar_design/widgets/fruit_settings_group_header.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
@@ -6,7 +7,6 @@ import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/ui/widgets/section_card.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
-import 'package:shakedown_core/ui/widgets/theme/fruit_settings_group_header.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class InterfaceSection extends StatelessWidget {

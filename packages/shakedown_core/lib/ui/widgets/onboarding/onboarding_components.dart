@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:gdar_design/typography/font_config.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/ui/styles/app_typography.dart';
-import 'package:shakedown_core/ui/styles/font_config.dart';
 
 /// Common helper widgets used across onboarding screens.
 class OnboardingComponents {

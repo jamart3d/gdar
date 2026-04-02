@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 class FontConfig {
   final String fontFamily;
   final double scaleFactor;
-  final double lineHeight; // Normalized height for line containers
-  final int weightAdjustment; // Adjusts FontWeight (e.g., +100 or -100)
+  final double lineHeight;
+  final int weightAdjustment;
   final double letterSpacing;
   final String displayName;
 
@@ -19,11 +19,12 @@ class FontConfig {
     required this.displayName,
   });
 
-  /// The Matrix: Defined values for each supported font.
-  /// All fonts scaled larger for better visibility
+  static const String _packagePrefix = 'packages/gdar_design/';
+  static const String _legacyPackagePrefix = 'packages/shakedown_core/';
+
   static const Map<String, FontConfig> _registry = {
     'default': FontConfig(
-      fontFamily: 'packages/shakedown_core/Inter',
+      fontFamily: '${_packagePrefix}Inter',
       scaleFactor: 1.0,
       lineHeight: 1.3,
       weightAdjustment: 0,
@@ -31,31 +32,31 @@ class FontConfig {
       displayName: 'Inter',
     ),
     'caveat': FontConfig(
-      fontFamily: 'packages/shakedown_core/Caveat',
-      scaleFactor: 1.2, // Reduced from 1.23 for smaller scaled appearance
+      fontFamily: '${_packagePrefix}Caveat',
+      scaleFactor: 1.2,
       lineHeight: 1.3,
       weightAdjustment: 0,
       letterSpacing: 0.0,
       displayName: 'Caveat',
     ),
     'rock_salt': FontConfig(
-      fontFamily: 'packages/shakedown_core/RockSalt',
-      scaleFactor: 1.3, // Increased from 1.25
+      fontFamily: '${_packagePrefix}RockSalt',
+      scaleFactor: 1.3,
       lineHeight: 1.3,
       weightAdjustment: 0,
       letterSpacing: 0.0,
       displayName: 'Rock Salt',
     ),
     'permanent_marker': FontConfig(
-      fontFamily: 'packages/shakedown_core/Permanent Marker',
-      scaleFactor: 1.3, // Increased from 1.25
+      fontFamily: '${_packagePrefix}Permanent Marker',
+      scaleFactor: 1.3,
       lineHeight: 1.3,
       weightAdjustment: 0,
       letterSpacing: 0.0,
       displayName: 'Permanent Marker',
     ),
     'inter': FontConfig(
-      fontFamily: 'packages/shakedown_core/Inter',
+      fontFamily: '${_packagePrefix}Inter',
       scaleFactor: 1.0,
       lineHeight: 1.2,
       weightAdjustment: 0,
@@ -64,7 +65,6 @@ class FontConfig {
     ),
   };
 
-  /// Retrieves configuration for a given font key.
   static FontConfig get(String fontKey) {
     return _registry[fontKey] ?? _registry['default']!;
   }
@@ -74,14 +74,12 @@ class FontConfig {
   static String? resolve(String? fontFamily) {
     if (fontFamily == null) return null;
 
-    // If it already has the prefix, it's fine.
-    if (fontFamily.startsWith('packages/shakedown_core/')) {
+    if (fontFamily.startsWith(_packagePrefix)) {
       return fontFamily;
     }
 
-    // Attempt to match raw name to a known font configuration.
-    // 'rock_salt', 'RockSalt', 'Rock Salt' -> all should resolve to the correct path if possible.
     final normalized = fontFamily
+        .replaceFirst(_legacyPackagePrefix, '')
         .toLowerCase()
         .replaceAll(' ', '')
         .replaceAll('_', '');
@@ -99,18 +97,13 @@ class FontConfig {
       }
     }
 
-    return fontFamily; // Fallback to whatever was provided
+    return fontFamily;
   }
 
   /// Calculates the adjusted font weight based on configuration.
   FontWeight adjustWeight(FontWeight original) {
     if (weightAdjustment == 0) return original;
 
-    // Convert enum to index values (w100=0 ... w900=8) to do math?
-    // Enum indices are linear: w100, w200, ...
-
-    // Easier mapping:
-    // FontWeight.index is deprecated, so we use value (100-900) to calculate index (0-8)
     final int currentIndex = (original.value ~/ 100) - 1;
     final int targetIndex = currentIndex + (weightAdjustment ~/ 100);
     final clampedIndex = targetIndex.clamp(0, FontWeight.values.length - 1);

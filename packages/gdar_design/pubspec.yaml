@@ -1,0 +1,42 @@
+name: gdar_design
+description: Shared GDAR design tokens, fonts, and presentational primitives.
+version: 1.0.0
+publish_to: 'none'
+resolution: workspace
+
+environment:
+  sdk: '^3.11.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  fonts:
+    - family: RockSalt
+      fonts:
+        - asset: assets/fonts/RockSalt-Regular.ttf
+          weight: 400
+    - family: Caveat
+      fonts:
+        - asset: assets/fonts/Caveat-Regular.ttf
+    - family: Permanent Marker
+      fonts:
+        - asset: assets/fonts/PermanentMarker-Regular.ttf
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-ExtraBold.ttf
+          weight: 800

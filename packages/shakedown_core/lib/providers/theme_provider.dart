@@ -2,15 +2,12 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gdar_design/tokens/theme_tokens.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/utils/pwa_theme_sync.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
-
-enum ThemeStyle { android, fruit }
-
-enum NeumorphicStyle { convex, concave }
-
-enum FruitColorOption { sophisticate, minimalist, creative }
+export 'package:gdar_design/tokens/theme_tokens.dart'
+    show FruitColorOption, NeumorphicStyle, ThemeStyle;
 
 class ThemeProvider with ChangeNotifier, WidgetsBindingObserver {
   static ThemeProvider? _instance;

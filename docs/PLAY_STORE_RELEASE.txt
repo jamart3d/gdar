@@ -1,3 +1,15 @@
+What's new in v1.3.50+260
+- **Monorepo architecture migration: introduced `packages/gdar_design`**
+- **Monorepo architecture migration: moved shared fonts into the design layer**
+- **Monorepo architecture migration: detached style packages from feature code**
+- **Monorepo architecture migration: repointed core to shared design primitives**
+- **Monorepo architecture migration: restored app-layer theme assembly**
+- **Monorepo architecture migration: removed temporary core-side theme bridges**
+- **Updated the monorepo architecture plan to match the completed migration**
+- **Validated the migration with focused app and regression tests**
+
+---
+
 What's new in v1.3.49+259
 - **TV — Play Random Show button: D-pad focus flow** (`tv_dual_pane_layout.dart`)
   - `_focusRightPane()` now detects empty state (no show selected) and explicitly

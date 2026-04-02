@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shakedown_core/providers/theme_provider.dart';
-import 'package:shakedown_core/ui/styles/font_config.dart';
+import 'package:gdar_design/tokens/theme_tokens.dart';
+import 'package:gdar_design/typography/font_config.dart';
 import 'apple_inter_typography.dart';
 
 /// Apple Liquid Glass "Fruit" style for GDAR Web.

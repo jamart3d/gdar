@@ -4,6 +4,7 @@ environment:
   sdk: '^3.11.0'
 
 workspace:
+  - packages/gdar_design
   - packages/shakedown_core
   - packages/screensaver_tv
   - packages/styles/gdar_android
@@ -62,4 +63,3 @@ melos:
 dependencies:
   logger: 2.7.0
   shared_preferences: 2.5.5
-

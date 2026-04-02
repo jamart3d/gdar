@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shakedown_core/ui/styles/font_config.dart';
-import 'package:shakedown_core/utils/web_runtime.dart';
+import 'package:gdar_design/typography/font_config.dart';
+import 'package:gdar_fruit/src/web_runtime.dart';
 
 /// Builds a custom Flutter TextTheme using GoogleFonts.inter()
 /// specifically tailored for a "Liquid Glass" UI following Apple's aesthetics.
@@ -54,77 +54,77 @@ TextTheme buildAppleInterTextTheme(bool isDark, {double scaleFactor = 1.0}) {
       color: primaryColor,
     ),
     headlineMedium: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 28 * scaleFactor,
       fontWeight: FontWeight.w700,
       letterSpacing: safeLs(-0.2),
       color: primaryColor,
     ),
     headlineSmall: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 24 * scaleFactor,
       fontWeight: FontWeight.w600,
       letterSpacing: safeLs(-0.1),
       color: primaryColor,
     ),
     titleLarge: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 22 * scaleFactor,
       fontWeight: FontWeight.w700,
       letterSpacing: safeLs(-0.2),
       color: primaryColor,
     ),
     titleMedium: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 16 * scaleFactor,
       fontWeight: FontWeight.w600,
       letterSpacing: safeLs(-0.1),
       color: secondaryColor,
     ),
     titleSmall: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 14 * scaleFactor,
       fontWeight: FontWeight.w600,
       letterSpacing: 0.0,
       color: secondaryColor,
     ),
     bodyLarge: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 16 * scaleFactor,
       fontWeight: FontWeight.w400,
       letterSpacing: safeLs(-0.2),
       color: primaryColor,
     ),
     bodyMedium: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 14 * scaleFactor,
       fontWeight: FontWeight.w400,
       letterSpacing: safeLs(-0.1),
       color: secondaryColor,
     ),
     bodySmall: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 12 * scaleFactor,
       fontWeight: FontWeight.w400,
       letterSpacing: 0.0,
       color: secondaryColor,
     ),
     labelLarge: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 14 * scaleFactor,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.1,
       color: secondaryColor,
     ),
     labelMedium: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 12 * scaleFactor,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.2,
       color: tertiaryColor,
     ),
     labelSmall: TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: interFont,
       fontSize: 11 * scaleFactor,
       fontWeight: FontWeight.w500,
       letterSpacing: 0.5,

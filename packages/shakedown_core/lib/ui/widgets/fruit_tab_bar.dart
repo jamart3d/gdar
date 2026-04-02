@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:gdar_design/typography/font_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -15,7 +16,6 @@ import 'package:shakedown_core/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
-import 'package:shakedown_core/ui/styles/font_config.dart';
 
 class FruitTabBar extends StatelessWidget {
   final int selectedIndex;

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:gdar_design/typography/font_config.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/ui/styles/app_typography.dart';
-import 'package:shakedown_core/ui/styles/font_config.dart';
 import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown_core/ui/widgets/onboarding/onboarding_components.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gdar_android/android_theme.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
@@ -17,7 +18,6 @@ import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
-import 'package:shakedown_core/utils/app_themes.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/asset_constants.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -358,36 +358,15 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
               navigatorKey: _navigatorKey,
               title: 'GDAR',
               debugShowCheckedModeBanner: false,
-              theme: settingsProvider.useTrueBlack && widget.isTv
-                  ? AppThemes.applyTrueBlack(
-                      AppThemes.lightTheme(
-                        settingsProvider.activeAppFont,
-                        useMaterial3: settingsProvider.useMaterial3,
-                        uiScale: settingsProvider.uiScale,
-                        style: ThemeStyle.android,
-                      ),
-                    )
-                  : AppThemes.lightTheme(
-                      settingsProvider.activeAppFont,
-                      useMaterial3: settingsProvider.useMaterial3,
-                      uiScale: settingsProvider.uiScale,
-                      style: ThemeStyle.android,
-                    ),
-              darkTheme: settingsProvider.useTrueBlack && widget.isTv
-                  ? AppThemes.applyTrueBlack(
-                      AppThemes.darkTheme(
-                        settingsProvider.activeAppFont,
-                        useMaterial3: settingsProvider.useMaterial3,
-                        uiScale: settingsProvider.uiScale,
-                        style: ThemeStyle.android,
-                      ),
-                    )
-                  : AppThemes.darkTheme(
-                      settingsProvider.activeAppFont,
-                      useMaterial3: settingsProvider.useMaterial3,
-                      uiScale: settingsProvider.uiScale,
-                      style: ThemeStyle.android,
-                    ),
+              theme: GDARAndroidTheme.light(
+                appFont: settingsProvider.activeAppFont,
+                uiScale: settingsProvider.uiScale,
+              ),
+              darkTheme: GDARAndroidTheme.dark(
+                appFont: settingsProvider.activeAppFont,
+                uiScale: settingsProvider.uiScale,
+                useTrueBlack: settingsProvider.useTrueBlack && widget.isTv,
+              ),
               themeMode: themeProvider.currentThemeMode,
               builder: (context, child) {
                 if (!widget.isTv || _inactivityService == null) {

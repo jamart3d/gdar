@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gdar_design/widgets/fruit_settings_group_header.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/settings/interface_section.dart';
-import 'package:shakedown_core/ui/widgets/theme/fruit_settings_group_header.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_switch.dart';
 
 import '../../../helpers/test_helpers.dart';

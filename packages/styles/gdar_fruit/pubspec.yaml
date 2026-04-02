@@ -10,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  shakedown_core:
-    path: ../../shakedown_core
+  gdar_design:
+    path: ../../gdar_design
 
 dev_dependencies:
   flutter_test:

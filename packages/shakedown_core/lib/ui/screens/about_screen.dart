@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:gdar_design/typography/font_config.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown_core/services/device_service.dart';
 
@@ -11,7 +12,6 @@ import 'package:shakedown_core/utils/color_generator.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:shakedown_core/ui/widgets/pulsing_heart_icon.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
-import 'package:shakedown_core/ui/styles/font_config.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shakedown_core/ui/styles/font_config.dart';
+import 'package:gdar_design/typography/font_config.dart';
 
 /// Android Material 3 Expressive theme for GDAR.
 class GDARAndroidTheme {

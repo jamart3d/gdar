@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gdar_android/android_theme.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
@@ -18,7 +19,6 @@ import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
-import 'package:shakedown_core/utils/app_themes.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/asset_constants.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -344,16 +344,11 @@ class _GdarTvAppState extends State<GdarTvApp> {
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
           _syncInactivityService(settingsProvider);
-          final theme = AppThemes.darkTheme(
-            settingsProvider.activeAppFont,
-            useMaterial3: settingsProvider.useMaterial3,
+          final theme = GDARAndroidTheme.dark(
+            appFont: settingsProvider.activeAppFont,
             uiScale: settingsProvider.uiScale,
-            style: ThemeStyle.android,
+            useTrueBlack: settingsProvider.useTrueBlack,
           );
-
-          final finalTheme = settingsProvider.useTrueBlack
-              ? AppThemes.applyTrueBlack(theme)
-              : theme;
 
           return RgbClockWrapper(
             animationSpeed: settingsProvider.rgbAnimationSpeed,
@@ -362,13 +357,13 @@ class _GdarTvAppState extends State<GdarTvApp> {
               navigatorObservers: [_navigationObserver],
               title: 'GDAR TV',
               debugShowCheckedModeBanner: false,
-              theme: finalTheme,
+              theme: theme,
               themeMode: ThemeMode.dark,
               builder: (context, child) => InactivityDetector(
                 inactivityService: _inactivityService,
                 isScreensaverActive: _isScreensaverActive,
                 child: ColoredBox(
-                  color: finalTheme.scaffoldBackgroundColor,
+                  color: theme.scaffoldBackgroundColor,
                   child: child ?? const SizedBox.shrink(),
                 ),
               ),

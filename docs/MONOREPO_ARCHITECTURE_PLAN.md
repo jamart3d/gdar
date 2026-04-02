@@ -2,12 +2,28 @@
 
 Date: 2026-04-01
 Project: GDAR
-Status: Proposed
+Status: Implemented / Phases 2-5 Complete (2026-04-01)
 
 ## Goal
 
 Keep the workspace scalable by enforcing an acyclic package graph and clear
 ownership boundaries between design, shared features, and app assembly.
+
+## Implementation Status
+
+Completed on 2026-04-01:
+
+- `packages/gdar_design` was created and added to the workspace.
+- shared font assets moved from `packages/shakedown_core/assets/fonts/` into
+  `packages/gdar_design/assets/fonts/`.
+- `packages/styles/gdar_fruit` and `packages/styles/gdar_android` now depend on
+  `packages/gdar_design` and no longer depend on `packages/shakedown_core`.
+- `packages/shakedown_core` now consumes shared design tokens and primitives
+  directly from `packages/gdar_design`.
+- `apps/gdar_mobile`, `apps/gdar_tv`, and `apps/gdar_web` remain the
+  composition root, with app-layer theme assembly wired through the style
+  packages.
+- targeted regression and startup tests passed after the migration.
 
 ## Current Problem
 
@@ -22,6 +38,8 @@ presentation code into the style layer because any reverse import from
 
 ## Target Package Graph
 
+Arrow legend: `A -> B` means **A depends on B**.
+
 Preferred dependency direction:
 
 `packages/gdar_design` -> `packages/shakedown_core`
@@ -34,11 +52,34 @@ Preferred dependency direction:
 
 `packages/styles/*` -> `apps/*`
 
+`packages/screensaver_tv` -> `packages/shakedown_core`
+
+`packages/screensaver_tv` -> `apps/gdar_tv`
+
 Key rule:
 
 - lower layers must not depend on higher layers
 - style packages must not depend on feature packages
 - apps are the composition root
+
+```mermaid
+graph TD
+    gdar_design["packages/gdar_design\n(design tokens, typography, spacing)"]
+    shakedown_core["packages/shakedown_core\n(models, providers, services, feature widgets)"]
+    screensaver_tv["packages/screensaver_tv\n(TV visualizer / beat detection)"]
+    gdar_fruit["packages/styles/gdar_fruit\n(Fruit / Liquid Glass skin)"]
+    gdar_android["packages/styles/gdar_android\n(Material 3 skin)"]
+    apps["apps/* \n(composition root)"]
+
+    gdar_design --> shakedown_core
+    gdar_design --> gdar_fruit
+    gdar_design --> gdar_android
+    shakedown_core --> apps
+    gdar_fruit --> apps
+    gdar_android --> apps
+    screensaver_tv --> shakedown_core
+    screensaver_tv --> apps
+```
 
 ## Recommended Package Responsibilities
 
@@ -106,6 +147,26 @@ Should not own:
 Purpose: Android/Material skin implementation with the same boundary rules as
 `gdar_fruit`.
 
+### `packages/screensaver_tv`
+
+Purpose: TV screensaver visualizer — beat detection, shader animation, PCM
+audio capture.
+
+Should own:
+
+- `ScreensaverWidget` and supporting visualizer widgets
+- beat detection logic and audio capture services
+- TV-specific foreground service coordination
+
+Should not own:
+
+- generic audio playback (that lives in `shakedown_core`)
+- settings persistence
+- any Fruit or Material theme code
+
+Dependency rule: may depend on `shakedown_core`; must never be depended on by
+`shakedown_core` or any style package.
+
 ### `apps/gdar_mobile`, `apps/gdar_tv`, `apps/gdar_web`
 
 Purpose: app composition root.
@@ -164,6 +225,25 @@ Move low-risk shared design artifacts first:
 - spacing tokens
 - reusable Fruit section headers / spacing primitives
 
+Font asset migration:
+
+- Move shared font assets (Inter, RockSalt, Caveat, PermanentMarker) from
+  `shakedown_core/assets/fonts/` into `gdar_design/assets/fonts/`.
+- Moving tokens without moving the actual asset files leaves the system
+  incoherent — do not split this work across phases.
+
+Shader ownership rule:
+
+- TV screensaver shaders (e.g. `steal.frag` and any future visualizer frags)
+  belong in `packages/screensaver_tv/assets/shaders/`. They are
+  platform-specific visualizer assets, not shared design primitives.
+- Any fragment shader that is truly cross-platform and UI-only may live in
+  `gdar_design/assets/shaders/`.
+- Do not place TV-specific shaders in `gdar_design` — that would pull a
+  higher-layer concern into the lowest shared layer.
+- Every new shader should be explicitly assigned an owner package before it
+  is committed.
+
 Keep the package dependency-light and free of feature logic.
 
 ### Phase 3: Repoint Style Packages
@@ -173,6 +253,17 @@ After `gdar_design` exists:
 - update `gdar_fruit` to depend on `gdar_design` instead of `shakedown_core`
 - update `gdar_android` to depend on `gdar_design` if needed
 - keep style packages isolated from feature logic
+
+Cycle-detection gate (required before merging Phase 3):
+
+```bash
+# Run from repo root. Neither command should print shakedown_core.
+dart pub deps --directory packages/styles/gdar_fruit | grep shakedown_core
+dart pub deps --directory packages/styles/gdar_android | grep shakedown_core
+```
+
+If either command returns output, the cycle is not resolved and the phase
+branch must not be merged.
 
 ### Phase 4: Repoint Core
 
@@ -188,6 +279,15 @@ Ensure the apps remain the final assembly layer:
 - apps depend on `shakedown_core`
 - apps depend on style packages
 - apps can depend on `gdar_design` directly if needed
+
+### Note: `shakedown_core` Weight
+
+`shakedown_core` currently carries 30+ dependencies including `flame`,
+`just_audio`, `hive_ce`, `sliding_up_panel2`, `flutter_colorpicker`, and
+`in_app_update`. This is acceptable for now, but the package is a candidate for
+future vertical splitting (e.g., `audio_engine`, `settings_core`, `ui_shared`)
+once the design layer is stable. Do not attempt this split before Phase 4
+completes.
 
 ## Success Criteria
 
@@ -212,4 +312,3 @@ Best immediate rule:
 
 - keep feature code in core
 - move only presentation primitives down into design/style packages
-

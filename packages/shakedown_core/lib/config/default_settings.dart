@@ -1,4 +1,4 @@
-import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:gdar_design/tokens/theme_tokens.dart';
 
 /// Centralized default settings for the application.
 /// Edit these values to change the default behavior for new users

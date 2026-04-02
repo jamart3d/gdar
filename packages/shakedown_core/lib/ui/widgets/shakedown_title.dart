@@ -1,10 +1,10 @@
 import 'dart:async';
+import 'package:gdar_design/typography/font_config.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
-import 'package:shakedown_core/ui/styles/font_config.dart';
 
 /// A reusable widget for the app title "Shakedown" that handles
 /// consistent styling, Hero animations, and flight transitions.
