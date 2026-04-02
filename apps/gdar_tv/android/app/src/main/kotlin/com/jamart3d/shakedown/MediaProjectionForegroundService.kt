@@ -32,6 +32,14 @@ class MediaProjectionForegroundService : Service() {
         private var isForegroundReady = false
 
         fun start(context: Context) {
+            // Reset ready state so that runWhenReady() callers wait for
+            // the new (or restarted) service to call markForegroundReady().
+            // Without this, a stale isForegroundReady=true from a previous
+            // session causes runWhenReady to fire before the service is
+            // actually in the foreground — breaking Android 14+ enforcement.
+            synchronized(pendingReadyCallbacks) {
+                isForegroundReady = false
+            }
             val intent = Intent(context, MediaProjectionForegroundService::class.java)
                 .setAction(ACTION_START)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

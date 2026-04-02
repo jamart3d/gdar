@@ -1,3 +1,10 @@
+What's new in v1.3.52+262
+- **TV: PCM/Enhanced audio capture crash on Chromecast with Google TV (Sabrina, Android 14)** — Android 14+ requires a `mediaProjection` foreground service to be running *before* `createScreenCaptureIntent()` is called. The old code started the service after the consent dialog, causing a `SecurityException` crash when the user confirmed the permission. Reordered the flow: foreground service starts first, waits for ready, then launches the consent dialog. (`MainActivity.kt`)
+- **TV: Stale foreground-service ready state** — `MediaProjectionForegroundService.start()` now resets `isForegroundReady` so `runWhenReady` callers properly wait for the new service instance instead of firing immediately on stale state. (`MediaProjectionForegroundService.kt`)
+- **TV: EventSink called from wrong thread** — `VisualizerPlugin.processFftData()` dispatches `eventSink.success()` to the main thread via `Handler(Looper.getMainLooper())`, fixing potential crashes from Android Visualizer callbacks firing on an audio thread. (`VisualizerPlugin.kt`)
+
+---
+
 What's new in v1.3.51+261
 - TV main browse/playback surfaces now default to pure black for OLED, matching the splash screen and TV specs.
 - Tightened TV RGB focus borders across the main screen: show list cards, track list rows, and the empty-state "Play random show" action now use cleaner, closer-fitting outlines.

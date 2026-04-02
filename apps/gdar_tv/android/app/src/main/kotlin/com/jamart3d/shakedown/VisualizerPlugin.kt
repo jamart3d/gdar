@@ -1,6 +1,8 @@
 package com.jamart3d.shakedown
 
 import android.media.audiofx.Visualizer
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
@@ -79,6 +81,7 @@ class VisualizerPlugin(
         private const val ZERO_FRAME_THRESHOLD = 40
     }
 
+    private val mainHandler = Handler(Looper.getMainLooper())
     private var visualizer: Visualizer? = null
     private var eventSink: EventChannel.EventSink? = null
     private var isRunning = false
@@ -914,6 +917,11 @@ class VisualizerPlugin(
             "debugPcmAgeMs" to pcmAgeMs,
         )
 
-        eventSink?.success(data)
+        val sink = eventSink ?: return
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            sink.success(data)
+        } else {
+            mainHandler.post { eventSink?.success(data) }
+        }
     }
 }
