@@ -126,6 +126,14 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   static const double _vuNeedleLength = 74.0;
   static const double _vuSweepHalf = 1.1; // radians half-swing (~63°)
 
+  // ── LED strip constants ──────────────────────────────────────────────────
+  static const double _ledStripWidth = 28.0;
+  static const int _ledSegmentCount = 16;
+  static const double _ledLabelReserve = 18.0;
+  static const double _ledColGap = 2.0;
+  static const double _ledSegGap = 1.5;
+  static const double _ledHPad = 3.0;
+
   double _vuLeft = 0.0;
   double _vuRight = 0.0;
   double _vuPeakLeft = 0.0;
@@ -1529,6 +1537,140 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       canvas,
       Offset(pivotX - _textPainter.width / 2, bottom - 6),
     );
+  }
+
+  void _drawLedStrip(Canvas canvas, double cx, double baseY, Offset drift) {
+    final stripLeft = cx - _ledStripWidth / 2 + drift.dx;
+    const stripHeight = _vuHeight;
+    const usableHeight = stripHeight - _ledLabelReserve;
+    const segH =
+        (usableHeight - (_ledSegmentCount - 1) * _ledSegGap) / _ledSegmentCount;
+    const colW = (_ledStripWidth - _ledHPad * 2 - _ledColGap) / 2;
+
+    // Panel background (skipped in fast mode).
+    if (!_isFast) {
+      final panelRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          stripLeft,
+          baseY - stripHeight,
+          _ledStripWidth,
+          stripHeight,
+        ),
+        const Radius.circular(4),
+      );
+      canvas.drawRRect(
+        panelRect,
+        Paint()
+          ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.05)
+          ..style = PaintingStyle.fill,
+      );
+      canvas.drawRRect(
+        panelRect,
+        Paint()
+          ..color = const Color(0xFFFFFFFF)
+              .withValues(alpha: 0.12 + _beatFlash * 0.06)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.0,
+      );
+    }
+
+    // Compute active segment indices (0 = bottom).
+    final leftActive =
+        (_vuLeft.clamp(0.0, 1.0) * (_ledSegmentCount - 1)).round();
+    final rightActive =
+        (_vuRight.clamp(0.0, 1.0) * (_ledSegmentCount - 1)).round();
+    final leftPeakIdx = _vuPeakLeft > 0.02
+        ? (_vuPeakLeft.clamp(0.0, 1.0) * (_ledSegmentCount - 1)).round()
+        : -1;
+    final rightPeakIdx = _vuPeakRight > 0.02
+        ? (_vuPeakRight.clamp(0.0, 1.0) * (_ledSegmentCount - 1)).round()
+        : -1;
+
+    for (int seg = 0; seg < _ledSegmentCount; seg++) {
+      // Zone color: 0–9 teal, 10–12 yellow, 13–15 red.
+      final Color zoneColor;
+      if (seg >= 13) {
+        zoneColor = const Color(0xFFFF4444);
+      } else if (seg >= 10) {
+        zoneColor = const Color(0xFFFFE66D);
+      } else {
+        zoneColor = const Color(0xFF4AF3C6);
+      }
+
+      // Y position: seg 0 is at the bottom, seg 15 at the top.
+      final segBottom =
+          baseY - _ledLabelReserve - seg * (segH + _ledSegGap);
+      final segTop = segBottom - segH;
+
+      // Left column.
+      final lColLeft = stripLeft + _ledHPad;
+      _drawLedSegment(
+        canvas,
+        Rect.fromLTRB(lColLeft, segTop, lColLeft + colW, segBottom),
+        zoneColor,
+        seg <= leftActive,
+        seg == leftPeakIdx,
+      );
+
+      // Right column.
+      final rColLeft = stripLeft + _ledHPad + colW + _ledColGap;
+      _drawLedSegment(
+        canvas,
+        Rect.fromLTRB(rColLeft, segTop, rColLeft + colW, segBottom),
+        zoneColor,
+        seg <= rightActive,
+        seg == rightPeakIdx,
+      );
+    }
+
+    // Bottom labels.
+    final lLabelX = stripLeft + _ledHPad + colW / 2;
+    final rLabelX = stripLeft + _ledHPad + colW + _ledColGap + colW / 2;
+    for (final entry in [('L', lLabelX), ('R', rLabelX)]) {
+      _textPainter.text = TextSpan(
+        text: entry.$1,
+        style: const TextStyle(
+          color: Color(0xFF445566),
+          fontSize: 6,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 1.0,
+          fontFamily: 'RobotoMono',
+        ),
+      );
+      _textPainter.layout();
+      _textPainter.paint(
+        canvas,
+        Offset(
+          entry.$2 - _textPainter.width / 2,
+          baseY - _ledLabelReserve + 4,
+        ),
+      );
+    }
+  }
+
+  void _drawLedSegment(
+    Canvas canvas,
+    Rect rect,
+    Color zoneColor,
+    bool isActive,
+    bool isPeak,
+  ) {
+    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(1));
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..color = zoneColor.withValues(alpha: isActive ? 0.85 : 0.08)
+        ..style = PaintingStyle.fill,
+    );
+    if (isPeak) {
+      canvas.drawRRect(
+        rrect,
+        Paint()
+          ..color = zoneColor.withValues(alpha: 0.6)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.8,
+      );
+    }
   }
 
   /// Beat algorithm comparison display — 6 continuous level bars, one per
