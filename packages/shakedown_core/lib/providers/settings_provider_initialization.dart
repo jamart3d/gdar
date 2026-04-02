@@ -727,6 +727,9 @@ mixin _SettingsProviderInitializationExtension
     _oilLogoAntiAlias =
         _prefs.getBool(_oilLogoAntiAliasKey) ??
         DefaultSettings.oilLogoAntiAlias;
+    _oilPreviewShowGraph =
+        _prefs.getBool(_oilPreviewShowGraphKey) ??
+        DefaultSettings.oilPreviewShowGraph;
   }
 
   void _loadScreensaverRingPreferences() {

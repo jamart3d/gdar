@@ -144,6 +144,9 @@ class DefaultSettings {
   /// 'ekg', 'circular_ekg', 'vu', 'scope', and 'beat_debug'.
   static const String oilAudioGraphMode = 'off';
 
+  /// Preview panel focus mode: false = show logo, true = show audio graph.
+  static const bool oilPreviewShowGraph = false;
+
   /// Radius multiplier for EKG (0.5x to 2.0x of base logo radius).
   static const double oilEkgRadius = 0.1;
 

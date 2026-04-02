@@ -74,6 +74,7 @@ const String _oilColorMultiplierKey = 'oil_color_multiplier';
 const String _oilWoodstockEveryHourKey = 'oil_woodstock_every_hour';
 const String _oilTvPremiumHighlightKey = 'oil_tv_premium_highlight';
 const String _showScreensaverCountdownKey = 'show_screensaver_countdown';
+const String _oilPreviewShowGraphKey = 'oil_preview_show_graph';
 
 mixin _SettingsProviderScreensaverFields {
   late bool _useOilScreensaver;
@@ -124,6 +125,7 @@ mixin _SettingsProviderScreensaverFields {
   late double _oilBannerFlicker;
   late double _oilBannerGlowBlur;
   late bool _oilLogoAntiAlias;
+  late bool _oilPreviewShowGraph;
   late double _oilInnerRingScale;
   late double _oilInnerToMiddleGap;
   late double _oilMiddleToOuterGap;
@@ -207,6 +209,7 @@ mixin _SettingsProviderScreensaverExtension
   double get oilBannerFlicker => _oilBannerFlicker;
   double get oilBannerGlowBlur => _oilBannerGlowBlur;
   bool get oilLogoAntiAlias => _oilLogoAntiAlias;
+  bool get oilPreviewShowGraph => _oilPreviewShowGraph;
   double get oilInnerRingScale => _oilInnerRingScale;
   double get oilInnerToMiddleGap => _oilInnerToMiddleGap;
   double get oilMiddleToOuterGap => _oilMiddleToOuterGap;
@@ -282,6 +285,11 @@ mixin _SettingsProviderScreensaverExtension
   Future<void> toggleOilLogoAntiAlias() => _updatePreference(
     _oilLogoAntiAliasKey,
     _oilLogoAntiAlias = !_oilLogoAntiAlias,
+  );
+
+  Future<void> toggleOilPreviewShowGraph() => _updatePreference(
+    _oilPreviewShowGraphKey,
+    _oilPreviewShowGraph = !_oilPreviewShowGraph,
   );
 
   Future<void> toggleOilPaletteCycle() => _updatePreference(
