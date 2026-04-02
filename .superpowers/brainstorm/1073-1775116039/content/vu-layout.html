@@ -1,0 +1,167 @@
+<h2>VU Meter Layout — LED Strip Placement</h2>
+<p class="subtitle">Current: two analog meters, 10px gap. Showing 3 options for the new LED strip between them.</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0a0a0f;border-radius:10px;padding:20px;display:flex;align-items:flex-end;justify-content:center;gap:0;min-height:160px;">
+
+        <!-- Left analog meter -->
+        <div style="width:120px;height:130px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:8px;position:relative;flex-shrink:0;">
+          <div style="position:absolute;top:6px;left:8px;color:#99aabb;font-size:9px;font-family:monospace;font-weight:700;letter-spacing:2px">L</div>
+          <!-- arc hint -->
+          <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);width:80px;height:40px;border:2px solid rgba(74,243,198,0.2);border-radius:40px 40px 0 0;border-bottom:none"></div>
+          <!-- needle -->
+          <div style="position:absolute;bottom:28px;left:50%;width:1px;height:38px;background:rgba(221,221,221,0.9);transform-origin:bottom center;transform:rotate(-20deg)"></div>
+          <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);color:#445566;font-size:6px;font-family:monospace;letter-spacing:1px">VU</div>
+        </div>
+
+        <!-- LED strip — narrow, same height -->
+        <div style="width:28px;height:130px;background:#0d0d0d;border:1px solid rgba(255,255,255,0.08);border-radius:4px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:6px 3px;gap:1.5px;margin:0 8px;">
+          <!-- R channel — right col, L channel — left col, 16 segments -->
+          <div style="display:flex;gap:2px;flex-direction:column-reverse;width:100%;">
+            <!-- top 2 = red -->
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#ff4444;border-radius:1px;opacity:0.9"></div><div style="flex:1;height:5px;background:#ff4444;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#ff4444;border-radius:1px;opacity:0.9"></div><div style="flex:1;height:5px;background:#ff4444;border-radius:1px;opacity:0.3"></div></div>
+            <!-- 3 yellow -->
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#ffe66d;border-radius:1px;opacity:0.85"></div><div style="flex:1;height:5px;background:#ffe66d;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#ffe66d;border-radius:1px;opacity:0.7"></div><div style="flex:1;height:5px;background:#ffe66d;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#ffe66d;border-radius:1px;opacity:0.3"></div><div style="flex:1;height:5px;background:#ffe66d;border-radius:1px;opacity:0.3"></div></div>
+            <!-- 11 green -->
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.85"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.7"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.85"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.7"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.85"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.85"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.85"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.85"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.7"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.7"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.5"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.5"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.3"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.15"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.15"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.1"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.1"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.05"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.05"></div></div>
+            <div style="display:flex;gap:2px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.05"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.05"></div></div>
+          </div>
+          <div style="color:#445566;font-size:6px;font-family:monospace;margin-top:3px;letter-spacing:1px">L R</div>
+        </div>
+
+        <!-- Right analog meter -->
+        <div style="width:120px;height:130px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:8px;position:relative;flex-shrink:0;">
+          <div style="position:absolute;top:6px;left:8px;color:#99aabb;font-size:9px;font-family:monospace;font-weight:700;letter-spacing:2px">R</div>
+          <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);width:80px;height:40px;border:2px solid rgba(74,243,198,0.2);border-radius:40px 40px 0 0;border-bottom:none"></div>
+          <div style="position:absolute;bottom:28px;left:50%;width:1px;height:38px;background:rgba(255,228,109,0.9);transform-origin:bottom center;transform:rotate(15deg)"></div>
+          <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);color:#445566;font-size:6px;font-family:monospace;letter-spacing:1px">VU</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Narrow strip (28px), same height</h3>
+      <p>Two thin L/R columns of LED segments, full meter height. Compact. Matches the vertical span of the analog meters exactly.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0a0a0f;border-radius:10px;padding:20px;display:flex;align-items:flex-end;justify-content:center;gap:0;min-height:160px;">
+
+        <!-- Left analog meter -->
+        <div style="width:120px;height:130px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:8px;position:relative;flex-shrink:0;">
+          <div style="position:absolute;top:6px;left:8px;color:#99aabb;font-size:9px;font-family:monospace;font-weight:700;letter-spacing:2px">L</div>
+          <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);width:80px;height:40px;border:2px solid rgba(74,243,198,0.2);border-radius:40px 40px 0 0;border-bottom:none"></div>
+          <div style="position:absolute;bottom:28px;left:50%;width:1px;height:38px;background:rgba(221,221,221,0.9);transform-origin:bottom center;transform:rotate(-20deg)"></div>
+          <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);color:#445566;font-size:6px;font-family:monospace;letter-spacing:1px">VU</div>
+        </div>
+
+        <!-- LED strip — wider with labels -->
+        <div style="width:44px;height:130px;background:#0d0d0d;border:1px solid rgba(255,255,255,0.08);border-radius:4px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:6px 4px;margin:0 10px;">
+          <div style="display:flex;gap:3px;flex-direction:column-reverse;width:100%;">
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#ff4444;border-radius:1px;opacity:0.9"></div><div style="flex:1;height:6px;background:#ff4444;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#ff4444;border-radius:1px;opacity:0.9"></div><div style="flex:1;height:6px;background:#ff4444;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#ffe66d;border-radius:1px;opacity:0.85"></div><div style="flex:1;height:6px;background:#ffe66d;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#ffe66d;border-radius:1px;opacity:0.7"></div><div style="flex:1;height:6px;background:#ffe66d;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.85"></div><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.7"></div></div>
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.85"></div><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.85"></div></div>
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.7"></div><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.7"></div></div>
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.5"></div><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.5"></div></div>
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.3"></div><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.15"></div><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.15"></div></div>
+            <div style="display:flex;gap:3px;"><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.05"></div><div style="flex:1;height:6px;background:#4af3c6;border-radius:1px;opacity:0.05"></div></div>
+          </div>
+          <div style="display:flex;gap:3px;margin-top:4px;width:100%;justify-content:center;">
+            <div style="color:#556677;font-size:6px;font-family:monospace;letter-spacing:1px;flex:1;text-align:center">L</div>
+            <div style="color:#556677;font-size:6px;font-family:monospace;letter-spacing:1px;flex:1;text-align:center">R</div>
+          </div>
+        </div>
+
+        <!-- Right analog meter -->
+        <div style="width:120px;height:130px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:8px;position:relative;flex-shrink:0;">
+          <div style="position:absolute;top:6px;left:8px;color:#99aabb;font-size:9px;font-family:monospace;font-weight:700;letter-spacing:2px">R</div>
+          <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);width:80px;height:40px;border:2px solid rgba(74,243,198,0.2);border-radius:40px 40px 0 0;border-bottom:none"></div>
+          <div style="position:absolute;bottom:28px;left:50%;width:1px;height:38px;background:rgba(255,228,109,0.9);transform-origin:bottom center;transform:rotate(15deg)"></div>
+          <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);color:#445566;font-size:6px;font-family:monospace;letter-spacing:1px">VU</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Medium strip (44px), L/R labels</h3>
+      <p>Slightly wider, individual L and R column labels at the bottom. More readable. Segments are a bit taller.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background:#0a0a0f;border-radius:10px;padding:20px;display:flex;align-items:flex-end;justify-content:center;gap:0;min-height:160px;">
+
+        <!-- Left analog meter -->
+        <div style="width:120px;height:130px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:8px;position:relative;flex-shrink:0;">
+          <div style="position:absolute;top:6px;left:8px;color:#99aabb;font-size:9px;font-family:monospace;font-weight:700;letter-spacing:2px">L</div>
+          <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);width:80px;height:40px;border:2px solid rgba(74,243,198,0.2);border-radius:40px 40px 0 0;border-bottom:none"></div>
+          <div style="position:absolute;bottom:28px;left:50%;width:1px;height:38px;background:rgba(221,221,221,0.9);transform-origin:bottom center;transform:rotate(-20deg)"></div>
+          <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);color:#445566;font-size:6px;font-family:monospace;letter-spacing:1px">VU</div>
+        </div>
+
+        <!-- LED strip — wide, with peak dots and clipping LED at top -->
+        <div style="width:52px;height:130px;background:#0d0d0d;border:1px solid rgba(255,255,255,0.08);border-radius:4px;flex-shrink:0;margin:0 12px;display:flex;flex-direction:column;padding:5px 5px 5px;">
+          <!-- clip LED row -->
+          <div style="display:flex;gap:4px;margin-bottom:4px;">
+            <div style="flex:1;height:7px;background:#ff4444;border-radius:2px;opacity:0.9;box-shadow:0 0 4px #ff4444"></div>
+            <div style="flex:1;height:7px;background:#ff4444;border-radius:2px;opacity:0.15"></div>
+          </div>
+          <!-- segments -->
+          <div style="display:flex;gap:3px;flex-direction:column-reverse;flex:1;">
+            <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;background:#ff4444;border-radius:1px;opacity:0.9"></div><div style="flex:1;height:5px;background:#ff4444;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;background:#ffe66d;border-radius:1px;opacity:0.85"></div><div style="flex:1;height:5px;background:#ffe66d;border-radius:1px;opacity:0.5"></div></div>
+            <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;background:#ffe66d;border-radius:1px;opacity:0.7"></div><div style="flex:1;height:5px;background:#ffe66d;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.9"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.85"></div></div>
+            <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.85"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.85"></div></div>
+            <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.7"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.7"></div></div>
+            <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.5"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.5"></div></div>
+            <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.3"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.3"></div></div>
+            <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.15"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.1"></div></div>
+            <div style="display:flex;gap:4px;"><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.05"></div><div style="flex:1;height:5px;background:#4af3c6;border-radius:1px;opacity:0.05"></div></div>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:4px;">
+            <div style="flex:1;color:#556677;font-size:6px;font-family:monospace;letter-spacing:1px;text-align:center">L</div>
+            <div style="flex:1;color:#556677;font-size:6px;font-family:monospace;letter-spacing:1px;text-align:center">R</div>
+          </div>
+        </div>
+
+        <!-- Right analog meter -->
+        <div style="width:120px;height:130px;background:#111;border:1px solid rgba(255,255,255,0.1);border-radius:8px;position:relative;flex-shrink:0;">
+          <div style="position:absolute;top:6px;left:8px;color:#99aabb;font-size:9px;font-family:monospace;font-weight:700;letter-spacing:2px">R</div>
+          <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);width:80px;height:40px;border:2px solid rgba(74,243,198,0.2);border-radius:40px 40px 0 0;border-bottom:none"></div>
+          <div style="position:absolute;bottom:28px;left:50%;width:1px;height:38px;background:rgba(255,228,109,0.9);transform-origin:bottom center;transform:rotate(15deg)"></div>
+          <div style="position:absolute;bottom:22px;left:50%;transform:translateX(-50%);color:#445566;font-size:6px;font-family:monospace;letter-spacing:1px">VU</div>
+        </div>
+
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Wide strip (52px), clip LED at top</h3>
+      <p>Widest option. Adds a dedicated clip/overload LED at the very top that lights red when signal hits 0dB. Most like a real hardware unit.</p>
+    </div>
+  </div>
+
+</div>
+<p class="subtitle" style="margin-top:12px">All options use the same teal/yellow/red zone colors as the existing analog meters. Click to pick, or tell me in the terminal.</p>

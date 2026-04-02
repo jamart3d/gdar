@@ -176,6 +176,7 @@ class _TestDeviceService extends ChangeNotifier implements DeviceService {
 
 void main() {
   const pendingProgressKey = Key('fruit_pending_progress_overlay');
+  const pendingProgressBeadKey = Key('fruit_pending_progress_bead');
   const pendingTransportKey = Key('fruit_pending_transport_halo');
 
   final track = Track(
@@ -362,4 +363,41 @@ void main() {
       expect(find.byKey(pendingTransportKey), findsOneWidget);
     },
   );
+
+  testWidgets('pending Fruit progress bead stays within the progress track', (
+    tester,
+  ) async {
+    final player = _MockGaplessPlayer();
+    stubPlayerState(
+      player,
+      PlayerState(false, ProcessingState.loading),
+      duration: const Duration(minutes: 8),
+    );
+
+    await pumpCard(
+      tester,
+      player: player,
+      glassEnabled: true,
+      performanceMode: false,
+    );
+    await tester.pump();
+
+    final overlayFinder = find.byKey(pendingProgressKey);
+    final beadFinder = find.byKey(pendingProgressBeadKey);
+
+    expect(overlayFinder, findsOneWidget);
+    expect(beadFinder, findsOneWidget);
+
+    for (var i = 0; i < 8; i++) {
+      await tester.pump(const Duration(milliseconds: 180));
+
+      final overlayRect = tester.getRect(overlayFinder);
+      final beadRect = tester.getRect(beadFinder);
+
+      expect(beadRect.left, greaterThanOrEqualTo(overlayRect.left - 0.01));
+      expect(beadRect.right, lessThanOrEqualTo(overlayRect.right + 0.01));
+      expect(beadRect.top, greaterThanOrEqualTo(overlayRect.top - 0.01));
+      expect(beadRect.bottom, lessThanOrEqualTo(overlayRect.bottom + 0.01));
+    }
+  });
 }

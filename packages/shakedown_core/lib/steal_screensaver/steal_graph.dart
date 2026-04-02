@@ -1238,7 +1238,8 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     final drift = _burnInDrift();
     final cx = game.size.x / 2 + drift.dx;
     final baseY = game.size.y - _bottomPadding + drift.dy;
-    const gap = 44.0;
+    const gap = 60.0;
+    // Show stereo source in range label: 'ST' = real stereo, 'LO'/'HI' = FFT fake.
     final lRange = _hasRealStereo ? 'ST' : 'LO';
     final rRange = _hasRealStereo ? 'ST' : 'HI';
 
@@ -1253,7 +1254,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       lRange,
       _vuDrive,
     );
-    _drawLedStrip(canvas, cx, baseY, drift);
+    _drawLedStrip(canvas, cx, baseY);
     _drawVuMeter(
       canvas,
       cx + gap / 2,
@@ -1539,8 +1540,8 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     );
   }
 
-  void _drawLedStrip(Canvas canvas, double cx, double baseY, Offset drift) {
-    final stripLeft = cx - _ledStripWidth / 2 + drift.dx;
+  void _drawLedStrip(Canvas canvas, double cx, double baseY) {
+    final stripLeft = cx - _ledStripWidth / 2;
     const stripHeight = _vuHeight;
     const usableHeight = stripHeight - _ledLabelReserve;
     const segH =
@@ -1567,18 +1568,19 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       canvas.drawRRect(
         panelRect,
         Paint()
-          ..color = const Color(0xFFFFFFFF)
-              .withValues(alpha: 0.12 + _beatFlash * 0.06)
+          ..color = const Color(
+            0xFFFFFFFF,
+          ).withValues(alpha: 0.12 + _beatFlash * 0.06)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 1.0,
       );
     }
 
     // Compute active segment indices (0 = bottom).
-    final leftActive =
-        (_vuLeft.clamp(0.0, 1.0) * (_ledSegmentCount - 1)).round();
-    final rightActive =
-        (_vuRight.clamp(0.0, 1.0) * (_ledSegmentCount - 1)).round();
+    final leftActive = (_vuLeft.clamp(0.0, 1.0) * (_ledSegmentCount - 1))
+        .round();
+    final rightActive = (_vuRight.clamp(0.0, 1.0) * (_ledSegmentCount - 1))
+        .round();
     final leftPeakIdx = _vuPeakLeft > 0.02
         ? (_vuPeakLeft.clamp(0.0, 1.0) * (_ledSegmentCount - 1)).round()
         : -1;
@@ -1598,8 +1600,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       }
 
       // Y position: seg 0 is at the bottom, seg 15 at the top.
-      final segBottom =
-          baseY - _ledLabelReserve - seg * (segH + _ledSegGap);
+      final segBottom = baseY - _ledLabelReserve - seg * (segH + _ledSegGap);
       final segTop = segBottom - segH;
 
       // Left column.
@@ -1640,10 +1641,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       _textPainter.layout();
       _textPainter.paint(
         canvas,
-        Offset(
-          entry.$2 - _textPainter.width / 2,
-          baseY - _ledLabelReserve + 4,
-        ),
+        Offset(entry.$2 - _textPainter.width / 2, baseY - _ledLabelReserve + 4),
       );
     }
   }

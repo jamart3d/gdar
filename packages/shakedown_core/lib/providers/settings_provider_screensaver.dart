@@ -397,8 +397,16 @@ mixin _SettingsProviderScreensaverExtension
         _oilAudioReactivityStrength = value.clamp(0.5, 2.0),
       );
 
-  Future<void> setOilAudioGraphMode(String mode) =>
-      _updateStringPreference(_oilAudioGraphModeKey, _oilAudioGraphMode = mode);
+  Future<void> setOilAudioGraphMode(String mode) async {
+    _oilAudioGraphMode = mode;
+    await _updateStringPreference(_oilAudioGraphModeKey, mode);
+    if (mode == 'off' && _oilPreviewShowGraph) {
+      await _updatePreference(
+        _oilPreviewShowGraphKey,
+        _oilPreviewShowGraph = false,
+      );
+    }
+  }
 
   Future<void> setOilBeatDetectorMode(String mode) => _updateStringPreference(
     _oilBeatDetectorModeKey,

@@ -562,7 +562,7 @@ class _FruitPendingProgressOverlayState
 
   @override
   Widget build(BuildContext context) {
-    final double barHeight = 4.0 * widget.scaleFactor;
+    final double barHeight = 3.0 * widget.scaleFactor;
     final BorderRadius borderRadius = BorderRadius.circular(
       4 * widget.scaleFactor,
     );
@@ -583,91 +583,87 @@ class _FruitPendingProgressOverlayState
                 final double pulse = 1.0 - ((travel - 0.5).abs() * 2.0);
                 final double sweepWidth =
                     (widget.glassEnabled ? 84.0 : 66.0) * widget.scaleFactor;
+                final double sweepOverflow = sweepWidth * 0.22;
+                final double sweepTravelWidth =
+                    (constraints.maxWidth + (sweepOverflow * 2.0) - sweepWidth)
+                        .clamp(0.0, double.infinity);
                 final double sweepLeft =
-                    -sweepWidth +
-                    ((constraints.maxWidth + (sweepWidth * 2.0)) * travel);
-                final double beadLeft =
-                    sweepLeft +
-                    (sweepWidth * (widget.glassEnabled ? 0.76 : 0.72));
+                    -sweepOverflow + (sweepTravelWidth * travel);
+                final double beadWidth =
+                    (widget.glassEnabled ? 18.0 : 14.0) * widget.scaleFactor;
+                final double beadHeight = barHeight;
+                final double beadTravelWidth =
+                    (constraints.maxWidth - beadWidth).clamp(
+                      0.0,
+                      double.infinity,
+                    );
+                final double beadLeft = beadTravelWidth * travel;
                 final double baseAlpha = widget.glassEnabled ? 0.18 : 0.24;
                 final double sweepAlpha = widget.glassEnabled ? 0.76 : 0.92;
                 final double coreAlpha = widget.glassEnabled ? 0.44 : 0.60;
                 final double haloAlpha = widget.glassEnabled ? 0.32 : 0.26;
 
-                return Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Positioned.fill(
-                      child: ClipRRect(
-                        borderRadius: borderRadius,
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Positioned.fill(
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      widget.colorScheme.primary.withValues(
-                                        alpha: baseAlpha,
-                                      ),
-                                      widget.colorScheme.tertiary.withValues(
-                                        alpha: baseAlpha * 0.96,
-                                      ),
-                                    ],
-                                  ),
+                return ClipRRect(
+                  borderRadius: borderRadius,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                widget.colorScheme.primary.withValues(
+                                  alpha: baseAlpha,
                                 ),
-                              ),
+                                widget.colorScheme.tertiary.withValues(
+                                  alpha: baseAlpha * 0.96,
+                                ),
+                              ],
                             ),
-                            Positioned(
-                              top: 0,
-                              bottom: 0,
-                              left: sweepLeft,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      Colors.transparent,
-                                      sweepColor.withValues(alpha: 0.0),
-                                      Colors.white.withValues(alpha: coreAlpha),
-                                      sweepColor.withValues(alpha: sweepAlpha),
-                                      Colors.white.withValues(alpha: coreAlpha),
-                                      sweepColor.withValues(alpha: 0.0),
-                                      Colors.transparent,
-                                    ],
-                                    stops: const [
-                                      0.0,
-                                      0.12,
-                                      0.28,
-                                      0.5,
-                                      0.72,
-                                      0.88,
-                                      1.0,
-                                    ],
-                                  ),
-                                ),
-                                child: SizedBox(
-                                  width: sweepWidth,
-                                  height: barHeight,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      left: beadLeft,
-                      top: -1.5 * widget.scaleFactor,
-                      child: Transform.scale(
-                        scale: 0.92 + (pulse * 0.24),
+                      Positioned(
+                        top: 0,
+                        bottom: 0,
+                        left: sweepLeft,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                Colors.transparent,
+                                sweepColor.withValues(alpha: 0.0),
+                                Colors.white.withValues(alpha: coreAlpha),
+                                sweepColor.withValues(alpha: sweepAlpha),
+                                Colors.white.withValues(alpha: coreAlpha),
+                                sweepColor.withValues(alpha: 0.0),
+                                Colors.transparent,
+                              ],
+                              stops: const [
+                                0.0,
+                                0.12,
+                                0.28,
+                                0.5,
+                                0.72,
+                                0.88,
+                                1.0,
+                              ],
+                            ),
+                          ),
+                          child: SizedBox(width: sweepWidth, height: barHeight),
+                        ),
+                      ),
+                      Positioned(
+                        left: beadLeft,
+                        top: 0,
                         child: Container(
-                          width: 10.0 * widget.scaleFactor,
-                          height: 7.0 * widget.scaleFactor,
+                          key: const Key('fruit_pending_progress_bead'),
+                          width: beadWidth,
+                          height: beadHeight,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
                               999 * widget.scaleFactor,
@@ -676,23 +672,25 @@ class _FruitPendingProgressOverlayState
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                               colors: [
-                                Colors.white.withValues(alpha: 0.95),
-                                sweepColor.withValues(alpha: 0.96),
+                                Colors.white.withValues(
+                                  alpha: 0.82 + (pulse * 0.1),
+                                ),
+                                sweepColor.withValues(alpha: 0.92),
                               ],
                             ),
                             boxShadow: [
                               BoxShadow(
                                 color: sweepColor.withValues(alpha: haloAlpha),
-                                blurRadius: widget.glassEnabled ? 14 : 9,
+                                blurRadius: widget.glassEnabled ? 10 : 7,
                                 spreadRadius:
-                                    (widget.glassEnabled ? 1.8 : 1.0) * pulse,
+                                    (widget.glassEnabled ? 0.7 : 0.45) * pulse,
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               },
             );
