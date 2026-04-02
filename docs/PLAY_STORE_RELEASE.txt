@@ -1,3 +1,12 @@
+What's new in v1.3.51+261
+- TV main browse/playback surfaces now default to pure black for OLED, matching the splash screen and TV specs.
+- Tightened TV RGB focus borders across the main screen: show list cards, track list rows, and the empty-state "Play random show" action now use cleaner, closer-fitting outlines.
+- Removed the oversized empty-state play icon on the TV playback pane and rebuilt the random-show CTA as a cleaner bordered button.
+- Swept TV settings focus styling for border cleanup, including the screensaver section, so toggles, segmented controls, steppers, and list rows use the same tighter focus treatment.
+- Added a framed border container around the TV screensaver preview panel so it reads as a dedicated preview surface in Settings.
+
+---
+
 What's new in v1.3.50+260
 - **Monorepo architecture migration: introduced `packages/gdar_design`**
 - **Monorepo architecture migration: moved shared fonts into the design layer**

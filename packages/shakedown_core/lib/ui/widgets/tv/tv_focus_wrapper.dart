@@ -30,6 +30,8 @@ class TvFocusWrapper extends StatefulWidget {
   final bool useUnderGlow;
   final double? glowSpread;
   final double? glowBlur;
+  final bool tightDecorativeBorder;
+  final double decorativeBorderGap;
 
   const TvFocusWrapper({
     super.key,
@@ -52,6 +54,8 @@ class TvFocusWrapper extends StatefulWidget {
     this.overridePremiumHighlight,
     this.glowSpread,
     this.glowBlur,
+    this.tightDecorativeBorder = false,
+    this.decorativeBorderGap = 2.0,
   });
 
   @override
@@ -224,7 +228,9 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
         sp.highlightPlayingWithRgb ||
         widget.useRgbBorder;
 
-    final double maxBorderWidth = isFeaturePossible ? 6.0 : activeBorderWidth;
+    final double reservedOuterGap = widget.tightDecorativeBorder
+        ? widget.decorativeBorderGap
+        : (isFeaturePossible ? 6.0 : activeBorderWidth);
 
     content = AnimatedGradientBorder(
       borderRadius: radius.topLeft.x,
@@ -244,14 +250,18 @@ class _TvFocusWrapperState extends State<TvFocusWrapper> {
       showShadow: activeShowShadow,
       glowOpacity: activeGlowOpacity,
       backgroundColor: Colors.transparent,
-      usePadding: true, // Necessary for stability
+      usePadding: !widget.tightDecorativeBorder,
       backlightMode: activeBacklight,
       glowSpread: widget.glowSpread,
       glowBlur: widget.glowBlur,
       enabled:
           isFeaturePossible, // Only enable if we might actually show something
       child: Padding(
-        padding: EdgeInsets.all(maxBorderWidth - activeBorderWidth),
+        padding: EdgeInsets.all(
+          widget.tightDecorativeBorder
+              ? reservedOuterGap
+              : reservedOuterGap - activeBorderWidth,
+        ),
         child: content,
       ),
     );

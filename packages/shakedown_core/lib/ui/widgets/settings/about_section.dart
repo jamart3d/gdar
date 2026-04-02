@@ -55,6 +55,22 @@ class SupportSection extends StatelessWidget {
     return TvFocusWrapper(
       onTap: () => _launchUrl(context, url),
       borderRadius: BorderRadius.circular(12),
+      focusDecoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      showGlow: false,
+      useRgbBorder: true,
+      tightDecorativeBorder: true,
+      decorativeBorderGap: 1.0,
+      overridePremiumHighlight: false,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(

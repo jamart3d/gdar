@@ -38,7 +38,22 @@ class TvListTile extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         autofocus: autofocus,
-        useRgbBorder: useRgbBorder,
+        focusDecoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        showGlow: false,
+        useRgbBorder: true,
+        tightDecorativeBorder: true,
+        decorativeBorderGap: 1.0,
+        overridePremiumHighlight: false,
         child: IgnorePointer(
           ignoring: true,
           child: ListTile(

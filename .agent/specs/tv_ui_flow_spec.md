@@ -9,6 +9,7 @@ The TV UI utilizes a persistent dual-pane layout within `TvDualPaneLayout`.
 *   **Right Pane (40%):** `PlaybackScreen` (Active Track List & Details).
 *   **Divider:** A vertical Translucent Material divider with linear transparency.
 *   **Dimming:** The inactive pane is dimmed to **0.2 opacity** to clearly indicate focus.
+*   **Surface Discipline:** Both pane roots, plus any full-screen TV browse/playback state, remain solid `Colors.black`. Show/source colors may inform cards and accents, but never the main screen background.
 
 ## 2. D-Pad Navigation Truth Table
 
@@ -95,5 +96,5 @@ The TV UI uses a hybrid navigation model:
 *   **Wakelock:** The `WakelockService` is active during any playback state on TV to prevent the screen from dimming.
 
 ---
-*Version: 1.2*  
-*Last Updated: 2026-03-02*
+*Version: 1.3*  
+*Last Updated: 2026-04-01*

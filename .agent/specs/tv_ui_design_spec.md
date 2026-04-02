@@ -16,6 +16,7 @@ TV themes prioritize absolute black depths and high-contrast primary accents ove
 *   **Color Palette:**
     *   **Background:** True Black (`Colors.black`) for OLED power savings and high contrast.
     *   **Primary Accent:** Material Blue (`Colors.blue`) for focus states and active tracks.
+    *   **Main Screen Rule:** `ShowListScreen` and `PlaybackScreen` root surfaces stay pure black in both dual-pane and full-screen TV flows. Do **NOT** tint the scaffold or pane background from show/source colors.
 *   **Translucency (Panes):**
     *   **STRICTLY AVOID** `BackdropFilter` or `LiquidGlassWrapper` (blurred glass). TV UI relies on **solid dark surfaces** or simple alpha-blends.
     *   `TvPlaybackBar`: **0.6 opacity** (Using `withValues(alpha: 0.6)`).
@@ -42,5 +43,5 @@ To ensure context isn't lost during playback, the TV UI utilizes a **Dual-Pane L
 *   **Icon Scaling:** Icons in the `MiniPlayer` and `TvPlaybackBar` are set to **32dp** to ensure visibility at a distance.
 
 ---
-*Version: 0.9.1 (Legacy Google TV / v135)*  
-*Last Updated: 2026-03-02*
+*Version: 0.9.2 (Legacy Google TV / v135)*  
+*Last Updated: 2026-04-01*

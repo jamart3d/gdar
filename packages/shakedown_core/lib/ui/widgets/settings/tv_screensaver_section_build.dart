@@ -130,6 +130,23 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
                     }
                     return KeyEventResult.ignored;
                   },
+                  borderRadius: BorderRadius.circular(12),
+                  focusDecoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  showGlow: false,
+                  useRgbBorder: true,
+                  tightDecorativeBorder: true,
+                  decorativeBorderGap: 1.0,
+                  overridePremiumHighlight: false,
                   child: SegmentedButton<int>(
                     segments: const [
                       ButtonSegment(value: 1, label: Text('1 min')),
@@ -949,6 +966,23 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
                 }
                 return KeyEventResult.ignored;
               },
+              borderRadius: BorderRadius.circular(12),
+              focusDecoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              showGlow: false,
+              useRgbBorder: true,
+              tightDecorativeBorder: true,
+              decorativeBorderGap: 1.0,
+              overridePremiumHighlight: false,
               child: SegmentedButton<String>(
                 segments: const [
                   ButtonSegment(value: 'ring', label: Text('Ring')),
@@ -1000,6 +1034,23 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
                 }
                 return KeyEventResult.ignored;
               },
+              borderRadius: BorderRadius.circular(12),
+              focusDecoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              showGlow: false,
+              useRgbBorder: true,
+              tightDecorativeBorder: true,
+              decorativeBorderGap: 1.0,
+              overridePremiumHighlight: false,
               child: SegmentedButton<String>(
                 segments: const [
                   ButtonSegment(value: 'RockSalt', label: Text('Rock Salt')),
@@ -1047,6 +1098,23 @@ extension _TvScreensaverSectionBuild on _TvScreensaverSectionState {
               }
               return KeyEventResult.ignored;
             },
+            borderRadius: BorderRadius.circular(12),
+            focusDecoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            showGlow: false,
+            useRgbBorder: true,
+            tightDecorativeBorder: true,
+            decorativeBorderGap: 1.0,
+            overridePremiumHighlight: false,
             child: SegmentedButton<String>(
               segments: const [
                 ButtonSegment(value: 'below', label: Text('Below')),

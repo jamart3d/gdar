@@ -248,24 +248,9 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
     final currentShow = audioProvider.currentShow;
     final currentSource = audioProvider.currentSource;
 
-    Color backgroundColor = colorScheme.surface;
+    const Color backgroundColor = Colors.black;
     final bool isDarkMode = theme.brightness == Brightness.dark;
     final bool isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
-
-    if (currentShow != null &&
-        currentSource != null &&
-        !isTrueBlackMode &&
-        settingsProvider.highlightCurrentShowCard &&
-        !isFruit) {
-      String seed = currentShow.name;
-      if (currentShow.sources.length > 1) {
-        seed = currentSource.id;
-      }
-      backgroundColor = ColorGenerator.getColor(
-        seed,
-        brightness: theme.brightness,
-      );
-    }
 
     if (currentShow == null || currentSource == null) {
       final ShowListProvider showListProvider = context
@@ -303,12 +288,6 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                   ),
                 ),
               ] else ...[
-                Icon(
-                  LucideIcons.playCircle,
-                  size: 64 * scaleFactor,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.2),
-                ),
-                const SizedBox(height: 24),
                 Text(
                   'No show selected.',
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -320,26 +299,48 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                   TvFocusWrapper(
                     onTap: widget.onRandomPlay,
                     focusNode: _randomPlayFocusNode,
-                    borderRadius: BorderRadius.circular(12),
-                    useUnderGlow: true,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                    borderRadius: BorderRadius.circular(16),
+                    focusDecoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          blurRadius: 14,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    useRgbBorder: true,
+                    tightDecorativeBorder: true,
+                    decorativeBorderGap: 1.0,
+                    child: Container(
+                      constraints: BoxConstraints(
+                        minWidth: 220 * scaleFactor,
+                        minHeight: 76 * scaleFactor,
                       ),
-                      child: Column(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 22 * scaleFactor,
+                        vertical: 14 * scaleFactor,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           AnimatedDiceIcon(
                             onPressed: widget.onRandomPlay!,
                             naked: true,
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(width: 12 * scaleFactor),
                           Text(
                             'Play random show',
                             style: TextStyle(
-                              fontSize: 10,
-                              color: colorScheme.primary,
+                              fontSize: 14 * scaleFactor,
+                              color: colorScheme.onSurface,
                               fontFamily: FontConfig.resolve(
                                 settingsProvider.activeAppFont,
                               ),
@@ -630,10 +631,7 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
     );
 
     if (widget.isPane) {
-      return Container(
-        color: backgroundColor.withValues(alpha: 0.7),
-        child: playbackContent,
-      );
+      return Container(color: backgroundColor, child: playbackContent);
     }
 
     if (isFruit) {

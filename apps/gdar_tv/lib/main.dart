@@ -347,7 +347,8 @@ class _GdarTvAppState extends State<GdarTvApp> {
           final theme = GDARAndroidTheme.dark(
             appFont: settingsProvider.activeAppFont,
             uiScale: settingsProvider.uiScale,
-            useTrueBlack: settingsProvider.useTrueBlack,
+            // TV root surfaces are always OLED black by product spec.
+            useTrueBlack: true,
           );
 
           return RgbClockWrapper(

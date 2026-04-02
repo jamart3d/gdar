@@ -11,7 +11,6 @@ import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/settings_screen.dart';
 
-import 'package:shakedown_core/utils/color_generator.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/utils.dart';
 
@@ -518,34 +517,12 @@ class ShowListScreenState extends State<ShowListScreen>
     final audioProvider = context.watch<AudioProvider>();
     final showListProvider = context.watch<ShowListProvider>();
 
-    Color? backgroundColor;
-    // Only apply custom background color if NOT in "True Black" mode.
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
-
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
-    if (!isFruit &&
-        !isTrueBlackMode &&
-        settingsProvider.highlightCurrentShowCard &&
-        audioProvider.currentShow != null) {
-      String seed = audioProvider.currentShow!.name;
-      if (audioProvider.currentShow!.sources.length > 1 &&
-          audioProvider.currentSource != null) {
-        seed = audioProvider.currentSource!.id;
-      }
-      backgroundColor = ColorGenerator.getColor(
-        seed,
-        brightness: Theme.of(context).brightness,
-      );
-    }
-
     return ShowListShell(
       isPane: widget.isPane,
-      backgroundColor: widget.isPane
-          ? const Color(0x00000000)
-          : (backgroundColor ?? Theme.of(context).scaffoldBackgroundColor),
+      backgroundColor: widget.isPane ? Colors.transparent : Colors.black,
       randomPulseAnimation: _randomPulseAnimation,
       searchPulseAnimation: _searchPulseAnimation,
       isRandomShowLoading: isRandomShowLoading,

@@ -84,6 +84,7 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel> {
     if (kIsWeb) return const SizedBox.shrink();
 
     final settings = context.watch<SettingsProvider>();
+    final colorScheme = Theme.of(context).colorScheme;
     if (!settings.useOilScreensaver || !settings.oilEnableAudioReactivity) {
       return const SizedBox.shrink();
     }
@@ -164,14 +165,32 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: AspectRatio(
-            aspectRatio: 16 / 9,
-            child: StealVisualizer(
-              config: config,
-              audioReactor: _previewReactor,
-              debugAudioSessionId: _previewAudioSessionId,
+        return Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: colorScheme.primary.withValues(alpha: 0.55),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.45),
+                blurRadius: 12,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: AspectRatio(
+              aspectRatio: 16 / 9,
+              child: StealVisualizer(
+                config: config,
+                audioReactor: _previewReactor,
+                debugAudioSessionId: _previewAudioSessionId,
+              ),
             ),
           ),
         );

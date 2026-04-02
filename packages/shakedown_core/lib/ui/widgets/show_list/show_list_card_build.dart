@@ -177,10 +177,24 @@ extension _ShowListCardBuild on _ShowListCardState {
         onTap: widget.onTap,
         onLongPress: widget.onLongPress,
         borderRadius: BorderRadius.circular(12),
+        focusDecoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
         onFocusChange: _onHover,
         isPlaying: widget.isPlaying,
-        showGlow: true,
-        overridePremiumHighlight: null,
+        showGlow: false,
+        useRgbBorder: true,
+        tightDecorativeBorder: true,
+        decorativeBorderGap: 1.0,
+        overridePremiumHighlight: false,
         child: content,
       );
     }

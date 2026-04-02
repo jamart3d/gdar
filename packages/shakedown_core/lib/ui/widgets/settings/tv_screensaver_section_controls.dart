@@ -30,6 +30,23 @@ class _PaletteSegmentedButton extends StatelessWidget {
         }
         return KeyEventResult.ignored;
       },
+      borderRadius: BorderRadius.circular(12),
+      focusDecoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      showGlow: false,
+      useRgbBorder: true,
+      tightDecorativeBorder: true,
+      decorativeBorderGap: 1.0,
+      overridePremiumHighlight: false,
       child: SegmentedButton<String>(
         style: ButtonStyle(
           backgroundColor: WidgetStateProperty.all(Colors.transparent),
@@ -228,6 +245,25 @@ class _QualitySegmentedButton extends StatelessWidget {
           left: isFirst ? const Radius.circular(8) : Radius.zero,
           right: isLast ? const Radius.circular(8) : Radius.zero,
         ),
+        focusDecoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.horizontal(
+            left: isFirst ? const Radius.circular(8) : Radius.zero,
+            right: isLast ? const Radius.circular(8) : Radius.zero,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        showGlow: false,
+        useRgbBorder: true,
+        tightDecorativeBorder: true,
+        decorativeBorderGap: 1.0,
+        overridePremiumHighlight: false,
         child: Container(
           height: 36,
           decoration: BoxDecoration(
@@ -317,6 +353,22 @@ class _ToggleRow extends StatelessWidget {
       onKeyEvent: onKeyEvent,
       onTap: () => onChanged(!value),
       borderRadius: BorderRadius.circular(12),
+      focusDecoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      showGlow: false,
+      useRgbBorder: true,
+      tightDecorativeBorder: true,
+      decorativeBorderGap: 1.0,
+      overridePremiumHighlight: false,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -387,6 +439,23 @@ class _BandSegmentedButton extends StatelessWidget {
         }
         return KeyEventResult.ignored;
       },
+      borderRadius: BorderRadius.circular(12),
+      focusDecoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      showGlow: false,
+      useRgbBorder: true,
+      tightDecorativeBorder: true,
+      decorativeBorderGap: 1.0,
+      overridePremiumHighlight: false,
       child: SegmentedButton<int>(
         segments: options.map((value) {
           late final String label;
@@ -463,6 +532,23 @@ class _BeatDetectorSegmentedButton extends StatelessWidget {
         }
         return KeyEventResult.ignored;
       },
+      borderRadius: BorderRadius.circular(12),
+      focusDecoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      showGlow: false,
+      useRgbBorder: true,
+      tightDecorativeBorder: true,
+      decorativeBorderGap: 1.0,
+      overridePremiumHighlight: false,
       child: SegmentedButton<String>(
         segments: _modes
             .map(

@@ -166,6 +166,22 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
                           child: TvFocusWrapper(
                             onTap: () => setState(() => _selectedIndex = index),
                             borderRadius: BorderRadius.circular(12),
+                            focusDecoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.5),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            showGlow: false,
+                            useRgbBorder: true,
+                            tightDecorativeBorder: true,
+                            decorativeBorderGap: 1.0,
+                            overridePremiumHighlight: false,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,

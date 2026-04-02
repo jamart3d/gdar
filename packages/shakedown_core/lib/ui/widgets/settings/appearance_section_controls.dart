@@ -548,6 +548,23 @@ extension _AppearanceSectionControls on _AppearanceSectionState {
                       }
                       return KeyEventResult.ignored;
                     },
+                    borderRadius: BorderRadius.circular(12),
+                    focusDecoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    showGlow: false,
+                    useRgbBorder: true,
+                    tightDecorativeBorder: true,
+                    decorativeBorderGap: 1.0,
+                    overridePremiumHighlight: false,
                     child: Slider(
                       onChangeStart: (_) =>
                           AppHaptics.lightImpact(context.read<DeviceService>()),
@@ -679,8 +696,23 @@ extension _AppearanceSectionControls on _AppearanceSectionState {
             ignoreGlobalClock: true,
             backgroundColor: Colors.transparent,
             child: TvFocusWrapper(
-              showGlow: true,
               borderRadius: BorderRadius.circular(21),
+              focusDecoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(21),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              showGlow: false,
+              useRgbBorder: false,
+              tightDecorativeBorder: true,
+              decorativeBorderGap: 1.0,
+              overridePremiumHighlight: false,
               child: SingleChildScrollView(
                 key: const PageStorageKey('rgb_speed_scroll'),
                 controller: ScrollController(keepScrollOffset: false),

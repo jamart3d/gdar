@@ -26,6 +26,22 @@ class UsageInstructionsSection extends StatelessWidget {
       return TvFocusWrapper(
         onTap: () {}, // No-op, just for focus
         borderRadius: BorderRadius.circular(12),
+        focusDecoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.5),
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        showGlow: false,
+        useRgbBorder: true,
+        tightDecorativeBorder: true,
+        decorativeBorderGap: 1.0,
+        overridePremiumHighlight: false,
         child: IgnorePointer(ignoring: true, child: child),
       );
     }

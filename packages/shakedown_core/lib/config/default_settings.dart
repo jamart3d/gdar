@@ -204,6 +204,7 @@ class WebDefaults extends DefaultSettings {
 /// Defaults for the Google TV UI.
 class TvDefaults extends DefaultSettings {
   // Appearance
+  static const bool useTrueBlack = true;
   static const bool performanceMode = false;
   static const bool oilTvPremiumHighlight = false;
   static const bool hideTvScrollbars = true;

@@ -34,7 +34,6 @@ import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/show_list/animated_dice_icon.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_scrollbar.dart';
-import 'package:shakedown_core/utils/color_generator.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:sliding_up_panel2/sliding_up_panel2.dart';

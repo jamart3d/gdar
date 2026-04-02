@@ -24,6 +24,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_activity_indicator.dart';
 
 class TrackListView extends StatelessWidget {
+  static const double _tvTrackCardRadius = 12.0;
   final Source source;
   final double bottomPadding;
   final double topPadding;
@@ -207,7 +208,9 @@ class TrackListView extends StatelessWidget {
                       ? Colors.black
                       : colorScheme.primaryContainer)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(isFruit ? 14 : 12),
+            borderRadius: BorderRadius.circular(
+              isFruit ? 14 : _tvTrackCardRadius,
+            ),
           ),
           child: showMobilePlayingBorder
               ? Container(
@@ -285,7 +288,7 @@ class TrackListView extends StatelessWidget {
             isPlaying: isPlaying,
             focusDecoration: BoxDecoration(
               color: Colors.black,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(_tvTrackCardRadius),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.6),
@@ -295,10 +298,12 @@ class TrackListView extends StatelessWidget {
               ],
             ),
             focusColor: colorScheme.primary,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(_tvTrackCardRadius),
             // We rely purely on the crisp border for selection to avoid
             // BoxShadows filling the hollow transparent center of the item.
             showGlow: false,
+            tightDecorativeBorder: true,
+            decorativeBorderGap: 2.0,
             // Preserve the Premium highlight on focus even if it is the currently playing track.
             overridePremiumHighlight: null,
             onFocusChange: (focused) {
@@ -595,7 +600,7 @@ class TrackListView extends StatelessWidget {
         : ListTile(
             leading: leadingWidget,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(_tvTrackCardRadius),
             ),
             visualDensity: context.read<DeviceService>().isTv
                 ? VisualDensity.compact

@@ -344,7 +344,7 @@ mixin _SettingsProviderInitializationExtension
     return _prefs.getBool(_useTrueBlackKey) ??
         _dBool(
           WebDefaults.useTrueBlack,
-          DefaultSettings.useTrueBlack,
+          TvDefaults.useTrueBlack,
           DefaultSettings.useTrueBlack,
         );
   }

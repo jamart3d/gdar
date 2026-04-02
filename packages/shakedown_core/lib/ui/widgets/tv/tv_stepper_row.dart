@@ -50,6 +50,22 @@ class TvStepperRow extends StatelessWidget {
         return KeyEventResult.ignored;
       },
       borderRadius: BorderRadius.circular(12),
+      focusDecoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      showGlow: false,
+      useRgbBorder: true,
+      tightDecorativeBorder: true,
+      decorativeBorderGap: 1.0,
+      overridePremiumHighlight: false,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
