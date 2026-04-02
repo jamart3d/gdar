@@ -1230,8 +1230,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
     final drift = _burnInDrift();
     final cx = game.size.x / 2 + drift.dx;
     final baseY = game.size.y - _bottomPadding + drift.dy;
-    const gap = 10.0;
-    // Show stereo source in range label: 'ST' = real stereo, 'LO'/'HI' = FFT fake.
+    const gap = 44.0;
     final lRange = _hasRealStereo ? 'ST' : 'LO';
     final rRange = _hasRealStereo ? 'ST' : 'HI';
 
@@ -1246,6 +1245,7 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       lRange,
       _vuDrive,
     );
+    _drawLedStrip(canvas, cx, baseY, drift);
     _drawVuMeter(
       canvas,
       cx + gap / 2,
