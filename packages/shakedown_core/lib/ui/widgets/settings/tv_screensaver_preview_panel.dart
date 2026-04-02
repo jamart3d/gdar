@@ -107,7 +107,7 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel> {
       heatDrift: settings.oilHeatDrift,
       enableAudioReactivity: settings.oilEnableAudioReactivity,
       performanceLevel: settings.oilPerformanceLevel,
-      logoScale: settings.oilLogoScale,
+      logoScale: settings.oilPreviewShowGraph ? 0.0 : settings.oilLogoScale,
       translationSmoothing: settings.oilTranslationSmoothing,
       blurAmount: settings.oilBlurAmount,
       flatColor: settings.oilFlatColor,
@@ -135,7 +135,9 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel> {
       logoTrailLength: settings.oilLogoTrailLength,
       flatTextProximity: settings.oilFlatTextProximity,
       flatTextPlacement: settings.oilFlatTextPlacement,
-      audioGraphMode: settings.oilAudioGraphMode,
+      audioGraphMode: settings.oilPreviewShowGraph
+          ? settings.oilAudioGraphMode
+          : 'off',
       ekgRadius: settings.oilEkgRadius,
       ekgReplication: settings.oilEkgReplication,
       ekgSpread: settings.oilEkgSpread,
