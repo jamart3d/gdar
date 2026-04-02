@@ -1,3 +1,23 @@
+What's new in v1.3.54+264
+- Added `oilPreviewShowGraph` preference (`oil_preview_show_graph` key, default `false`) to `SettingsProvider` / `default_settings.dart` / `settings_provider_initialization.dart`.
+- New `_ToggleRow` in `TvScreensaverSection` (`_buildAudioGraphSection`) labelled **"Preview: Audio Graph"** — hidden when audio graph mode is `off`.
+- `TvScreensaverPreviewPanel` now reads `oilPreviewShowGraph`: toggle ON → audio graph scaled to preview box, logo hidden; toggle OFF → logo shown, audio graph hidden.
+- `setOilAudioGraphMode('off')` auto-resets `oilPreviewShowGraph` to `false`.
+- `FakeSettingsProvider` updated with stub implementations.
+- 4 new widget tests covering toggle visibility per audio graph mode value.
+- **Fixed crash when confirming MediaProjection consent dialog on Chromecast with Google TV (Sabrina, Android 14).** Root cause: `getMediaProjection()` was deferred to an async `runWhenReady` callback, but Android 14 invalidates the consent intent once `onActivityResult` returns. Moved `getMediaProjection()` to run immediately inside `onActivityResult`, then the projection token is handed to `StereoCapture` after the foreground service is ready. (`MainActivity.kt`)
+- **Fixed EventSink thread safety** — `VisualizerPlugin.processFftData()` now dispatches `eventSink.success()` to the main thread via `Handler(Looper.getMainLooper())`, preventing crashes from Visualizer callbacks firing on the audio thread. (`VisualizerPlugin.kt`)
+- Inserted a narrow (28 px) vertical stereo LED VU strip between the two analog VU needle meters.
+- Analog meter gap widened from 10 px → 44 px → 60 px (final) to clear both meter panels.
+- Strip: 2 columns (L / R), 16 segments, teal / yellow / red zones from bottom to top, matching standard VU dB scale.
+- Peak-hold indicators per channel, matching the analog meter peak-dot decay behaviour.
+- Constants added: `_ledStripWidth`, `_ledSegmentCount`, `_ledLabelReserve`, `_ledColGap`, `_ledSegGap`, `_ledHPad`.
+- `_drawLedStrip(Canvas, double cx, double baseY)` + `_drawLedSegment` helpers added to `StealGraph`.
+- **Bug fix:** double-drift offset in `_drawLedStrip` corrected — `cx` already carries `drift.dx`; removed redundant `+ drift.dx` from `stripLeft` and dropped the `drift` parameter from the method signature.
+- Restored deleted comment above `lRange`/`rRange` declarations in `_renderVu`.
+
+---
+
 What's new in v1.3.53+263
 - Web Fruit playback: constrained the loading pulse bead in the Fruit now playing
 - Tests: added a Fruit playback widget regression that samples the animated

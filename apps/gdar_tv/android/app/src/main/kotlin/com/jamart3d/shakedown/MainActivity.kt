@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.app.UiModeManager
@@ -91,62 +90,28 @@ class MainActivity: FlutterActivity() {
                         return@setMethodCallHandler
                     }
                     pendingStereoResult = result
-                    stereoCapture.stop()
                     try {
-                        val mgr = getSystemService(MEDIA_PROJECTION_SERVICE)
-                            as? MediaProjectionManager
+                        // Clean up any previous capture session before showing
+                        // the consent dialog.
+                        resetStereoCaptureSession()
+                        val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as? MediaProjectionManager
                         if (mgr == null) {
                             pendingStereoResult = null
                             Log.w(TAG, "MediaProjectionManager unavailable")
                             result.success(false)
                             return@setMethodCallHandler
                         }
-                        if (Build.VERSION.SDK_INT >= 34) {
-                            // Android 14+: foreground service with mediaProjection
-                            // type MUST be running before createScreenCaptureIntent().
-                            MediaProjectionForegroundService.start(this)
-                            MediaProjectionForegroundService.runWhenReady(
-                                onReady = {
-                                    try {
-                                        startActivityForResult(
-                                            mgr.createScreenCaptureIntent(),
-                                            REQUEST_CAPTURE,
-                                        )
-                                    } catch (e: Exception) {
-                                        pendingStereoResult = null
-                                        resetStereoCaptureSession()
-                                        Log.e(TAG, "Failed to launch capture dialog: ${e.message}")
-                                        result.success(false)
-                                    }
-                                },
-                                onUnavailable = {
-                                    pendingStereoResult = null
-                                    resetStereoCaptureSession()
-                                    Log.w(TAG, "Foreground service failed to start")
-                                    result.success(false)
-                                },
-                            )
-                        } else {
-                            // Pre-Android 14: dialog first, service after consent.
-                            resetStereoCaptureSession()
-                            startActivityForResult(
-                                mgr.createScreenCaptureIntent(),
-                                REQUEST_CAPTURE,
-                            )
-                        }
+                        startActivityForResult(mgr.createScreenCaptureIntent(), REQUEST_CAPTURE)
                     } catch (e: ActivityNotFoundException) {
                         pendingStereoResult = null
-                        resetStereoCaptureSession()
                         Log.w(TAG, "Stereo capture activity unavailable: ${e.message}")
                         result.success(false)
                     } catch (e: SecurityException) {
                         pendingStereoResult = null
-                        resetStereoCaptureSession()
                         Log.w(TAG, "Stereo capture permission launch blocked: ${e.message}")
                         result.success(false)
                     } catch (e: Exception) {
                         pendingStereoResult = null
-                        resetStereoCaptureSession()
                         Log.e(TAG, "Failed to launch stereo capture permission", e)
                         result.success(false)
                     }
@@ -168,81 +133,64 @@ class MainActivity: FlutterActivity() {
             val result = pendingStereoResult
             pendingStereoResult = null
             if (resultCode == Activity.RESULT_OK && data != null) {
-                val captureResultCode = resultCode
-                val captureData = data
                 try {
                     stereoCapture.stop()
-                    startCaptureWithProjection(captureResultCode, captureData, result)
+
+                    // Obtain the MediaProjection token IMMEDIATELY inside
+                    // onActivityResult — Android 14 invalidates the consent
+                    // intent once this callback returns, so deferring
+                    // getMediaProjection() to an async callback (e.g.
+                    // runWhenReady) causes a SecurityException / crash.
+                    val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                    val projection = mgr.getMediaProjection(resultCode, data)
+                    if (projection == null) {
+                        resetStereoCaptureSession()
+                        result?.success(false)
+                        Log.w(TAG, "getMediaProjection returned null")
+                        return
+                    }
+
+                    // Now start the foreground service and hand the
+                    // projection to StereoCapture once it's ready.
+                    MediaProjectionForegroundService.start(this)
+                    MediaProjectionForegroundService.runWhenReady(
+                        onReady = {
+                            try {
+                                val ok = stereoCapture.start(projection)
+                                if (!ok) resetStereoCaptureSession()
+                                result?.success(ok)
+                                Log.d(TAG, "Stereo capture started: $ok")
+                            } catch (e: SecurityException) {
+                                resetStereoCaptureSession()
+                                result?.success(false)
+                                Log.w(TAG, "Stereo capture unavailable: ${e.message}")
+                            } catch (e: Exception) {
+                                resetStereoCaptureSession()
+                                result?.success(false)
+                                Log.e(TAG, "Failed to start stereo capture", e)
+                            }
+                        },
+                        onUnavailable = {
+                            projection.stop()
+                            resetStereoCaptureSession()
+                            result?.success(false)
+                            Log.w(TAG, "Foreground service failed to enter foreground")
+                        },
+                    )
                 } catch (e: SecurityException) {
                     resetStereoCaptureSession()
                     result?.success(false)
-                    Log.w(TAG, "Stereo capture service launch blocked: ${e.message}")
+                    Log.w(TAG, "Stereo capture blocked: ${e.message}")
                 } catch (e: Exception) {
                     resetStereoCaptureSession()
                     result?.success(false)
-                    Log.e(TAG, "Failed to start stereo capture foreground service", e)
+                    Log.e(TAG, "Failed to start stereo capture", e)
                 }
             } else {
                 resetStereoCaptureSession()
                 result?.success(false)
                 Log.d(TAG, "Stereo capture permission denied")
             }
-        }
-    }
-
-    private fun startCaptureWithProjection(
-        resultCode: Int,
-        data: Intent,
-        flutterResult: MethodChannel.Result?,
-    ) {
-        val doStart: () -> Unit = {
-            try {
-                val mgr = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                val projection = mgr.getMediaProjection(resultCode, data)
-                if (projection != null) {
-                    val ok = stereoCapture.start(projection)
-                    if (!ok) resetStereoCaptureSession()
-                    flutterResult?.success(ok)
-                    Log.d(TAG, "Stereo capture started: $ok")
-                } else {
-                    resetStereoCaptureSession()
-                    flutterResult?.success(false)
-                    Log.w(TAG, "getMediaProjection returned null")
-                }
-            } catch (e: SecurityException) {
-                resetStereoCaptureSession()
-                flutterResult?.success(false)
-                Log.w(TAG, "Stereo capture unavailable: ${e.message}")
-            } catch (e: Exception) {
-                resetStereoCaptureSession()
-                flutterResult?.success(false)
-                Log.e(TAG, "Failed to start stereo capture", e)
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= 34) {
-            // Android 14+: service is already in foreground from requestCapture.
-            // Just use runWhenReady which fires immediately.
-            MediaProjectionForegroundService.runWhenReady(
-                onReady = doStart,
-                onUnavailable = {
-                    resetStereoCaptureSession()
-                    flutterResult?.success(false)
-                    Log.w(TAG, "Foreground service not available")
-                },
-            )
-        } else {
-            // Pre-Android 14: start service now (after consent), wait for
-            // foreground, then create the projection token.
-            MediaProjectionForegroundService.start(this)
-            MediaProjectionForegroundService.runWhenReady(
-                onReady = doStart,
-                onUnavailable = {
-                    resetStereoCaptureSession()
-                    flutterResult?.success(false)
-                    Log.w(TAG, "Foreground service not available")
-                },
-            )
         }
     }
 
