@@ -368,4 +368,38 @@ void main() {
       expect(launchCount, 1);
     });
   });
+
+  group('TvScreensaverSection preview toggle visibility', () {
+    testWidgets(
+      'toggle is hidden when audio graph mode is off',
+      (tester) async {
+        await tester.pumpWidget(_buildSection('off'));
+        expect(find.text('Preview: Audio Graph'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'toggle is visible when audio graph mode is corner',
+      (tester) async {
+        await tester.pumpWidget(_buildSection('corner'));
+        expect(find.text('Preview: Audio Graph'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'toggle is visible when audio graph mode is circular',
+      (tester) async {
+        await tester.pumpWidget(_buildSection('circular'));
+        expect(find.text('Preview: Audio Graph'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'toggle is visible when audio graph mode is ekg',
+      (tester) async {
+        await tester.pumpWidget(_buildSection('ekg'));
+        expect(find.text('Preview: Audio Graph'), findsOneWidget);
+      },
+    );
+  });
 }

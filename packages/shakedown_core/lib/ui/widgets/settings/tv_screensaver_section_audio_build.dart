@@ -255,6 +255,18 @@ extension _TvScreensaverSectionAudioBuild on _TvScreensaverSectionState {
               ),
             ],
           ],
+          if (settings.oilAudioGraphMode != 'off') ...[
+            const SizedBox(height: 16),
+            _ToggleRow(
+              label: 'Preview: Audio Graph',
+              subtitle:
+                  'Show scaled audio graph in preview instead of logo',
+              value: settings.oilPreviewShowGraph,
+              onChanged: (_) => settings.toggleOilPreviewShowGraph(),
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+            ),
+          ],
         ],
       ),
     );

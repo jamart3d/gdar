@@ -34,6 +34,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get oilWoodstockEveryHour => false;
   @override
+  bool get oilPreviewShowGraph => false;
+  @override
+  Future<void> toggleOilPreviewShowGraph() async {}
+  @override
   bool get preventSleep => false;
   @override
   int get oilScreensaverInactivityMinutes => 5;
