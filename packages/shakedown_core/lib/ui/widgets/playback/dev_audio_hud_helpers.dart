@@ -295,14 +295,6 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
     }
   }
 
-  void _appendHpdSample(int? sample) {
-    if (sample == null) return;
-    _hpdHistory.add(sample.toDouble());
-    if (_hpdHistory.length > _DevAudioHudState._netHistoryMaxPoints) {
-      _hpdHistory.removeAt(0);
-    }
-  }
-
   void _trackNet(HudSnapshot hud) {
     if (hud.fetchInFlight && !_prevFetchInFlight) {
       _fetchInFlightSince = DateTime.now();
@@ -343,7 +335,7 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
   }
 
   void _trackBgt(HudSnapshot hud) {
-    final isHidden = hud.visibility.startsWith('HID') && hud.isPlaying;
+    final isHidden = !widget.isAppVisible && hud.isPlaying;
     if (isHidden && _bgHiddenSince == null) {
       _bgHiddenSince = DateTime.now();
     } else if (!isHidden && _bgHiddenSince != null) {
@@ -535,11 +527,6 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
         return value == '--'
             ? 'Current playback engine is not available yet.'
             : 'Current playback engine. WA=WebAudio, H5=HTML5. + means survival help is active.';
-      case 'V':
-        if (value.startsWith('VIS')) {
-          return 'Tab is visible.';
-        }
-        return 'Tab is hidden. Mobile browsers may throttle audio.';
       case 'DFT':
         return 'Tick drift sparkline. Lower and steadier is better.';
       case 'PF':
@@ -577,7 +564,7 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
       case 'GAP':
         return 'Gapless readiness for the next handoff. RDY is healthy; LOW or MISS means risk.';
       case 'BGT':
-        return 'Total time this tab has been in the background.';
+        return 'Total playing time with tab hidden (not-visible time).';
       case 'PM':
         return 'Performance mode. ON reduces effects and visual cost.';
       case 'NET':

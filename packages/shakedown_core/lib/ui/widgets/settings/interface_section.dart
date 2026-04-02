@@ -6,6 +6,7 @@ import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/ui/widgets/section_card.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_settings_group_header.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class InterfaceSection extends StatelessWidget {
@@ -18,11 +19,30 @@ class InterfaceSection extends StatelessWidget {
     required this.initiallyExpanded,
   });
 
+  List<Widget> _buildGroupHeader({
+    required String label,
+    required bool isFruit,
+    bool addTopSpacing = true,
+  }) {
+    if (!isFruit) {
+      if (!addTopSpacing) {
+        return const [];
+      }
+
+      return const [SizedBox(height: 8), Divider(), SizedBox(height: 8)];
+    }
+
+    return [
+      FruitSettingsGroupHeader(label: label, addTopSpacing: addTopSpacing),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isTv = context.read<DeviceService>().isTv;
 
     return SectionCard(
       key: const ValueKey('interface_section'),
@@ -32,8 +52,12 @@ class InterfaceSection extends StatelessWidget {
       lucideIcon: LucideIcons.layout,
       initiallyExpanded: initiallyExpanded,
       children: [
-        // 1. General UI Group
-        if (context.read<DeviceService>().isTv) ...[
+        ..._buildGroupHeader(
+          label: 'General',
+          isFruit: isFruit,
+          addTopSpacing: false,
+        ),
+        if (isTv) ...[
           TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,
@@ -198,9 +222,7 @@ class InterfaceSection extends StatelessWidget {
             secondary: Icon(isFruit ? LucideIcons.vibrate : Icons.vibration),
           ),
 
-        const SizedBox(height: 8),
-        const Divider(),
-        const SizedBox(height: 8),
+        ..._buildGroupHeader(label: 'Date & Time', isFruit: isFruit),
 
         // 2. Date & Time Group
         TvSwitchListTile(
@@ -334,9 +356,7 @@ class InterfaceSection extends StatelessWidget {
                 : Icons.calendar_view_month_rounded,
           ),
         ),
-        const SizedBox(height: 8),
-        const Divider(),
-        const SizedBox(height: 8),
+        ..._buildGroupHeader(label: 'Library Cards', isFruit: isFruit),
 
         // 3. List Sorting & Badges
         TvSwitchListTile(
@@ -399,9 +419,7 @@ class InterfaceSection extends StatelessWidget {
           },
           secondary: Icon(isFruit ? LucideIcons.hash : Icons.looks_one_rounded),
         ),
-        const SizedBox(height: 8),
-        const Divider(),
-        const SizedBox(height: 8),
+        ..._buildGroupHeader(label: 'Track List', isFruit: isFruit),
 
         // 4. Track List Options
         TvSwitchListTile(
@@ -468,43 +486,68 @@ class InterfaceSection extends StatelessWidget {
             isFruit ? LucideIcons.timerOff : Icons.timer_off_rounded,
           ),
         ),
-        const SizedBox(height: 8),
-        const Divider(),
-        const SizedBox(height: 8),
+        ..._buildGroupHeader(label: 'Navigation', isFruit: isFruit),
 
-        if (!context.read<DeviceService>().isTv)
-          SwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: Text(
-              'Enable Swipe to Block',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+        if (!isTv)
+          if (isFruit)
+            TvSwitchListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Enable Swipe to Block',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+                ),
+              ),
+              subtitle: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Allows swiping list items to block them',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                ),
+              ),
+              value: settingsProvider.enableSwipeToBlock,
+              onChanged: (value) {
+                AppHaptics.lightImpact(context.read<DeviceService>());
+                context.read<SettingsProvider>().toggleEnableSwipeToBlock();
+              },
+              secondary: const Icon(LucideIcons.moveHorizontal),
+            )
+          else
+            SwitchListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              title: Text(
+                'Enable Swipe to Block',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+              ),
+              subtitle: Text(
+                'Allows swiping list items to block them',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+              ),
+              value: settingsProvider.enableSwipeToBlock,
+              onChanged: (value) {
+                AppHaptics.lightImpact(context.read<DeviceService>());
+                context.read<SettingsProvider>().toggleEnableSwipeToBlock();
+              },
+              secondary: const Icon(Icons.swipe_rounded),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 4,
+              ),
             ),
-            subtitle: Text(
-              'Allows swiping list items to block them',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-            ),
-            value: settingsProvider.enableSwipeToBlock,
-            onChanged: (value) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context.read<SettingsProvider>().toggleEnableSwipeToBlock();
-            },
-            secondary: Icon(
-              isFruit ? LucideIcons.moveHorizontal : Icons.swipe_rounded,
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 4,
-            ),
-          ),
         if (isFruit) ...[
-          const SizedBox(height: 8),
-          const Divider(),
-          const SizedBox(height: 8),
           TvSwitchListTile(
             dense: true,
             visualDensity: VisualDensity.compact,

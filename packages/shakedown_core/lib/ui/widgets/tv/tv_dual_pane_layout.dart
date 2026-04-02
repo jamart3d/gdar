@@ -51,6 +51,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
     super.didChangeDependencies();
     if (_randomSubscription == null) {
       final audioProvider = context.read<AudioProvider>();
+      final showListProvider = context.read<ShowListProvider>();
       _randomSubscription = audioProvider.randomShowRequestStream.listen((
         event,
       ) {
@@ -63,7 +64,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
         }
 
         _isProcessingRandomRequest = true;
-        context.read<ShowListProvider>().setIsChoosingRandomShow(true);
+        showListProvider.setIsChoosingRandomShow(true);
 
         // Sequence:
         // 1. Show the "Picking Random Show..." UI / Dice Animation
@@ -126,9 +127,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                   // Add a small buffer to ensure playback has definitely started/stabilized
                   Future.delayed(const Duration(milliseconds: 500), () {
                     if (!mounted) return;
-                    context.read<ShowListProvider>().setIsChoosingRandomShow(
-                      false,
-                    );
+                    showListProvider.setIsChoosingRandomShow(false);
                     _isProcessingRandomRequest = false;
                   });
                 } else {

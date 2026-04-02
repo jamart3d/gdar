@@ -38,9 +38,15 @@ melos:
     analyze:
       description: Run fast workspace-wide analysis.
       run: melos exec --concurrency 2 -- dart analyze .
+    analyze_serial:
+      description: Run workspace analysis serially for Chromebook/Crostini or low-memory environments.
+      run: melos exec -c 1 -- dart analyze .
     test:
       description: Run tests in all packages/apps with concurrency.
       run: melos exec -c 2 --dir-exists=test --ignore="screensaver_tv" -- flutter test
+    test_serial:
+      description: Run tests serially for Chromebook/Crostini or low-memory environments.
+      run: melos exec -c 1 --dir-exists=test --ignore="screensaver_tv" -- flutter test
     fix:
       description: Apply automated fixes across the workspace.
       run: melos exec -c 2 -- dart fix --apply
@@ -56,5 +62,4 @@ melos:
 dependencies:
   logger: 2.7.0
   shared_preferences: 2.5.5
-
 

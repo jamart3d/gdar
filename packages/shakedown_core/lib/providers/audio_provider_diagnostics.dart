@@ -303,8 +303,8 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
     if (isH5B) return heartbeatActive ? 'H5B+' : 'H5B';
     if (isH5) return heartbeatActive ? 'H5+' : 'H5';
     if (isSTD) return 'STD';
-    // Context not yet populated — fall back to the resolved mode label.
-    return _shortMode(effectiveMode);
+    // Context not yet populated — show unknown rather than mirroring ENG.
+    return '--';
   }
 
   String _shortProcessing(ProcessingState? processing) {

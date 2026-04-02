@@ -155,7 +155,7 @@ void main() {
     expect(find.text('PF:'), findsOneWidget);
     expect(find.text('HS:'), findsOneWidget);
     expect(find.text('HAT:'), findsOneWidget);
-    expect(find.text('HPD'), findsOneWidget);
+    expect(find.text('HPD:'), findsNothing);
     expect(find.text('D:'), findsOneWidget);
     expect(find.text('TX:'), findsNothing);
     expect(find.text('LAT:'), findsNothing);

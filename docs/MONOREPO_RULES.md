@@ -16,10 +16,17 @@ CI predictable.
 - No `dependency_overrides` unless justified in a tracked issue.
 - Lint rules are centralized in the root `analysis_options.yaml`.
 - Each package/app should include the root lint config.
+- Architectural target and migration notes live in
+  `docs/MONOREPO_ARCHITECTURE_PLAN.md`.
 
 ## Melos Conventions
 - `melos` is the standard entry point for bootstrap, analyze, and test.
 - Shared scripts are configured in the root `pubspec.yaml` under the `melos` key.
+- On Chromebook/Crostini, do not assume the default workspace `-c 2`
+  concurrency is appropriate for manual validation runs.
+- For scorecard-quality reruns on Chromebook, prefer serial commands such as:
+  `dart run melos exec -c 1 -- dart analyze .`
+  `dart run melos exec -c 1 --dir-exists=test --ignore="screensaver_tv" -- flutter test`
 
 ## Dependency Hygiene
 - Run `flutter pub outdated` periodically and triage upgrades.
@@ -30,3 +37,5 @@ CI predictable.
   performance (avoid running Chrome inside Crostini).
 - Example (from `apps/gdar_web`):
   `flutter run -d web-server --web-port=8080 --web-hostname=0.0.0.0 --profile --no-pub -t lib/main.dart`
+- For manual workspace analyze/test reruns on Chromebook, prefer serial Melos
+  execution to reduce Flutter startup-lock contention and Crostini I/O noise.

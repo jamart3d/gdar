@@ -25,7 +25,6 @@ extension _DevAudioHudBuild on _DevAudioHudState {
           _appendSchSample(scheduleLeadSeconds);
           _appendDecSample(hud.lastDecodeMs);
           _appendBctSample(hud.lastConcatMs);
-          _appendHpdSample(hud.lastHandoffPollCount);
         }
 
         // Derive engine booleans for gated visibility
@@ -126,7 +125,6 @@ extension _DevAudioHudBuild on _DevAudioHudState {
                 if (showHybridControls) 'STB',
                 if (showNetControls) 'PF',
                 'AE',
-                'V',
                 'ST',
                 'PS',
                 'SHD',
@@ -377,18 +375,6 @@ extension _DevAudioHudBuild on _DevAudioHudState {
       );
     }
 
-    if (isHybrid) {
-      trendChips.add(
-        buildTrendChip(
-          _hpdHistory,
-          'HPD',
-          Colors.orangeAccent.withValues(alpha: 0.8),
-          alpha: 0.85,
-          currentValue: fields['HPD'],
-        ),
-      );
-    }
-
     for (final key in orderedKeys) {
       final value = fields[key];
       if (value == null) continue;
@@ -424,7 +410,6 @@ extension _DevAudioHudBuild on _DevAudioHudState {
           case 'PS':
             chipWidth = 54;
             break;
-          case 'V':
           case 'AE':
             chipWidth = 48;
             break;
@@ -537,8 +522,6 @@ extension _DevAudioHudBuild on _DevAudioHudState {
         if (drift.abs() > 0.1) {
           finalBaseTextColor = Colors.redAccent;
         }
-      } else if (key == 'V' && value.startsWith('HID')) {
-        finalBaseTextColor = Colors.lightBlueAccent;
       } else if (key == 'STB') {
         if (value == 'STB') finalBaseTextColor = Colors.green;
         if (value == 'BAL') finalBaseTextColor = Colors.lightBlueAccent;
@@ -811,13 +794,6 @@ extension _DevAudioHudBuild on _DevAudioHudState {
         value: value,
         isFruit: isFruit,
       );
-
-      if (key == 'V') {
-        chip = Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: chip,
-        );
-      }
 
       if (messagingKeys.contains(key)) {
         sigAndMsgChildren.add(chip);

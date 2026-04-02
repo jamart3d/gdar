@@ -147,7 +147,6 @@
     _currentIndex = startIndex != null ? startIndex : 0;
     _loadingState = 'idle';
     _playing = false;
-    _lastGapMs = null;
     _trackEndedAtMs = 0;
     _emitState();
   }

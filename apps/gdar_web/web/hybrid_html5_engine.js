@@ -282,7 +282,6 @@
 
         seek(to = 0) {
             _trackEndedAtMs = 0;
-            _lastGapMs = null;
             if (this.isUsingWebAudio) this.seekBufferSourceNode(to);
             else this.audio.currentTime = to;
             this.onProgress();
@@ -490,9 +489,11 @@
                 _log.log('[html5] Already at last track, skipping playNext');
                 return;
             }
+            const endedAt = _trackEndedAtMs; // preserve before seek() wipes it
             this.resetCurrentTrack();
             this.state.currentTrackIdx++;
             this.resetCurrentTrack();
+            _trackEndedAtMs = endedAt; // restore so play() can measure the gap
             this.play();
             if (this.props.onStartNewTrack) this.props.onStartNewTrack(this.currentTrack);
             if (this.props.onPlayNextTrack) this.props.onPlayNextTrack(this.currentTrack);

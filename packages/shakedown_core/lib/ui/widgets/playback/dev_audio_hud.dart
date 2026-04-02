@@ -60,7 +60,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
   final List<double> _schHistory = <double>[];
   final List<double> _decHistory = <double>[];
   final List<double> _bctHistory = <double>[];
-  final List<double> _hpdHistory = <double>[];
   bool _prevFetchInFlight = false;
   double? _lastAppendedNetMs;
   DateTime? _fetchInFlightSince;
