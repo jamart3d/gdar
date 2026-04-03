@@ -318,6 +318,16 @@ extension _TvScreensaverSectionAudioBuild on _TvScreensaverSectionState {
               isFruit: isFruit,
             ),
           ],
+          if (_enhancedCaptureStatusMessage(settings)
+              case final statusMessage?) ...[
+            const SizedBox(height: 8),
+            _ReactiveHint(
+              message: statusMessage,
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+              isFruit: isFruit,
+            ),
+          ],
         ],
       ),
     );

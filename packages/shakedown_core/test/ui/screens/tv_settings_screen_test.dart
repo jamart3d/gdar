@@ -6,6 +6,7 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
+import 'package:shakedown_core/ui/navigation/app_route_observer.dart';
 import 'package:shakedown_core/ui/screens/tv_settings_screen.dart';
 import 'package:shakedown_core/ui/screens/about_screen.dart';
 import 'package:shakedown_core/ui/widgets/settings/tv_screensaver_preview_panel.dart';
@@ -15,6 +16,7 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:shakedown_core/models/rating.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:shakedown_core/providers/update_provider.dart';
@@ -114,7 +116,10 @@ void main() {
           create: (_) => MockDeviceService()..isTv = true,
         ),
       ],
-      child: const MaterialApp(home: TvSettingsScreen()),
+      child: MaterialApp(
+        navigatorObservers: [shakedownRouteObserver],
+        home: const TvSettingsScreen(),
+      ),
     );
   }
 
@@ -225,6 +230,84 @@ void main() {
 
       // Verify Preview Panel is removed (and disposed)
       expect(find.byType(TvScreensaverPreviewPanel), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'Screensaver Preview Panel releases its reactor when another route covers settings',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1920, 1080);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final settingsProvider = SettingsProvider(prefs);
+      var initializeCount = 0;
+      var startCount = 0;
+      const visualizerChannel = MethodChannel('shakedown/visualizer');
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(visualizerChannel, (call) async {
+            switch (call.method) {
+              case 'isAvailable':
+                return true;
+              case 'initialize':
+                initializeCount++;
+                return true;
+              case 'start':
+                startCount++;
+                return true;
+              case 'stop':
+              case 'release':
+                return true;
+              case 'updateConfig':
+                return true;
+            }
+            return null;
+          });
+      addTearDown(() {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(visualizerChannel, null);
+      });
+
+      await tester.pumpWidget(createTestableWidget(settingsProvider));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final screensaverCategoryFinder = find.text('Screensaver');
+      final scrollable = find.byType(Scrollable).first;
+      await tester.scrollUntilVisible(
+        screensaverCategoryFinder,
+        50,
+        scrollable: scrollable,
+      );
+      await tester.tap(screensaverCategoryFinder);
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(TvScreensaverPreviewPanel), findsOneWidget);
+      expect(initializeCount, greaterThanOrEqualTo(1));
+      expect(startCount, greaterThanOrEqualTo(1));
+
+      final panelContext = tester.element(
+        find.byType(TvScreensaverPreviewPanel),
+      );
+      unawaited(
+        Navigator.of(panelContext).push(
+          MaterialPageRoute<void>(
+            builder: (_) => const Scaffold(body: Text('Covered')),
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Covered'), findsOneWidget);
+
+      Navigator.of(panelContext).pop();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.byType(TvScreensaverPreviewPanel), findsOneWidget);
+      expect(initializeCount, greaterThanOrEqualTo(2));
+      expect(startCount, greaterThanOrEqualTo(2));
     },
   );
 }

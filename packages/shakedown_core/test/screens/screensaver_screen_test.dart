@@ -346,6 +346,71 @@ void main() {
       },
     );
 
+    testWidgets('retries stereo capture request after a failed attempt', (
+      WidgetTester tester,
+    ) async {
+      final stereoSettings = FakeStereoScreensaverSettingsProvider(
+        graphMode: 'beat_debug',
+      )..isTv = true;
+      var stereoRequestCount = 0;
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(permissionChannel, (call) async {
+            switch (call.method) {
+              case 'checkPermissionStatus':
+                return 1; // granted
+              case 'requestPermissions':
+                return <int, int>{7: 1};
+            }
+            return null;
+          });
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(visualizerChannel, (call) async {
+            switch (call.method) {
+              case 'isAvailable':
+              case 'initialize':
+              case 'start':
+              case 'stop':
+              case 'release':
+              case 'updateConfig':
+                return true;
+            }
+            return null;
+          });
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(stereoChannel, (call) async {
+            if (call.method == 'requestCapture') {
+              stereoRequestCount++;
+              return false; // simulate denial / system unavailability
+            }
+            return true;
+          });
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<SettingsProvider>.value(
+              value: stereoSettings,
+            ),
+            ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
+            ChangeNotifierProvider<DeviceService>.value(value: deviceService),
+            Provider<WakelockService>.value(value: wakelockService),
+          ],
+          child: const MaterialApp(home: ScreensaverScreen()),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pump(const Duration(milliseconds: 600));
+
+      // A failed attempt resets _hasAttemptedStereoCapture, so subsequent
+      // builds re-request rather than being gated out permanently.
+      // The retry fires within the same pump cycle (build() calls
+      // _syncStereoCapture unawaited after each rebuild), so by the time
+      // the initial pumps settle we already have more than one attempt.
+      expect(stereoRequestCount, greaterThan(1));
+    });
+
     testWidgets(
       'interactive pcm mode can skip microphone prompt when visualizer starts without it',
       (WidgetTester tester) async {

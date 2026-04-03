@@ -1,3 +1,21 @@
+What's new in v1.3.55+265
+- Web UI / Fruit playback: fixed the floating now-playing inset so the track
+- Web UI / Fruit curation: rating stars now use fixed curation yellow
+- Web UI / Fruit RGB: active playback RGB borders now continue to work when
+- Web UI / Fruit playback player: the Fruit now-playing / player card now uses
+- Specs and regression tests were updated for the Fruit playback inset, rating
+- Monorepo docs: added a scorecard-derived todo list, refreshed the 2026-04-02
+- Validation: captured a fresh serial analyzer pass and standard web release
+- TV screensaver settings maintainability: split the large TV screensaver
+- Screensaver banner maintainability: split `StealBanner` into dedicated flat
+- TV screensaver PCM stereo capture (Android 14): fixed `MediaProjection`
+- TV screensaver PCM beat detection: reset `_hasAttemptedStereoCapture` on
+- TV screensaver PCM beat detection: increased consent dialog timeout from 10s
+- TV screensaver PCM beat detection: widened the PCM freshness window from
+- Tests: added `screensaver_screen_test` case verifying that a failed stereo
+
+---
+
 What's new in v1.3.54+264
 - Added `oilPreviewShowGraph` preference (`oil_preview_show_graph` key, default `false`) to `SettingsProvider` / `default_settings.dart` / `settings_provider_initialization.dart`.
 - New `_ToggleRow` in `TvScreensaverSection` (`_buildAudioGraphSection`) labelled **"Preview: Audio Graph"** — hidden when audio graph mode is `off`.

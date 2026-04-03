@@ -16,6 +16,7 @@ import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/song_structure_hint_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
+import 'package:shakedown_core/utils/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 /// Screensaver screen displaying the Steal Your Face visualizer.
@@ -162,7 +163,20 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   Future<void> _syncStereoCapture(SettingsProvider settings) async {
     final wantsStereoCapture = _wantsStereoCapture(settings);
 
+    logger.i(
+      'Screensaver: syncStereoCapture '
+      '(wants=$wantsStereoCapture, '
+      'allowPermissionPrompts=${widget.allowPermissionPrompts}, '
+      'audioReactivity=${settings.oilEnableAudioReactivity}, '
+      'beatDetectorMode=${settings.oilBeatDetectorMode}, '
+      'audioGraphMode=${settings.oilAudioGraphMode}, '
+      'isStereoCaptureActive=$_isStereoCaptureActive, '
+      'isStereoCapturePending=$_isStereoCapturePending, '
+      'hasAttemptedStereoCapture=$_hasAttemptedStereoCapture)',
+    );
+
     if (!wantsStereoCapture) {
+      logger.i('Screensaver: stereo capture not wanted, stopping/resetting');
       await _stopStereoCapture(resetAttempt: true);
       return;
     }
@@ -170,11 +184,17 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     if (_isStereoCaptureActive ||
         _isStereoCapturePending ||
         _hasAttemptedStereoCapture) {
+      logger.i(
+        'Screensaver: stereo capture request skipped '
+        '(active=$_isStereoCaptureActive, '
+        'pending=$_isStereoCapturePending, '
+        'attempted=$_hasAttemptedStereoCapture)',
+      );
       return;
     }
 
     if (!widget.allowPermissionPrompts) {
-      debugPrint(
+      logger.i(
         'Screensaver: Skipping enhanced capture request during '
         'non-interactive launch.',
       );
@@ -183,10 +203,25 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
     _isStereoCapturePending = true;
     _hasAttemptedStereoCapture = true;
+    logger.i('Screensaver: requesting stereo capture permission');
     final started = await _runPermissionFlow(
-      VisualizerAudioReactor.requestStereoCapture,
+      () => VisualizerAudioReactor.requestStereoCapture().timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          logger.w('Screensaver: stereo capture request timed out');
+          return false;
+        },
+      ),
     );
     _isStereoCapturePending = false;
+    logger.i(
+      'Screensaver: stereo capture request completed (started=$started)',
+    );
+
+    // Allow retry on failure so the user can try again without switching modes.
+    if (!started) {
+      _hasAttemptedStereoCapture = false;
+    }
 
     if (!mounted) {
       if (started) {
@@ -249,18 +284,26 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     required int? audioSessionId,
     required bool isTv,
   }) async {
+    logger.i(
+      'Screensaver: creating audio reactor '
+      '(audioSessionId=$audioSessionId, isTv=$isTv)',
+    );
     final reactor = await AudioReactorFactory.create(
       audioSessionId: audioSessionId,
       isTv: isTv,
     );
     if (reactor == null) {
+      logger.w('Screensaver: audio reactor factory returned null');
       return null;
     }
+    logger.i('Screensaver: audio reactor created (${reactor.runtimeType})');
     final started = await reactor.start();
     if (!started) {
+      logger.w('Screensaver: audio reactor failed to start');
       reactor.dispose();
       return null;
     }
+    logger.i('Screensaver: audio reactor started (${reactor.runtimeType})');
     return reactor;
   }
 
@@ -429,6 +472,10 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
         audioSessionId: sessionId,
         isTv: deviceService.isTv,
       );
+      logger.i(
+        'Screensaver: createStartedAudioReactor returned '
+        '${reactor?.runtimeType ?? 'null'}',
+      );
 
       if (reactor == null &&
           defaultTargetPlatform == TargetPlatform.android &&
@@ -469,10 +516,14 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
         return;
       }
 
+      logger.i('Screensaver: storing audio reactor (${reactor.runtimeType})');
       setState(() => _audioReactor = reactor);
       if (reactor is VisualizerAudioReactor) {
+        logger.i('Screensaver: pushing audio config to VisualizerAudioReactor');
         _pushAudioConfig(settings);
+        logger.i('Screensaver: calling _syncStereoCapture');
         await _syncStereoCapture(settings);
+        logger.i('Screensaver: _syncStereoCapture completed');
       }
     } finally {
       _isInitializingAudioReactor = false;

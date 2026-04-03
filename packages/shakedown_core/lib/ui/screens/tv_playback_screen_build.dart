@@ -584,7 +584,7 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                         onWrapAround: _focusTrack,
                       ),
                     ),
-                    if (context.watch<DeviceService>().isTv)
+                    if (isTv && !settingsProvider.hideTvScrollbars)
                       TvScrollbar(
                         itemPositionsListener: _itemPositionsListener,
                         itemScrollController: _itemScrollController,

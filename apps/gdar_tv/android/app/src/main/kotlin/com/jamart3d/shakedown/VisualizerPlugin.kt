@@ -157,7 +157,11 @@ class VisualizerPlugin(
                 val audioSessionId = call.argument<Int>("audioSessionId") ?: 0
                 result.success(initialize(audioSessionId))
             }
-            "start" -> { start(); result.success(true) }
+            "start" -> {
+                Log.i(TAG, "MethodChannel start received")
+                start()
+                result.success(true)
+            }
             "stop" -> { stop(); result.success(true) }
             "release" -> { release(); result.success(true) }
             "updateConfig" -> {
@@ -174,10 +178,12 @@ class VisualizerPlugin(
     }
 
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+        Log.i(TAG, "EventChannel onListen")
         eventSink = events
     }
 
     override fun onCancel(arguments: Any?) {
+        Log.i(TAG, "EventChannel onCancel")
         eventSink = null
     }
 
@@ -577,7 +583,7 @@ class VisualizerPlugin(
             }
         val pcmFresh =
             stereoCapture.lastAnalysisMs > 0L &&
-            (nowMs - stereoCapture.lastAnalysisMs) <= 250L
+            (nowMs - stereoCapture.lastAnalysisMs) <= 500L
         val hasStereoPcm =
             stereoCapture.isActive &&
             pcmWaveformL.isNotEmpty() &&

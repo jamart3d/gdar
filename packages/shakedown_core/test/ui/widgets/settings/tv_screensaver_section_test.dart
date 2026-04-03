@@ -215,7 +215,15 @@ void main() {
     );
 
     testWidgets('pcm mode shows enhanced audio capture hint', (tester) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(stereoChannel, (call) async {
+            if (call.method == 'getCaptureStatus') {
+              return {'active': false, 'pending': false};
+            }
+            return null;
+          });
       await tester.pumpWidget(_buildSection('off', beatDetectorMode: 'pcm'));
+      await tester.pump();
       expect(find.text('Enhanced'), findsOneWidget);
       expect(
         find.textContaining('Android system audio capture for cleaner onset'),
@@ -223,6 +231,46 @@ void main() {
       );
       expect(
         find.textContaining('Enhanced Audio Capture uses Android system audio'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('pcm mode shows active enhanced capture status', (
+      tester,
+    ) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(stereoChannel, (call) async {
+            if (call.method == 'getCaptureStatus') {
+              return {'active': true, 'pending': false};
+            }
+            return null;
+          });
+
+      await tester.pumpWidget(_buildSection('off', beatDetectorMode: 'pcm'));
+      await tester.pump();
+
+      expect(
+        find.textContaining('Enhanced capture status: Active'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('pcm mode shows pending enhanced capture status', (
+      tester,
+    ) async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(stereoChannel, (call) async {
+            if (call.method == 'getCaptureStatus') {
+              return {'active': false, 'pending': true};
+            }
+            return null;
+          });
+
+      await tester.pumpWidget(_buildSection('off', beatDetectorMode: 'pcm'));
+      await tester.pump();
+
+      expect(
+        find.textContaining('Enhanced capture status: Pending'),
         findsOneWidget,
       );
     });

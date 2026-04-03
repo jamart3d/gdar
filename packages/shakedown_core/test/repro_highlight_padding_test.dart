@@ -110,4 +110,53 @@ void main() {
       expect(size.height, childSize + 2 * borderWidth);
     },
   );
+
+  testWidgets(
+    'AnimatedGradientBorder clamps radii for compact TV highlight layouts',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          const Center(
+            child: AnimatedGradientBorder(
+              borderRadius: 28.0,
+              borderWidth: 4.0,
+              showGlow: true,
+              showShadow: true,
+              usePadding: false,
+              child: SizedBox(width: 225.1, height: 82.0),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'AnimatedGradientBorder clamps default radius on compact controls',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          const Center(
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: AnimatedGradientBorder(
+                showGlow: true,
+                showShadow: true,
+                child: SizedBox.expand(),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

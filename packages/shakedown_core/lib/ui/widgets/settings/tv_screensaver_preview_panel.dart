@@ -7,6 +7,8 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/steal_screensaver/steal_config.dart';
 import 'package:shakedown_core/steal_screensaver/steal_visualizer.dart';
+import 'package:shakedown_core/ui/navigation/app_route_observer.dart';
+import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/visualizer/audio_reactor.dart';
 import 'package:shakedown_core/visualizer/audio_reactor_factory.dart';
 import 'package:shakedown_core/visualizer/visualizer_audio_reactor.dart';
@@ -19,9 +21,13 @@ class TvScreensaverPreviewPanel extends StatefulWidget {
       _TvScreensaverPreviewPanelState();
 }
 
-class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel> {
+class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel>
+    with RouteAware {
   AudioReactor? _previewReactor;
   int? _previewAudioSessionId;
+  ModalRoute<dynamic>? _route;
+  bool _isRouteCurrent = true;
+  bool _isInitializingPreviewReactor = false;
 
   @override
   void initState() {
@@ -29,53 +35,119 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel> {
     Future.microtask(_initPreviewReactor);
   }
 
-  Future<void> _initPreviewReactor() async {
-    if (!mounted) return;
-    final settings = Provider.of<SettingsProvider>(context, listen: false);
-    if (kIsWeb) return;
-
-    final deviceService = Provider.of<DeviceService>(context, listen: false);
-    int? sessionId;
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      final audioProvider = Provider.of<AudioProvider>(context, listen: false);
-      sessionId = audioProvider.audioPlayer.androidAudioSessionId;
-      _previewAudioSessionId = sessionId;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (_route == route) {
+      return;
     }
-
-    final reactor = await AudioReactorFactory.create(
-      audioSessionId: sessionId,
-      isTv: deviceService.isTv,
-    );
-
-    if (reactor != null) {
-      if (!mounted) {
-        reactor.dispose();
-        return;
-      }
-      final started = await reactor.start();
-      if (!started) {
-        reactor.dispose();
-      } else if (mounted) {
-        setState(() => _previewReactor = reactor);
-        if (reactor is VisualizerAudioReactor) {
-          reactor.updateConfig(
-            peakDecay: settings.oilAudioPeakDecay,
-            bassBoost: settings.oilAudioBassBoost,
-            reactivityStrength: settings.oilAudioReactivityStrength,
-            beatDetectorMode: settings.oilBeatDetectorMode,
-            beatSensitivity: settings.oilBeatSensitivity,
-          );
-        }
-      } else {
-        reactor.dispose();
+    if (_route != null) {
+      shakedownRouteObserver.unsubscribe(this);
+    }
+    _route = route;
+    if (route != null) {
+      shakedownRouteObserver.subscribe(this, route);
+      _isRouteCurrent = route.isCurrent;
+      if (!_isRouteCurrent) {
+        unawaited(_disposePreviewReactor());
       }
     }
   }
 
+  Future<void> _initPreviewReactor() async {
+    if (_isInitializingPreviewReactor || _previewReactor != null) return;
+    if (!mounted) return;
+    if (!_isRouteCurrent) return;
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    if (kIsWeb) return;
+
+    _isInitializingPreviewReactor = true;
+    try {
+      final deviceService = Provider.of<DeviceService>(context, listen: false);
+      int? sessionId;
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        final audioProvider = Provider.of<AudioProvider>(
+          context,
+          listen: false,
+        );
+        sessionId = audioProvider.audioPlayer.androidAudioSessionId;
+        _previewAudioSessionId = sessionId;
+      }
+
+      final reactor = await AudioReactorFactory.create(
+        audioSessionId: sessionId,
+        isTv: deviceService.isTv,
+      );
+
+      if (reactor != null) {
+        if (!mounted || !_isRouteCurrent) {
+          reactor.dispose();
+          return;
+        }
+        final started = await reactor.start();
+        if (!started) {
+          reactor.dispose();
+        } else if (mounted && _isRouteCurrent) {
+          setState(() => _previewReactor = reactor);
+          if (reactor is VisualizerAudioReactor) {
+            reactor.updateConfig(
+              peakDecay: settings.oilAudioPeakDecay,
+              bassBoost: settings.oilAudioBassBoost,
+              reactivityStrength: settings.oilAudioReactivityStrength,
+              beatDetectorMode: settings.oilBeatDetectorMode,
+              beatSensitivity: settings.oilBeatSensitivity,
+            );
+          }
+        } else {
+          reactor.dispose();
+        }
+      }
+    } finally {
+      _isInitializingPreviewReactor = false;
+    }
+  }
+
+  Future<void> _disposePreviewReactor() async {
+    final reactor = _previewReactor;
+    if (reactor == null) return;
+    _previewReactor = null;
+    logger.i('TvScreensaverPreviewPanel: disposing preview reactor');
+    if (reactor is VisualizerAudioReactor) {
+      await reactor.stop();
+    } else {
+      reactor.stop();
+    }
+    reactor.dispose();
+  }
+
+  @override
+  void didPush() {
+    _isRouteCurrent = true;
+  }
+
+  @override
+  void didPopNext() {
+    _isRouteCurrent = true;
+    Future.microtask(_initPreviewReactor);
+  }
+
+  @override
+  void didPushNext() {
+    _isRouteCurrent = false;
+    unawaited(_disposePreviewReactor());
+  }
+
+  @override
+  void didPop() {
+    _isRouteCurrent = false;
+    unawaited(_disposePreviewReactor());
+  }
+
   @override
   void dispose() {
-    _previewReactor?.dispose();
-    _previewReactor = null;
+    shakedownRouteObserver.unsubscribe(this);
+    unawaited(_disposePreviewReactor());
     super.dispose();
   }
 

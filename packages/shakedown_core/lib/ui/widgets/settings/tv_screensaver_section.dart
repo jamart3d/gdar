@@ -56,10 +56,21 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
   final FocusNode _lastFocusNode = FocusNode();
   int _wrapKey = 0;
   bool _isEnhancedCaptureRequestPending = false;
+  bool _didEnhancedCaptureRequestFail = false;
+  bool _isRefreshingEnhancedCaptureStatus = false;
+  StereoCaptureStatus _enhancedCaptureStatus = const StereoCaptureStatus();
+  Timer? _enhancedCaptureStatusTimer;
 
   @override
   void initState() {
     super.initState();
+    if (_supportsEnhancedCapture()) {
+      Future.microtask(_refreshEnhancedCaptureStatus);
+      _enhancedCaptureStatusTimer = Timer.periodic(
+        const Duration(seconds: 1),
+        (_) => _refreshEnhancedCaptureStatus(),
+      );
+    }
   }
 
   bool _supportsEnhancedCapture() {
@@ -84,6 +95,8 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
     if (!_wantsEnhancedCapture(settings)) {
       await VisualizerAudioReactor.stopStereoCapture();
+      _didEnhancedCaptureRequestFail = false;
+      await _refreshEnhancedCaptureStatus();
       return;
     }
 
@@ -92,16 +105,85 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
     }
 
     _isEnhancedCaptureRequestPending = true;
+    if (mounted) {
+      setState(() {});
+    }
     try {
       final started = await VisualizerAudioReactor.requestStereoCapture();
+      _didEnhancedCaptureRequestFail = !started;
       if (!started) {
         debugPrint(
           'TV Settings: Enhanced audio capture unavailable or permission denied.',
         );
       }
+      await _refreshEnhancedCaptureStatus();
     } finally {
       _isEnhancedCaptureRequestPending = false;
+      if (mounted) {
+        setState(() {});
+      }
     }
+  }
+
+  Future<void> _refreshEnhancedCaptureStatus() async {
+    if (!_supportsEnhancedCapture() || _isRefreshingEnhancedCaptureStatus) {
+      return;
+    }
+    _isRefreshingEnhancedCaptureStatus = true;
+    try {
+      final status = await VisualizerAudioReactor.getStereoCaptureStatus();
+      if (!mounted) return;
+      final shouldClearFailure = status.isActive || status.isPending;
+      if (_enhancedCaptureStatus.isActive != status.isActive ||
+          _enhancedCaptureStatus.isPending != status.isPending ||
+          (shouldClearFailure && _didEnhancedCaptureRequestFail)) {
+        setState(() {
+          _enhancedCaptureStatus = status;
+          if (shouldClearFailure) {
+            _didEnhancedCaptureRequestFail = false;
+          }
+        });
+      } else {
+        _enhancedCaptureStatus = status;
+      }
+    } finally {
+      _isRefreshingEnhancedCaptureStatus = false;
+    }
+  }
+
+  String? _enhancedCaptureStatusMessage(SettingsProvider settings) {
+    if (!_supportsEnhancedCapture() || !settings.oilEnableAudioReactivity) {
+      return null;
+    }
+
+    if (settings.oilBeatDetectorMode != 'pcm' &&
+        _enhancedCaptureStatus.isInactive &&
+        !_didEnhancedCaptureRequestFail &&
+        !_isEnhancedCaptureRequestPending) {
+      return null;
+    }
+
+    if (_isEnhancedCaptureRequestPending || _enhancedCaptureStatus.isPending) {
+      return 'Enhanced capture status: Pending. Waiting for the Android '
+          'system audio-capture prompt to complete.';
+    }
+
+    if (_enhancedCaptureStatus.isActive) {
+      return 'Enhanced capture status: Active. PCM/stereo capture is live for '
+          'this app session.';
+    }
+
+    if (_didEnhancedCaptureRequestFail) {
+      return 'Enhanced capture status: Failed. Try Enhanced again and accept '
+          'the Android prompt if it appears.';
+    }
+
+    if (settings.oilBeatDetectorMode == 'pcm') {
+      return 'Enhanced capture status: Inactive. Select Enhanced and approve '
+          'the Android system prompt to enable PCM.';
+    }
+
+    return null;
   }
 
   Future<void> _handleAudioReactivityToggle(SettingsProvider settings) async {
@@ -122,6 +204,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
 
   @override
   void dispose() {
+    _enhancedCaptureStatusTimer?.cancel();
     _firstFocusNode.dispose();
     _lastFocusNode.dispose();
     super.dispose();

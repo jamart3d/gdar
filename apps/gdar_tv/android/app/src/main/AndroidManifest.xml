@@ -56,6 +56,12 @@
                 <data android:scheme="shakedown" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".StereoCapturePermissionActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

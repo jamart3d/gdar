@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
@@ -188,58 +190,82 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
         final double spreadPadding = (isEffectActive && effectiveShowGlow)
             ? (widget.glowSpread ?? (widget.backlightMode ? 14.0 : 18.0))
             : 0.0;
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final effectiveBorderRadius = _effectiveBorderRadius(constraints);
 
-        final innerContent = widget.usePadding
-            ? Padding(
-                padding: EdgeInsets.all(
-                  isEffectActive ? widget.borderWidth : 0.0,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: widget.backlightMode
-                        ? Colors.transparent
-                        : (widget.backgroundColor ??
-                              Theme.of(context).cardColor),
-                    borderRadius: BorderRadius.circular(widget.borderRadius),
-                  ),
-                  child: child,
-                ),
-              )
-            : child!;
+            final innerContent = widget.usePadding
+                ? Padding(
+                    padding: EdgeInsets.all(
+                      isEffectActive ? widget.borderWidth : 0.0,
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: widget.backlightMode
+                            ? Colors.transparent
+                            : (widget.backgroundColor ??
+                                  Theme.of(context).cardColor),
+                        borderRadius: BorderRadius.circular(
+                          effectiveBorderRadius,
+                        ),
+                      ),
+                      child: child,
+                    ),
+                  )
+                : child!;
 
-        return Stack(
-          clipBehavior: Clip.none,
-          alignment: widget.alignment,
-          children: [
-            Positioned(
-              left: -spreadPadding,
-              top: -spreadPadding,
-              right: -spreadPadding,
-              bottom: -spreadPadding,
-              child: RepaintBoundary(
-                child: CustomPaint(
-                  painter: _GradientBorderPainter(
-                    colors: colors,
-                    borderRadius: widget.borderRadius,
-                    borderWidth: isEffectActive ? widget.borderWidth : 0.0,
-                    rotation: animation.value * 2 * 3.14159,
-                    showShadow: isEffectActive && !disableGlow
-                        ? effectiveShowShadow
-                        : false,
-                    glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
-                    glowBlur:
-                        widget.glowBlur ?? (widget.backlightMode ? 10.0 : 12.0),
-                    spreadPadding: spreadPadding,
-                    backlightMode: widget.backlightMode,
+            return Stack(
+              clipBehavior: Clip.none,
+              alignment: widget.alignment,
+              children: [
+                Positioned(
+                  left: -spreadPadding,
+                  top: -spreadPadding,
+                  right: -spreadPadding,
+                  bottom: -spreadPadding,
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      painter: _GradientBorderPainter(
+                        colors: colors,
+                        borderRadius: effectiveBorderRadius,
+                        borderWidth: isEffectActive ? widget.borderWidth : 0.0,
+                        rotation: animation.value * 2 * 3.14159,
+                        showShadow: isEffectActive && !disableGlow
+                            ? effectiveShowShadow
+                            : false,
+                        glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
+                        glowBlur:
+                            widget.glowBlur ??
+                            (widget.backlightMode ? 10.0 : 12.0),
+                        spreadPadding: spreadPadding,
+                        backlightMode: widget.backlightMode,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            innerContent,
-          ],
+                innerContent,
+              ],
+            );
+          },
         );
       },
     );
+  }
+
+  double _effectiveBorderRadius(BoxConstraints constraints) {
+    final finiteExtents = <double>[
+      if (constraints.hasBoundedWidth && constraints.maxWidth > 0)
+        constraints.maxWidth,
+      if (constraints.hasBoundedHeight && constraints.maxHeight > 0)
+        constraints.maxHeight,
+    ];
+
+    if (finiteExtents.isEmpty) {
+      return widget.borderRadius;
+    }
+
+    final limit = finiteExtents.reduce(math.min) / 2;
+    return math.max(0.0, math.min(widget.borderRadius, limit));
   }
 }
 
@@ -266,6 +292,19 @@ class _GradientBorderPainter extends CustomPainter {
     this.backlightMode = false,
   });
 
+  RRect? _safeRRect(Rect rect, double radius) {
+    if (rect.width <= 0 || rect.height <= 0) {
+      return null;
+    }
+
+    final effectiveRadius = math.max(
+      0.0,
+      math.min(radius, math.min(rect.width, rect.height) / 2),
+    );
+
+    return RRect.fromRectAndRadius(rect, Radius.circular(effectiveRadius));
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     if (borderWidth <= 0 && !showShadow) return;
@@ -276,6 +315,10 @@ class _GradientBorderPainter extends CustomPainter {
       size.width - spreadPadding * 2,
       size.height - spreadPadding * 2,
     );
+
+    if (rect.width <= 0 || rect.height <= 0) {
+      return;
+    }
 
     // 1. Draw RGB Shadow
     if (showShadow) {
@@ -296,12 +339,14 @@ class _GradientBorderPainter extends CustomPainter {
 
       // We draw the shadow slightly larger to ensure it peeks out
       final double shadowInflation = backlightMode ? -4.0 : 2.0;
-      final shadowRRect = RRect.fromRectAndRadius(
+      final shadowRRect = _safeRRect(
         rect.inflate(shadowInflation),
-        Radius.circular(borderRadius + shadowInflation),
+        borderRadius + shadowInflation,
       );
 
-      canvas.drawRRect(shadowRRect, shadowPaint);
+      if (shadowRRect != null) {
+        canvas.drawRRect(shadowRRect, shadowPaint);
+      }
     }
 
     if (borderWidth <= 0) return;
@@ -317,12 +362,11 @@ class _GradientBorderPainter extends CustomPainter {
 
     // Deflate the rect by half the border width so the stroke sits inside the bounds
     final strokeRect = rect.deflate(borderWidth / 2);
-    final strokeRRect = RRect.fromRectAndRadius(
-      strokeRect,
-      Radius.circular(borderRadius - borderWidth / 2),
-    );
+    final strokeRRect = _safeRRect(strokeRect, borderRadius - borderWidth / 2);
 
-    canvas.drawRRect(strokeRRect, borderPaint);
+    if (strokeRRect != null) {
+      canvas.drawRRect(strokeRRect, borderPaint);
+    }
   }
 
   @override

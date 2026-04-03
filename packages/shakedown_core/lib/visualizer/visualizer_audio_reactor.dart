@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:shakedown_core/visualizer/audio_reactor.dart';
+import 'package:shakedown_core/utils/logger.dart';
 
 /// Android Visualizer API-based audio reactor.
 ///
@@ -34,22 +35,31 @@ class VisualizerAudioReactor implements AudioReactor {
     if (_isRunning || _isDisposed) return _isRunning;
 
     try {
+      logger.i(
+        'VisualizerAudioReactor: start() begin '
+        '(audioSessionId=${audioSessionId ?? 0})',
+      );
       final result = await _methodChannel.invokeMethod('initialize', {
         'audioSessionId': audioSessionId ?? 0,
       });
+      logger.i('VisualizerAudioReactor: initialize returned $result');
 
       if (result == true) {
         _isRunning = true;
 
+        logger.i('VisualizerAudioReactor: subscribing to event channel');
         _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
           _handleVisualizerData,
           onError: _handleError,
         );
 
+        logger.i('VisualizerAudioReactor: invoking native start()');
         await _methodChannel.invokeMethod('start');
+        logger.i('VisualizerAudioReactor: native start() returned');
         return true;
       }
     } catch (e) {
+      logger.w('VisualizerAudioReactor: start() threw $e');
       _safeAdd(const AudioEnergy.zero());
     }
     return false;
@@ -297,11 +307,31 @@ class VisualizerAudioReactor implements AudioReactor {
   /// Falls back gracefully: waveformL/R stay empty and VU uses FFT bands.
   static Future<bool> requestStereoCapture() async {
     try {
+      logger.i('VisualizerAudioReactor: invoking stereo requestCapture');
       final result = await _stereoChannel.invokeMethod<bool>('requestCapture');
+      logger.i(
+        'VisualizerAudioReactor: stereo requestCapture returned '
+        '${result ?? false}',
+      );
       return result ?? false;
-    } catch (_) {
+    } catch (error) {
+      logger.w('VisualizerAudioReactor: stereo requestCapture threw $error');
       return false;
     }
+  }
+
+  static Future<StereoCaptureStatus> getStereoCaptureStatus() async {
+    try {
+      final result = await _stereoChannel.invokeMethod<Object?>(
+        'getCaptureStatus',
+      );
+      if (result is Map) {
+        final active = result['active'] == true;
+        final pending = result['pending'] == true;
+        return StereoCaptureStatus(isActive: active, isPending: pending);
+      }
+    } catch (_) {}
+    return const StereoCaptureStatus();
   }
 
   /// Stop AudioPlaybackCapture. Waveform L/R return to empty.
@@ -319,4 +349,13 @@ class VisualizerAudioReactor implements AudioReactor {
       return false;
     }
   }
+}
+
+class StereoCaptureStatus {
+  final bool isActive;
+  final bool isPending;
+
+  const StereoCaptureStatus({this.isActive = false, this.isPending = false});
+
+  bool get isInactive => !isActive && !isPending;
 }

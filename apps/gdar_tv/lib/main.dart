@@ -15,6 +15,7 @@ import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/services/inactivity_service.dart';
 import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
+import 'package:shakedown_core/ui/navigation/app_route_observer.dart';
 import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
@@ -173,7 +174,19 @@ class _GdarTvAppState extends State<GdarTvApp> {
       return;
     }
 
-    logger.i('Launching screensaver from $source');
+    final settings = _settingsProvider;
+    final enhancedEligible =
+        settings.oilEnableAudioReactivity &&
+        settings.oilBeatDetectorMode == 'pcm';
+    logger.i(
+      'Launching screensaver from $source '
+      '(allowPermissionPrompts=$allowPermissionPrompts, '
+      'audioReactivity=${settings.oilEnableAudioReactivity}, '
+      'beatDetectorMode=${settings.oilBeatDetectorMode}, '
+      'audioGraphMode=${settings.oilAudioGraphMode}, '
+      'enhancedEligible=$enhancedEligible, '
+      'useOilScreensaver=${settings.useOilScreensaver})',
+    );
     _inactivityService.stop();
     _setScreensaverActive(true);
     try {
@@ -355,7 +368,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: MaterialApp(
               navigatorKey: _navigatorKey,
-              navigatorObservers: [_navigationObserver],
+              navigatorObservers: [_navigationObserver, shakedownRouteObserver],
               title: 'GDAR TV',
               debugShowCheckedModeBanner: false,
               theme: theme,
