@@ -150,7 +150,7 @@ currently Web Audio:
 | `BUF` | Current-track buffered amount |
 | `NX` | Next-track buffered amount |
 | `LG` | Last measured track gap |
-| `BGT` | Total hidden-tab time this session |
+| `BGT` | Current hidden duration while audio is playing |
 | `D` | Runtime profile: `L`, `P`, `D`, `W` |
 
 ### WA Telemetry
@@ -200,6 +200,7 @@ The HUD hides or dims chips when their source data is not meaningful.
 - Shows hybrid controls and counters
 - Shows `NET`
 - Shows WA-only telemetry only when the active sub-engine is WA
+- Hides `HS` and `HAT` when `HF` is `OFF`
 - Keeps `HPD` visible as a hybrid-only sparkline
 
 ## 5. Worker Tick System (WTC)

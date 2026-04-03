@@ -1,6 +1,41 @@
 part of 'playback_screen.dart';
 
 extension _PlaybackScreenFruitBuild on PlaybackScreenState {
+  void _scheduleFruitFloatingNowPlayingMeasurement() {
+    if (_fruitFloatingNowPlayingMeasurementQueued) {
+      return;
+    }
+    _fruitFloatingNowPlayingMeasurementQueued = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fruitFloatingNowPlayingMeasurementQueued = false;
+      if (!mounted) return;
+      final RenderBox? box =
+          _fruitFloatingNowPlayingKey.currentContext?.findRenderObject()
+              as RenderBox?;
+      final double measuredHeight = box?.size.height ?? 0.0;
+      if ((measuredHeight - _fruitFloatingNowPlayingHeight).abs() < 1.0) {
+        return;
+      }
+      _updateFruitFloatingNowPlayingHeight(measuredHeight);
+    });
+  }
+
+  double _resolveFruitTrackListBottomOffset({
+    required BuildContext context,
+    required AudioProvider audioProvider,
+    required SettingsProvider settingsProvider,
+    required double scaleFactor,
+  }) {
+    return computeFruitFloatingNowPlayingBottomOffset(
+      stickyNowPlaying: settingsProvider.fruitStickyNowPlaying,
+      hasCurrentTrack: audioProvider.currentTrack != null,
+      showCompactHud: kIsWeb && settingsProvider.showDevAudioHud,
+      scaleFactor: scaleFactor,
+      bottomSafeArea: MediaQuery.paddingOf(context).bottom,
+      measuredCardHeight: _fruitFloatingNowPlayingHeight,
+    );
+  }
+
   Widget _buildFruitTopBar(BuildContext context, double scaleFactor) {
     final audioProvider = context.watch<AudioProvider>();
     final settingsProvider = context.watch<SettingsProvider>();
@@ -363,6 +398,18 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
     required double scaleFactor,
     required SettingsProvider settingsProvider,
   }) {
+    final double trackListBottomOffset = _resolveFruitTrackListBottomOffset(
+      context: context,
+      audioProvider: audioProvider,
+      settingsProvider: settingsProvider,
+      scaleFactor: scaleFactor,
+    );
+
+    if (!settingsProvider.fruitStickyNowPlaying &&
+        audioProvider.currentTrack != null) {
+      _scheduleFruitFloatingNowPlayingMeasurement();
+    }
+
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Stack(
@@ -371,9 +418,7 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
             trackShow: currentShow,
             scaleFactor: scaleFactor,
             topOffset: immersiveTopPadding,
-            bottomOffset: settingsProvider.fruitStickyNowPlaying
-                ? 0
-                : 75.0 * scaleFactor + MediaQuery.paddingOf(context).bottom,
+            bottomOffset: trackListBottomOffset,
           ),
           if (!settingsProvider.fruitStickyNowPlaying &&
               audioProvider.currentTrack != null)
@@ -381,12 +426,15 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
               left: 16 * scaleFactor,
               right: 16 * scaleFactor,
               bottom: 5.0 * scaleFactor + MediaQuery.paddingOf(context).bottom,
-              child: FruitNowPlayingCard(
-                trackShow: currentShow,
-                track: audioProvider.currentTrack!,
-                index: (audioProvider.audioPlayer.currentIndex ?? 0) + 1,
-                scaleFactor: scaleFactor,
-                showNext: false,
+              child: SizedBox(
+                key: _fruitFloatingNowPlayingKey,
+                child: FruitNowPlayingCard(
+                  trackShow: currentShow,
+                  track: audioProvider.currentTrack!,
+                  index: (audioProvider.audioPlayer.currentIndex ?? 0) + 1,
+                  scaleFactor: scaleFactor,
+                  showNext: false,
+                ),
               ),
             ),
           Positioned(

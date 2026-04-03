@@ -50,7 +50,14 @@ On the Web UI, the Track List Screen's show header provides rapid playback inter
 
 ### 4.3 Rating & Curation
 *   **Visual Logic:** Shared with TV but uses `LucideIcons` for Fruit.
+*   **Fruit Color Override:** Fruit rating stars always render in fixed curation yellow (`#FFC107`) and do not inherit the current Fruit palette primary.
 *   **Constraints:** The block (Red Star) is always visible in the show list to allow rapid curation during browsing.
+
+### 4.4 Fruit Active RGB Contract
+*   In Fruit, active playback RGB borders remain available even when Liquid Glass is disabled.
+*   In Fruit, active playback RGB borders remain available even when Simple Theme / `performanceMode` is enabled.
+*   Simple Theme may reduce RGB halo or shadow, but must not suppress the animated active border itself.
+*   The Fruit playback player / now-playing card joins this contract and uses the animated RGB border when the RGB setting is enabled.
 
 ## 5. Experimental: Visualizers & Shaders
 The Web platform serves as the testbed for GPU-accelerated UI experiments.
@@ -59,7 +66,5 @@ The Web platform serves as the testbed for GPU-accelerated UI experiments.
 *   **Energy Stream:** Real-time analysis from the audio engine drives UI pulse and glow intensities.
 
 ---
-*Version: 1.0*  
-*Last Updated: 2026-03-02*
-
-
+*Version: 1.2*  
+*Last Updated: 2026-04-02*

@@ -18,6 +18,9 @@ import 'dart:async';
 part 'tv_screensaver_section_build.dart';
 part 'tv_screensaver_section_audio_build.dart';
 part 'tv_screensaver_section_controls.dart';
+part 'tv_screensaver_section_system_build.dart';
+part 'tv_screensaver_section_track_info_build.dart';
+part 'tv_screensaver_section_visual_build.dart';
 
 class TvScreensaverSection extends StatefulWidget {
   final double scaleFactor;

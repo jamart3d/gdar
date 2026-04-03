@@ -118,6 +118,8 @@ extension _DevAudioHudBuild on _DevAudioHudState {
               final showHybridControls = isHybrid;
               final showNetControls = isWA || isHybrid;
               final showWaTelemetry = isWA || (isHybrid && waSubEngineActive);
+              final showHybridHandoffTelemetry =
+                  showHybridControls && fields['HF'] != 'OFF';
               final orderedKeys = [
                 'ENG',
                 if (showHybridControls) 'HF',
@@ -140,7 +142,7 @@ extension _DevAudioHudBuild on _DevAudioHudState {
                   'DEC',
                   'BCT',
                 ],
-                if (showHybridControls) ...[
+                if (showHybridHandoffTelemetry) ...[
                   'HS',
                   if (!waSubEngineActive) 'HAT',
                 ],

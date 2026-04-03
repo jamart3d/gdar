@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,29 @@ part 'playback_screen_fruit_build.dart';
 part 'playback_screen_helpers.dart';
 part 'playback_screen_layout_build.dart';
 
+@visibleForTesting
+double computeFruitFloatingNowPlayingBottomOffset({
+  required bool stickyNowPlaying,
+  required bool hasCurrentTrack,
+  required bool showCompactHud,
+  required double scaleFactor,
+  required double bottomSafeArea,
+  required double measuredCardHeight,
+}) {
+  if (stickyNowPlaying || !hasCurrentTrack) {
+    return 0.0;
+  }
+
+  final double estimatedCardHeight =
+      (78.0 * scaleFactor) + (showCompactHud ? 126.0 * scaleFactor : 0.0);
+  final double reservedCardHeight = math.max(
+    measuredCardHeight,
+    estimatedCardHeight,
+  );
+  final double baseMargin = (5.0 * scaleFactor) + bottomSafeArea;
+  return reservedCardHeight + baseMargin + (12.0 * scaleFactor);
+}
+
 class PlaybackScreen extends StatefulWidget {
   final bool initiallyOpen;
   final bool isPane;
@@ -89,6 +113,9 @@ class PlaybackScreenState extends State<PlaybackScreen>
   StreamSubscription? _errorSubscription;
   String? _lastTrackTitle;
   bool? _lastStickyState;
+  final GlobalKey _fruitFloatingNowPlayingKey = GlobalKey();
+  double _fruitFloatingNowPlayingHeight = 0.0;
+  bool _fruitFloatingNowPlayingMeasurementQueued = false;
   final Map<int, FocusNode> _trackFocusNodes = {};
   final FocusNode _trackListFocusNode = FocusNode(canRequestFocus: false);
 
@@ -136,6 +163,13 @@ class PlaybackScreenState extends State<PlaybackScreen>
     if (mounted) {
       setState(() {});
     }
+  }
+
+  void _updateFruitFloatingNowPlayingHeight(double measuredHeight) {
+    if (!mounted) return;
+    setState(() {
+      _fruitFloatingNowPlayingHeight = measuredHeight;
+    });
   }
 
   @override

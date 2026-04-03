@@ -253,6 +253,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
       return AnimatedGradientBorder(
         borderRadius: contentRadius,
         borderWidth: 1.5,
+        allowInPerformanceMode: true,
         alignment: Alignment.centerLeft,
         usePadding:
             true, // Prevents button/text from clipping against the border

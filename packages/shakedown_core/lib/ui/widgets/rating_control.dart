@@ -16,6 +16,8 @@ import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 
+const Color _fruitRatingStarYellow = Color(0xFFFFC107);
+
 class RatingControl extends StatelessWidget {
   final int rating;
   final VoidCallback? onTap;
@@ -48,13 +50,13 @@ class RatingControl extends StatelessWidget {
         settingsProvider.useNeumorphism &&
         !settingsProvider.useTrueBlack &&
         !isTv;
+    final Color filledStarColor = isFruit
+        ? _fruitRatingStarYellow
+        : Colors.orangeAccent;
 
     Widget content;
 
     if (isFruitNeumorphic) {
-      final Color starColor = isFruit
-          ? colorScheme.primary
-          : Colors.orangeAccent;
       final Brightness brightness = Theme.of(context).brightness;
       // In light mode, the alpha needs to be slightly higher to be visible against frosted glass
       final Color emptyColor = brightness == Brightness.light
@@ -88,11 +90,11 @@ class RatingControl extends StatelessWidget {
                   isFruit ? Icons.star_rate_rounded : LucideIcons.star,
                   color: (rating == 0 && isPlayed)
                       ? colorScheme.outline.withValues(alpha: 0.5)
-                      : starColor,
+                      : filledStarColor,
                 ),
                 half: Icon(
                   isFruit ? Icons.star_rate_rounded : LucideIcons.star,
-                  color: starColor,
+                  color: filledStarColor,
                 ),
                 empty: Icon(
                   isFruit ? Icons.star_rate_rounded : LucideIcons.star,
@@ -461,7 +463,7 @@ class _RatingDialogState extends State<RatingDialog> {
                                     color: (_currentRating == 0 && _isPlayed)
                                         ? Colors.blueGrey.withValues(alpha: 0.4)
                                         : (isFruit
-                                              ? colorScheme.primary
+                                              ? _fruitRatingStarYellow
                                               : Colors.orangeAccent),
                                   ),
                                   half: Icon(
@@ -469,7 +471,7 @@ class _RatingDialogState extends State<RatingDialog> {
                                         ? Icons.star_rate_rounded
                                         : Icons.star_half_rounded,
                                     color: isFruit
-                                        ? colorScheme.primary
+                                        ? _fruitRatingStarYellow
                                         : Colors.orangeAccent,
                                   ),
                                   empty: Icon(

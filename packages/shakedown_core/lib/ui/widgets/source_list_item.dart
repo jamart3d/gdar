@@ -257,6 +257,7 @@ class SourceListItem extends StatelessWidget {
           child: AnimatedGradientBorder(
             borderRadius: borderRadius,
             borderWidth: useRgb ? 3 : 2,
+            allowInPerformanceMode: useRgb,
             colors: useRgb
                 ? const [
                     Colors.red,

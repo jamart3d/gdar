@@ -22,6 +22,7 @@ class AnimatedGradientBorder extends StatefulWidget {
   final double? glowSpread;
   final double? glowBlur;
   final AlignmentGeometry alignment;
+  final bool allowInPerformanceMode;
 
   const AnimatedGradientBorder({
     super.key,
@@ -41,6 +42,7 @@ class AnimatedGradientBorder extends StatefulWidget {
     this.glowSpread,
     this.glowBlur,
     this.alignment = Alignment.center,
+    this.allowInPerformanceMode = false,
   });
 
   @override
@@ -133,8 +135,9 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
     final performanceMode = sp.performanceMode;
     final isPlaying = context.watch<AudioProvider>().isPlaying;
     final bool isWebPlayback = kIsWeb && isPlaying;
-    // Relaxed: only disable if performance mode is ON (Simple Theme).
-    final bool disableGlow = performanceMode;
+    final bool preserveEffectInPerformanceMode =
+        widget.allowInPerformanceMode && performanceMode;
+    final bool disableGlow = performanceMode && !widget.allowInPerformanceMode;
 
     if (!widget.enabled && widget.borderWidth <= 0 && !widget.showShadow) {
       return widget.child;
@@ -177,7 +180,12 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
       animation: animation,
       child: widget.child,
       builder: (context, child) {
-        final double spreadPadding = (isEffectActive && widget.showGlow)
+        final bool effectiveShowGlow =
+            widget.showGlow && !preserveEffectInPerformanceMode;
+        final bool effectiveShowShadow =
+            widget.showShadow && !preserveEffectInPerformanceMode;
+
+        final double spreadPadding = (isEffectActive && effectiveShowGlow)
             ? (widget.glowSpread ?? (widget.backlightMode ? 14.0 : 18.0))
             : 0.0;
 
@@ -216,7 +224,7 @@ class _AnimatedGradientBorderState extends State<AnimatedGradientBorder>
                     borderWidth: isEffectActive ? widget.borderWidth : 0.0,
                     rotation: animation.value * 2 * 3.14159,
                     showShadow: isEffectActive && !disableGlow
-                        ? widget.showShadow
+                        ? effectiveShowShadow
                         : false,
                     glowOpacity: isWebPlayback ? 0.2 : widget.glowOpacity,
                     glowBlur:

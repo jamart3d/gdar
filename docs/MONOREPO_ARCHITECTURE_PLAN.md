@@ -1,8 +1,9 @@
 # Monorepo Architecture Plan
 
-Date: 2026-04-01
+Date: 2026-04-02
 Project: GDAR
-Status: Implemented / Phases 2-5 Complete (2026-04-01)
+Status: Implemented / Style-Core Graph Verified (2026-04-02)
+Last verified against commit: `518adaa`
 
 ## Goal
 
@@ -25,16 +26,25 @@ Completed on 2026-04-01:
   packages.
 - targeted regression and startup tests passed after the migration.
 
-## Current Problem
+## Current State
 
-The current monorepo is productive, but one dependency direction is a structural
-smell:
+The style/core package-graph migration described in this document is live in
+the current repo snapshot:
 
-- `packages/styles/gdar_fruit` depends on `packages/shakedown_core`
+- `packages/styles/gdar_fruit` depends on `packages/gdar_design`
+- `packages/styles/gdar_android` depends on `packages/gdar_design`
+- style packages do not depend on `packages/shakedown_core`
+- app targets remain the composition root
 
-That is backwards for a style package. It makes it harder to move reusable Fruit
-presentation code into the style layer because any reverse import from
-`shakedown_core` back into `gdar_fruit` would create a package cycle.
+The main structural risk is no longer a style-layer dependency cycle. The
+remaining monorepo drag has shifted to maintainability hotspots in a handful of
+large shared UI files, while the package boundaries themselves are currently in
+the intended direction.
+
+`packages/screensaver_tv/pubspec.yaml` currently appears as a minimal stub in
+this workspace snapshot, so the `screensaver_tv` dependency edges below should
+be treated as intended architecture and re-verified once that package manifest
+is fully restored.
 
 ## Target Package Graph
 

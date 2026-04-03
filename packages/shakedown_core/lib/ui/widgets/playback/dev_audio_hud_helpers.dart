@@ -339,20 +339,17 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
     if (isHidden && _bgHiddenSince == null) {
       _bgHiddenSince = DateTime.now();
     } else if (!isHidden && _bgHiddenSince != null) {
-      _totalBgtDuration += DateTime.now().difference(_bgHiddenSince!);
       _bgHiddenSince = null;
     }
   }
 
   String _computeBgt() {
-    var total = _totalBgtDuration;
-    if (_bgHiddenSince != null) {
-      total += DateTime.now().difference(_bgHiddenSince!);
-    }
-    if (total == Duration.zero) return '--';
-    final h = total.inHours;
-    final m = total.inMinutes.remainder(60);
-    final s = total.inSeconds.remainder(60);
+    final hiddenSince = _bgHiddenSince;
+    if (hiddenSince == null) return '--';
+    final current = DateTime.now().difference(hiddenSince);
+    final h = current.inHours;
+    final m = current.inMinutes.remainder(60);
+    final s = current.inSeconds.remainder(60);
     if (h > 0) {
       return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
     }
@@ -564,7 +561,7 @@ extension _DevAudioHudHelpers on _DevAudioHudState {
       case 'GAP':
         return 'Gapless readiness for the next handoff. RDY is healthy; LOW or MISS means risk.';
       case 'BGT':
-        return 'Total playing time with tab hidden (not-visible time).';
+        return 'Current hidden duration while audio is playing.';
       case 'PM':
         return 'Performance mode. ON reduces effects and visual cost.';
       case 'NET':

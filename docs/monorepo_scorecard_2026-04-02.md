@@ -3,7 +3,8 @@
 Date: 2026-04-02
 Project: GDAR
 Workspace: repo root `gdar`
-Reference: Workspace-state rerun of the 2026-04-01 scorecard against `4ac7394`
+Reference: Workspace-state rerun of the 2026-04-01 scorecard against `4ac7394`,
+with same-day evidence addendum captured against `518adaa`
 
 ## Overall Score
 
@@ -24,8 +25,9 @@ This rerun also used a cleaner workspace signal than the April 1 writeup:
 - the focused HUD regression rerun was also reported `PASS`
 
 The remaining drag is still mostly structural rather than red-bar validation:
-very large shared UI files remain, browser-runtime evidence is still thin, and
-some architecture docs have not fully caught up to the current package graph.
+very large shared UI files remain, the fresh analyzer rerun surfaced one
+warning, and browser-runtime evidence is still shallow even after a same-day
+manual web verification.
 
 ## Category Breakdown
 
@@ -42,14 +44,10 @@ The biggest April 1 architectural concern has been resolved in the live repo:
 
 That is a meaningful monorepo health improvement, not a cosmetic one.
 
-The small deduction here is now about documentation drift, not package
-structure:
-
-- `docs/MONOREPO_ARCHITECTURE_PLAN.md` says the migration is complete
-- but its `Current Problem` section still repeats the old
-  `gdar_fruit -> shakedown_core` issue
-
-So the architecture is stronger than the documentation snapshot.
+The documentation drift noted earlier in the day has now been corrected in
+`docs/MONOREPO_ARCHITECTURE_PLAN.md`, so the remaining deduction here is minor
+and mostly about long-term ownership pressure in shared UI, not package-graph
+health.
 
 ### Maintainability: 8.7/10
 
@@ -89,8 +87,9 @@ That is enough to keep validation confidence strong, especially because the
 April 1 HUD issue was already reclassified as a stale test-contract mismatch
 rather than a product regression.
 
-This category does not move higher because this rerun did not include a fresh
-workspace analyzer pass in the final evidence set.
+A fresh serial analyzer pass was added later on 2026-04-02, but it returned one
+warning in `packages/shakedown_core/lib/ui/screens/playback_screen_fruit_build.dart`.
+That improves evidence depth without making the validation picture fully clean.
 
 ### Platform Discipline: 9.0/10
 
@@ -103,18 +102,22 @@ The monorepo still expresses platform intent clearly:
 - the style-layer dependency direction is now cleaner than it was in the prior
   scorecard
 
-This stays strong, but there was no fresh browser or device smoke pass in this
-rerun to justify a higher score.
+This stays strong. A same-day user-reported Fruit/web playback verification now
+exists, but it was a single manual pass and the browser was not recorded, so it
+is positive evidence rather than deep platform coverage.
 
 ### Web Audio / Runtime Reliability: 7.9/10
 
 Flat.
 
-Nothing in the current rerun points to a new web-audio regression, but this is
+Nothing in the current rerun points to a new web-audio regression, and there is
+now a same-day user-reported standard Fruit/web playback verification. This is
 still an evidence-depth category rather than a confirmed-strength category:
 
-- no fresh browser runtime playback pass was included
-- the current confidence remains test-first rather than browser-runtime-first
+- the current runtime evidence is a single manual pass
+- the browser/runtime environment was not recorded
+- confidence is still stronger on test/build signal than on repeated browser
+  runtime signal
 
 So this stays positive but conservative.
 
@@ -127,6 +130,13 @@ So this stays positive but conservative.
   `dart run melos exec -c 1 --dir-exists=test --ignore="screensaver_tv" -- flutter test`
 - user-reported focused HUD regression pass:
   `dart run melos exec -c 1 --scope=shakedown_core -- flutter test test/ui/widgets/playback/dev_audio_hud_test.dart`
+- fresh serial analyzer rerun:
+  `dart run melos exec -c 1 --dir-exists=lib -- flutter analyze --no-pub`
+  -> one warning in
+  `packages/shakedown_core/lib/ui/screens/playback_screen_fruit_build.dart:19`
+- user-reported standard Fruit/web verification: "runs fine"
+- user-reported web release build command:
+  `flutter build web --release --no-pub -t lib/main.dart`
 
 ## What Changed Since 2026-04-01
 
@@ -137,33 +147,35 @@ So this stays positive but conservative.
   scorecard
 - `tv_screensaver_section_build.dart` has grown again and remains a prominent
   maintainability hotspot
-- the rerun evidence set includes fresh serial test passes, but not a fresh
-  analyzer pass or browser smoke pass
+- a fresh serial analyzer rerun now exists and found one warning rather than a
+  clean pass
+- a fresh same-day manual Fruit/web verification now exists, but with limited
+  environment detail
 
 ## What Still Caps The Score
 
 - a persistent large-file backlog in shared UI and screensaver surfaces
-- stale architecture documentation that still describes an already-resolved
-  dependency smell
-- no fresh workspace analyzer pass in this rerun
-- no fresh browser runtime playback pass in this rerun
+- one fresh analyzer warning in
+  `packages/shakedown_core/lib/ui/screens/playback_screen_fruit_build.dart:19`
+- browser-runtime evidence is still limited to a single user-reported manual
+  pass with no browser recorded
 
 ## Path To 9.0+
 
-1. Keep the serial workspace test lane green and add a matching fresh serial
-   analyzer rerun to strengthen scorecard-quality evidence.
+1. Clear the fresh analyzer warning in
+   `packages/shakedown_core/lib/ui/screens/playback_screen_fruit_build.dart:19`.
 2. Continue extracting the largest shared UI hotspots, especially
    `steal_graph.dart`, `tv_screensaver_section_build.dart`, and
    `steal_banner.dart`.
-3. Update `docs/MONOREPO_ARCHITECTURE_PLAN.md` so the architecture narrative
-   matches the live package graph.
-4. Add a fresh browser runtime pass for Fruit/web playback so the web
-   reliability score is backed by runtime evidence, not just tests.
+3. Repeat the Fruit/web runtime pass with the browser and environment recorded,
+   and capture any console/runtime errors if present.
+4. Keep the serial workspace test lane green alongside the analyzer lane so the
+   evidence set stays current.
 
 ## Bottom Line
 
 GDAR is in better shape than the April 1 scorecard suggested. The main package
-layering concern has been fixed in the live repo, the workspace appears clean,
-and the serial test evidence is still green. The remaining drag is now more
-about large shared UI files and evidence depth than about a serious monorepo
-boundary problem.
+layering concern remains fixed in the live repo, the architecture doc now
+matches that state, and the evidence set is stronger than it was earlier in the
+day. The remaining drag is now large shared UI files, one analyzer warning, and
+still-thin browser-runtime evidence rather than a package-boundary problem.

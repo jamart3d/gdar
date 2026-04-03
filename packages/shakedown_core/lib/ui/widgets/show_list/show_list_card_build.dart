@@ -57,6 +57,7 @@ extension _ShowListCardBuild on _ShowListCardState {
         child: AnimatedGradientBorder(
           borderRadius: isTv ? 12 : (isFruit ? 14 : 28),
           borderWidth: 3,
+          allowInPerformanceMode: style.useRgb,
           colors: style.useRgb
               ? const [
                   Color(0xFFFF0000), // Red

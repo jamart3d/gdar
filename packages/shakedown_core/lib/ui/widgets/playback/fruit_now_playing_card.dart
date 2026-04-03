@@ -9,6 +9,7 @@ import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
+import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:shakedown_core/services/device_service.dart';
@@ -41,6 +42,12 @@ class FruitNowPlayingCard extends StatelessWidget {
     final enableLiquidGlass = context.select<SettingsProvider, bool>(
       (settings) => settings.fruitEnableLiquidGlass,
     );
+    final useRgbBorder = context.select<SettingsProvider, bool>(
+      (settings) => settings.highlightPlayingWithRgb,
+    );
+    final rgbAnimationSpeed = context.select<SettingsProvider, double>(
+      (settings) => settings.rgbAnimationSpeed,
+    );
     final showDevAudioHud = context.select<SettingsProvider, bool>(
       (settings) => settings.showDevAudioHud,
     );
@@ -49,11 +56,11 @@ class FruitNowPlayingCard extends StatelessWidget {
     final hasGlass = enableLiquidGlass && !isSimple;
     final showCompactHud = kIsWeb && showDevAudioHud;
     final horizontalPadding = showCompactHud ? 12.0 : 16.0;
-
-    return FruitSurface(
+    final surface = FruitSurface(
       borderRadius: BorderRadius.circular(16.0 * scaleFactor),
       blur: isSimple ? FruitTokens.blurSoft : 18.0,
       opacity: isSimple ? 0.96 : 0.88,
+      showBorder: !useRgbBorder,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16.0 * scaleFactor),
@@ -224,6 +231,30 @@ class FruitNowPlayingCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+
+    if (!useRgbBorder) {
+      return surface;
+    }
+
+    return AnimatedGradientBorder(
+      borderRadius: 16.0 * scaleFactor,
+      borderWidth: 2.0,
+      showGlow: false,
+      showShadow: false,
+      usePadding: true,
+      allowInPerformanceMode: true,
+      animationSpeed: rgbAnimationSpeed,
+      colors: const [
+        Colors.red,
+        Colors.yellow,
+        Colors.green,
+        Colors.cyan,
+        Colors.blue,
+        Color(0xFF8B00FF),
+        Colors.red,
+      ],
+      child: surface,
     );
   }
 

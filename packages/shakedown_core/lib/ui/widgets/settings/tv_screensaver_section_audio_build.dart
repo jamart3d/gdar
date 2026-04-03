@@ -1,6 +1,202 @@
 part of 'tv_screensaver_section.dart';
 
 extension _TvScreensaverSectionAudioBuild on _TvScreensaverSectionState {
+  List<Widget> _buildAudioReactivitySection({
+    required SettingsProvider settings,
+    required ColorScheme colorScheme,
+    required TextTheme textTheme,
+    required bool isFruit,
+  }) {
+    return [
+      _SectionHeader(title: 'Audio Reactivity', colorScheme: colorScheme),
+      const SizedBox(height: 8),
+      _ToggleRow(
+        label: 'Enable Audio Reactivity',
+        subtitle:
+            'Sync visuals to the music being played (requires audio permission)',
+        value: settings.oilEnableAudioReactivity,
+        onChanged: (_) => _handleAudioReactivityToggle(settings),
+        colorScheme: colorScheme,
+        textTheme: textTheme,
+      ),
+      if (settings.oilEnableAudioReactivity) ...[
+        const SizedBox(height: 24),
+        TvStepperRow(
+          label: 'Reactivity Strength',
+          value: settings.oilAudioReactivityStrength,
+          min: 0.5,
+          max: 2.0,
+          step: 0.1,
+          leftLabel: 'Subtle',
+          rightLabel: 'Wild',
+          onChanged: (v) => settings.setOilAudioReactivityStrength(v),
+        ),
+        const SizedBox(height: 16),
+        TvStepperRow(
+          label: 'Bass Boost',
+          value: settings.oilAudioBassBoost,
+          min: 1.0,
+          max: 3.0,
+          step: 0.1,
+          leftLabel: 'Normal',
+          rightLabel: 'Punchy',
+          onChanged: (v) => settings.setOilAudioBassBoost(v),
+        ),
+        const SizedBox(height: 16),
+        TvStepperRow(
+          label: 'Peak Decay',
+          value: settings.oilAudioPeakDecay,
+          min: 0.990,
+          max: 0.999,
+          step: 0.001,
+          leftLabel: 'Fast adapt',
+          rightLabel: 'Slow adapt',
+          valueFormatter: (v) => v.toStringAsFixed(3),
+          onChanged: (v) => settings.setOilAudioPeakDecay(v),
+        ),
+        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            'Peak Decay controls how quickly the visualizer adapts to changes '
+            'in volume. Slow adapt keeps loud moments pumping longer; Fast '
+            'adapt stays fresh with quiet passages.',
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildBeatDetectorSection(
+          settings: settings,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+          isFruit: isFruit,
+        ),
+        const SizedBox(height: 16),
+        TvStepperRow(
+          label: 'Beat Sensitivity',
+          value: settings.oilBeatSensitivity,
+          min: 0.0,
+          max: 1.0,
+          step: 0.05,
+          leftLabel: 'Gentle',
+          rightLabel: 'Aggressive',
+          valueFormatter: (v) => '${(v * 100).round()}%',
+          onChanged: (v) => settings.setOilBeatSensitivity(v),
+        ),
+        const SizedBox(height: 16),
+        TvStepperRow(
+          label: 'Beat Impact',
+          value: settings.oilBeatImpact,
+          min: 0.0,
+          max: 1.0,
+          step: 0.05,
+          leftLabel: 'Off',
+          rightLabel: 'Strong',
+          valueFormatter: (v) => '${(v * 100).round()}%',
+          onChanged: (v) => settings.setOilBeatImpact(v),
+        ),
+        const SizedBox(height: 16),
+        _buildAudioGraphSection(
+          settings: settings,
+          colorScheme: colorScheme,
+          textTheme: textTheme,
+        ),
+      ],
+      const SizedBox(height: 24),
+    ];
+  }
+
+  List<Widget> _buildFrequencyIsolationSection({
+    required SettingsProvider settings,
+    required ColorScheme colorScheme,
+    required TextTheme textTheme,
+    required bool isFruit,
+  }) {
+    return [
+      _SectionHeader(title: 'Frequency Isolation', colorScheme: colorScheme),
+      const SizedBox(height: 8),
+      Text(
+        'Logo Scale Source',
+        style: textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+      const SizedBox(height: 8),
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: _BandSegmentedButton(
+          selected: settings.oilScaleSource,
+          onSelect: (value) => settings.setOilScaleSource(value),
+          colorScheme: colorScheme,
+        ),
+      ),
+      const SizedBox(height: 8),
+      _ReactiveHint(
+        message:
+            'Default follows the usual logo motion driver. None disables '
+            'audio-driven logo scaling so only the base size and beat bump '
+            'remain.',
+        colorScheme: colorScheme,
+        textTheme: textTheme,
+        isFruit: isFruit,
+      ),
+      const SizedBox(height: 16),
+      TvStepperRow(
+        label: 'Scale Multiplier',
+        value: settings.oilScaleMultiplier,
+        min: 0.1,
+        max: 2.0,
+        step: 0.1,
+        leftLabel: '0.1x',
+        rightLabel: '2.0x',
+        valueFormatter: (v) => '${v.toStringAsFixed(1)}x',
+        onChanged: (v) => settings.setOilScaleMultiplier(v),
+      ),
+      const SizedBox(height: 24),
+      Text(
+        'Logo Color Source',
+        style: textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+      const SizedBox(height: 8),
+      FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: _BandSegmentedButton(
+          selected: settings.oilColorSource,
+          onSelect: (value) => settings.setOilColorSource(value),
+          colorScheme: colorScheme,
+        ),
+      ),
+      const SizedBox(height: 8),
+      _ReactiveHint(
+        message:
+            'Default uses the normal color-reactive driver. None disables '
+            'audio color pulsing and leaves the palette steady.',
+        colorScheme: colorScheme,
+        textTheme: textTheme,
+        isFruit: isFruit,
+      ),
+      const SizedBox(height: 16),
+      TvStepperRow(
+        label: 'Color Pulse Multiplier',
+        value: settings.oilColorMultiplier,
+        min: 0.0,
+        max: 2.0,
+        step: 0.1,
+        leftLabel: '0.0x',
+        rightLabel: '2.0x',
+        valueFormatter: (v) => '${v.toStringAsFixed(1)}x',
+        onChanged: (v) => settings.setOilColorMultiplier(v),
+      ),
+      const SizedBox(height: 32),
+    ];
+  }
+
   List<Widget> _buildPerformanceSection({
     required SettingsProvider settings,
     required ColorScheme colorScheme,

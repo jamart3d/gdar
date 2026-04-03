@@ -63,7 +63,6 @@ class _DevAudioHudState extends State<DevAudioHud> {
   bool _prevFetchInFlight = false;
   double? _lastAppendedNetMs;
   DateTime? _fetchInFlightSince;
-  Duration _totalBgtDuration = Duration.zero;
   DateTime? _bgHiddenSince;
 
   @override

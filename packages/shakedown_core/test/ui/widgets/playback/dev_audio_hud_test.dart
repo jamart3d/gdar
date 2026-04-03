@@ -45,7 +45,7 @@ void main() {
   late _FakeAudioProvider audioProvider;
   late FakeSettingsProvider settingsProvider;
 
-  Widget createWidget() {
+  Widget createWidget({bool isAppVisible = true}) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
@@ -63,6 +63,7 @@ void main() {
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
             fontFamily: 'RobotoMono',
             compact: true,
+            isAppVisible: isAppVisible,
           ),
         ),
       ),
@@ -168,6 +169,27 @@ void main() {
     expect(find.text('BCT:'), findsNothing);
   });
 
+  testWidgets('hides hybrid handoff telemetry when HF is OFF', (tester) async {
+    audioProvider.emit(
+      HudSnapshot.empty().copyWith(
+        engine: 'HYB',
+        activeEngine: 'H5B',
+        handoff: 'OFF',
+        handoffState: 'IDLE',
+        handoffAttemptCount: 2,
+        isPlaying: true,
+      ),
+    );
+
+    await tester.pumpWidget(createWidget());
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump();
+
+    expect(find.text('HF:'), findsOneWidget);
+    expect(find.text('HS:'), findsNothing);
+    expect(find.text('HAT:'), findsNothing);
+  });
+
   testWidgets('reports pure H5 engine without B suffix', (tester) async {
     audioProvider.emit(
       HudSnapshot.empty().copyWith(
@@ -222,6 +244,29 @@ void main() {
       expect(find.textContaining('LG:'), findsOneWidget);
     },
   );
+
+  testWidgets('BGT shows the current hidden duration only', (tester) async {
+    audioProvider.emit(
+      HudSnapshot.empty().copyWith(
+        engine: 'HYB',
+        activeEngine: 'WA',
+        isPlaying: true,
+      ),
+    );
+
+    await tester.pumpWidget(createWidget(isAppVisible: false));
+    await tester.pump();
+
+    expect(find.text('BGT:'), findsOneWidget);
+    expect(find.text('00:00'), findsOneWidget);
+
+    await tester.pumpWidget(createWidget(isAppVisible: true));
+    await tester.pump();
+
+    expect(find.text('BGT:'), findsOneWidget);
+    expect(find.text('00:00'), findsNothing);
+    expect(find.text('--'), findsAtLeastNWidgets(1));
+  });
 
   testWidgets('shows tooltip text for sparkline chips', (tester) async {
     audioProvider.emit(

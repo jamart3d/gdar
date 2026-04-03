@@ -436,7 +436,6 @@ mixin _SettingsProviderCoreExtension
     if (_performanceMode) {
       setFruitEnableLiquidGlass(false);
       setGlowMode(0);
-      setHighlightPlayingWithRgb(false);
     }
   }
 

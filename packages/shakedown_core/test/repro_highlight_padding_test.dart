@@ -80,4 +80,34 @@ void main() {
           'Size should not change when showGlow is toggled if usePadding is true',
     );
   });
+
+  testWidgets(
+    'AnimatedGradientBorder preserves border padding in performance mode when explicitly allowed',
+    (WidgetTester tester) async {
+      const double borderWidth = 4.0;
+      const double childSize = 100.0;
+
+      when(mockSettings.performanceMode).thenReturn(true);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          const Center(
+            child: AnimatedGradientBorder(
+              borderWidth: borderWidth,
+              showGlow: true,
+              usePadding: true,
+              allowInPerformanceMode: true,
+              child: SizedBox(width: childSize, height: childSize),
+            ),
+          ),
+        ),
+      );
+
+      final Finder borderFinder = find.byType(AnimatedGradientBorder);
+      final Size size = tester.getSize(borderFinder);
+
+      expect(size.width, childSize + 2 * borderWidth);
+      expect(size.height, childSize + 2 * borderWidth);
+    },
+  );
 }

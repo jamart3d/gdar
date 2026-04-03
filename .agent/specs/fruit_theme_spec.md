@@ -87,6 +87,14 @@ removing expensive optics.
 
 Fruit offers three curated palette modes selected by the user in settings.
 
+### 6.0 Rating Star Exception
+
+- Playback and catalog rating stars in Fruit must use a fixed **curation yellow**
+  (`#FFC107`).
+- Rating stars must **not** inherit the active Fruit palette primary color.
+- This exception preserves quick curation recognition across all Fruit color
+  modes.
+
 ### 6.1 Sophisticate
 
 - **Primary:** Indigo (`0xFF5C6BC0`)
@@ -122,8 +130,11 @@ Fruit must honor the existing Appearance settings.
 - Must disable or significantly reduce:
   - liquid optics
   - glow
-  - RGB animation
   - spring-heavy motion
+- **Exception:** active playback RGB borders remain available in Fruit even when
+  `performanceMode` is on.
+- In `performanceMode`, Fruit RGB should prefer the animated border itself and
+  may reduce outer glow/shadow to keep cost down.
 - The UI remains Fruit in structure, but simplified in rendering cost.
 
 ### 7.3 `fruitStickyNowPlaying`
@@ -149,6 +160,10 @@ Fruit must honor the existing Appearance settings.
 - It is **not** part of the default native Fruit look.
 - RGB should be limited to active playback emphasis and should remain more
   restrained than arcade-like by default.
+- Fruit RGB must continue to work when `fruitEnableLiquidGlass` is off.
+- Fruit RGB must continue to work when `performanceMode` is on.
+- When enabled, Fruit RGB applies to active playback surfaces including the
+  now-playing player card border.
 
 ## 8. Anti-Patterns
 
@@ -176,5 +191,5 @@ The following are considered non-compliant with Fruit:
 
 ---
 
-*Version: 1.2 (Single-Sheet Liquid Contract)*  
-*Last Updated: 2026-03-18*
+*Version: 1.4 (Single-Sheet Liquid Contract)*  
+*Last Updated: 2026-04-02*

@@ -612,10 +612,6 @@ extension _AppearanceSectionControls on _AppearanceSectionState {
     SettingsProvider settingsProvider,
     ThemeProvider themeProvider,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isGated = settingsProvider.performanceMode;
-    const reason = 'Disabled in Simple Theme';
-
     return TvSwitchListTile(
       dense: true,
       visualDensity: VisualDensity.compact,
@@ -624,38 +620,27 @@ extension _AppearanceSectionControls on _AppearanceSectionState {
         alignment: Alignment.centerLeft,
         child: Text(
           'Highlight Playing with RGB',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontSize: 16 * widget.scaleFactor,
-            color: isGated
-                ? colorScheme.onSurface.withValues(alpha: 0.5)
-                : null,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontSize: 16 * widget.scaleFactor),
         ),
       ),
-      subtitle: isGated
-          ? Text(
-              reason,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 12 * widget.scaleFactor,
-                color: colorScheme.secondary.withValues(alpha: 0.7),
-              ),
-            )
-          : _buildTileSubtitle(context, 'Animate border with RGB colors'),
-      value: !isGated && settingsProvider.highlightPlayingWithRgb,
-      onChanged: isGated
-          ? null
-          : (value) {
-              final provider = context.read<SettingsProvider>();
-              provider.toggleHighlightPlayingWithRgb();
-              if (!value && provider.useTrueBlack) {
-                provider.setGlowMode(0);
-              }
-            },
+      subtitle: _buildTileSubtitle(
+        context,
+        'Animate active border with RGB colors, including in Simple Theme',
+      ),
+      value: settingsProvider.highlightPlayingWithRgb,
+      onChanged: (value) {
+        final provider = context.read<SettingsProvider>();
+        provider.toggleHighlightPlayingWithRgb();
+        if (!value && provider.useTrueBlack) {
+          provider.setGlowMode(0);
+        }
+      },
       secondary: Icon(
         themeProvider.themeStyle == ThemeStyle.fruit
             ? LucideIcons.zap
             : Icons.animation_rounded,
-        color: isGated ? colorScheme.onSurface.withValues(alpha: 0.3) : null,
       ),
     );
   }
@@ -680,6 +665,7 @@ extension _AppearanceSectionControls on _AppearanceSectionState {
           AnimatedGradientBorder(
             borderRadius: 24,
             borderWidth: 3,
+            allowInPerformanceMode: true,
             colors: const [
               Colors.red,
               Colors.yellow,

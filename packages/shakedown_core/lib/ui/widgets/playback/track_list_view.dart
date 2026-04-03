@@ -222,6 +222,7 @@ class TrackListView extends StatelessWidget {
                   child: AnimatedGradientBorder(
                     borderRadius: 12,
                     borderWidth: 4,
+                    allowInPerformanceMode: true,
                     ignoreGlobalClock: true,
                     colors: const [
                       Colors.red,

@@ -12,6 +12,7 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
+import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown_core/ui/widgets/playback/fruit_now_playing_card.dart';
 
 class _MockGaplessPlayer extends Mock implements GaplessPlayer {
@@ -117,12 +118,15 @@ class _TestAudioProvider extends ChangeNotifier implements AudioProvider {
 class _TestSettingsProvider extends ChangeNotifier implements SettingsProvider {
   final bool _glassEnabled;
   final bool _performanceMode;
+  final bool _highlightPlayingWithRgb;
 
   _TestSettingsProvider({
     required bool glassEnabled,
     required bool performanceMode,
+    required bool highlightPlayingWithRgb,
   }) : _glassEnabled = glassEnabled,
-       _performanceMode = performanceMode;
+       _performanceMode = performanceMode,
+       _highlightPlayingWithRgb = highlightPlayingWithRgb;
 
   @override
   bool get fruitEnableLiquidGlass => _glassEnabled;
@@ -132,6 +136,12 @@ class _TestSettingsProvider extends ChangeNotifier implements SettingsProvider {
 
   @override
   bool get showDevAudioHud => false;
+
+  @override
+  bool get highlightPlayingWithRgb => _highlightPlayingWithRgb;
+
+  @override
+  double get rgbAnimationSpeed => 1.0;
 
   @override
   bool get showPlaybackMessages => false;
@@ -200,6 +210,7 @@ void main() {
     required GaplessPlayer player,
     required bool glassEnabled,
     required bool performanceMode,
+    bool highlightPlayingWithRgb = false,
   }) async {
     await tester.pumpWidget(
       MultiProvider(
@@ -211,6 +222,7 @@ void main() {
             value: _TestSettingsProvider(
               glassEnabled: glassEnabled,
               performanceMode: performanceMode,
+              highlightPlayingWithRgb: highlightPlayingWithRgb,
             ),
           ),
           ChangeNotifierProvider<ThemeProvider>.value(
@@ -270,6 +282,78 @@ void main() {
       player.durationStream,
     ).thenAnswer((_) => Stream<Duration?>.value(duration));
   }
+
+  testWidgets(
+    'Fruit now playing card uses RGB border when enabled across glass and performance modes',
+    (tester) async {
+      final variants = <({bool glassEnabled, bool performanceMode})>[
+        (glassEnabled: true, performanceMode: false),
+        (glassEnabled: false, performanceMode: false),
+        (glassEnabled: true, performanceMode: true),
+        (glassEnabled: false, performanceMode: true),
+      ];
+
+      for (final variant in variants) {
+        final player = _MockGaplessPlayer();
+        stubPlayerState(
+          player,
+          PlayerState(true, ProcessingState.ready),
+          position: const Duration(seconds: 24),
+          buffered: const Duration(seconds: 40),
+          duration: const Duration(minutes: 8),
+        );
+
+        await pumpCard(
+          tester,
+          player: player,
+          glassEnabled: variant.glassEnabled,
+          performanceMode: variant.performanceMode,
+          highlightPlayingWithRgb: true,
+        );
+        await tester.pump();
+
+        final border = tester.widget<AnimatedGradientBorder>(
+          find.byType(AnimatedGradientBorder),
+        );
+
+        expect(
+          border.allowInPerformanceMode,
+          isTrue,
+          reason:
+              'Expected RGB player border to survive perf mode for glass='
+              '${variant.glassEnabled} perf=${variant.performanceMode}',
+        );
+        expect(border.showGlow, isFalse);
+        expect(border.showShadow, isFalse);
+        expect(border.usePadding, isTrue);
+        expect(border.colors?.first, Colors.red);
+      }
+    },
+  );
+
+  testWidgets(
+    'Fruit now playing card keeps default surface border when RGB is disabled',
+    (tester) async {
+      final player = _MockGaplessPlayer();
+      stubPlayerState(
+        player,
+        PlayerState(true, ProcessingState.ready),
+        position: const Duration(seconds: 24),
+        buffered: const Duration(seconds: 40),
+        duration: const Duration(minutes: 8),
+      );
+
+      await pumpCard(
+        tester,
+        player: player,
+        glassEnabled: false,
+        performanceMode: true,
+      );
+      await tester.pump();
+
+      expect(find.byType(AnimatedGradientBorder), findsNothing);
+    },
+  );
 
   testWidgets(
     'pending Fruit playback cues stay visible across glass and performance modes',
