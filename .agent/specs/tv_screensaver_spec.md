@@ -4,6 +4,8 @@ This document outlines the current state, architecture, specifications, and futu
 
 **Monorepo scope:** Shared screensaver logic and widgets primarily live in `packages/shakedown_core`, while TV-specific routing and app behavior live in `apps/gdar_tv`.
 
+**Shipping Android Host Note:** The TV screensaver remains a TV-only feature at the Dart/UI layer, but the Play-distributed Android App Bundle currently ships from `apps/gdar_mobile` under the shared package `com.jamart3d.shakedown`. Any native Android hardening for the TV screensaver audio path (for example `MainActivity.kt`, `VisualizerPlugin.kt`, `StereoCapture.kt`, MediaProjection/foreground-service wiring, or manifest permissions/services) must be mirrored in the shipping mobile host as well as `apps/gdar_tv` until the Android hosts are fully de-duplicated.
+
 ## 1. Current State & Architecture
 
 ### **Core Trigger Mechanism**
@@ -74,6 +76,7 @@ To keep the UI consistent, the following settings (prefixed with `oil` internall
 ## 2. Platform Exclusivity & Restrictions
 
 - **Strict TV Exclusivity:** The screensaver is **walled off and exclusively available on the TV UI**. It will not trigger, and its settings are completely hidden, on native mobile apps or the web PWA. (Any previous logic relating to Web fallbacks for this visualizer has been officially deprecated and excluded).
+- **Native Host Caveat:** TV-only UI gating does **not** mean Android native integration is TV-app-local. Because the shipping Play artifact uses the shared Android package, native PCM/MediaProjection fixes may need corresponding changes in both Android app hosts even when the visible feature remains TV-exclusive.
 - **Hardware WakeLock:** The screensaver invokes the `WakelockService` when launched. This prevents the TV's native OS from forcing a deep sleep, allowing the audio to continue playing and the visualizer to remain active for hours.
 - **Haptics Disabled:** All haptic feedback is hard-disabled through `AppHaptics` as it serves no purpose on a TV remote.
 - **Keyboard Handling:** Android TV directional pad and OK button inputs are treated as standard keyboard events. Pressing *any* button pops the overlay.

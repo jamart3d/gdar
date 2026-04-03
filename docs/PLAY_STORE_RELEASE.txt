@@ -1,3 +1,18 @@
+What's new in v1.3.59+269
+- TV/Screensaver: Fixed a native PCM freshness bug in `VisualizerPlugin.kt`
+- TV/Android: Verified the native fix compiles cleanly with
+- Android/Release: Mirrored PCM capture hardening into the shipping
+- Android/Release: Added stricter fail-closed guards around MediaProjection
+- Docs: Updated `.agent/specs/tv_screensaver_spec.md` to note that native TV
+- Investigation: Confirmed the remaining Sabrina risk, if Play-installed
+
+---
+
+What's new in v1.3.58+268
+- **Maintenance**: General maintenance and version synchronization.
+
+---
+
 What's new in v1.3.57+267
 - **Maintenance**: General maintenance and version synchronization.
 

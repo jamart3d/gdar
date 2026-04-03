@@ -1,6 +1,7 @@
 package com.jamart3d.shakedown
 
 import android.media.audiofx.Visualizer
+import android.os.SystemClock
 import android.util.Log
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
@@ -478,7 +479,7 @@ class VisualizerPlugin(
         allHistory.pushCapped(sig4,    FLUX_HISTORY_SIZE)
         trebleHistory.pushCapped(sig2, FLUX_HISTORY_SIZE)
 
-        val nowMs = System.currentTimeMillis()
+        val nowMs = SystemClock.elapsedRealtime()
 
         // Helper: compute the current signal-to-baseline ratio for debug display.
         fun scoreVsMean(signal: Double, history: ArrayDeque<Double>): Double {
