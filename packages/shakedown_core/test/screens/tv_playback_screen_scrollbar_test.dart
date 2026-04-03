@@ -103,21 +103,21 @@ void main() {
     when(
       mockAudioPlayer.playerState,
     ).thenReturn(PlayerState(false, ProcessingState.idle));
-    when(mockAudioProvider.playerStateStream).thenAnswer(
-      (_) => Stream.value(PlayerState(false, ProcessingState.idle)),
-    );
+    when(
+      mockAudioProvider.playerStateStream,
+    ).thenAnswer((_) => Stream.value(PlayerState(false, ProcessingState.idle)));
     when(
       mockAudioProvider.currentIndexStream,
     ).thenAnswer((_) => Stream.value(0));
-    when(mockAudioProvider.durationStream).thenAnswer(
-      (_) => Stream.value(const Duration(seconds: 100)),
-    );
+    when(
+      mockAudioProvider.durationStream,
+    ).thenAnswer((_) => Stream.value(const Duration(seconds: 100)));
     when(
       mockAudioProvider.positionStream,
     ).thenAnswer((_) => Stream.value(Duration.zero));
-    when(mockAudioProvider.bufferedPositionStream).thenAnswer(
-      (_) => Stream.value(Duration.zero),
-    );
+    when(
+      mockAudioProvider.bufferedPositionStream,
+    ).thenAnswer((_) => Stream.value(Duration.zero));
     when(
       mockAudioPlayer.sequenceStateStream,
     ).thenAnswer((_) => const Stream.empty());
@@ -148,9 +148,7 @@ void main() {
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
       ],
       child: const MaterialApp(
-        home: Material(
-          child: PlaybackScreen(isPane: true),
-        ),
+        home: Material(child: PlaybackScreen(isPane: true)),
       ),
     );
   }

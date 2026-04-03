@@ -96,6 +96,8 @@ class MainActivity: FlutterActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CAPTURE) {
+            // MediaProjection capture cleanup
+            stereoCapture.stop()
             val result = pendingStereoResult
             pendingStereoResult = null
             if (resultCode == Activity.RESULT_OK && data != null) {

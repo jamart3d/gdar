@@ -1,3 +1,14 @@
+What's new in v1.3.56+266
+- Fixed TV main screen scrollbar visibility bug in
+- Added widget tests for the above fix in
+- Fixed test deadlock in
+- Fixed screensaver-dismiss-on-PCM-confirm bug in
+- Refactored `packages/shakedown_core/lib/steal_screensaver/steal_graph.dart`
+- Updated `docs/monorepo_todo_2026-04-02.md` to mark the `steal_graph.dart`
+- Verified the refactor with
+
+---
+
 What's new in v1.3.55+265
 - Web UI / Fruit playback: fixed the floating now-playing inset so the track
 - Web UI / Fruit curation: rating stars now use fixed curation yellow

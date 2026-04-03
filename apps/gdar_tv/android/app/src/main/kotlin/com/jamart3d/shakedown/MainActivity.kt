@@ -63,31 +63,28 @@ class MainActivity: FlutterActivity() {
                     return
                 }
 
-                MediaProjectionForegroundService.start(this)
-                MediaProjectionForegroundService.runWhenReady(
-                    onReady = {
-                        try {
-                            val ok = stereoCapture.start(projection)
-                            if (!ok) resetStereoCaptureSession()
-                            result?.success(ok)
-                            Log.d(TAG, "Stereo capture started: $ok")
-                        } catch (e: SecurityException) {
-                            resetStereoCaptureSession()
-                            result?.success(false)
-                            Log.w(TAG, "Stereo capture unavailable: ${e.message}")
-                        } catch (e: Exception) {
-                            resetStereoCaptureSession()
-                            result?.success(false)
-                            Log.e(TAG, "Failed to start stereo capture", e)
-                        }
-                    },
-                    onUnavailable = {
-                        projection.stop()
-                        resetStereoCaptureSession()
-                        result?.success(false)
-                        Log.w(TAG, "Foreground service failed to enter foreground")
-                    },
-                )
+                // Do NOT re-start the foreground service here.
+                // On API 34+: it was already started before the consent dialog and is
+                // still running — restarting it races against the live capture.
+                // On pre-API 34: FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION is not
+                // required for AudioPlaybackCapture; calling startForeground() with
+                // that type on some TV devices (e.g. Sabrina) requires system
+                // permissions that regular apps cannot hold, which was the regression
+                // that broke capture after the consent dialog.
+                try {
+                    val ok = stereoCapture.start(projection)
+                    if (!ok) resetStereoCaptureSession()
+                    result?.success(ok)
+                    Log.d(TAG, "Stereo capture started: $ok")
+                } catch (e: SecurityException) {
+                    resetStereoCaptureSession()
+                    result?.success(false)
+                    Log.w(TAG, "Stereo capture unavailable: ${e.message}")
+                } catch (e: Exception) {
+                    resetStereoCaptureSession()
+                    result?.success(false)
+                    Log.e(TAG, "Failed to start stereo capture", e)
+                }
             } catch (e: SecurityException) {
                 resetStereoCaptureSession()
                 result?.success(false)
@@ -182,10 +179,25 @@ class MainActivity: FlutterActivity() {
                                 }
                             },
                             onUnavailable = {
-                                pendingStereoResult = null
-                                resetStereoCaptureSession()
-                                Log.w(TAG, "Foreground service unavailable for consent dialog")
-                                result.success(false)
+                                // FG service failed (e.g. TV device requires system
+                                // permissions for FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION).
+                                // Fall back to showing the consent dialog directly —
+                                // AudioPlaybackCapture may still work with the token alone.
+                                Log.w(TAG, "FG service unavailable; attempting direct consent dialog")
+                                try {
+                                    val mgr = getSystemService(MEDIA_PROJECTION_SERVICE)
+                                        as? MediaProjectionManager
+                                    if (mgr != null) {
+                                        startActivityForResult(mgr.createScreenCaptureIntent(), REQUEST_CAPTURE)
+                                    } else {
+                                        pendingStereoResult = null
+                                        result.success(false)
+                                    }
+                                } catch (e: Exception) {
+                                    pendingStereoResult = null
+                                    Log.w(TAG, "Fallback consent dialog failed: ${e.message}")
+                                    result.success(false)
+                                }
                             },
                         )
                     } else {

@@ -67,6 +67,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   int? _debugAudioSessionId;
   bool _isInitializingAudioReactor = false;
   bool _isPermissionFlowActive = false;
+  bool _isPermissionFlowCooldown = false;
+  Timer? _permissionFlowCooldownTimer;
   Timer? _sessionRetryTimer;
   int _sessionRetryCount = 0;
   static const int _maxSessionRetries = 10;
@@ -358,7 +360,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   }
 
   bool _handleGlobalKeyEvent(KeyEvent event) {
-    if (_isPermissionFlowActive) {
+    if (_isPermissionFlowActive || _isPermissionFlowCooldown) {
       return false;
     }
     if (event is KeyDownEvent) {
@@ -544,6 +546,16 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       return await action();
     } finally {
       _isPermissionFlowActive = false;
+      // Brief cooldown: the TV remote's OK press that confirmed the Android
+      // permission dialog can fire a KeyDownEvent in Flutter right after the
+      // native dialog dismisses. Without this guard, _handleGlobalKeyEvent
+      // would immediately pop the screensaver.
+      _isPermissionFlowCooldown = true;
+      _permissionFlowCooldownTimer?.cancel();
+      _permissionFlowCooldownTimer = Timer(
+        const Duration(milliseconds: 600),
+        () => _isPermissionFlowCooldown = false,
+      );
     }
   }
 
@@ -581,6 +593,7 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   @override
   void dispose() {
     _sessionRetryTimer?.cancel();
+    _permissionFlowCooldownTimer?.cancel();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
     _wakelockService?.disable();
     // Preserve Enhanced capture across screensaver launches for the life of

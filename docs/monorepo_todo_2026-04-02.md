@@ -70,7 +70,7 @@ the remaining caps on the monorepo score.
 
 ## Priority 1: Reduce Large-File Risk
 
-- [ ] Break up
+- [x] Break up
   `packages/shakedown_core/lib/steal_screensaver/steal_graph.dart`
   (2,237 lines).
   Target:
@@ -82,7 +82,11 @@ the remaining caps on the monorepo score.
   1. extract shared geometry/constants helpers,
   2. split mode-specific render paths (`vu`, `ekg`, `scope`, `corner`, etc.),
   3. keep `StealGraph` state/update flow in the main file until the render
-  surface is stable.
+     surface is stable.
+  Result:
+  split into dedicated constants, shared helpers, corner/VU/scope render,
+  beat-debug render, and EKG/circular render part files; the main
+  `steal_graph.dart` file is now 175 lines.
 
 - [x] Break up
   `packages/shakedown_core/lib/ui/widgets/settings/tv_screensaver_section_build.dart`
