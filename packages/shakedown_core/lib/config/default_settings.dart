@@ -77,6 +77,10 @@ class DefaultSettings {
   static const bool hideTabText = true;
   static const bool showDebugLayout = false;
 
+  // TV Background Spheres
+  static const bool enableTvBackgroundSpheres = false;
+  static const String tvBackgroundSphereAmount = 'small';
+
   // Screensaver (steal)
   static const bool useOilScreensaver = true;
   static const String oilScreensaverMode = 'standard';

@@ -9,6 +9,7 @@ import 'package:shakedown_core/ui/widgets/section_card.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
 
 class InterfaceSection extends StatelessWidget {
   final double scaleFactor;
@@ -123,6 +124,88 @@ class InterfaceSection extends StatelessWidget {
               isFruit ? LucideIcons.sparkles : Icons.auto_awesome_rounded,
             ),
           ),
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Background Spheres',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+              ),
+            ),
+            subtitle: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Floating ambient spheres behind the home layout',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+              ),
+            ),
+            value: settingsProvider.enableTvBackgroundSpheres,
+            onChanged: (value) {
+              AppHaptics.lightImpact(context.read<DeviceService>());
+              context
+                  .read<SettingsProvider>()
+                  .toggleEnableTvBackgroundSpheres();
+            },
+            secondary: const Icon(Icons.bubble_chart_rounded),
+          ),
+          if (settingsProvider.enableTvBackgroundSpheres)
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 16 * scaleFactor,
+                vertical: 4 * scaleFactor,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Sphere Amount',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 12 * scaleFactor,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  SizedBox(height: 6 * scaleFactor),
+                  SegmentedButton<SphereAmount>(
+                    segments: const [
+                      ButtonSegment(
+                        value: SphereAmount.small,
+                        label: Text('Small'),
+                        icon: Icon(Icons.circle_outlined),
+                      ),
+                      ButtonSegment(
+                        value: SphereAmount.medium,
+                        label: Text('Medium'),
+                        icon: Icon(Icons.circle),
+                      ),
+                      ButtonSegment(
+                        value: SphereAmount.more,
+                        label: Text('More'),
+                        icon: Icon(Icons.bubble_chart_rounded),
+                      ),
+                    ],
+                    selected: {settingsProvider.tvBackgroundSphereAmount},
+                    onSelectionChanged: (selected) {
+                      if (selected.isNotEmpty) {
+                        AppHaptics.lightImpact(context.read<DeviceService>());
+                        context
+                            .read<SettingsProvider>()
+                            .setTvBackgroundSphereAmount(selected.first);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
         ],
         if (!settingsProvider.carMode)
           TvSwitchListTile(

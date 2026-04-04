@@ -11,6 +11,7 @@ import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/pwa_detection.dart';
 import 'package:shakedown_core/utils/web_perf_hint.dart';
 import 'package:shakedown_core/utils/web_runtime.dart';
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
 
 part 'settings_provider_core.dart';
 part 'settings_provider_initialization.dart';

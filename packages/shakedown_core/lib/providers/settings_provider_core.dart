@@ -55,6 +55,8 @@ const int kCurrentOnboardingVersion = 1;
 const String _showDebugLayoutKey = 'show_debug_layout';
 const String _enableShakedownTweenKey = 'enable_shakedown_tween';
 const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
+const String _enableTvBackgroundSpheresKey = 'enable_tv_background_spheres';
+const String _tvBackgroundSphereAmountKey = 'tv_background_sphere_amount';
 const MethodChannel _uiScaleChannel = MethodChannel(
   'com.jamart3d.shakedown/ui_scale',
 );
@@ -106,6 +108,8 @@ mixin _SettingsProviderCoreFields {
   late bool _fruitStickyNowPlaying;
   late bool _markPlayedOnStart;
   late bool _hideTvScrollbars;
+  late bool _enableTvBackgroundSpheres;
+  late String _tvBackgroundSphereAmount;
 
   Color? _seedColor;
   bool _hasShownAdvancedCacheSuggestion = false;
@@ -177,6 +181,11 @@ mixin _SettingsProviderCoreExtension
   bool get performanceMode => isWasmSafeMode() ? true : _performanceMode;
   bool get forceTv => _forceTv;
   bool get hideTvScrollbars => _hideTvScrollbars;
+  bool get enableTvBackgroundSpheres => _enableTvBackgroundSpheres;
+  SphereAmount get tvBackgroundSphereAmount => SphereAmount.values.firstWhere(
+    (e) => e.name == _tvBackgroundSphereAmount,
+    orElse: () => SphereAmount.small,
+  );
   Color? get seedColor => _seedColor;
   bool get showGlobalAlbumArt => true;
   bool get hasShownAdvancedCacheSuggestion => _hasShownAdvancedCacheSuggestion;
@@ -372,6 +381,17 @@ mixin _SettingsProviderCoreExtension
     _hideTvScrollbarsKey,
     _hideTvScrollbars = !_hideTvScrollbars,
   );
+
+  void toggleEnableTvBackgroundSpheres() => _updatePreference(
+    _enableTvBackgroundSpheresKey,
+    _enableTvBackgroundSpheres = !_enableTvBackgroundSpheres,
+  );
+
+  void setTvBackgroundSphereAmount(SphereAmount amount) =>
+      _updateStringPreference(
+        _tvBackgroundSphereAmountKey,
+        _tvBackgroundSphereAmount = amount.name,
+      );
 
   void setGlowMode(int mode) {
     if (_performanceMode && mode > 0) return;

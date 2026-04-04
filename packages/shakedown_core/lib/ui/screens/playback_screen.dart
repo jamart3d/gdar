@@ -42,11 +42,13 @@ import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/utils/color_generator.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/utils/utils.dart';
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
 import 'package:sliding_up_panel2/sliding_up_panel2.dart';
-
 part 'playback_screen_build.dart';
 part 'playback_screen_controls.dart';
 part 'playback_screen_fruit_build.dart';
+part 'playback_screen_fruit_car_mode.dart';
+part 'playback_screen_fruit_widgets.dart';
 part 'playback_screen_helpers.dart';
 part 'playback_screen_layout_build.dart';
 

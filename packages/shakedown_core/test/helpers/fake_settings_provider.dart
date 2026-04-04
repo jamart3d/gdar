@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
 
 /// A robust FakeSettingsProvider that can be shared across tests.
 /// Mirrors the SettingsProvider API and provides default values.
@@ -594,6 +595,16 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
 
   @override
   bool get hideTvScrollbars => false;
+  @override
+  void toggleHideTvScrollbars() {}
+  @override
+  bool get enableTvBackgroundSpheres => false;
+  @override
+  SphereAmount get tvBackgroundSphereAmount => SphereAmount.small;
+  @override
+  void toggleEnableTvBackgroundSpheres() {}
+  @override
+  void setTvBackgroundSphereAmount(SphereAmount amount) {}
   @override
   bool get forceTv => false;
   @override

@@ -802,6 +802,12 @@ mixin _SettingsProviderInitializationExtension
         DefaultSettings.oilScaleSineAmp;
     _showScreensaverCountdown =
         _prefs.getBool(_showScreensaverCountdownKey) ?? false;
+    _enableTvBackgroundSpheres =
+        _prefs.getBool(_enableTvBackgroundSpheresKey) ??
+        DefaultSettings.enableTvBackgroundSpheres;
+    _tvBackgroundSphereAmount =
+        _prefs.getString(_tvBackgroundSphereAmountKey) ??
+        DefaultSettings.tvBackgroundSphereAmount;
 
     if (isTv) {
       _oilScreensaverMode = TvDefaults.oilScreensaverMode;

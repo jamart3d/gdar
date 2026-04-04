@@ -31,3 +31,4 @@ export 'ui/widgets/tv/tv_dual_pane_layout.dart';
 export 'ui/widgets/tv/tv_header.dart';
 export 'ui/widgets/tv/tv_focus_wrapper.dart';
 export 'ui/widgets/tv/tv_stepper_row.dart';
+export 'ui/widgets/backgrounds/floating_spheres_background.dart';

@@ -42,8 +42,8 @@ stay within the active theme's color scheme.
 ## Source Widget: Existing Fruit Floating Spheres
 
 The current implementation lives in
-`packages/shakedown_core/lib/ui/screens/playback_screen_fruit_build.dart`
-(lines 1758-2001) and consists of:
+`packages/shakedown_core/lib/ui/screens/playback_screen_fruit_widgets.dart`
+and consists of:
 
 - `_FruitFloatingSpheres` — `StatefulWidget` with `Timer.periodic` at 48ms
 - `_FruitSphereNode` — data class (position, radius, color, velocity, depth)
@@ -129,9 +129,15 @@ const FloatingSpheresBackground({
 });
 ```
 
-**[MODIFY]** `packages/shakedown_core/lib/ui/screens/playback_screen_fruit_build.dart`
+**[MODIFY]** `packages/shakedown_core/lib/ui/screens/playback_screen_fruit_widgets.dart`
 
-Remove private classes, replace with import of new shared widget.
+Remove private `_FruitFloatingSpheres` / `_FruitSphereNode` /
+`_FruitFloatingSpheresPainter` classes.
+
+**[MODIFY]** `packages/shakedown_core/lib/ui/screens/playback_screen_fruit_car_mode.dart`
+
+Replace `_FruitFloatingSpheres(...)` usage (line 37) with
+`FloatingSpheresBackground(sphereCount: SphereAmount.tiny, ...)`.
 
 **[MODIFY]** `packages/shakedown_core/lib/shakedown_core.dart`
 

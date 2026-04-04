@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
 import 'package:shakedown_core/ui/widgets/playback/playback_messages.dart';
 
 // TV Remote Control Intents
@@ -216,6 +217,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
 
     // We use a Stack to float the Playback Bar at the bottom
     return PopScope(
@@ -282,6 +284,21 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
             backgroundColor: Colors.transparent,
             body: Stack(
               children: [
+                // TV Background Spheres (behind all content)
+                if (settingsProvider.enableTvBackgroundSpheres)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: RepaintBoundary(
+                        child: FloatingSpheresBackground(
+                          key: const ValueKey('tv_background_spheres'),
+                          colorScheme: Theme.of(context).colorScheme,
+                          animate: true,
+                          sphereCount:
+                              settingsProvider.tvBackgroundSphereAmount,
+                        ),
+                      ),
+                    ),
+                  ),
                 // Main Dual-Pane Content
                 Padding(
                   padding: const EdgeInsets.symmetric(

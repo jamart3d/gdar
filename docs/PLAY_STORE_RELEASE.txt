@@ -1,3 +1,36 @@
+What's new in v1.3.61+271
+- Moved the Fruit web `Keep Screen On` toggle out of Playback and into Interface, directly under `Floating Spheres`.
+- Made Fruit tab transitions animate in car mode even when liquid glass is off, using a shorter fallback transition instead of an instant page jump.
+- Made the Fruit car-mode top stat chips freeze on their last live values while playback is paused, then resume updating on play.
+- Reworked the Fruit car-mode upcoming queue area into a scrollable region so longer queues stay reachable without pushing controls off-screen.
+- Added regression coverage for paused stat-chip freezing and car-mode tab animation behavior.
+- Fixed an active Fruit car-mode show-list card overflow on narrower widths by tightening the internal layout instead of clipping content.
+- Made narrow Fruit car-mode show-list cards compact the weekday first, then omit the weekday entirely when the card gets too tight.
+- Doubled the compact embedded mini-player play/pause button size on the active show card and increased the thickness of the current-show duration/progress indicator.
+- Disabled `--wasm` in the active local web helper/workflow docs and switched the documented Fruit web run/build paths back to standard Chrome web commands.
+- Split the oversized Fruit playback builder into focused part files:
+  - `playback_screen_fruit_build.dart`
+  - `playback_screen_fruit_car_mode.dart`
+  - `playback_screen_fruit_widgets.dart`
+- Split the oversized Fruit show-list card builder into focused part files:
+  - `show_list_card_build.dart`
+  - `show_list_card_fruit_car_mode.dart`
+  - `show_list_card_fruit_mobile.dart`
+- Fixed the related analyzer findings uncovered during the refactor cleanup.
+- Refreshed `.agent/notes/verification_status.json` to `PASS` for the current `HEAD`.
+- Added a fresh 2026-04-03 monorepo scorecard documenting the improved validation signal, current hotspot list, and fresh Chrome runtime verification.
+- Extracted the private `_FruitFloatingSpheres` / `_FruitFloatingSpheresPainter` / `_FruitSphereNode` classes into a new public shared widget: `packages/shakedown_core/lib/ui/widgets/backgrounds/floating_spheres_background.dart`.
+- Introduced the `SphereAmount` enum (`tiny(6)` / `small(12)` / `medium(22)` / `more(38)`) to control sphere density declaratively.
+- Refactored Fruit car mode to import `FloatingSpheresBackground` with `sphereCount: SphereAmount.tiny` — exact visual parity preserved.
+- Added `enableTvBackgroundSpheres` (bool, default `false`) and `tvBackgroundSphereAmount` (String, default `'small'`) to `SettingsProvider`, `DefaultSettings`, and the shared-preferences loading path.
+- Mounted the sphere background as the bottommost `Positioned.fill` child inside the `TvDualPaneLayout` Stack, wrapped in `IgnorePointer` + `RepaintBoundary`, gated by `enableTvBackgroundSpheres`.
+- Added TV-only settings UI in the Interface section: a toggle tile ("Background Spheres") and a `SegmentedButton` (Small / Medium / More) that appears when the toggle is on.
+- Exported `FloatingSpheresBackground` and `SphereAmount` from the `shakedown_core` barrel.
+- Sphere generation for counts > 6 uses a seeded-deterministic RNG with three depth bands (far / mid / near) for a layered ambient feel; Fruit's original 6-sphere look is preserved via fixed `const` seeds.
+- Full monorepo analysis passes with zero errors after implementation.
+
+---
+
 What's new in v1.3.60+270
 - Added a persisted `car_mode` setting in `SettingsProvider`, defaulting to off.
 - Added a Fruit web `Car Mode` toggle below `UI Scale` in Interface settings.
