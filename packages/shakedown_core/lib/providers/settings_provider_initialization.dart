@@ -35,6 +35,8 @@ mixin _SettingsProviderInitializationExtension
   void resetFruitFirstTimeSettings() {
     _fruitDenseList = false;
     _prefs.setBool(_fruitDenseListKey, false);
+    _fruitFloatingSpheres = false;
+    _prefs.setBool(_fruitFloatingSpheresKey, false);
     _simpleRandomIcon = false;
     _prefs.setBool(_simpleRandomIconKey, false);
     _performanceMode = true;
@@ -194,6 +196,18 @@ mixin _SettingsProviderInitializationExtension
         _prefs.getBool(_markPlayedOnStartKey) ??
         DefaultSettings.markPlayedOnStart;
     _enableHaptics = _prefs.getBool(_enableHapticsKey) ?? true;
+    _carMode = _prefs.getBool(_carModeKey) ?? DefaultSettings.carMode;
+    _fruitFloatingSpheres =
+        _prefs.getBool(_fruitFloatingSpheresKey) ??
+        DefaultSettings.fruitFloatingSpheres;
+    if (_carMode && _uiScale) {
+      _uiScale = false;
+      _abbreviateDayOfWeek = false;
+      _abbreviateMonth = false;
+      _prefs.setBool(_uiScaleKey, false);
+      _prefs.setBool(_abbreviateDayOfWeekKey, false);
+      _prefs.setBool(_abbreviateMonthKey, false);
+    }
 
     _loadLegacyCoreMigrations();
     _loadAppearancePreferences();

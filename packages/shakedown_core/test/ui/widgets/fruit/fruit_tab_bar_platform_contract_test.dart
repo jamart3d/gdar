@@ -15,6 +15,8 @@ class _FakeSettings extends ChangeNotifier implements SettingsProvider {
   _FakeSettings({
     this.fruitEnableLiquidGlass = true,
     this.useTrueBlack = false,
+    this.carMode = false,
+    this.uiScale = false,
   });
 
   @override
@@ -22,7 +24,9 @@ class _FakeSettings extends ChangeNotifier implements SettingsProvider {
   @override
   final bool useTrueBlack;
   @override
-  bool get uiScale => false;
+  final bool carMode;
+  @override
+  final bool uiScale;
   @override
   String get appFont => 'default';
   @override
@@ -110,7 +114,9 @@ Widget _wrap(
       ChangeNotifierProvider<ShowListProvider>.value(value: _FakeShowList()),
       ChangeNotifierProvider<DeviceService>.value(value: _FakeDeviceService()),
     ],
-    child: MaterialApp(home: Scaffold(body: child)),
+    child: MaterialApp(
+      home: Scaffold(body: const SizedBox.expand(), bottomNavigationBar: child),
+    ),
   );
 }
 
@@ -165,6 +171,32 @@ void main() {
       );
 
       expect(find.byType(LiquidGlassWrapper), findsNothing);
+    });
+
+    testWidgets('car mode tab bar is larger than ui scale mode', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FruitTabBar(selectedIndex: 0, onTabSelected: (_) {}),
+          _FakeSettings(uiScale: true),
+        ),
+      );
+      final uiScaleHeight = tester
+          .getSize(find.byKey(const ValueKey('fruit_tab_bar_box')))
+          .height;
+
+      await tester.pumpWidget(
+        _wrap(
+          FruitTabBar(selectedIndex: 0, onTabSelected: (_) {}),
+          _FakeSettings(carMode: true),
+        ),
+      );
+      final carModeHeight = tester
+          .getSize(find.byKey(const ValueKey('fruit_tab_bar_box')))
+          .height;
+
+      expect(carModeHeight, greaterThan(uiScaleHeight));
     });
   });
 }

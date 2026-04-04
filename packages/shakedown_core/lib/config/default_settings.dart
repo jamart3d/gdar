@@ -10,6 +10,8 @@ class DefaultSettings {
   static const String appFont = 'rock_salt';
   static const bool uiScaleDesktopDefault = false;
   static const bool uiScaleMobileDefault = false;
+  static const bool carMode = false;
+  static const bool fruitFloatingSpheres = false;
   static const bool highlightPlayingWithRgb = true;
   static const int glowMode = 0;
   static const double rgbAnimationSpeed = 0.5;

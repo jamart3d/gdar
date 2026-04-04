@@ -553,6 +553,7 @@ class ShowListScreenState extends State<ShowListScreen>
 
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final isFruitCarMode = isFruit && settingsProvider.carMode;
 
     if (!isFruit &&
         !isTrueBlackMode &&
@@ -609,7 +610,9 @@ class ShowListScreenState extends State<ShowListScreen>
         showFocusNodes: _showFocusNodes,
         onFocusShow: focusShow,
         onShowFocused: _onShowFocused,
-        topPadding: isFruit ? (MediaQuery.paddingOf(context).top + 80) : 0,
+        topPadding: isFruit
+            ? (MediaQuery.paddingOf(context).top + (isFruitCarMode ? 108 : 80))
+            : 0,
       ),
     );
   }

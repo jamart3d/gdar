@@ -16,6 +16,8 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/ui/widgets/rating_control.dart';
+import 'package:shakedown_core/ui/widgets/shnid_badge.dart';
+import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
@@ -47,7 +49,37 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
   Future<void> refresh() async {}
 }
 
+class MockFruitThemeProvider extends ChangeNotifier implements ThemeProvider {
+  @override
+  ThemeStyle get themeStyle => ThemeStyle.fruit;
+
+  @override
+  bool get isFruitAllowed => true;
+
+  @override
+  Future<void> get initializationComplete => Future.value();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 class MockSettingsProvider extends Mock implements SettingsProvider {
+  bool _carMode = false;
+  bool _fruitFloatingSpheres = false;
+  bool _showDevAudioHud = false;
+
+  void setCarMode(bool value) {
+    _carMode = value;
+  }
+
+  void setFruitFloatingSpheres(bool value) {
+    _fruitFloatingSpheres = value;
+  }
+
+  void setShowDevAudioHud(bool value) {
+    _showDevAudioHud = value;
+  }
+
   @override
   bool get sortOldestFirst => true;
   @override
@@ -55,6 +87,10 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
 
   @override
   bool get uiScale => false;
+  @override
+  bool get carMode => _carMode;
+  @override
+  bool get fruitFloatingSpheres => _fruitFloatingSpheres;
   @override
   bool get showSingleShnid => false;
   @override
@@ -68,6 +104,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get highlightPlayingWithRgb => false;
   @override
   bool get showPlaybackMessages => false;
+  @override
+  bool get showDevAudioHud => _showDevAudioHud;
   // useHandwritingFont removed
   @override
   bool get useDynamicColor => false;
@@ -86,6 +124,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   bool get playRandomOnCompletion => false;
   @override
   bool get playRandomOnStartup => false;
+  @override
+  AudioEngineMode get audioEngineMode => AudioEngineMode.auto;
   @override
   bool get useSliverAppBar => false;
   @override
@@ -237,9 +277,13 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   bool get fruitDenseList => false;
   @override
+  bool get marqueeEnabled => true;
+  @override
   bool get fruitEnableLiquidGlass => false;
   @override
   bool get fruitStickyNowPlaying => false;
+  @override
+  bool get oilTvPremiumHighlight => false;
 }
 
 class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
@@ -334,6 +378,10 @@ class MockCatalogService extends Mock implements CatalogService {
       ValueNotifier(MockBox<bool>());
 
   @override
+  ValueListenable<Box<int>> get playCountsListenable =>
+      ValueNotifier(MockBox<int>());
+
+  @override
   bool isPlayed(String sourceId) => false;
 
   @override
@@ -374,7 +422,18 @@ void main() {
     url: '',
     setName: 'Set 1',
   );
-  final dummySource = Source(id: 'source1', tracks: [dummyTrack1, dummyTrack2]);
+  final dummyTrack3 = Track(
+    trackNumber: 3,
+    title: 'Track 3',
+    duration: 140,
+    url: '',
+    setName: 'Set 1',
+  );
+  final dummySource = Source(
+    id: 'source1',
+    src: 'sbd',
+    tracks: [dummyTrack1, dummyTrack2, dummyTrack3],
+  );
   final dummyShow = Show(
     name: 'Venue A on 2025-01-15',
     artist: 'Grateful Dead',
@@ -382,6 +441,15 @@ void main() {
     venue: 'Venue A',
     sources: [dummySource],
   );
+
+  void setLargeCarModeViewport(WidgetTester tester) {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(1400, 1200);
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+  }
 
   setUp(() async {
     const channel = MethodChannel('plugins.flutter.io/path_provider');
@@ -480,7 +548,10 @@ void main() {
     ).thenAnswer((_) => Stream.value(null));
   });
 
-  Widget createTestableWidget({required Widget child}) {
+  Widget createTestableWidget({
+    required Widget child,
+    ThemeProvider? themeProvider,
+  }) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
@@ -491,7 +562,9 @@ void main() {
         ChangeNotifierProvider<ShowListProvider>.value(
           value: mockShowListProvider,
         ),
-        ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider<ThemeProvider>.value(
+          value: themeProvider ?? ThemeProvider(),
+        ),
       ],
       child: MaterialApp(home: child),
     );
@@ -593,4 +666,135 @@ void main() {
     // Note: If finding icons fails but RatingControl is present, check flutter_rating_bar implementation
     expect(find.byIcon(Icons.star_rounded), findsAtLeastNWidgets(3));
   });
+
+  testWidgets('PlaybackScreen uses Fruit car mode layout when enabled', (
+    WidgetTester tester,
+  ) async {
+    setLargeCarModeViewport(tester);
+    when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+    when(mockAudioProvider.currentSource).thenReturn(dummySource);
+    when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+    mockSettingsProvider.setCarMode(true);
+    mockSettingsProvider.setShowDevAudioHud(false);
+
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const PlaybackScreen(showFruitTabBar: false),
+        themeProvider: MockFruitThemeProvider(),
+      ),
+    );
+
+    expect(find.byKey(const ValueKey('fruit_car_mode_layout')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('fruit_car_mode_chip_row')),
+      findsOneWidget,
+    );
+    expect(find.text('Driving Mode'), findsNothing);
+    expect(find.text('Track 2'), findsOneWidget);
+    expect(find.text('Track 3'), findsOneWidget);
+  });
+
+  testWidgets(
+    'PlaybackScreen stacks src over shnid in Fruit car mode meta hud without chip badges',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.tap(find.byKey(const ValueKey('fruit_car_mode_chip_row')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      final srcText = find.byKey(const ValueKey('fruit_car_mode_src_label'));
+      final shnidText = find.byKey(
+        const ValueKey('fruit_car_mode_shnid_label'),
+      );
+
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_meta_stack')),
+        findsOneWidget,
+      );
+      expect(srcText, findsOneWidget);
+      expect(shnidText, findsOneWidget);
+      expect(find.text('SBD'), findsOneWidget);
+      expect(find.byType(SrcBadge), findsNothing);
+      expect(find.byType(ShnidBadge), findsNothing);
+      expect(
+        tester.getTopLeft(shnidText).dy,
+        greaterThan(tester.getTopLeft(srcText).dy),
+      );
+    },
+  );
+
+  testWidgets(
+    'PlaybackScreen opens rating dialog from Fruit car mode rating zone',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.tap(find.byKey(const ValueKey('fruit_car_mode_chip_row')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      final ratingZone = find.byKey(
+        const ValueKey('fruit_car_mode_rating_zone'),
+      );
+
+      expect(ratingZone, findsOneWidget);
+      expect(tester.getSize(ratingZone).width, greaterThan(200.0));
+
+      await tester.tapAt(tester.getCenter(ratingZone));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      expect(find.byType(RatingDialog), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'PlaybackScreen shows floating spheres in Fruit car mode when enabled',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setFruitFloatingSpheres(true);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_floating_spheres')),
+        findsOneWidget,
+      );
+    },
+  );
 }

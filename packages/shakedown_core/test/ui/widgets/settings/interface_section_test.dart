@@ -78,4 +78,57 @@ void main() {
     expect(find.byType(FruitSwitch), findsWidgets);
     expect(find.byType(SwitchListTile), findsNothing);
   });
+
+  testWidgets('Fruit interface section shows car mode below UI scale', (
+    tester,
+  ) async {
+    final settingsProvider = await createSettingsProvider();
+
+    await tester.pumpWidget(
+      buildSubject(
+        settingsProvider: settingsProvider,
+        themeProvider: _FakeFruitThemeProvider(),
+        deviceService: MockDeviceService(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(settingsProvider.carMode, isFalse);
+
+    final uiScaleFinder = find.text('UI Scale');
+    final carModeFinder = find.text('Car Mode');
+    final spheresFinder = find.text('Floating Spheres');
+
+    expect(uiScaleFinder, findsOneWidget);
+    expect(carModeFinder, findsOneWidget);
+    expect(spheresFinder, findsOneWidget);
+    expect(
+      tester.getTopLeft(carModeFinder).dy,
+      greaterThan(tester.getTopLeft(uiScaleFinder).dy),
+    );
+    expect(
+      tester.getTopLeft(spheresFinder).dy,
+      greaterThan(tester.getTopLeft(carModeFinder).dy),
+    );
+  });
+
+  testWidgets('Fruit interface section hides UI scale when car mode is on', (
+    tester,
+  ) async {
+    final settingsProvider = await createSettingsProvider();
+    settingsProvider.toggleCarMode();
+
+    await tester.pumpWidget(
+      buildSubject(
+        settingsProvider: settingsProvider,
+        themeProvider: _FakeFruitThemeProvider(),
+        deviceService: MockDeviceService(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Car Mode'), findsOneWidget);
+    expect(find.text('Floating Spheres'), findsOneWidget);
+    expect(find.text('UI Scale'), findsNothing);
+  });
 }

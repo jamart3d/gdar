@@ -91,6 +91,18 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
     }
 
     if (isFruit) {
+      if (settingsProvider.carMode && !widget.isPane) {
+        return _buildFruitCarModeScaffold(
+          context: context,
+          audioProvider: audioProvider,
+          backgroundColor: backgroundColor,
+          currentShow: currentShow,
+          currentSource: currentSource,
+          scaleFactor: scaleFactor,
+          settingsProvider: settingsProvider,
+        );
+      }
+
       return _buildFruitPlaybackScaffold(
         context: context,
         audioProvider: audioProvider,

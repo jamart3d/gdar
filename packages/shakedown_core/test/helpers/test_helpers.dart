@@ -3,6 +3,7 @@ import 'package:shakedown_core/services/device_service.dart';
 
 class MockDeviceService extends ChangeNotifier implements DeviceService {
   bool _isTv = false;
+  bool _isPwa = false;
 
   @override
   bool get isTv => _isTv;
@@ -22,7 +23,12 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
   bool get isSafari => false;
 
   @override
-  bool get isPwa => false;
+  bool get isPwa => _isPwa;
+
+  set isPwa(bool value) {
+    _isPwa = value;
+    notifyListeners();
+  }
 
   @override
   String? get deviceName => 'Mock Device';

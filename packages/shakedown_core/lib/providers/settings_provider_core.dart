@@ -19,6 +19,8 @@ const String _fruitEnableLiquidGlassKey = 'fruit_enable_liquid_glass';
 const String _neumorphicStyleKey = 'neumorphic_style';
 const String _performanceModeKey = 'performance_mode';
 const String _uiScaleKey = 'ui_scale';
+const String _carModeKey = 'car_mode';
+const String _fruitFloatingSpheresKey = 'fruit_floating_spheres';
 const String _seedColorKey = 'seed_color';
 const String _glowModeKey = 'glow_mode';
 const String _showGlowBorderKey = 'show_glow_border';
@@ -74,6 +76,8 @@ mixin _SettingsProviderCoreFields {
   late bool _useDynamicColor;
   late bool _useTrueBlack;
   late bool _uiScale;
+  late bool _carMode;
+  late bool _fruitFloatingSpheres;
   late int _glowMode;
   late bool _highlightPlayingWithRgb;
   late bool _showPlaybackMessages;
@@ -140,6 +144,8 @@ mixin _SettingsProviderCoreExtension
   bool get useSliverAppBar => true;
   bool get useSharedAxisTransition => true;
   bool get uiScale => _uiScale;
+  bool get carMode => _carMode;
+  bool get fruitFloatingSpheres => _fruitFloatingSpheres;
   int get glowMode => _glowMode;
   bool get highlightPlayingWithRgb => _highlightPlayingWithRgb;
   bool get showPlaybackMessages => _showPlaybackMessages;
@@ -340,6 +346,27 @@ mixin _SettingsProviderCoreExtension
     _prefs.setBool(_abbreviateMonthKey, _abbreviateMonth);
     notifyListeners();
   }
+
+  void toggleCarMode() {
+    _carMode = !_carMode;
+    _prefs.setBool(_carModeKey, _carMode);
+
+    if (_carMode && _uiScale) {
+      _uiScale = false;
+      _abbreviateDayOfWeek = false;
+      _abbreviateMonth = false;
+      _prefs.setBool(_uiScaleKey, false);
+      _prefs.setBool(_abbreviateDayOfWeekKey, false);
+      _prefs.setBool(_abbreviateMonthKey, false);
+    }
+
+    notifyListeners();
+  }
+
+  void toggleFruitFloatingSpheres() => _updatePreference(
+    _fruitFloatingSpheresKey,
+    _fruitFloatingSpheres = !_fruitFloatingSpheres,
+  );
 
   void toggleHideTvScrollbars() => _updatePreference(
     _hideTvScrollbarsKey,

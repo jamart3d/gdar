@@ -10,6 +10,7 @@ class SrcBadge extends StatelessWidget {
   final double fontSize;
   final bool matchShnidLook;
   final EdgeInsetsGeometry? padding;
+  final FontWeight? fontWeight;
   final double scaleFactor;
 
   const SrcBadge({
@@ -19,6 +20,7 @@ class SrcBadge extends StatelessWidget {
     this.fontSize = 7.0,
     this.matchShnidLook = false,
     this.padding,
+    this.fontWeight,
     this.scaleFactor = 1.0,
   });
 
@@ -78,7 +80,7 @@ class SrcBadge extends StatelessWidget {
         src.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: textColor,
-          fontWeight: FontWeight.bold,
+          fontWeight: fontWeight ?? FontWeight.bold,
           height: matchShnidLook ? 1.4 : 1.0, // Reduced from 1.5
           fontSize:
               (matchShnidLook

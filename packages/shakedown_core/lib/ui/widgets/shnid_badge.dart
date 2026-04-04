@@ -14,6 +14,10 @@ class ShnidBadge extends StatelessWidget {
   final VoidCallback? onTap;
   final bool interactive;
   final Uri? uri;
+  final double? fontSize;
+  final EdgeInsetsGeometry? padding;
+  final double? maxWidth;
+  final FontWeight? fontWeight;
 
   const ShnidBadge({
     super.key,
@@ -23,6 +27,10 @@ class ShnidBadge extends StatelessWidget {
     this.onTap,
     this.interactive = true,
     this.uri,
+    this.fontSize,
+    this.padding,
+    this.maxWidth,
+    this.fontWeight,
   });
 
   @override
@@ -53,11 +61,12 @@ class ShnidBadge extends StatelessWidget {
       text,
       style: Theme.of(context).textTheme.labelSmall?.copyWith(
         color: textColor,
-        fontWeight: FontWeight.w600,
+        fontWeight: fontWeight ?? FontWeight.w600,
         fontSize:
-            ((settingsProvider.appFont == 'rock_salt')
-                ? 7.5 * effectiveScale
-                : 9.0 * effectiveScale) *
+            (fontSize ??
+                ((settingsProvider.appFont == 'rock_salt')
+                    ? 7.5 * effectiveScale
+                    : 9.0 * effectiveScale)) *
             scaleFactor,
         height: (settingsProvider.appFont == 'rock_salt') ? 2.0 : 1.5,
         letterSpacing:
@@ -87,11 +96,15 @@ class ShnidBadge extends StatelessWidget {
     }
 
     Widget badge = Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: 6 * scaleFactor,
-        vertical: 1.0 * scaleFactor,
-      ),
-      constraints: const BoxConstraints(maxWidth: 100),
+      padding:
+          padding ??
+          EdgeInsets.symmetric(
+            horizontal: 6 * scaleFactor,
+            vertical: 1.0 * scaleFactor,
+          ),
+      constraints: maxWidth == null
+          ? null
+          : BoxConstraints(maxWidth: maxWidth! * scaleFactor),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: gradientColors,

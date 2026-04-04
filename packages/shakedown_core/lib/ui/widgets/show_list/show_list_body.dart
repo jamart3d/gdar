@@ -71,14 +71,15 @@ class ShowListBody extends StatelessWidget {
     final isTv = context.watch<DeviceService>().isTv;
     final bool isFruit =
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
+    final bool isFruitCarMode = isFruit && settingsProvider.carMode;
 
     final list = ScrollablePositionedList.builder(
       itemScrollController: itemScrollController,
       itemPositionsListener: itemPositionsListener,
       padding: EdgeInsets.only(
         top: topPadding,
-        left: isTv ? 24.0 : 0.0,
-        bottom: isTv ? 28 : (isFruit ? 180 : 160),
+        left: isTv ? 24.0 : (isFruitCarMode ? 8.0 : 0.0),
+        bottom: isTv ? 28 : (isFruitCarMode ? 220 : (isFruit ? 180 : 160)),
         right: isTv ? 24.0 : 28, // Give glow room on TV to avoid pane clipping
       ),
       itemCount: showListProvider.filteredShows.length,

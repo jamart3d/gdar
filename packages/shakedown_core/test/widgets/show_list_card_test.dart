@@ -7,7 +7,9 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/ui/widgets/rating_control.dart';
+import 'package:shakedown_core/ui/widgets/show_list/embedded_mini_player.dart';
 import 'package:shakedown_core/ui/widgets/show_list/show_list_card.dart';
+import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:just_audio/just_audio.dart';
@@ -29,6 +31,23 @@ class SimpleAudioProvider extends ChangeNotifier implements AudioProvider {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
+}
+
+class _FruitThemeProvider extends ChangeNotifier implements ThemeProvider {
+  @override
+  ThemeStyle get themeStyle => ThemeStyle.fruit;
+
+  @override
+  bool get isFruit => true;
+
+  @override
+  bool get isFruitAllowed => true;
+
+  @override
+  Future<void> get initializationComplete => Future.value();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {
@@ -56,6 +75,8 @@ void main() {
     String date, {
     int sourceCount = 1,
     bool hasFeaturedTrack = false,
+    String? primarySrc,
+    String? sourceLocation,
   }) {
     return Show(
       name: name,
@@ -64,7 +85,12 @@ void main() {
       venue: name.split(' on ').first,
       sources: List.generate(
         sourceCount,
-        (i) => Source(id: 'source$i', tracks: []),
+        (i) => Source(
+          id: 'source$i',
+          src: i == 0 ? primarySrc : null,
+          tracks: const [],
+          location: sourceLocation,
+        ),
       ),
       hasFeaturedTrack: hasFeaturedTrack,
     );
@@ -78,19 +104,25 @@ void main() {
     VoidCallback? onTap,
     VoidCallback? onLongPress,
     SettingsProvider? settingsProvider,
+    ThemeProvider? themeProvider,
+    MockDeviceService? deviceService,
   }) {
     final audioProvider = SimpleAudioProvider();
     audioProvider.isPlaying = isPlaying;
     audioProvider.currentShow = isPlaying ? show : null;
+    final resolvedThemeProvider = themeProvider ?? ThemeProvider();
+    final resolvedDeviceService = deviceService ?? MockDeviceService();
 
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
           create: (_) => settingsProvider ?? SettingsProvider(prefs),
         ),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider<DeviceService>(
-          create: (_) => MockDeviceService(),
+        ChangeNotifierProvider<ThemeProvider>.value(
+          value: resolvedThemeProvider,
+        ),
+        ChangeNotifierProvider<DeviceService>.value(
+          value: resolvedDeviceService,
         ),
         ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
       ],
@@ -122,6 +154,114 @@ void main() {
     expect(find.text(dummyShow.venue), findsOneWidget);
     expect(find.text('Jan 15, 2025'), findsOneWidget);
   });
+
+  testWidgets('ShowListCard uses Fruit car mode layout on web Fruit car mode', (
+    WidgetTester tester,
+  ) async {
+    final dummyShow = createDummyShow('Winterland Arena', '1974-10-20');
+    dummyShow.location = 'San Francisco, CA';
+
+    final settingsProvider = SettingsProvider(prefs);
+    settingsProvider.toggleCarMode();
+
+    await tester.pumpWidget(
+      createTestableWidget(
+        show: dummyShow,
+        settingsProvider: settingsProvider,
+        themeProvider: _FruitThemeProvider(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('fruit_show_list_car_mode_card')),
+      findsOneWidget,
+    );
+    expect(find.text(dummyShow.location), findsOneWidget);
+    expect(find.text('Oct 20, 1974'), findsOneWidget);
+  });
+
+  testWidgets(
+    'ShowListCard Fruit car mode respects dateFirstInShowCard setting',
+    (WidgetTester tester) async {
+      final dummyShow = createDummyShow('Winterland Arena', '1974-10-20');
+      dummyShow.location = 'San Francisco, CA';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: dummyShow,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getTopLeft(find.text('Oct 20, 1974')).dy,
+        lessThan(tester.getTopLeft(find.text(dummyShow.venue)).dy),
+      );
+
+      settingsProvider.toggleDateFirstInShowCard();
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getTopLeft(find.text(dummyShow.venue)).dy,
+        lessThan(tester.getTopLeft(find.text('Oct 20, 1974')).dy),
+      );
+    },
+  );
+
+  testWidgets(
+    'ShowListCard Fruit car mode places src badge under rating and player right',
+    (WidgetTester tester) async {
+      final dummyShow = createDummyShow(
+        'Winterland Arena',
+        '1974-10-20',
+        primarySrc: 'matrix',
+        sourceLocation: 'San Francisco, CA',
+      );
+      dummyShow.location = 'San Francisco, CA';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: dummyShow,
+          isPlaying: true,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
+      final ratingFinder = find.byType(RatingControl);
+      final srcFinder = find.byType(SrcBadge);
+      final playerFinder = find.byType(EmbeddedMiniPlayer);
+      final cardFinder = find.byKey(
+        const ValueKey('fruit_show_list_car_mode_card'),
+      );
+
+      expect(ratingFinder, findsOneWidget);
+      expect(srcFinder, findsOneWidget);
+      expect(playerFinder, findsOneWidget);
+      expect(cardFinder, findsOneWidget);
+
+      expect(
+        tester.getTopLeft(srcFinder).dy,
+        greaterThan(tester.getTopLeft(ratingFinder).dy),
+      );
+      expect(
+        tester.getTopRight(cardFinder).dx - tester.getTopRight(playerFinder).dx,
+        lessThan(40.0),
+      );
+      expect(tester.getSize(playerFinder).width, greaterThan(280.0));
+    },
+  );
 
   testWidgets('ShowListCard border color changes when isPlaying is true', (
     WidgetTester tester,

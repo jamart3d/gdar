@@ -8,6 +8,7 @@ extension _ShowListCardBuild on _ShowListCardState {
     final isTv = deviceService.isTv;
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.isFruit;
+    final isFruitCarMode = isFruit && settingsProvider.carMode;
 
     final style = CardStyle.compute(
       context: context,
@@ -21,8 +22,10 @@ extension _ShowListCardBuild on _ShowListCardState {
 
     final hPadding = isTv
         ? 24.0
+        : isFruitCarMode
+        ? 20.0
         : (settingsProvider.performanceMode ? 8.0 : 16.0);
-    const vPadding = 2.0;
+    final double vPadding = isFruitCarMode ? 6.0 : 2.0;
     final outerPadding = EdgeInsets.fromLTRB(
       hPadding,
       isTv ? 2 : vPadding,
@@ -216,11 +219,23 @@ extension _ShowListCardBuild on _ShowListCardState {
     final bool isFruit = context.read<ThemeProvider>().isFruit;
     final double screenWidth = MediaQuery.of(context).size.width;
     final deviceService = context.watch<DeviceService>();
+    final bool isFruitCarMode = isFruit && settingsProvider.carMode;
     final bool useMobileLayout =
         isWeb &&
         (screenWidth < 850 || deviceService.isPwa || deviceService.isMobile) &&
         !isTv;
     final bool usePremium = settingsProvider.useNeumorphism && isFruit;
+
+    if (isFruitCarMode && !isTv) {
+      return _buildFruitCarModeCardContent(
+        context: context,
+        borderRadius: borderRadius,
+        backgroundColor: backgroundColor,
+        style: style,
+        settingsProvider: settingsProvider,
+        colorScheme: colorScheme,
+      );
+    }
 
     if (isFruit && useMobileLayout && !isTv) {
       return _buildFruitMobileCardContent(
@@ -552,6 +567,13 @@ extension _ShowListCardBuild on _ShowListCardState {
             ? widget.show.sources.firstOrNull
             : null);
     final String? ratingKey = targetSource?.id;
+    final bool dateFirst = settingsProvider.dateFirstInShowCard;
+    final String primaryText = dateFirst
+        ? style.formattedDate
+        : widget.show.venue;
+    final String secondaryText = dateFirst
+        ? widget.show.venue
+        : style.formattedDate;
 
     return ValueListenableBuilder(
       valueListenable: CatalogService().ratingsListenable,
@@ -632,7 +654,7 @@ extension _ShowListCardBuild on _ShowListCardState {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            style.formattedDate,
+                            primaryText,
                             style: const TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 15.0,
@@ -644,7 +666,7 @@ extension _ShowListCardBuild on _ShowListCardState {
                           ),
                           const SizedBox(height: 3),
                           Text(
-                            widget.show.venue,
+                            secondaryText,
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 13.0,
@@ -729,6 +751,249 @@ extension _ShowListCardBuild on _ShowListCardState {
                           ),
                         ],
                       ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFruitCarModeCardContent({
+    required BuildContext context,
+    required double borderRadius,
+    required Color backgroundColor,
+    required CardStyle style,
+    required SettingsProvider settingsProvider,
+    required ColorScheme colorScheme,
+  }) {
+    final Source? targetSource =
+        (widget.isPlaying ? widget.playingSource : null) ??
+        (widget.show.sources.length == 1
+            ? widget.show.sources.firstOrNull
+            : null);
+    final String? ratingKey = targetSource?.id;
+    final String locationText =
+        (widget.playingSource?.location ?? widget.show.location).trim();
+    final String? badgeSrc = targetSource?.src;
+    final bool shouldShowSrcBadge = badgeSrc != null && badgeSrc.isNotEmpty;
+    final bool dateFirst = settingsProvider.dateFirstInShowCard;
+    final String primaryHeadline = dateFirst
+        ? style.formattedDate
+        : widget.show.venue;
+
+    return ValueListenableBuilder(
+      valueListenable: CatalogService().ratingsListenable,
+      builder: (context, _, _) {
+        final int rating = ratingKey != null
+            ? CatalogService().getRating(ratingKey)
+            : 0;
+        final bool isPlayed = ratingKey != null
+            ? CatalogService().isPlayed(ratingKey)
+            : false;
+
+        return Container(
+          key: const ValueKey('fruit_show_list_car_mode_card'),
+          height: 216 * style.effectiveScale,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius),
+            color: backgroundColor,
+          ),
+          child: Material(
+            color: const Color(0x00000000),
+            child: InkWell(
+              canRequestFocus: true,
+              borderRadius: BorderRadius.circular(borderRadius),
+              onTap: () {
+                AppHaptics.selectionClick(context.read<DeviceService>());
+                widget.onTap();
+              },
+              onLongPress: widget.onLongPress,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  20 * style.effectiveScale,
+                  18 * style.effectiveScale,
+                  20 * style.effectiveScale,
+                  18 * style.effectiveScale,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            primaryHeadline,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 34 * style.effectiveScale,
+                              fontWeight: FontWeight.w900,
+                              height: 0.95,
+                              letterSpacing: -0.8,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        if (ratingKey != null || shouldShowSrcBadge) ...[
+                          SizedBox(width: 16 * style.effectiveScale),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              if (ratingKey != null)
+                                RatingControl(
+                                  rating: rating,
+                                  isPlayed: isPlayed,
+                                  size: 34 * style.effectiveScale,
+                                  compact: true,
+                                  enforceMinTapTarget: true,
+                                  onTap:
+                                      (widget.isPlaying ||
+                                          widget.alwaysShowRatingInteraction ||
+                                          widget.show.sources.length == 1)
+                                      ? () async {
+                                          await showDialog(
+                                            context: context,
+                                            builder: (context) => RatingDialog(
+                                              initialRating: rating,
+                                              sourceId: ratingKey,
+                                              sourceUrl: targetSource
+                                                  ?.tracks
+                                                  .firstOrNull
+                                                  ?.url,
+                                              isPlayed: isPlayed,
+                                              onRatingChanged: (newRating) {
+                                                CatalogService().setRating(
+                                                  ratingKey,
+                                                  newRating,
+                                                );
+                                              },
+                                              onPlayedChanged: (newIsPlayed) {
+                                                if (newIsPlayed !=
+                                                    CatalogService().isPlayed(
+                                                      ratingKey,
+                                                    )) {
+                                                  CatalogService().togglePlayed(
+                                                    ratingKey,
+                                                  );
+                                                }
+                                              },
+                                            ),
+                                          );
+                                        }
+                                      : null,
+                                ),
+                              if (ratingKey != null && shouldShowSrcBadge)
+                                SizedBox(height: 8 * style.effectiveScale),
+                              if (shouldShowSrcBadge)
+                                SrcBadge(
+                                  src: badgeSrc,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w800,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10 * style.effectiveScale,
+                                    vertical: 4 * style.effectiveScale,
+                                  ),
+                                  scaleFactor: style.effectiveScale,
+                                ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                    SizedBox(height: 10 * style.effectiveScale),
+                    if (dateFirst) ...[
+                      Text(
+                        widget.show.venue,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 25 * style.effectiveScale,
+                          fontWeight: FontWeight.w800,
+                          height: 1.05,
+                          color: colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.9,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 6 * style.effectiveScale),
+                    ],
+                    if (locationText.isNotEmpty) ...[
+                      Text(
+                        locationText,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 19 * style.effectiveScale,
+                          fontWeight: FontWeight.w700,
+                          height: 1.1,
+                          color: colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.88,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 6 * style.effectiveScale),
+                    ],
+                    if (!dateFirst)
+                      Text(
+                        style.formattedDate,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 25 * style.effectiveScale,
+                          fontWeight: FontWeight.w800,
+                          height: 1.1,
+                          color: colorScheme.onSurfaceVariant.withValues(
+                            alpha: 0.74,
+                          ),
+                        ),
+                      ),
+                    const Spacer(),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (style.shouldShowBadge)
+                          _buildBadge(
+                            context,
+                            widget.show,
+                            style.effectiveScale * 1.1,
+                            false,
+                          ),
+                        SizedBox(
+                          width: style.shouldShowBadge
+                              ? 12 * style.effectiveScale
+                              : 0,
+                        ),
+                        const Spacer(),
+                        SizedBox(
+                          width: 304 * style.effectiveScale,
+                          height: 50 * style.effectiveScale,
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 120),
+                            curve: Curves.easeOutCubic,
+                            opacity: widget.isPlaying ? 1.0 : 0.0,
+                            child: IgnorePointer(
+                              ignoring: !widget.isPlaying,
+                              child: widget.isPlaying
+                                  ? EmbeddedMiniPlayer(
+                                      scaleFactor: style.effectiveScale,
+                                      compact: true,
+                                      showFullDuration: true,
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

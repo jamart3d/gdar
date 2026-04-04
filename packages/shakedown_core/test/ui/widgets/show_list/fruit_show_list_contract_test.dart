@@ -63,6 +63,9 @@ class _FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get uiScale => false;
 
   @override
+  bool get carMode => false;
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 

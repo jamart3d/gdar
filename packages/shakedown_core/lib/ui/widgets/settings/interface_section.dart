@@ -123,38 +123,105 @@ class InterfaceSection extends StatelessWidget {
             ),
           ),
         ],
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'UI Scale',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+        if (!settingsProvider.carMode)
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'UI Scale',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+              ),
+            ),
+            subtitle: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Increase text size across the app',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+              ),
+            ),
+            value: settingsProvider.uiScale,
+            onChanged: (value) {
+              AppHaptics.lightImpact(context.read<DeviceService>());
+              context.read<SettingsProvider>().toggleUiScale();
+            },
+            secondary: Icon(
+              isFruit ? LucideIcons.type : Icons.text_fields_rounded,
             ),
           ),
-          subtitle: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Increase text size across the app',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+        if (isFruit && !isTv)
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Car Mode',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+              ),
+            ),
+            subtitle: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Use the driving-friendly playback layout',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+              ),
+            ),
+            value: settingsProvider.carMode,
+            onChanged: (value) {
+              AppHaptics.lightImpact(context.read<DeviceService>());
+              context.read<SettingsProvider>().toggleCarMode();
+            },
+            secondary: Icon(
+              isFruit ? LucideIcons.rocket : Icons.directions_car_rounded,
             ),
           ),
-          value: settingsProvider.uiScale,
-          onChanged: (value) {
-            AppHaptics.lightImpact(context.read<DeviceService>());
-            context.read<SettingsProvider>().toggleUiScale();
-          },
-          secondary: Icon(
-            isFruit ? LucideIcons.type : Icons.text_fields_rounded,
+        if (isFruit && !isTv)
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Floating Spheres',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+              ),
+            ),
+            subtitle: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Animated background for car mode playback',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+              ),
+            ),
+            value: settingsProvider.fruitFloatingSpheres,
+            onChanged: (value) {
+              AppHaptics.lightImpact(context.read<DeviceService>());
+              context.read<SettingsProvider>().toggleFruitFloatingSpheres();
+            },
+            secondary: Icon(
+              isFruit ? LucideIcons.circle : Icons.bubble_chart_rounded,
+            ),
           ),
-        ),
         TvSwitchListTile(
           dense: true,
           visualDensity: VisualDensity.compact,

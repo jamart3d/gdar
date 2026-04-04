@@ -246,9 +246,14 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   Widget _buildFruitFloatingHeader(BuildContext context) {
     final showListProvider = context.watch<ShowListProvider>();
+    final settingsProvider = context.watch<SettingsProvider>();
+    final isCarMode = settingsProvider.carMode;
+    final double horizontalPadding = isCarMode ? 28.0 : 24.0;
+    final double titleFontSize = isCarMode ? 24.0 : 20.0;
+    final double titleGap = isCarMode ? 16.0 : 12.0;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
       child: Center(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -268,7 +273,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
                             onSubmitted: onSearchSubmitted ?? (_) {},
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: isCarMode ? 12 : 8),
                         FruitTextAction(
                           label: 'Cancel',
                           onPressed: () {
@@ -281,8 +286,8 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const ShakedownTitle(
-                          fontSize: 20,
+                        ShakedownTitle(
+                          fontSize: titleFontSize,
                           animateOnStart: true,
                           shakeDelay: Duration(milliseconds: 1700),
                           fontKeyOverride: 'rock_salt',
@@ -295,7 +300,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
                       ],
                     ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: titleGap),
             // Right Area: Fixed Theme Toggle (Never Moves)
             _buildFruitHeaderButton(
               context,
@@ -319,9 +324,12 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
     required IconData icon,
     required VoidCallback onPressed,
   }) {
+    final settingsProvider = context.watch<SettingsProvider>();
+    final double buttonSize = settingsProvider.carMode ? 52 : 44;
+
     return SizedBox(
-      width: 44,
-      height: 44,
+      width: buttonSize,
+      height: buttonSize,
       child: Center(
         child: FruitActionButton(icon: icon, onPressed: onPressed),
       ),

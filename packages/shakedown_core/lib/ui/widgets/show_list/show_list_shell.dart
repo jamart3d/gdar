@@ -10,6 +10,7 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
+import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/web_runtime.dart';
 
 /// The layout shell for [ShowListScreen], including AppBar, SearchBar, and MiniPlayer.
@@ -55,14 +56,15 @@ class ShowListShell extends StatelessWidget {
     this.showFruitTabBar = true,
   });
 
-  Widget _buildFruitHeader(BuildContext context) {
+  Widget _buildFruitHeader(BuildContext context, {required bool isCarMode}) {
+    final double bodyHeight = isCarMode ? 92 : 80;
     return Container(
-      height: MediaQuery.paddingOf(context).top + 80,
+      height: MediaQuery.paddingOf(context).top + bodyHeight,
       padding: EdgeInsets.only(top: MediaQuery.paddingOf(context).top),
       decoration: const BoxDecoration(border: null),
       alignment: Alignment.topCenter,
       child: SizedBox(
-        height: 80,
+        height: bodyHeight,
         child: ShowListAppBar(
           backgroundColor: Colors.transparent,
           randomPulseAnimation: randomPulseAnimation,
@@ -88,6 +90,7 @@ class ShowListShell extends StatelessWidget {
         .watch<SettingsProvider>(); // Defined settingsProvider
     final bool isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
     final bool disableShader = kIsWeb && isWasmRuntime();
+    final bool isFruitCarMode = isFruit && settingsProvider.carMode;
 
     // MiniPlayer logic:
     // - Always show in Android style if a track is loaded.
@@ -123,7 +126,10 @@ class ShowListShell extends StatelessWidget {
                     showBorder: false,
                     blur: FruitTokens.blurSoft,
                     opacity: 0.9,
-                    child: _buildFruitHeader(context),
+                    child: _buildFruitHeader(
+                      context,
+                      isCarMode: isFruitCarMode,
+                    ),
                   )
                 : ShaderMask(
                     shaderCallback: (bounds) {
@@ -140,7 +146,10 @@ class ShowListShell extends StatelessWidget {
                       blur: FruitTokens.blurSoft,
                       opacity: 0.9,
                       borderRadius: BorderRadius.zero,
-                      child: _buildFruitHeader(context),
+                      child: _buildFruitHeader(
+                        context,
+                        isCarMode: isFruitCarMode,
+                      ),
                     ),
                   ),
           ),

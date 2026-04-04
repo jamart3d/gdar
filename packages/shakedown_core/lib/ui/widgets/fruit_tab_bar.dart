@@ -49,7 +49,9 @@ class FruitTabBar extends StatelessWidget {
     final isFruitColor = themeProvider.themeStyle == ThemeStyle.fruit;
     final double denseMultiplier =
         isFruitColor && !settingsProvider.fruitDenseList ? 1.3 : 1.0;
-    final double tabScaleFactor = scaleFactor * denseMultiplier;
+    final double carModeMultiplier = settingsProvider.carMode ? 1.5 : 1.0;
+    final double tabScaleFactor =
+        scaleFactor * denseMultiplier * carModeMultiplier;
     final bool hideTabText = settingsProvider.hideTabText;
     final bool isLiquidGlassEnabled =
         isFruitColor && settingsProvider.fruitEnableLiquidGlass;
@@ -73,6 +75,7 @@ class FruitTabBar extends StatelessWidget {
       decoration: BoxDecoration(color: backgroundColor),
       padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
       child: SizedBox(
+        key: const ValueKey('fruit_tab_bar_box'),
         height: (48.0 + 32.0) * tabScaleFactor, // Base content + padding space
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: sidePadding),
@@ -368,12 +371,18 @@ class _FruitTabItemState extends State<_FruitTabItem> {
   }
 
   Widget _buildTabContent(Color color) {
-    final double iconSize = (widget.hideText ? 30 : 24) * widget.scaleFactor;
+    final bool isCarMode = context.watch<SettingsProvider>().carMode;
+    final bool isRandomTab = widget.label == 'RANDOM';
+    final double randomIconBoost = isCarMode && isRandomTab ? 1.4 : 1.0;
+    final double iconSize =
+        (widget.hideText ? 30 : 24) * widget.scaleFactor * randomIconBoost;
 
     // Fixed layout slots to prevent vertical drift
-    final double iconSlotHeight = 32.0 * widget.scaleFactor;
+    final double iconSlotHeight =
+        (isCarMode && isRandomTab ? 38.0 : 32.0) * widget.scaleFactor;
     final double textSlotHeight = 16.0 * widget.scaleFactor;
-    final double totalHeight = (48.0) * widget.scaleFactor;
+    final double totalHeight =
+        (isCarMode && isRandomTab ? 54.0 : 48.0) * widget.scaleFactor;
 
     return SizedBox(
       height: totalHeight,
@@ -387,14 +396,17 @@ class _FruitTabItemState extends State<_FruitTabItem> {
             height: iconSlotHeight,
             child: Center(
               child: (widget.label == 'RANDOM' && widget.useAnimatedRandomIcon)
-                  ? AnimatedDiceIcon(
-                      onPressed: widget.onTap,
-                      isLoading: widget.isLoading,
-                      enableHaptics: widget.enableHaptics,
-                      naked: true,
-                      disableSquash: true,
-                      useLucide: true,
-                      iconColor: color,
+                  ? Transform.scale(
+                      scale: randomIconBoost,
+                      child: AnimatedDiceIcon(
+                        onPressed: widget.onTap,
+                        isLoading: widget.isLoading,
+                        enableHaptics: widget.enableHaptics,
+                        naked: true,
+                        disableSquash: true,
+                        useLucide: true,
+                        iconColor: color,
+                      ),
                     )
                   : Icon(widget.icon, color: color, size: iconSize),
             ),
@@ -404,21 +416,23 @@ class _FruitTabItemState extends State<_FruitTabItem> {
           if (!widget.hideText)
             SizedBox(
               height: textSlotHeight,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(height: 2 * widget.scaleFactor), // Reduced gap
-                  Text(
-                    widget.label.toUpperCase(),
-                    style: TextStyle(
-                      fontFamily: FontConfig.resolve('Inter'),
-                      fontSize: 8.5 * widget.scaleFactor,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 2.0,
-                      color: color,
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 2 * widget.scaleFactor),
+                    child: Text(
+                      widget.label.toUpperCase(),
+                      style: TextStyle(
+                        fontFamily: FontConfig.resolve('Inter'),
+                        fontSize: 8.5 * widget.scaleFactor,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 2.0,
+                        color: color,
+                      ),
                     ),
                   ),
-                ],
+                ),
               ),
             )
           else

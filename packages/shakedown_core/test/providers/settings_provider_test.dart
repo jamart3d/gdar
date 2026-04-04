@@ -227,6 +227,59 @@ void main() {
       expect(settingsProvider.abbreviateMonth, false);
     });
   });
+
+  group('SettingsProvider Car Mode', () {
+    test('initializes carMode to false by default', () {
+      expect(settingsProvider.carMode, false);
+    });
+
+    test('toggleCarMode toggles value and persists', () async {
+      expect(settingsProvider.carMode, false);
+
+      settingsProvider.toggleCarMode();
+      expect(settingsProvider.carMode, true);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('car_mode'), true);
+
+      settingsProvider.toggleCarMode();
+      expect(settingsProvider.carMode, false);
+      expect(prefs.getBool('car_mode'), false);
+    });
+
+    test('turning Car Mode on forces UI Scale off', () async {
+      settingsProvider.toggleUiScale();
+      expect(settingsProvider.uiScale, true);
+
+      settingsProvider.toggleCarMode();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(settingsProvider.carMode, true);
+      expect(settingsProvider.uiScale, false);
+      expect(settingsProvider.abbreviateDayOfWeek, false);
+      expect(settingsProvider.abbreviateMonth, false);
+      expect(prefs.getBool('car_mode'), true);
+      expect(prefs.getBool('ui_scale'), false);
+    });
+
+    test(
+      'floating spheres defaults to off and persists when toggled',
+      () async {
+        expect(settingsProvider.fruitFloatingSpheres, isFalse);
+
+        settingsProvider.toggleFruitFloatingSpheres();
+        expect(settingsProvider.fruitFloatingSpheres, isTrue);
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool('fruit_floating_spheres'), isTrue);
+
+        settingsProvider.toggleFruitFloatingSpheres();
+        expect(settingsProvider.fruitFloatingSpheres, isFalse);
+        expect(prefs.getBool('fruit_floating_spheres'), isFalse);
+      },
+    );
+  });
+
   group('SettingsProvider Hybrid Audio Web Defaults', () {
     test('hybridBackgroundMode defaults to heartbeat on fresh install', () {
       expect(
