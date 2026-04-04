@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:gdar_design/widgets/fruit_settings_group_header.dart';
 import 'package:provider/provider.dart';
@@ -220,6 +221,39 @@ class InterfaceSection extends StatelessWidget {
             },
             secondary: Icon(
               isFruit ? LucideIcons.circle : Icons.bubble_chart_rounded,
+            ),
+          ),
+        if (isFruit && !isTv && kIsWeb)
+          TvSwitchListTile(
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Keep Screen On',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+              ),
+            ),
+            subtitle: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Prevents the device from sleeping during playback.',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+              ),
+            ),
+            value: settingsProvider.preventSleep,
+            onChanged: (_) {
+              AppHaptics.lightImpact(context.read<DeviceService>());
+              context.read<SettingsProvider>().togglePreventSleep();
+            },
+            secondary: Icon(
+              isFruit ? LucideIcons.monitor : Icons.sensor_window_rounded,
             ),
           ),
         TvSwitchListTile(

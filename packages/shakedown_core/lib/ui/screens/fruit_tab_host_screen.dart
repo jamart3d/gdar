@@ -174,14 +174,23 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
     if (tabIndex == _selectedTab) return;
 
     setState(() => _selectedTab = tabIndex);
-    final useAnimatedFruitTransitions =
-        settings.fruitEnableLiquidGlass && !settings.performanceMode;
+    final bool shouldAnimateTabTransitions =
+        settings.carMode ||
+        (settings.fruitEnableLiquidGlass && !settings.performanceMode);
+    final Duration transitionDuration =
+        settings.fruitEnableLiquidGlass && !settings.performanceMode
+        ? const Duration(milliseconds: 320)
+        : const Duration(milliseconds: 220);
+    final Curve transitionCurve =
+        settings.fruitEnableLiquidGlass && !settings.performanceMode
+        ? Curves.easeInOutCubic
+        : Curves.easeOutCubic;
 
-    if (useAnimatedFruitTransitions) {
+    if (shouldAnimateTabTransitions) {
       await _pageController.animateToPage(
         pageIndex,
-        duration: const Duration(milliseconds: 320),
-        curve: Curves.easeInOutCubic,
+        duration: transitionDuration,
+        curve: transitionCurve,
       );
     } else {
       _pageController.jumpToPage(pageIndex);

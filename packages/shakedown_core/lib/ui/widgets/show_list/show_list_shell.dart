@@ -10,7 +10,6 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
-import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/web_runtime.dart';
 
 /// The layout shell for [ShowListScreen], including AppBar, SearchBar, and MiniPlayer.

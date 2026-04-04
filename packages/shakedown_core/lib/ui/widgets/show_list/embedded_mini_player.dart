@@ -45,9 +45,9 @@ class EmbeddedMiniPlayer extends StatelessWidget {
     final isFruit = context.read<ThemeProvider?>()?.isFruit ?? false;
     final horizontalPad = compact ? 4.0 : 10.0;
     final verticalPad = compact ? 0.0 : 8.0;
-    final buttonSize = (compact ? 36.0 : 32.0) * scaleFactor;
-    final iconSize = (compact ? 18.0 : 16.0) * scaleFactor;
-    final loaderSize = (compact ? 16.0 : 18.0) * scaleFactor;
+    final buttonSize = (compact ? 72.0 : 32.0) * scaleFactor;
+    final iconSize = (compact ? 36.0 : 16.0) * scaleFactor;
+    final loaderSize = (compact ? 32.0 : 18.0) * scaleFactor;
     final titleSize = (compact ? (isFruit ? 22.0 : 18.0) : 14.0) * scaleFactor;
     final isTv = Provider.of<DeviceService>(context).isTv;
     final timeSize = (compact ? 12.0 : 11.0) * scaleFactor;
@@ -332,13 +332,14 @@ class EmbeddedMiniPlayer extends StatelessWidget {
             final double progress = dur.inMilliseconds > 0
                 ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
                 : 0.0;
+            final double progressBarHeight = compact ? 4 : 2;
 
             return LinearProgressIndicator(
               value: progress,
               backgroundColor: colorScheme.onSurface.withValues(alpha: 0.1),
               valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-              minHeight: 2,
-              borderRadius: BorderRadius.circular(1),
+              minHeight: progressBarHeight,
+              borderRadius: BorderRadius.circular(progressBarHeight / 2),
             );
           },
         );

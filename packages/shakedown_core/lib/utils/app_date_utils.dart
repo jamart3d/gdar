@@ -11,7 +11,13 @@ class AppDateUtils {
   /// Examples:
   /// - "19720511" -> "May 11, 1972" (Default)
   /// - "1972-05-11" with [SettingsProvider] (showDayOfWeek: true) -> "Thursday, May 11, 1972"
-  static String formatDate(String rawDate, {SettingsProvider? settings}) {
+  static String formatDate(
+    String rawDate, {
+    SettingsProvider? settings,
+    bool? showDayOfWeek,
+    bool? abbreviateDayOfWeek,
+    bool? abbreviateMonth,
+  }) {
     if (rawDate.isEmpty) return rawDate;
 
     // Normalize raw date if it's in YYYYMMDD format
@@ -24,12 +30,22 @@ class AppDateUtils {
     try {
       final dateTime = DateTime.parse(normalized);
 
-      if (settings != null) {
+      if (settings != null ||
+          showDayOfWeek != null ||
+          abbreviateDayOfWeek != null ||
+          abbreviateMonth != null) {
         String pattern = '';
-        if (settings.showDayOfWeek) {
-          pattern += settings.abbreviateDayOfWeek ? 'E, ' : 'EEEE, ';
+        final bool resolvedShowDayOfWeek =
+            showDayOfWeek ?? settings?.showDayOfWeek ?? false;
+        final bool resolvedAbbreviateDayOfWeek =
+            abbreviateDayOfWeek ?? settings?.abbreviateDayOfWeek ?? false;
+        final bool resolvedAbbreviateMonth =
+            abbreviateMonth ?? settings?.abbreviateMonth ?? false;
+
+        if (resolvedShowDayOfWeek) {
+          pattern += resolvedAbbreviateDayOfWeek ? 'E, ' : 'EEEE, ';
         }
-        pattern += settings.abbreviateMonth ? 'MMM' : 'MMMM';
+        pattern += resolvedAbbreviateMonth ? 'MMM' : 'MMMM';
         pattern += ' d, y';
         return DateFormat(pattern).format(dateTime);
       }

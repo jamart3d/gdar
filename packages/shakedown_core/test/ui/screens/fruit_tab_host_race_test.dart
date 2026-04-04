@@ -106,6 +106,8 @@ class _FakeThemeProvider extends ChangeNotifier implements ThemeProvider {
   @override
   ThemeMode get currentThemeMode => ThemeMode.dark;
   @override
+  ThemeMode get selectedThemeMode => currentThemeMode;
+  @override
   bool get isDarkMode => true;
   @override
   FruitColorOption get fruitColorOption => FruitColorOption.sophisticate;
@@ -156,6 +158,38 @@ class _FakeUpdateProvider extends ChangeNotifier implements UpdateProvider {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class _HostSettingsProvider extends FakeSettingsProvider {
+  _HostSettingsProvider({
+    this.isCarMode = false,
+    this.hasLiquidGlass = false,
+    this.isPerformanceMode = false,
+  });
+
+  final bool isCarMode;
+  final bool hasLiquidGlass;
+  final bool isPerformanceMode;
+
+  @override
+  bool get carMode => isCarMode;
+
+  @override
+  bool get fruitEnableLiquidGlass => hasLiquidGlass;
+
+  @override
+  bool get performanceMode => isPerformanceMode;
+
+  @override
+  bool get fruitFloatingSpheres => false;
+}
+
+class _CarModeSettingsProvider extends _HostSettingsProvider {
+  _CarModeSettingsProvider()
+    : super(isCarMode: true, hasLiquidGlass: false, isPerformanceMode: false);
+
+  @override
+  bool get carMode => true;
+}
+
 void main() {
   testWidgets(
     'tapping Library during pending RANDOM play does not force PLAY tab',
@@ -172,7 +206,7 @@ void main() {
           providers: [
             ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
             ChangeNotifierProvider<SettingsProvider>.value(
-              value: FakeSettingsProvider(),
+              value: _HostSettingsProvider(),
             ),
             ChangeNotifierProvider<ShowListProvider>.value(
               value: _FakeShowListProvider(),
@@ -226,6 +260,86 @@ void main() {
 
       // Drain the _scheduleRandomReset timer (2400ms when performanceMode=false).
       await tester.pump(const Duration(milliseconds: 2500));
+    },
+  );
+
+  testWidgets(
+    'car mode animates Fruit tab transitions even when liquid glass is off',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AudioProvider>.value(
+              value: _SlowAudioProvider(),
+            ),
+            ChangeNotifierProvider<SettingsProvider>.value(
+              value: _CarModeSettingsProvider(),
+            ),
+            ChangeNotifierProvider<ShowListProvider>.value(
+              value: _FakeShowListProvider(),
+            ),
+            ChangeNotifierProvider<ThemeProvider>.value(
+              value: _FakeThemeProvider(),
+            ),
+            ChangeNotifierProvider<DeviceService>.value(
+              value: MockDeviceService(),
+            ),
+            ChangeNotifierProvider<UpdateProvider>.value(
+              value: _FakeUpdateProvider(),
+            ),
+          ],
+          child: const MaterialApp(home: FruitTabHostScreen()),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      FruitTabBar tabBar() =>
+          tester.widget<FruitTabBar>(find.byType(FruitTabBar));
+      final scrollableState = tester.state<ScrollableState>(
+        find.descendant(
+          of: find.byType(PageView),
+          matching: find.byType(Scrollable),
+        ),
+      );
+      final pageHeight = tester.getSize(find.byType(PageView)).height;
+      final initialPixels = scrollableState.position.pixels;
+
+      expect(tabBar().selectedIndex, 1);
+      expect(find.byType(PageView), findsOneWidget);
+      expect(initialPixels, closeTo(pageHeight, 0.01));
+
+      await tester.tap(find.text('SETTINGS'));
+      await tester.pump();
+
+      expect(
+        tabBar().selectedIndex,
+        3,
+        reason: 'Selection should update immediately when the tab is tapped.',
+      );
+      expect(
+        scrollableState.position.pixels,
+        closeTo(initialPixels, 0.01),
+        reason:
+            'The first post-tap frame should not jump straight to the target page.',
+      );
+
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(scrollableState.position.pixels, greaterThan(initialPixels));
+      expect(
+        scrollableState.position.pixels,
+        lessThan(pageHeight * 2),
+        reason:
+            'Car mode should animate toward settings instead of cutting instantly.',
+      );
+
+      await tester.pump(const Duration(milliseconds: 160));
+      expect(scrollableState.position.pixels, closeTo(pageHeight * 2, 0.5));
     },
   );
 }

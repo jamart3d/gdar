@@ -215,7 +215,159 @@ void main() {
   );
 
   testWidgets(
-    'ShowListCard Fruit car mode places src badge under rating and player right',
+    'ShowListCard Fruit car mode keeps idle cards shorter than active cards',
+    (WidgetTester tester) async {
+      final dummyShow = createDummyShow('Winterland Arena', '1974-10-20');
+      dummyShow.location = 'San Francisco, CA';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: dummyShow,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final idleHeight = tester
+          .getSize(find.byKey(const ValueKey('fruit_show_list_car_mode_card')))
+          .height;
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: dummyShow,
+          isPlaying: true,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
+      final activeHeight = tester
+          .getSize(find.byKey(const ValueKey('fruit_show_list_car_mode_card')))
+          .height;
+
+      expect(idleHeight, lessThan(activeHeight));
+      expect(activeHeight - idleHeight, greaterThan(20.0));
+    },
+  );
+
+  testWidgets('ShowListCard Fruit car mode idle layout does not overflow', (
+    WidgetTester tester,
+  ) async {
+    final dummyShow = createDummyShow(
+      'Oakland-Alameda County Coliseum',
+      '1989-12-28',
+      primarySrc: 'matrix',
+      sourceLocation: 'Oakland, CA',
+    );
+    dummyShow.location = 'Oakland, CA';
+
+    final settingsProvider = SettingsProvider(prefs);
+    settingsProvider.toggleCarMode();
+
+    final overflowErrors = <FlutterErrorDetails>[];
+    final oldHandler = FlutterError.onError;
+    FlutterError.onError = (details) {
+      final message = details.exceptionAsString();
+      if (message.contains('RenderFlex overflowed')) {
+        overflowErrors.add(details);
+      }
+    };
+
+    await tester.pumpWidget(
+      createTestableWidget(
+        show: dummyShow,
+        settingsProvider: settingsProvider,
+        themeProvider: _FruitThemeProvider(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    FlutterError.onError = oldHandler;
+
+    expect(overflowErrors, isEmpty);
+  });
+
+  testWidgets('ShowListCard Fruit car mode active layout does not overflow', (
+    WidgetTester tester,
+  ) async {
+    final dummyShow = createDummyShow(
+      'Oakland-Alameda County Coliseum',
+      '1989-12-28',
+      primarySrc: 'matrix',
+      sourceLocation: 'Oakland, CA',
+    );
+    dummyShow.location = 'Oakland, CA';
+
+    final settingsProvider = SettingsProvider(prefs);
+    settingsProvider.toggleCarMode();
+
+    final overflowErrors = <FlutterErrorDetails>[];
+    final oldHandler = FlutterError.onError;
+    FlutterError.onError = (details) {
+      final message = details.exceptionAsString();
+      if (message.contains('RenderFlex overflowed')) {
+        overflowErrors.add(details);
+      }
+    };
+
+    await tester.pumpWidget(
+      createTestableWidget(
+        show: dummyShow,
+        isPlaying: true,
+        settingsProvider: settingsProvider,
+        themeProvider: _FruitThemeProvider(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    FlutterError.onError = oldHandler;
+
+    expect(overflowErrors, isEmpty);
+  });
+
+  testWidgets('ShowListCard Fruit car mode omits weekday on narrow cards', (
+    WidgetTester tester,
+  ) async {
+    tester.view.devicePixelRatio = 1.0;
+    tester.view.physicalSize = const Size(400, 900);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final dummyShow = createDummyShow(
+      'Winterland Arena',
+      '1972-05-11',
+      sourceLocation: 'San Francisco, CA',
+    );
+    dummyShow.location = 'San Francisco, CA';
+
+    final settingsProvider = SettingsProvider(prefs);
+    settingsProvider.toggleCarMode();
+    settingsProvider.toggleShowDayOfWeek();
+
+    await tester.pumpWidget(
+      createTestableWidget(
+        show: dummyShow,
+        settingsProvider: settingsProvider,
+        themeProvider: _FruitThemeProvider(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('May 11, 1972'), findsOneWidget);
+    expect(find.text('Thursday, May 11, 1972'), findsNothing);
+    expect(find.text('Thu, May 11, 1972'), findsNothing);
+  });
+
+  testWidgets(
+    'ShowListCard Fruit car mode expands player from the left and keeps it right-anchored',
     (WidgetTester tester) async {
       final dummyShow = createDummyShow(
         'Winterland Arena',
@@ -259,7 +411,10 @@ void main() {
         tester.getTopRight(cardFinder).dx - tester.getTopRight(playerFinder).dx,
         lessThan(40.0),
       );
-      expect(tester.getSize(playerFinder).width, greaterThan(280.0));
+      expect(
+        tester.getSize(playerFinder).width,
+        greaterThan(tester.getSize(cardFinder).width * 0.5),
+      );
     },
   );
 

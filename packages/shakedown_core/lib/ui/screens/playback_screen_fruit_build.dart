@@ -552,8 +552,8 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
                     SizedBox(height: 4 * scaleFactor),
                     Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const SizedBox.shrink(),
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: 4 * scaleFactor,
@@ -565,20 +565,22 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
                             ),
                           ),
                           SizedBox(height: 18 * scaleFactor),
-                          _buildFruitCarModeUpcomingTracks(
-                            context: context,
-                            audioProvider: audioProvider,
-                            currentSource: currentSource,
-                            scaleFactor: scaleFactor,
+                          Expanded(
+                            child: SingleChildScrollView(
+                              key: const ValueKey(
+                                'fruit_car_mode_upcoming_scroll',
+                              ),
+                              padding: EdgeInsets.only(
+                                bottom: 20 * scaleFactor,
+                              ),
+                              child: _buildFruitCarModeUpcomingTracks(
+                                context: context,
+                                audioProvider: audioProvider,
+                                currentSource: currentSource,
+                                scaleFactor: scaleFactor,
+                              ),
+                            ),
                           ),
-                          const Spacer(flex: 5),
-                          _buildFruitCarModeSecondaryCards(
-                            context: context,
-                            currentShow: currentShow,
-                            currentSource: currentSource,
-                            scaleFactor: scaleFactor,
-                          ),
-                          SizedBox(height: 20 * scaleFactor),
                         ],
                       ),
                     ),
@@ -700,7 +702,7 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
     final catalog = CatalogService();
     final rating = catalog.getRating(currentSource.id);
     final isPlayed = catalog.isPlayed(currentSource.id);
-    final Future<void> Function() openRatingDialog = () async {
+    Future<void> openRatingDialog() async {
       await showDialog(
         context: context,
         builder: (context) => RatingDialog(
@@ -718,16 +720,12 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
           },
         ),
       );
-    };
+    }
 
     return GestureDetector(
       key: const ValueKey('fruit_car_mode_chip_row'),
       behavior: HitTestBehavior.opaque,
-      onTap: () {
-        setState(() {
-          _fruitCarModeHudShowsMeta = !_fruitCarModeHudShowsMeta;
-        });
-      },
+      onTap: toggleFruitCarModeHud,
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 180),
         switchInCurve: Curves.easeOutCubic,
@@ -822,48 +820,62 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
                 stream: audioProvider.hudSnapshotStream,
                 initialData: audioProvider.currentHudSnapshot,
                 builder: (context, snapshot) {
-                  final hud = snapshot.data ?? HudSnapshot.empty();
+                  final liveHud = snapshot.data ?? HudSnapshot.empty();
 
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: _FruitCarModeStatCard(
-                          label: 'DFT',
-                          value: hud.drift,
-                          accentColor: colorScheme.primary,
-                          scaleFactor: scaleFactor,
-                        ),
-                      ),
-                      SizedBox(width: 10 * scaleFactor),
-                      Expanded(
-                        child: _FruitCarModeStatCard(
-                          label: 'HD',
-                          value: hud.headroom,
-                          accentColor: colorScheme.secondary,
-                          scaleFactor: scaleFactor,
-                        ),
-                      ),
-                      SizedBox(width: 10 * scaleFactor),
-                      Expanded(
-                        child: _FruitCarModeStatCard(
-                          label: 'NXT',
-                          value: hud.nextBuffered,
-                          accentColor: colorScheme.tertiary,
-                          scaleFactor: scaleFactor,
-                        ),
-                      ),
-                      SizedBox(width: 10 * scaleFactor),
-                      Expanded(
-                        child: _FruitCarModeStatCard(
-                          label: 'LG',
-                          value: hud.lastGapMs == null
-                              ? '--'
-                              : '${hud.lastGapMs!.toStringAsFixed(0)}ms',
-                          accentColor: colorScheme.onSurface,
-                          scaleFactor: scaleFactor,
-                        ),
-                      ),
-                    ],
+                  return StreamBuilder<PlayerState>(
+                    stream: audioProvider.playerStateStream,
+                    initialData: audioProvider.audioPlayer.playerState,
+                    builder: (context, playerSnapshot) {
+                      final playerState =
+                          playerSnapshot.data ??
+                          audioProvider.audioPlayer.playerState;
+                      final isPlaying = playerState.playing;
+                      final hud = isPlaying
+                          ? (_fruitCarModeFrozenHud = liveHud)
+                          : (_fruitCarModeFrozenHud ?? liveHud);
+
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: _FruitCarModeStatCard(
+                              label: 'DFT',
+                              value: hud.drift,
+                              accentColor: colorScheme.primary,
+                              scaleFactor: scaleFactor,
+                            ),
+                          ),
+                          SizedBox(width: 10 * scaleFactor),
+                          Expanded(
+                            child: _FruitCarModeStatCard(
+                              label: 'HD',
+                              value: hud.headroom,
+                              accentColor: colorScheme.secondary,
+                              scaleFactor: scaleFactor,
+                            ),
+                          ),
+                          SizedBox(width: 10 * scaleFactor),
+                          Expanded(
+                            child: _FruitCarModeStatCard(
+                              label: 'NXT',
+                              value: hud.nextBuffered,
+                              accentColor: colorScheme.tertiary,
+                              scaleFactor: scaleFactor,
+                            ),
+                          ),
+                          SizedBox(width: 10 * scaleFactor),
+                          Expanded(
+                            child: _FruitCarModeStatCard(
+                              label: 'LG',
+                              value: hud.lastGapMs == null
+                                  ? '--'
+                                  : '${hud.lastGapMs!.toStringAsFixed(0)}ms',
+                              accentColor: colorScheme.onSurface,
+                              scaleFactor: scaleFactor,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   );
                 },
               ),
@@ -1133,6 +1145,7 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
                 processingState == ProcessingState.buffering;
 
             return Row(
+              key: const ValueKey('fruit_car_mode_controls_row'),
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
@@ -1200,7 +1213,7 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
       builder: (context, snapshot) {
         final currentIndex = snapshot.data ?? 0;
         final tracks = currentSource.tracks;
-        final nextTracks = tracks.skip(currentIndex + 1).take(4).toList();
+        final nextTracks = tracks.skip(currentIndex + 1).toList();
 
         if (nextTracks.isEmpty) {
           return const SizedBox.shrink();
@@ -1243,39 +1256,6 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildFruitCarModeSecondaryCards({
-    required BuildContext context,
-    required Show currentShow,
-    required Source currentSource,
-    required double scaleFactor,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Row(
-      children: [
-        Expanded(
-          child: _FruitCarModeDetailCard(
-            label: 'Venue',
-            value: currentShow.venue,
-            icon: LucideIcons.activity,
-            iconColor: colorScheme.primary,
-            scaleFactor: scaleFactor,
-          ),
-        ),
-        SizedBox(width: 12 * scaleFactor),
-        Expanded(
-          child: _FruitCarModeDetailCard(
-            label: 'Source',
-            value: currentSource.id,
-            icon: LucideIcons.playCircle,
-            iconColor: colorScheme.secondary,
-            scaleFactor: scaleFactor,
-          ),
-        ),
-      ],
     );
   }
 
@@ -1450,64 +1430,6 @@ class _FruitCarModeControlButton extends StatelessWidget {
   }
 }
 
-class _FruitCarModeEmbeddedCard extends StatelessWidget {
-  const _FruitCarModeEmbeddedCard({
-    this.label,
-    required this.child,
-    required this.scaleFactor,
-  });
-
-  final String? label;
-  final Widget child;
-  final double scaleFactor;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return FruitSurface(
-      borderRadius: BorderRadius.circular(18 * scaleFactor),
-      blur: 14,
-      opacity: 0.82,
-      child: SizedBox(
-        height: _fruitCarModeChipCardHeight(scaleFactor),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: 12 * scaleFactor,
-            vertical: 12 * scaleFactor,
-          ),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(18 * scaleFactor),
-            border: Border.all(
-              color: colorScheme.onSurface.withValues(alpha: 0.08),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (label != null) ...[
-                Text(
-                  label!,
-                  style: TextStyle(
-                    fontFamily: FontConfig.resolve('Inter'),
-                    fontSize: 9 * scaleFactor,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.8,
-                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                  ),
-                ),
-                SizedBox(height: 10 * scaleFactor),
-              ],
-              child,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 double _fruitCarModeChipCardHeight(double scaleFactor) => 74 * scaleFactor;
 
 class _FruitCarModePlayButton extends StatelessWidget {
@@ -1610,77 +1532,6 @@ class _FruitCarModePlayButton extends StatelessWidget {
                 child: innerButton,
               )
             : innerButton,
-      ),
-    );
-  }
-}
-
-class _FruitCarModeDetailCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color iconColor;
-  final double scaleFactor;
-
-  const _FruitCarModeDetailCard({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.iconColor,
-    required this.scaleFactor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return FruitSurface(
-      borderRadius: BorderRadius.circular(24 * scaleFactor),
-      blur: 14,
-      opacity: 0.82,
-      child: Container(
-        padding: EdgeInsets.all(18 * scaleFactor),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.72),
-          borderRadius: BorderRadius.circular(24 * scaleFactor),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 24 * scaleFactor, color: iconColor),
-            SizedBox(width: 12 * scaleFactor),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontFamily: FontConfig.resolve('Inter'),
-                      fontSize: 10 * scaleFactor,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.5,
-                      color: colorScheme.onSurfaceVariant.withValues(
-                        alpha: 0.72,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 4 * scaleFactor),
-                  Text(
-                    value,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontFamily: FontConfig.resolve('Inter'),
-                      fontSize: 18 * scaleFactor,
-                      fontWeight: FontWeight.w900,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

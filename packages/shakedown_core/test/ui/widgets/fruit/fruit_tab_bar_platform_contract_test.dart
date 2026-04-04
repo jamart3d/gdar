@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
@@ -17,6 +18,7 @@ class _FakeSettings extends ChangeNotifier implements SettingsProvider {
     this.useTrueBlack = false,
     this.carMode = false,
     this.uiScale = false,
+    this.simpleRandomIcon = false,
   });
 
   @override
@@ -28,11 +30,11 @@ class _FakeSettings extends ChangeNotifier implements SettingsProvider {
   @override
   final bool uiScale;
   @override
+  final bool simpleRandomIcon;
+  @override
   String get appFont => 'default';
   @override
   bool get nonRandom => false;
-  @override
-  bool get simpleRandomIcon => false;
   @override
   bool get enableHaptics => false;
   @override
@@ -197,6 +199,24 @@ void main() {
           .height;
 
       expect(carModeHeight, greaterThan(uiScaleHeight));
+    });
+
+    testWidgets('car mode random icon is larger than settings icon', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          FruitTabBar(selectedIndex: 2, onTabSelected: (_) {}),
+          _FakeSettings(carMode: true, simpleRandomIcon: true),
+        ),
+      );
+
+      final randomIcon = tester.widget<Icon>(find.byIcon(LucideIcons.dice5));
+      final settingsIcon = tester.widget<Icon>(
+        find.byIcon(LucideIcons.settings),
+      );
+
+      expect(randomIcon.size, greaterThan(settingsIcon.size!));
     });
   });
 }

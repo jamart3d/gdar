@@ -354,30 +354,6 @@ extension _PlaybackSectionWeb on PlaybackSection {
           ],
         ),
       ),
-      TvSwitchListTile(
-        dense: true,
-        visualDensity: VisualDensity.compact,
-        secondary: Icon(
-          isFruit ? LucideIcons.monitor : Icons.sensor_window_rounded,
-        ),
-        title: Text(
-          'Keep Screen On',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-        ),
-        subtitle: Text(
-          'Prevents the device from sleeping during playback.',
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-        ),
-        value: settingsProvider.preventSleep,
-        onChanged: (_) {
-          AppHaptics.lightImpact(context.read<DeviceService>());
-          settingsProvider.togglePreventSleep();
-        },
-      ),
     ];
   }
 }

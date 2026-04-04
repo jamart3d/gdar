@@ -120,6 +120,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
   double _fruitFloatingNowPlayingHeight = 0.0;
   bool _fruitFloatingNowPlayingMeasurementQueued = false;
   bool _fruitCarModeHudShowsMeta = false;
+  HudSnapshot? _fruitCarModeFrozenHud;
   final Map<int, FocusNode> _trackFocusNodes = {};
   final FocusNode _trackListFocusNode = FocusNode(canRequestFocus: false);
 
@@ -128,6 +129,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     super.initState();
     final audioProvider = context.read<AudioProvider>();
     _lastTrackTitle = audioProvider.currentTrack?.title;
+    _fruitCarModeFrozenHud = audioProvider.currentHudSnapshot;
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -173,6 +175,13 @@ class PlaybackScreenState extends State<PlaybackScreen>
     if (!mounted) return;
     setState(() {
       _fruitFloatingNowPlayingHeight = measuredHeight;
+    });
+  }
+
+  void toggleFruitCarModeHud() {
+    if (!mounted) return;
+    setState(() {
+      _fruitCarModeHudShowsMeta = !_fruitCarModeHudShowsMeta;
     });
   }
 

@@ -1,44 +1,30 @@
 ---
-description: Suggests development aliases and setup steps for Windows environments testing Wasm.
+description: Windows web development setup with WASM disabled until further notice.
 ---
-# Windows Wasm Development Setup
+# Windows Web Development Setup
 
-This workflow provides quick setup commands and aliases optimized for running and testing the Flutter app WebAssembly (Wasm) build on Windows, ensuring you can still see the Dart logger messages.
+WASM is disabled for GDAR web work until further notice. This workflow keeps the existing Windows entry points but routes them to the standard web toolchain so Dart logger messages still flow to the terminal.
 
-## Wasm Testing Script (Windows)
+## Chrome Debug Script (Windows)
 
-When testing Wasm on Windows, using `flutter run -d chrome --wasm` is the easiest way because it automatically injects the required Cross-Origin headers (COOP/COEP) *and* attaches the Dart DevTools so you can see your `Logger` output in the terminal.
-
-However, if you need to test the actual **compiled release build** (`build/web`) and still see logs, you have to ensure your local server injects the headers.
-
-### Option 1: The `fruc-wasm` wrapper (Recommended for Debugging)
-
-This uses the standard Flutter toolchain to run Chrome with Wasm enabled, which automatically pipes all `Logger` messages back to your PowerShell console.
-
-Create a file named `fruc-wasm.bat` in your `scripts\` directory or project root:
+For local debugging on Windows, use the standard Chrome launcher:
 
 ```bat
 @echo off
-echo Launching Wasm build on Chrome in debug mode...
-flutter run -d chrome --wasm
-```
-
-### Option 2: Serving the Production Wasm Build
-
-If you want to test the *compiled* Wasm output (`flutter build web --wasm`) and serve it using `http-server`, you must pass the COOP/COEP headers to the server command.
-
-*(Note: When running the compiled release build this way, Dart `Logger` messages are usually stripped or only visible in the Chrome Developer Tools (F12) console, not your PowerShell window).*
-
-```bat
-@echo off
-echo Building Wasm release...
 cd apps\gdar_web
-call flutter build web --wasm
-
-echo Serving Wasm build with headers...
-npx http-server build/web -p 8080 -c-1 --cors -s -H "Cross-Origin-Opener-Policy: same-origin" -H "Cross-Origin-Embedder-Policy: require-corp"
+flutter run -d chrome
 ```
 
+The existing `fruc-wasm.bat` wrapper is retained only as a compatibility alias. It now launches standard web mode and prints a warning that WASM is disabled.
+
+## Production Build
+
+When you need a compiled web build, use the standard release pipeline:
+
+```powershell
+cd apps/gdar_web
+flutter build web --release
+```
 
 ## Web Error Log (gdarDumpErrors)
 

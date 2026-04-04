@@ -692,7 +692,78 @@ void main() {
     expect(find.text('Driving Mode'), findsNothing);
     expect(find.text('Track 2'), findsOneWidget);
     expect(find.text('Track 3'), findsOneWidget);
+    expect(find.text('Venue'), findsNothing);
+    expect(find.text('Source'), findsNothing);
   });
+
+  testWidgets(
+    'PlaybackScreen Fruit car mode shows all remaining upcoming tracks',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      final longTracks = List.generate(
+        7,
+        (index) => Track(
+          trackNumber: index + 1,
+          title: 'Long Track ${index + 1}',
+          duration: 100 + (index * 10),
+          url: 'track-${index + 1}',
+          setName: 'Set 1',
+        ),
+      );
+      final longSource = Source(
+        id: 'long_source',
+        src: 'sbd',
+        tracks: longTracks,
+        location: 'Oakland, CA',
+      );
+      final longShow = Show(
+        name: 'Oakland-Alameda County Coliseum on 1989-12-31',
+        artist: 'Grateful Dead',
+        date: '1989-12-31',
+        venue: 'Oakland-Alameda County Coliseum',
+        sources: [longSource],
+      );
+
+      when(mockAudioProvider.currentShow).thenReturn(longShow);
+      when(mockAudioProvider.currentSource).thenReturn(longSource);
+      when(mockAudioProvider.currentTrack).thenReturn(longTracks.first);
+      when(mockAudioPlayer.currentIndex).thenReturn(0);
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      final controlsFinder = find.byKey(
+        const ValueKey('fruit_car_mode_controls_row'),
+      );
+      final scrollFinder = find.byKey(
+        const ValueKey('fruit_car_mode_upcoming_scroll'),
+      );
+
+      expect(controlsFinder, findsOneWidget);
+      expect(scrollFinder, findsOneWidget);
+
+      final controlsTopBefore = tester.getTopLeft(controlsFinder).dy;
+
+      expect(find.text('Long Track 2'), findsOneWidget);
+      expect(find.text('Long Track 5'), findsOneWidget);
+      expect(find.text('Long Track 7'), findsOneWidget);
+
+      await tester.drag(scrollFinder, const Offset(0, -220));
+      await tester.pump();
+
+      expect(tester.getTopLeft(controlsFinder).dy, controlsTopBefore);
+      await tester.ensureVisible(find.text('Long Track 7'));
+      await tester.pump();
+    },
+  );
 
   testWidgets(
     'PlaybackScreen stacks src over shnid in Fruit car mode meta hud without chip badges',
@@ -797,4 +868,73 @@ void main() {
       );
     },
   );
+
+  testWidgets('PlaybackScreen freezes Fruit car mode stat chips while paused', (
+    WidgetTester tester,
+  ) async {
+    setLargeCarModeViewport(tester);
+    when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+    when(mockAudioProvider.currentSource).thenReturn(dummySource);
+    when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+    mockSettingsProvider.setCarMode(true);
+    mockSettingsProvider.setShowDevAudioHud(false);
+
+    final playerStateController = StreamController<PlayerState>.broadcast();
+    final hudController = StreamController<HudSnapshot>.broadcast();
+    addTearDown(playerStateController.close);
+    addTearDown(hudController.close);
+
+    final playingHud = HudSnapshot.empty().copyWith(
+      drift: '1.25s',
+      headroom: '+12s',
+      nextBuffered: '00:34',
+      lastGapMs: 47,
+    );
+    final pausedHud = HudSnapshot.empty().copyWith(
+      drift: '8.50s',
+      headroom: '+1s',
+      nextBuffered: '00:02',
+      lastGapMs: 212,
+    );
+
+    when(
+      mockAudioProvider.hudSnapshotStream,
+    ).thenAnswer((_) => hudController.stream);
+    when(mockAudioProvider.currentHudSnapshot).thenReturn(playingHud);
+    when(
+      mockAudioProvider.playerStateStream,
+    ).thenAnswer((_) => playerStateController.stream);
+    when(
+      mockAudioPlayer.playerState,
+    ).thenReturn(PlayerState(true, ProcessingState.ready));
+
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const PlaybackScreen(showFruitTabBar: false),
+        themeProvider: MockFruitThemeProvider(),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('1.25s'), findsOneWidget);
+    expect(find.text('+12s'), findsOneWidget);
+    expect(find.text('00:34'), findsOneWidget);
+    expect(find.text('47ms'), findsOneWidget);
+
+    when(
+      mockAudioPlayer.playerState,
+    ).thenReturn(PlayerState(false, ProcessingState.ready));
+    playerStateController.add(PlayerState(false, ProcessingState.ready));
+    hudController.add(pausedHud);
+    await tester.pump();
+
+    expect(find.text('1.25s'), findsOneWidget);
+    expect(find.text('+12s'), findsOneWidget);
+    expect(find.text('00:34'), findsOneWidget);
+    expect(find.text('47ms'), findsOneWidget);
+    expect(find.text('8.50s'), findsNothing);
+    expect(find.text('+1s'), findsNothing);
+    expect(find.text('00:02'), findsNothing);
+    expect(find.text('212ms'), findsNothing);
+  });
 }

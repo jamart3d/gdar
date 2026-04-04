@@ -373,16 +373,21 @@ class _FruitTabItemState extends State<_FruitTabItem> {
   Widget _buildTabContent(Color color) {
     final bool isCarMode = context.watch<SettingsProvider>().carMode;
     final bool isRandomTab = widget.label == 'RANDOM';
-    final double randomIconBoost = isCarMode && isRandomTab ? 1.4 : 1.0;
+    final bool isSettingsTab = widget.label == 'SETTINGS';
+    final double randomIconBoost = isCarMode && isRandomTab ? 1.7 : 1.0;
+    final double settingsIconScale = isCarMode && isSettingsTab ? 0.9 : 1.0;
     final double iconSize =
-        (widget.hideText ? 30 : 24) * widget.scaleFactor * randomIconBoost;
+        (widget.hideText ? 30 : 24) *
+        widget.scaleFactor *
+        randomIconBoost *
+        settingsIconScale;
 
     // Fixed layout slots to prevent vertical drift
     final double iconSlotHeight =
-        (isCarMode && isRandomTab ? 38.0 : 32.0) * widget.scaleFactor;
+        (isCarMode && isRandomTab ? 42.0 : 32.0) * widget.scaleFactor;
     final double textSlotHeight = 16.0 * widget.scaleFactor;
     final double totalHeight =
-        (isCarMode && isRandomTab ? 54.0 : 48.0) * widget.scaleFactor;
+        (isCarMode && isRandomTab ? 58.0 : 48.0) * widget.scaleFactor;
 
     return SizedBox(
       height: totalHeight,

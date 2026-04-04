@@ -289,7 +289,7 @@ class ShowListAppBar extends StatelessWidget implements PreferredSizeWidget {
                         ShakedownTitle(
                           fontSize: titleFontSize,
                           animateOnStart: true,
-                          shakeDelay: Duration(milliseconds: 1700),
+                          shakeDelay: const Duration(milliseconds: 1700),
                           fontKeyOverride: 'rock_salt',
                         ),
                         _buildFruitHeaderButton(

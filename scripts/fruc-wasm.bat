@@ -1,3 +1,4 @@
 @echo off
 cd apps\gdar_web
-flutter run -d chrome --wasm
+echo WASM is disabled until further notice. Launching standard Chrome web run...
+flutter run -d chrome

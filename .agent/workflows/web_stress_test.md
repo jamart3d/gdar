@@ -1,5 +1,5 @@
 ---
-description: Test PWA rendering performance, Simple Theme gates, and Wasm UI responsiveness.
+description: Test PWA rendering performance, Simple Theme gates, and standard web UI responsiveness.
 ---
 # Web Stress Test Workflow (Monorepo)
 
@@ -29,16 +29,16 @@ This workflow verifies web performance, Simple Theme constraints, and detects UI
 
 ## Automated Test
 
-4.  **Wasm Runtime Smoke Test**:
-    - Build the application for Wasm from the web app target:
+4.  **Web Runtime Smoke Test**:
+    - Build the application from the web app target:
     ```powershell
-    cd apps/gdar_web; flutter build web --wasm
+    cd apps/gdar_web; flutter build web --release
     ```
-    - Serve `apps/gdar_web/build/web` using the local Wasm server in `scripts/stress_test/hybrid_stress.js`.
+    - Serve `apps/gdar_web/build/web` using the local server in `scripts/stress_test/hybrid_stress.js`.
     - **Verify**: App loads without console errors.
     - **Identify**: Specifically look for `Unsupported operation: _Namespace` or `dart:io` crashes during initialization.
 
-5.  **Wasm UI Freeze Stress Test**:
+5.  **Web UI Freeze Stress Test**:
     - Run the Puppeteer test:
     ```bash
     node scripts/stress_test/hybrid_stress.js
