@@ -46,14 +46,14 @@ class _FruitCarModeStatCard extends StatelessWidget {
                   color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                 ),
               ),
-              SizedBox(height: 10 * scaleFactor),
+              SizedBox(height: 8 * scaleFactor),
               Text(
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontFamily: FontConfig.resolve('Inter'),
-                  fontSize: 17 * scaleFactor,
+                  fontSize: 18 * scaleFactor,
                   fontWeight: FontWeight.w900,
                   color: accentColor,
                 ),

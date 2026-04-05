@@ -869,6 +869,44 @@ void main() {
     },
   );
 
+  testWidgets(
+    'PlaybackScreen Fruit car mode increases stat value typography without overflow',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      final hud = HudSnapshot.empty().copyWith(
+        drift: '1.25s',
+        headroom: '+12s',
+        nextBuffered: '00:34',
+        lastGapMs: 1200,
+      );
+
+      when(mockAudioProvider.currentHudSnapshot).thenReturn(hud);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('1.25s'), findsOneWidget);
+      expect(find.text('+12s'), findsOneWidget);
+      expect(find.text('00:34'), findsOneWidget);
+      expect(find.text('1200ms'), findsOneWidget);
+
+      final Text gapText = tester.widget<Text>(find.text('1200ms'));
+      expect(gapText.style?.fontSize, 18.0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('PlaybackScreen freezes Fruit car mode stat chips while paused', (
     WidgetTester tester,
   ) async {
