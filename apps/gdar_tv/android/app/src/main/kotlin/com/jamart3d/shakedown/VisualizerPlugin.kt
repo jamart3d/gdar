@@ -1,6 +1,7 @@
 package com.jamart3d.shakedown
 
 import android.media.audiofx.Visualizer
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
@@ -83,6 +84,9 @@ class VisualizerPlugin(
     }
 
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var autocorrSecondPass = false
+    private var autocorrSecondPassHq = false
+    private val isSabrinaDevice = Build.DEVICE.lowercase() == "sabrina"
     private var visualizer: Visualizer? = null
     private var eventSink: EventChannel.EventSink? = null
     private var isRunning = false
@@ -151,12 +155,6 @@ class VisualizerPlugin(
     // Written by onWaveFormDataCapture, read by processFftData (same thread).
     private var pendingWaveform: List<Float> = emptyList()
 
-    // High-resolution RMS history for fallback autocorrelation beat detection.
-    private val RMS_HISTORY_SIZE = 512
-    private val fallbackRmsHistory = FloatArray(RMS_HISTORY_SIZE)
-    private var fallbackRmsHistoryIndex = 0
-    private var fallbackRmsHistoryCount = 0
-
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "isAvailable" -> result.success(isVisualizerAvailable())
@@ -178,6 +176,9 @@ class VisualizerPlugin(
                 reactivityStrength = call.argument<Double>("reactivityStrength") ?: reactivityStrength
                 beatDetectorMode = call.argument<String>("beatDetectorMode") ?: beatDetectorMode
                 beatSensitivity = call.argument<Double>("beatSensitivity") ?: beatSensitivity
+                autocorrSecondPass = call.argument<Boolean>("autocorrSecondPass") ?: autocorrSecondPass
+                val requestedHq = call.argument<Boolean>("autocorrSecondPassHq") ?: autocorrSecondPassHq
+                autocorrSecondPassHq = if (isSabrinaDevice) false else requestedHq
                 result.success(true)
             }
             else -> result.notImplemented()
@@ -268,10 +269,6 @@ class VisualizerPlugin(
             trackedIbiMs = 0.0
             trackedLastBeatMs = 0L
 
-            fallbackRmsHistory.fill(0f)
-            fallbackRmsHistoryIndex = 0
-            fallbackRmsHistoryCount = 0
-
             visualizer?.enabled = true
             isRunning = true
             Log.d(TAG, "Visualizer started")
@@ -304,21 +301,13 @@ class VisualizerPlugin(
     private fun downsampleWaveform(waveform: ByteArray): List<Float> {
         val result = ArrayList<Float>(WAVEFORM_POINTS)
         val step = waveform.size.toDouble() / WAVEFORM_POINTS
-        var sumSq = 0.0
 
         for (i in 0 until WAVEFORM_POINTS) {
             val idx = (i * step).toInt().coerceIn(0, waveform.size - 1)
             // Convert unsigned 8-bit (0-255, centre=128) to signed -1.0..1.0
             val normalized = ((waveform[idx].toInt() and 0xFF) - 128) / 128.0f
             result.add(normalized)
-            sumSq += normalized * normalized
         }
-
-        // Calculate RMS for this chunk and add it to our fallback history buffer
-        val rms = sqrt(sumSq / WAVEFORM_POINTS).toFloat()
-        fallbackRmsHistory[fallbackRmsHistoryIndex] = rms
-        fallbackRmsHistoryIndex = (fallbackRmsHistoryIndex + 1) % RMS_HISTORY_SIZE
-        if (fallbackRmsHistoryCount < RMS_HISTORY_SIZE) fallbackRmsHistoryCount++
 
         return result
     }
@@ -911,68 +900,88 @@ class VisualizerPlugin(
             ?.takeIf { algoLevels[it] > 0.0 }
             ?: -1
 
-        // ── Auto-correlation Beat Detection (Pitch-style) ────────────────────
+        // ── Auto-correlation Beat Detection ──────────────────────────────────────
         var autocorrBpm: Double? = null
         var autocorrIbiMs: Double? = null
 
         val useStereoRms = hasStereoPcm && stereoCapture.rmsHistoryCount >= 200
-        val useFallbackRms = !useStereoRms && fallbackRmsHistoryCount >= 100 // Lower count for 20Hz
 
-        if (useStereoRms || useFallbackRms) {
-            val count = if (useStereoRms) stereoCapture.rmsHistoryCount else fallbackRmsHistoryCount
-            val size = if (useStereoRms) stereoCapture.rmsHistorySize else RMS_HISTORY_SIZE
-            val idxHead = if (useStereoRms) stereoCapture.rmsHistoryIndex else fallbackRmsHistoryIndex
-            val srcBuffer = if (useStereoRms) stereoCapture.fullRmsHistory else fallbackRmsHistory
+        if (useStereoRms) {
+            // Cap to 256 samples (2.56s at 100Hz) — worst-case O(256 × 67) ≈ 17k ops/frame
+            val count = minOf(stereoCapture.rmsHistoryCount, 256)
+            val size = stereoCapture.rmsHistorySize
+            val idxHead = stereoCapture.rmsHistoryIndex
+            val srcBuffer = stereoCapture.fullRmsHistory
 
-            // Unroll the circular RMS buffer into a flat array
             val rawRms = FloatArray(count)
             var sum = 0f
             for (i in 0 until count) {
-                // Older samples first, newest at the end
                 val idx = (idxHead - count + i + size) % size
                 val v = srcBuffer[idx]
                 rawRms[i] = v
                 sum += v
             }
-
-            // Subtract mean to center the signal at zero
             val mean = sum / count
-            for (i in 0 until count) {
-                rawRms[i] -= mean
-            }
+            for (i in 0 until count) rawRms[i] -= mean
 
-            // Determine sample rate and lags
-            // Stereo RMS is collected at 100Hz (10ms/sample)
-            // Fallback RMS is collected at the visualizer callback rate (typically 20Hz -> 50ms/sample)
-            val sampleRateHz = if (useStereoRms) 100.0 else 20.0
-            val msPerSample = 1000.0 / sampleRateHz
-
-            // Search range for BPM: 60 to 180 BPM -> 1000ms to ~333ms.
-            val minLag = (333.0 / msPerSample).toInt().coerceAtLeast(1)
-            val maxLag = (1000.0 / msPerSample).toInt().coerceAtMost(count / 2) // Need enough data
+            // 100Hz → 10ms/sample. BPM 60–180 → lags 20–100 samples (333ms–1000ms).
+            val msPerSample = 10.0
+            val minLag = 20  // 333ms / 10ms
+            val maxLag = minOf(100, count / 2)
 
             if (minLag < maxLag) {
                 var bestLag = -1
                 var bestCorr = -1.0
+                // Store correlations for parabolic refinement
+                val corrValues = DoubleArray(maxLag + 2)
 
                 for (lag in minLag..maxLag) {
                     var corr = 0.0
-                    for (i in 0 until count - lag) {
-                        corr += rawRms[i] * rawRms[i + lag]
-                    }
-                    if (corr > bestCorr) {
-                        bestCorr = corr
-                        bestLag = lag
-                    }
+                    for (i in 0 until count - lag) corr += rawRms[i] * rawRms[i + lag]
+                    corrValues[lag] = corr
+                    if (corr > bestCorr) { bestCorr = corr; bestLag = lag }
                 }
 
                 if (bestLag > 0 && bestCorr > 0.0) {
-                    val detectedIbiMs = bestLag * msPerSample
-                    autocorrIbiMs = detectedIbiMs
-                    autocorrBpm = 60000.0 / detectedIbiMs
+                    var refinedLag = bestLag.toDouble()
 
-                    // You could do a second pass around bestLag at higher sample rate
-                    // if you needed more precision.
+                    if (autocorrSecondPass) {
+                        if (!autocorrSecondPassHq) {
+                            // Mode A: parabolic interpolation — ~3 extra ops, zero cost
+                            if (bestLag > minLag && bestLag < maxLag) {
+                                val cPrev = corrValues[bestLag - 1]
+                                val cBest = corrValues[bestLag]
+                                val cNext = corrValues[bestLag + 1]
+                                val denom = cPrev - 2.0 * cBest + cNext
+                                if (denom < 0.0) refinedLag = bestLag + 0.5 * (cPrev - cNext) / denom
+                            }
+                        } else {
+                            // Mode B: upsample ×4 in ±3-sample window around bestLag (Sabrina-disabled)
+                            val windowStart = (bestLag - 3).coerceAtLeast(minLag)
+                            val windowEnd   = (bestLag + 3).coerceAtMost(maxLag)
+                            val upsampleFactor = 4
+                            var hqBestLagF = bestLag.toDouble()
+                            var hqBestCorr = -1.0
+                            for (lagI in windowStart * upsampleFactor..windowEnd * upsampleFactor) {
+                                val lagF = lagI.toDouble() / upsampleFactor
+                                var corr = 0.0
+                                for (i in 0 until count - windowEnd - 1) {
+                                    // Linear interpolation lookup
+                                    val srcI = lagF + i
+                                    val lo = srcI.toInt().coerceIn(0, count - 1)
+                                    val hi = (lo + 1).coerceIn(0, count - 1)
+                                    val frac = srcI - lo
+                                    val sample = rawRms[lo] * (1.0 - frac) + rawRms[hi] * frac
+                                    corr += rawRms[i] * sample
+                                }
+                                if (corr > hqBestCorr) { hqBestCorr = corr; hqBestLagF = lagF }
+                            }
+                            refinedLag = hqBestLagF
+                        }
+                    }
+
+                    autocorrIbiMs = refinedLag * msPerSample
+                    autocorrBpm = 60000.0 / autocorrIbiMs!!
                 }
             }
         }
@@ -989,8 +998,13 @@ class VisualizerPlugin(
             "beatThreshold" to finalBeatThreshold,
             "beatConfidence" to finalBeatConfidence,
             "beatSource" to finalBeatSource,
-            "beatBpm" to autocorrBpm ?: trackedBeatBpm,
-            "beatIbiMs" to autocorrIbiMs ?: trackedBeatIbiMs,
+            // Only prefer autocorr when tracked grid has low or absent confidence
+            "beatBpm" to if (autocorrBpm != null &&
+                (trackedGridConfidence == null || trackedGridConfidence!! < 0.4))
+                autocorrBpm else trackedBeatBpm,
+            "beatIbiMs" to if (autocorrIbiMs != null &&
+                (trackedGridConfidence == null || trackedGridConfidence!! < 0.4))
+                autocorrIbiMs else trackedBeatIbiMs,
             "beatPhase" to trackedBeatPhase,
             "nextBeatMs" to trackedNextBeatMs,
             "beatGridConfidence" to trackedGridConfidence,
