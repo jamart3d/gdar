@@ -66,6 +66,7 @@ class MockFruitThemeProvider extends ChangeNotifier implements ThemeProvider {
 class MockSettingsProvider extends Mock implements SettingsProvider {
   bool _carMode = false;
   bool _fruitFloatingSpheres = false;
+  bool _fruitEnableLiquidGlass = false;
   bool _showDevAudioHud = false;
 
   void setCarMode(bool value) {
@@ -74,6 +75,11 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
 
   void setFruitFloatingSpheres(bool value) {
     _fruitFloatingSpheres = value;
+  }
+
+  @override
+  void setFruitEnableLiquidGlass(bool value) {
+    _fruitEnableLiquidGlass = value;
   }
 
   void setShowDevAudioHud(bool value) {
@@ -279,7 +285,7 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   bool get marqueeEnabled => true;
   @override
-  bool get fruitEnableLiquidGlass => false;
+  bool get fruitEnableLiquidGlass => _fruitEnableLiquidGlass;
   @override
   bool get fruitStickyNowPlaying => false;
   @override
@@ -870,13 +876,14 @@ void main() {
   );
 
   testWidgets(
-    'PlaybackScreen Fruit car mode increases stat value typography without overflow',
+    'PlaybackScreen Fruit car mode shows a magnified value lens when glass is enabled',
     (WidgetTester tester) async {
       setLargeCarModeViewport(tester);
       when(mockAudioProvider.currentShow).thenReturn(dummyShow);
       when(mockAudioProvider.currentSource).thenReturn(dummySource);
       when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
       mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setFruitEnableLiquidGlass(true);
       mockSettingsProvider.setShowDevAudioHud(false);
 
       final hud = HudSnapshot.empty().copyWith(
@@ -902,7 +909,11 @@ void main() {
       expect(find.text('1200ms'), findsOneWidget);
 
       final Text gapText = tester.widget<Text>(find.text('1200ms'));
-      expect(gapText.style?.fontSize, 18.0);
+      expect(gapText.style?.fontSize, 24.0);
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens')),
+        findsNWidgets(4),
+      );
       expect(tester.takeException(), isNull);
     },
   );

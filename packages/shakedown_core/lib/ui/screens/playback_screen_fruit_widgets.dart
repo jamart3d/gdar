@@ -15,7 +15,77 @@ class _FruitCarModeStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
+    final glassEnabled = settings.fruitEnableLiquidGlass;
+
+    final valueText = Text(
+      value,
+      key: const ValueKey('fruit_car_mode_stat_value_text'),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontFamily: FontConfig.resolve('Inter'),
+        fontSize: 24 * scaleFactor,
+        fontWeight: FontWeight.w900,
+        color: accentColor,
+      ),
+    );
+
+    final valueContent = glassEnabled
+        ? SizedBox(
+            height: 34 * scaleFactor,
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                Positioned.fill(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FractionallySizedBox(
+                      widthFactor: 0.92,
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          key: const ValueKey('fruit_car_mode_stat_value_lens'),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(
+                              999 * scaleFactor,
+                            ),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.16),
+                              width: 0.8,
+                            ),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.18),
+                                accentColor.withValues(alpha: 0.06),
+                                Colors.white.withValues(alpha: 0.08),
+                              ],
+                              stops: const [0.0, 0.45, 1.0],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: accentColor.withValues(alpha: 0.12),
+                                blurRadius: 10 * scaleFactor,
+                                offset: Offset(0, 2 * scaleFactor),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Transform.scale(
+                  scale: 1.03,
+                  alignment: Alignment.centerLeft,
+                  child: valueText,
+                ),
+              ],
+            ),
+          )
+        : valueText;
 
     return FruitSurface(
       borderRadius: BorderRadius.circular(18 * scaleFactor),
@@ -26,7 +96,7 @@ class _FruitCarModeStatCard extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.symmetric(
             horizontal: 12 * scaleFactor,
-            vertical: 12 * scaleFactor,
+            vertical: 6 * scaleFactor,
           ),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerLow,
@@ -46,18 +116,8 @@ class _FruitCarModeStatCard extends StatelessWidget {
                   color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                 ),
               ),
-              SizedBox(height: 8 * scaleFactor),
-              Text(
-                value,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: FontConfig.resolve('Inter'),
-                  fontSize: 18 * scaleFactor,
-                  fontWeight: FontWeight.w900,
-                  color: accentColor,
-                ),
-              ),
+              SizedBox(height: 2 * scaleFactor),
+              valueContent,
             ],
           ),
         ),
