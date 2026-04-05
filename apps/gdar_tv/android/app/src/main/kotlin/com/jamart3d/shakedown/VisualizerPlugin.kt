@@ -904,23 +904,23 @@ class VisualizerPlugin(
         var autocorrBpm: Double? = null
         var autocorrIbiMs: Double? = null
 
-        val useStereoRms = hasStereoPcm && stereoCapture.rmsHistoryCount >= 200
+        val stereoSnapshot = if (hasStereoPcm) stereoCapture.getRmsSnapshot() else null
+        val useStereoRms = stereoSnapshot != null && stereoSnapshot.count >= 200
 
         if (useStereoRms) {
-            // Cap to 256 samples (2.56s at 100Hz) — worst-case O(256 × 67) ≈ 17k ops/frame
-            val count = minOf(stereoCapture.rmsHistoryCount, 256)
-            val size = stereoCapture.rmsHistorySize
-            val idxHead = stereoCapture.rmsHistoryIndex
-            val srcBuffer = stereoCapture.fullRmsHistory
-
+            // Read from a stable snapshot, then cap to 256 samples (2.56s at 100Hz)
+            // to keep the autocorrelation pass bounded on lower-power devices.
+            val snapshot = stereoSnapshot!!
+            val count = minOf(snapshot.count, 256)
+            val start = snapshot.count - count
             val rawRms = FloatArray(count)
             var sum = 0f
             for (i in 0 until count) {
-                val idx = (idxHead - count + i + size) % size
-                val v = srcBuffer[idx]
+                val v = snapshot.samples[start + i]
                 rawRms[i] = v
                 sum += v
             }
+
             val mean = sum / count
             for (i in 0 until count) rawRms[i] -= mean
 

@@ -18,6 +18,11 @@ mixin _AudioProviderState {
 
   ShowListProvider? _showListProvider;
   SettingsProvider? _settingsProvider;
+  bool? _lastPreventSleep;
+  String? _lastTrackTransitionMode;
+  int? _lastHandoffCrossfadeMs;
+  bool? _lastOfflineBuffering;
+  bool? _lastEnableBufferAgent;
   BufferAgent? _bufferAgent;
 
   Show? _currentShow;

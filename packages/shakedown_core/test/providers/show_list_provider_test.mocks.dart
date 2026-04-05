@@ -4,7 +4,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i8;
-import 'dart:ui' as _i14;
+import 'dart:ui' as _i15;
 
 import 'package:flutter/foundation.dart' as _i2;
 import 'package:hive_ce_flutter/hive_flutter.dart' as _i6;
@@ -17,6 +17,8 @@ import 'package:shakedown_core/providers/settings_provider.dart' as _i10;
 import 'package:shakedown_core/providers/theme_provider.dart' as _i12;
 import 'package:shakedown_core/services/catalog_service.dart' as _i4;
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart'
+    as _i14;
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart'
     as _i13;
 import 'package:shared_preferences/shared_preferences.dart' as _i3;
 
@@ -491,6 +493,24 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as bool);
 
   @override
+  bool get carMode =>
+      (super.noSuchMethod(
+            Invocation.getter(#carMode),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get fruitFloatingSpheres =>
+      (super.noSuchMethod(
+            Invocation.getter(#fruitFloatingSpheres),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   int get glowMode =>
       (super.noSuchMethod(
             Invocation.getter(#glowMode),
@@ -767,6 +787,24 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as bool);
 
   @override
+  bool get enableTvBackgroundSpheres =>
+      (super.noSuchMethod(
+            Invocation.getter(#enableTvBackgroundSpheres),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  _i13.SphereAmount get tvBackgroundSphereAmount =>
+      (super.noSuchMethod(
+            Invocation.getter(#tvBackgroundSphereAmount),
+            returnValue: _i13.SphereAmount.tiny,
+            returnValueForMissingStub: _i13.SphereAmount.tiny,
+          )
+          as _i13.SphereAmount);
+
+  @override
   bool get showGlobalAlbumArt =>
       (super.noSuchMethod(
             Invocation.getter(#showGlobalAlbumArt),
@@ -830,13 +868,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as _i10.DevHudMode);
 
   @override
-  _i13.AudioEngineMode get audioEngineMode =>
+  _i14.AudioEngineMode get audioEngineMode =>
       (super.noSuchMethod(
             Invocation.getter(#audioEngineMode),
-            returnValue: _i13.AudioEngineMode.auto,
-            returnValueForMissingStub: _i13.AudioEngineMode.auto,
+            returnValue: _i14.AudioEngineMode.auto,
+            returnValueForMissingStub: _i14.AudioEngineMode.auto,
           )
-          as _i13.AudioEngineMode);
+          as _i14.AudioEngineMode);
 
   @override
   bool get webGaplessEngine =>
@@ -881,22 +919,22 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as double);
 
   @override
-  _i13.HybridHandoffMode get hybridHandoffMode =>
+  _i14.HybridHandoffMode get hybridHandoffMode =>
       (super.noSuchMethod(
             Invocation.getter(#hybridHandoffMode),
-            returnValue: _i13.HybridHandoffMode.buffered,
-            returnValueForMissingStub: _i13.HybridHandoffMode.buffered,
+            returnValue: _i14.HybridHandoffMode.buffered,
+            returnValueForMissingStub: _i14.HybridHandoffMode.buffered,
           )
-          as _i13.HybridHandoffMode);
+          as _i14.HybridHandoffMode);
 
   @override
-  _i13.HybridBackgroundMode get hybridBackgroundMode =>
+  _i14.HybridBackgroundMode get hybridBackgroundMode =>
       (super.noSuchMethod(
             Invocation.getter(#hybridBackgroundMode),
-            returnValue: _i13.HybridBackgroundMode.html5,
-            returnValueForMissingStub: _i13.HybridBackgroundMode.html5,
+            returnValue: _i14.HybridBackgroundMode.html5,
+            returnValueForMissingStub: _i14.HybridBackgroundMode.html5,
           )
-          as _i13.HybridBackgroundMode);
+          as _i14.HybridBackgroundMode);
 
   @override
   bool get allowHiddenWebAudio =>
@@ -926,13 +964,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as int);
 
   @override
-  _i13.HiddenSessionPreset get hiddenSessionPreset =>
+  _i14.HiddenSessionPreset get hiddenSessionPreset =>
       (super.noSuchMethod(
             Invocation.getter(#hiddenSessionPreset),
-            returnValue: _i13.HiddenSessionPreset.stability,
-            returnValueForMissingStub: _i13.HiddenSessionPreset.stability,
+            returnValue: _i14.HiddenSessionPreset.stability,
+            returnValueForMissingStub: _i14.HiddenSessionPreset.stability,
           )
-          as _i13.HiddenSessionPreset);
+          as _i14.HiddenSessionPreset);
 
   @override
   _i10.WebEngineProfile get webEngineProfile =>
@@ -1436,6 +1474,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as bool);
 
   @override
+  bool get oilPreviewShowGraph =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilPreviewShowGraph),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   double get oilInnerRingScale =>
       (super.noSuchMethod(
             Invocation.getter(#oilInnerRingScale),
@@ -1661,13 +1708,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as Map<String, bool>);
 
   @override
-  void addListener(_i14.VoidCallback? listener) => super.noSuchMethod(
+  void addListener(_i15.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#addListener, [listener]),
     returnValueForMissingStub: null,
   );
 
   @override
-  void removeListener(_i14.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i15.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#removeListener, [listener]),
     returnValueForMissingStub: null,
   );
@@ -1876,10 +1923,35 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   );
 
   @override
+  void toggleCarMode() => super.noSuchMethod(
+    Invocation.method(#toggleCarMode, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void toggleFruitFloatingSpheres() => super.noSuchMethod(
+    Invocation.method(#toggleFruitFloatingSpheres, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void toggleHideTvScrollbars() => super.noSuchMethod(
     Invocation.method(#toggleHideTvScrollbars, []),
     returnValueForMissingStub: null,
   );
+
+  @override
+  void toggleEnableTvBackgroundSpheres() => super.noSuchMethod(
+    Invocation.method(#toggleEnableTvBackgroundSpheres, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void setTvBackgroundSphereAmount(_i13.SphereAmount? amount) =>
+      super.noSuchMethod(
+        Invocation.method(#setTvBackgroundSphereAmount, [amount]),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void setGlowMode(int? mode) => super.noSuchMethod(
@@ -2039,7 +2111,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   );
 
   @override
-  _i8.Future<void> setSeedColor(_i14.Color? color) =>
+  _i8.Future<void> setSeedColor(_i15.Color? color) =>
       (super.noSuchMethod(
             Invocation.method(#setSeedColor, [color]),
             returnValue: _i8.Future<void>.value(),
@@ -2057,7 +2129,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as _i8.Future<void>);
 
   @override
-  void setAudioEngineMode(_i13.AudioEngineMode? mode) => super.noSuchMethod(
+  void setAudioEngineMode(_i14.AudioEngineMode? mode) => super.noSuchMethod(
     Invocation.method(#setAudioEngineMode, [mode]),
     returnValueForMissingStub: null,
   );
@@ -2075,7 +2147,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   );
 
   @override
-  void setHybridHandoffMode(_i13.HybridHandoffMode? mode) => super.noSuchMethod(
+  void setHybridHandoffMode(_i14.HybridHandoffMode? mode) => super.noSuchMethod(
     Invocation.method(#setHybridHandoffMode, [mode]),
     returnValueForMissingStub: null,
   );
@@ -2099,14 +2171,14 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   );
 
   @override
-  void setHybridBackgroundMode(_i13.HybridBackgroundMode? mode) =>
+  void setHybridBackgroundMode(_i14.HybridBackgroundMode? mode) =>
       super.noSuchMethod(
         Invocation.method(#setHybridBackgroundMode, [mode]),
         returnValueForMissingStub: null,
       );
 
   @override
-  void setHiddenSessionPreset(_i13.HiddenSessionPreset? preset) =>
+  void setHiddenSessionPreset(_i14.HiddenSessionPreset? preset) =>
       super.noSuchMethod(
         Invocation.method(#setHiddenSessionPreset, [preset]),
         returnValueForMissingStub: null,
@@ -2219,6 +2291,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   _i8.Future<void> toggleOilLogoAntiAlias() =>
       (super.noSuchMethod(
             Invocation.method(#toggleOilLogoAntiAlias, []),
+            returnValue: _i8.Future<void>.value(),
+            returnValueForMissingStub: _i8.Future<void>.value(),
+          )
+          as _i8.Future<void>);
+
+  @override
+  _i8.Future<void> toggleOilPreviewShowGraph() =>
+      (super.noSuchMethod(
+            Invocation.method(#toggleOilPreviewShowGraph, []),
             returnValue: _i8.Future<void>.value(),
             returnValueForMissingStub: _i8.Future<void>.value(),
           )

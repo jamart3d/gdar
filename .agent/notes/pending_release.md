@@ -2,3 +2,84 @@
 [Unreleased] entries will be moved to CHANGELOG.md during the next /shipit run.
 
 ## [Unreleased]
+
+### Fixed
+- Jules merge (`b87e230`, `a1f70b4`) broke Linux checkup: `preflight_check.dart` treated Linux as Chromebook, `checkup.md` removed `LINUX:VERIFIED` from proceed condition, `audit_assets.sh` scanned a non-existent `assets/` dir. All three restored.
+
+### Changed (feat/autocorr-beat-improvements — pending merge)
+- Autocorrelation beat detection refactored (VisualizerPlugin.kt):
+  - Removed coarse 20Hz fallback RMS path (±30 BPM resolution — too coarse to be useful)
+  - Fixed unconditional BPM override: autocorr now only overrides `trackedBeatBpm` when `beatGridConfidence < 0.4`
+  - Capped O(n²) correlation loop at 256 samples with documented cost bound
+  - Implemented second-pass refinement with two modes: parabolic interpolation (Mode A, cheap) and 4× upsample narrow-window re-search (Mode B, HQ)
+  - Sabrina (Chromecast with Google TV) hardware gate: Mode B always disabled on Sabrina regardless of Flutter setting
+  - Extracted `useAutocorr` as a single local variable (was duplicated for `beatBpm` and `beatIbiMs` — divergence risk)
+  - `corrValues` now allocated only for Mode A; Mode B and no-second-pass skip the allocation
+  - Mode B inner loop `-1` bound documented (ensures `lo+1` stays in bounds)
+  - Removed `!!` on `autocorrIbiMs`; replaced with local `ibi` variable
+- New SettingsProvider prefs: `beat_autocorr_second_pass` (TV default: on), `beat_autocorr_second_pass_hq` (default: off everywhere)
+- New TV Settings → Appearance toggles: "Beat Precision Refinement" and "High-Quality Refinement" (HQ shown only when refinement is enabled)
+- `updateConfig` pipeline extended end-to-end: `AudioReactor` interface → `VisualizerAudioReactor` → `screensaver_screen` → `tv_screensaver_preview_panel`
+- `FakeSettingsProvider` and `FakeAudioReactor` test stubs updated for new interface
+
+### Changed (stereo-capture-rms-hardening — implemented this session)
+- TV stereo RMS hardening implemented from [`docs/superpowers/plans/2026-04-05-stereo-capture-rms-hardening.md`](docs/superpowers/plans/2026-04-05-stereo-capture-rms-hardening.md):
+  - `StereoCapture.kt`: moved RMS history size to companion object as `RMS_HISTORY_SIZE`
+  - `StereoCapture.kt`: privatized RMS history state, added dedicated RMS lock, and added `getRmsSnapshot()` returning oldest→newest snapshot copies
+  - `StereoCapture.kt`: reset path now clears RMS ring-buffer state under the same lock used for reader/writer synchronization
+  - `StereoCapture.kt`: removed fixed `SAMPLE_RATE`/`RMS_BLOCK_SIZE`; `start()` now accepts a preferred sample rate, then derives effective `capturedSampleRate` from `AudioRecord.sampleRate` and recomputes `rmsBlockSize`
+  - `MainActivity.kt`: queries `AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE` and passes it into `stereoCapture.start(...)`
+  - `VisualizerPlugin.kt`: replaced direct reads of `fullRmsHistory`/`rmsHistoryIndex`/`rmsHistoryCount` with `getRmsSnapshot()`
+- Added Android JVM regression test setup for TV native code:
+  - `apps/gdar_tv/android/app/build.gradle.kts`: added `testImplementation("junit:junit:4.13.2")`
+  - `StereoCaptureTest.kt`: covers empty-history snapshot and wrapped ring-buffer ordering
+- Plan doc updated during implementation to tighten Step 7 and document the effective-sample-rate approach
+
+### Changed (fruit-car-mode-stat-font-size — implemented this session)
+- Fruit car mode stat-chip typography increased without changing chip height or row layout:
+  - `playback_screen_fruit_widgets.dart`: reduced the internal label→value gap from `10 * scaleFactor` to `8 * scaleFactor`
+  - `playback_screen_fruit_widgets.dart`: increased stat value text from `17 * scaleFactor` to `18 * scaleFactor`
+  - This was the largest clean bump that fit the existing `74`-pixel chip without overflow; larger candidates (`20` and `24`) overflowed during TDD
+- Added widget regression coverage:
+  - `playback_screen_test.dart`: new test `PlaybackScreen Fruit car mode increases stat value typography without overflow`
+  - Test asserts representative long value `1200ms` still renders and that the stat value font size is `18.0`
+- Merged locally to `main` in commit `65e26b5`
+
+### Changed (feat/fruit-car-mode-stat-font-size-v2 — pending merge)
+- Web Fruit car mode stat chips were reworked to improve legibility when Liquid Glass is enabled:
+  - `playback_screen_fruit_widgets.dart`: value text is now `24 * scaleFactor`
+  - `playback_screen_fruit_widgets.dart`: internal vertical padding reduced to `6 * scaleFactor`
+  - `playback_screen_fruit_widgets.dart`: label→value gap reduced to `2 * scaleFactor`
+  - `playback_screen_fruit_widgets.dart`: added a value-only lens treatment (`fruit_car_mode_stat_value_lens`) behind the number when `fruitEnableLiquidGlass` is on
+  - `playback_screen_fruit_widgets.dart`: lens path applies a slight `Transform.scale(1.03)` boost to the value text for a magnified watch-crystal read
+- Test support and regression coverage updated:
+  - `playback_screen_test.dart`: `MockSettingsProvider` now supports `setFruitEnableLiquidGlass(bool value)`
+  - `playback_screen_test.dart`: replaced the earlier size-only stat-chip regression with `PlaybackScreen Fruit car mode shows a magnified value lens when glass is enabled`
+  - The new test asserts long value `1200ms` still renders, the value font size is `24.0`, four lens overlays are present, and no layout exceptions occur
+- Handover summary saved to:
+  - `docs/superpowers/specs/2026-04-05-fruit-car-mode-stat-lens-handover.md`
+
+### Changed (fruit-car-mode-stalled-playback — investigation/planning this session)
+- Evaluated `reports/2026-04-05_14-46_v1.3.61+271_fruit_car_mode_stalled_playback.md` against the current codebase on `94c1f8e`
+- Confirmed the Fruit car mode screen is only a consumer of `positionStream` / `durationStream`; the likely fault domain is the web engine to Dart bridge, not Fruit UI layout
+- Confirmed current web stack already has worker-tick and watchdog behavior in JS (`html5`, `hybrid`, and `webAudio` paths), so the report's original fix direction was too broad
+- Identified `apps/gdar_web/web/hybrid_init.js` as the real engine selection path and noted that PWA/mobile often routes to HTML5 or hybrid, not pure Web Audio
+- Wrote implementation plan:
+  - `docs/superpowers/plans/2026-04-05-fruit-car-mode-stalled-playback.md`
+- Plan scope:
+  - add a root-cause regression test at the JS engine boundary
+  - add a narrow Dart-side `getState()` resync path on visibility restore / stale tick
+  - add Dart regression coverage for resumed progress updates
+- No runtime fix has been implemented yet in this session
+
+### Verification Notes
+- `git diff --check` passed for the updated Kotlin, plan, and Android test files
+- `flutter build apk --debug` reached Android SDK configuration, then failed on host setup before Kotlin compilation:
+  - NDK package `ndk;28.2.13676358` license not accepted
+  - this Chromebook environment exposes `/usr/lib/android-sdk/platform-tools` only; `sdkmanager` is not installed on `PATH`
+- Fruit car mode stat-chip change verified on merged `main`:
+  - `flutter test packages/shakedown_core/test/screens/playback_screen_test.dart` passed (`11` tests)
+  - `flutter analyze` passed with `No issues found!`
+- Fruit car mode stat-lens follow-up verified in `feat/fruit-car-mode-stat-font-size-v2`:
+  - `flutter test packages/shakedown_core/test/screens/playback_screen_test.dart` passed (`11` tests)
+  - `flutter analyze` passed with `No issues found!`

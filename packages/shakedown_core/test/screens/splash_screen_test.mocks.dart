@@ -6,21 +6,23 @@
 import 'dart:async' as _i6;
 import 'dart:ui' as _i11;
 
-import 'package:just_audio/just_audio.dart' as _i14;
+import 'package:just_audio/just_audio.dart' as _i15;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i7;
-import 'package:shakedown_core/models/dng_snapshot.dart' as _i15;
+import 'package:shakedown_core/models/dng_snapshot.dart' as _i16;
 import 'package:shakedown_core/models/hud_snapshot.dart' as _i4;
 import 'package:shakedown_core/models/show.dart' as _i8;
 import 'package:shakedown_core/models/source.dart' as _i10;
-import 'package:shakedown_core/providers/audio_provider.dart' as _i13;
+import 'package:shakedown_core/providers/audio_provider.dart' as _i14;
 import 'package:shakedown_core/providers/settings_provider.dart' as _i9;
 import 'package:shakedown_core/providers/show_list_provider.dart' as _i5;
 import 'package:shakedown_core/providers/theme_provider.dart' as _i12;
-import 'package:shakedown_core/providers/update_provider.dart' as _i17;
-import 'package:shakedown_core/services/audio_cache_service.dart' as _i16;
+import 'package:shakedown_core/providers/update_provider.dart' as _i18;
+import 'package:shakedown_core/services/audio_cache_service.dart' as _i17;
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart'
     as _i3;
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart'
+    as _i13;
 import 'package:shared_preferences/shared_preferences.dart' as _i2;
 
 // ignore_for_file: type=lint
@@ -612,6 +614,24 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
           as bool);
 
   @override
+  bool get carMode =>
+      (super.noSuchMethod(
+            Invocation.getter(#carMode),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get fruitFloatingSpheres =>
+      (super.noSuchMethod(
+            Invocation.getter(#fruitFloatingSpheres),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   int get glowMode =>
       (super.noSuchMethod(
             Invocation.getter(#glowMode),
@@ -886,6 +906,24 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
             returnValueForMissingStub: false,
           )
           as bool);
+
+  @override
+  bool get enableTvBackgroundSpheres =>
+      (super.noSuchMethod(
+            Invocation.getter(#enableTvBackgroundSpheres),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  _i13.SphereAmount get tvBackgroundSphereAmount =>
+      (super.noSuchMethod(
+            Invocation.getter(#tvBackgroundSphereAmount),
+            returnValue: _i13.SphereAmount.tiny,
+            returnValueForMissingStub: _i13.SphereAmount.tiny,
+          )
+          as _i13.SphereAmount);
 
   @override
   bool get showGlobalAlbumArt =>
@@ -1557,6 +1595,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
           as bool);
 
   @override
+  bool get oilPreviewShowGraph =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilPreviewShowGraph),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   double get oilInnerRingScale =>
       (super.noSuchMethod(
             Invocation.getter(#oilInnerRingScale),
@@ -1997,10 +2044,35 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   );
 
   @override
+  void toggleCarMode() => super.noSuchMethod(
+    Invocation.method(#toggleCarMode, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void toggleFruitFloatingSpheres() => super.noSuchMethod(
+    Invocation.method(#toggleFruitFloatingSpheres, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void toggleHideTvScrollbars() => super.noSuchMethod(
     Invocation.method(#toggleHideTvScrollbars, []),
     returnValueForMissingStub: null,
   );
+
+  @override
+  void toggleEnableTvBackgroundSpheres() => super.noSuchMethod(
+    Invocation.method(#toggleEnableTvBackgroundSpheres, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void setTvBackgroundSphereAmount(_i13.SphereAmount? amount) =>
+      super.noSuchMethod(
+        Invocation.method(#setTvBackgroundSphereAmount, [amount]),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void setGlowMode(int? mode) => super.noSuchMethod(
@@ -2339,6 +2411,15 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
   _i6.Future<void> toggleOilLogoAntiAlias() =>
       (super.noSuchMethod(
             Invocation.method(#toggleOilLogoAntiAlias, []),
+            returnValue: _i6.Future<void>.value(),
+            returnValueForMissingStub: _i6.Future<void>.value(),
+          )
+          as _i6.Future<void>);
+
+  @override
+  _i6.Future<void> toggleOilPreviewShowGraph() =>
+      (super.noSuchMethod(
+            Invocation.method(#toggleOilPreviewShowGraph, []),
             returnValue: _i6.Future<void>.value(),
             returnValueForMissingStub: _i6.Future<void>.value(),
           )
@@ -2915,7 +2996,7 @@ class MockSettingsProvider extends _i1.Mock implements _i9.SettingsProvider {
 /// A class which mocks [AudioProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAudioProvider extends _i1.Mock implements _i13.AudioProvider {
+class MockAudioProvider extends _i1.Mock implements _i14.AudioProvider {
   @override
   bool get hasListeners =>
       (super.noSuchMethod(
@@ -2965,13 +3046,13 @@ class MockAudioProvider extends _i1.Mock implements _i13.AudioProvider {
           as String);
 
   @override
-  _i6.Stream<_i14.PlayerState> get playerStateStream =>
+  _i6.Stream<_i15.PlayerState> get playerStateStream =>
       (super.noSuchMethod(
             Invocation.getter(#playerStateStream),
-            returnValue: _i6.Stream<_i14.PlayerState>.empty(),
-            returnValueForMissingStub: _i6.Stream<_i14.PlayerState>.empty(),
+            returnValue: _i6.Stream<_i15.PlayerState>.empty(),
+            returnValueForMissingStub: _i6.Stream<_i15.PlayerState>.empty(),
           )
-          as _i6.Stream<_i14.PlayerState>);
+          as _i6.Stream<_i15.PlayerState>);
 
   @override
   _i6.Stream<int?> get currentIndexStream =>
@@ -3146,13 +3227,13 @@ class MockAudioProvider extends _i1.Mock implements _i13.AudioProvider {
           as int);
 
   @override
-  _i6.Stream<_i15.DngSnapshot> get diagnosticsStream =>
+  _i6.Stream<_i16.DngSnapshot> get diagnosticsStream =>
       (super.noSuchMethod(
             Invocation.getter(#diagnosticsStream),
-            returnValue: _i6.Stream<_i15.DngSnapshot>.empty(),
-            returnValueForMissingStub: _i6.Stream<_i15.DngSnapshot>.empty(),
+            returnValue: _i6.Stream<_i16.DngSnapshot>.empty(),
+            returnValueForMissingStub: _i6.Stream<_i16.DngSnapshot>.empty(),
           )
-          as _i6.Stream<_i15.DngSnapshot>);
+          as _i6.Stream<_i16.DngSnapshot>);
 
   @override
   _i6.Stream<_i4.HudSnapshot> get hudSnapshotStream =>
@@ -3319,7 +3400,7 @@ class MockAudioProvider extends _i1.Mock implements _i13.AudioProvider {
   void update(
     _i5.ShowListProvider? showListProvider,
     _i9.SettingsProvider? settingsProvider,
-    _i16.AudioCacheService? audioCacheService,
+    _i17.AudioCacheService? audioCacheService,
   ) => super.noSuchMethod(
     Invocation.method(#update, [
       showListProvider,
@@ -3411,7 +3492,7 @@ class MockAudioProvider extends _i1.Mock implements _i13.AudioProvider {
 /// A class which mocks [UpdateProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockUpdateProvider extends _i1.Mock implements _i17.UpdateProvider {
+class MockUpdateProvider extends _i1.Mock implements _i18.UpdateProvider {
   @override
   bool get isSimulated =>
       (super.noSuchMethod(

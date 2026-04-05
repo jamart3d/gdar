@@ -7,23 +7,25 @@ import 'dart:async' as _i7;
 import 'dart:ui' as _i12;
 
 import 'package:flutter/foundation.dart' as _i4;
-import 'package:hive_ce_flutter/hive_flutter.dart' as _i15;
+import 'package:hive_ce_flutter/hive_flutter.dart' as _i16;
 import 'package:just_audio/just_audio.dart' as _i2;
-import 'package:just_audio_background/just_audio_background.dart' as _i19;
+import 'package:just_audio_background/just_audio_background.dart' as _i20;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i6;
-import 'package:shakedown_core/models/rating.dart' as _i16;
-import 'package:shakedown_core/models/session_entry.dart' as _i17;
+import 'package:shakedown_core/models/rating.dart' as _i17;
+import 'package:shakedown_core/models/session_entry.dart' as _i18;
 import 'package:shakedown_core/models/show.dart' as _i9;
 import 'package:shakedown_core/models/source.dart' as _i11;
 import 'package:shakedown_core/providers/settings_provider.dart' as _i10;
 import 'package:shakedown_core/providers/show_list_provider.dart' as _i8;
 import 'package:shakedown_core/providers/theme_provider.dart' as _i13;
-import 'package:shakedown_core/services/audio_cache_service_io.dart' as _i18;
-import 'package:shakedown_core/services/catalog_service.dart' as _i14;
+import 'package:shakedown_core/services/audio_cache_service_io.dart' as _i19;
+import 'package:shakedown_core/services/catalog_service.dart' as _i15;
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart'
     as _i5;
-import 'package:shakedown_core/services/wakelock_service.dart' as _i20;
+import 'package:shakedown_core/services/wakelock_service.dart' as _i21;
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart'
+    as _i14;
 import 'package:shared_preferences/shared_preferences.dart' as _i3;
 
 // ignore_for_file: type=lint
@@ -1223,6 +1225,24 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as bool);
 
   @override
+  bool get carMode =>
+      (super.noSuchMethod(
+            Invocation.getter(#carMode),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get fruitFloatingSpheres =>
+      (super.noSuchMethod(
+            Invocation.getter(#fruitFloatingSpheres),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   int get glowMode =>
       (super.noSuchMethod(
             Invocation.getter(#glowMode),
@@ -1497,6 +1517,24 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
             returnValueForMissingStub: false,
           )
           as bool);
+
+  @override
+  bool get enableTvBackgroundSpheres =>
+      (super.noSuchMethod(
+            Invocation.getter(#enableTvBackgroundSpheres),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  _i14.SphereAmount get tvBackgroundSphereAmount =>
+      (super.noSuchMethod(
+            Invocation.getter(#tvBackgroundSphereAmount),
+            returnValue: _i14.SphereAmount.tiny,
+            returnValueForMissingStub: _i14.SphereAmount.tiny,
+          )
+          as _i14.SphereAmount);
 
   @override
   bool get showGlobalAlbumArt =>
@@ -2168,6 +2206,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as bool);
 
   @override
+  bool get oilPreviewShowGraph =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilPreviewShowGraph),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   double get oilInnerRingScale =>
       (super.noSuchMethod(
             Invocation.getter(#oilInnerRingScale),
@@ -2608,10 +2655,35 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   );
 
   @override
+  void toggleCarMode() => super.noSuchMethod(
+    Invocation.method(#toggleCarMode, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void toggleFruitFloatingSpheres() => super.noSuchMethod(
+    Invocation.method(#toggleFruitFloatingSpheres, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void toggleHideTvScrollbars() => super.noSuchMethod(
     Invocation.method(#toggleHideTvScrollbars, []),
     returnValueForMissingStub: null,
   );
+
+  @override
+  void toggleEnableTvBackgroundSpheres() => super.noSuchMethod(
+    Invocation.method(#toggleEnableTvBackgroundSpheres, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void setTvBackgroundSphereAmount(_i14.SphereAmount? amount) =>
+      super.noSuchMethod(
+        Invocation.method(#setTvBackgroundSphereAmount, [amount]),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void setGlowMode(int? mode) => super.noSuchMethod(
@@ -2951,6 +3023,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   _i7.Future<void> toggleOilLogoAntiAlias() =>
       (super.noSuchMethod(
             Invocation.method(#toggleOilLogoAntiAlias, []),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
+          )
+          as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> toggleOilPreviewShowGraph() =>
+      (super.noSuchMethod(
+            Invocation.method(#toggleOilPreviewShowGraph, []),
             returnValue: _i7.Future<void>.value(),
             returnValueForMissingStub: _i7.Future<void>.value(),
           )
@@ -3527,7 +3608,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
 /// A class which mocks [CatalogService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCatalogService extends _i1.Mock implements _i14.CatalogService {
+class MockCatalogService extends _i1.Mock implements _i15.CatalogService {
   @override
   bool get isInitialized =>
       (super.noSuchMethod(
@@ -3547,56 +3628,56 @@ class MockCatalogService extends _i1.Mock implements _i14.CatalogService {
           as List<_i9.Show>);
 
   @override
-  _i4.ValueListenable<_i15.Box<int>> get playCountsListenable =>
+  _i4.ValueListenable<_i16.Box<int>> get playCountsListenable =>
       (super.noSuchMethod(
             Invocation.getter(#playCountsListenable),
-            returnValue: _FakeValueListenable_3<_i15.Box<int>>(
+            returnValue: _FakeValueListenable_3<_i16.Box<int>>(
               this,
               Invocation.getter(#playCountsListenable),
             ),
-            returnValueForMissingStub: _FakeValueListenable_3<_i15.Box<int>>(
+            returnValueForMissingStub: _FakeValueListenable_3<_i16.Box<int>>(
               this,
               Invocation.getter(#playCountsListenable),
             ),
           )
-          as _i4.ValueListenable<_i15.Box<int>>);
+          as _i4.ValueListenable<_i16.Box<int>>);
 
   @override
-  _i4.ValueListenable<_i15.Box<bool>> get historyListenable =>
+  _i4.ValueListenable<_i16.Box<bool>> get historyListenable =>
       (super.noSuchMethod(
             Invocation.getter(#historyListenable),
-            returnValue: _FakeValueListenable_3<_i15.Box<bool>>(
+            returnValue: _FakeValueListenable_3<_i16.Box<bool>>(
               this,
               Invocation.getter(#historyListenable),
             ),
-            returnValueForMissingStub: _FakeValueListenable_3<_i15.Box<bool>>(
+            returnValueForMissingStub: _FakeValueListenable_3<_i16.Box<bool>>(
               this,
               Invocation.getter(#historyListenable),
             ),
           )
-          as _i4.ValueListenable<_i15.Box<bool>>);
+          as _i4.ValueListenable<_i16.Box<bool>>);
 
   @override
-  _i4.ValueListenable<_i15.Box<_i16.Rating>> get ratingsListenable =>
+  _i4.ValueListenable<_i16.Box<_i17.Rating>> get ratingsListenable =>
       (super.noSuchMethod(
             Invocation.getter(#ratingsListenable),
-            returnValue: _FakeValueListenable_3<_i15.Box<_i16.Rating>>(
+            returnValue: _FakeValueListenable_3<_i16.Box<_i17.Rating>>(
               this,
               Invocation.getter(#ratingsListenable),
             ),
             returnValueForMissingStub:
-                _FakeValueListenable_3<_i15.Box<_i16.Rating>>(
+                _FakeValueListenable_3<_i16.Box<_i17.Rating>>(
                   this,
                   Invocation.getter(#ratingsListenable),
                 ),
           )
-          as _i4.ValueListenable<_i15.Box<_i16.Rating>>);
+          as _i4.ValueListenable<_i16.Box<_i17.Rating>>);
 
   @override
   _i7.Future<void> initialize({
     required _i3.SharedPreferences? prefs,
-    _i14.CatalogLoadingStrategy? strategy =
-        _i14.CatalogLoadingStrategy.inMemory,
+    _i15.CatalogLoadingStrategy? strategy =
+        _i15.CatalogLoadingStrategy.inMemory,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#initialize, [], {
@@ -3609,7 +3690,7 @@ class MockCatalogService extends _i1.Mock implements _i14.CatalogService {
           as _i7.Future<void>);
 
   @override
-  _i7.Future<void> switchStrategy(_i14.CatalogLoadingStrategy? newStrategy) =>
+  _i7.Future<void> switchStrategy(_i15.CatalogLoadingStrategy? newStrategy) =>
       (super.noSuchMethod(
             Invocation.method(#switchStrategy, [newStrategy]),
             returnValue: _i7.Future<void>.value(),
@@ -3688,13 +3769,13 @@ class MockCatalogService extends _i1.Mock implements _i14.CatalogService {
           as _i7.Future<void>);
 
   @override
-  List<_i17.SessionEntry> getSessionHistory() =>
+  List<_i18.SessionEntry> getSessionHistory() =>
       (super.noSuchMethod(
             Invocation.method(#getSessionHistory, []),
-            returnValue: <_i17.SessionEntry>[],
-            returnValueForMissingStub: <_i17.SessionEntry>[],
+            returnValue: <_i18.SessionEntry>[],
+            returnValueForMissingStub: <_i18.SessionEntry>[],
           )
-          as List<_i17.SessionEntry>);
+          as List<_i18.SessionEntry>);
 
   @override
   _i7.Future<void> togglePlayed(String? sourceId) =>
@@ -3736,7 +3817,7 @@ class MockCatalogService extends _i1.Mock implements _i14.CatalogService {
 /// A class which mocks [AudioCacheService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAudioCacheService extends _i1.Mock implements _i18.AudioCacheService {
+class MockAudioCacheService extends _i1.Mock implements _i19.AudioCacheService {
   @override
   int get cachedTrackCount =>
       (super.noSuchMethod(
@@ -3773,7 +3854,7 @@ class MockAudioCacheService extends _i1.Mock implements _i18.AudioCacheService {
   @override
   _i2.AudioSource createAudioSource({
     required Uri? uri,
-    required _i19.MediaItem? tag,
+    required _i20.MediaItem? tag,
     required bool? useCache,
   }) =>
       (super.noSuchMethod(
@@ -3878,7 +3959,7 @@ class MockAudioCacheService extends _i1.Mock implements _i18.AudioCacheService {
 /// A class which mocks [WakelockService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockWakelockService extends _i1.Mock implements _i20.WakelockService {
+class MockWakelockService extends _i1.Mock implements _i21.WakelockService {
   @override
   _i7.Future<bool> get enabled =>
       (super.noSuchMethod(

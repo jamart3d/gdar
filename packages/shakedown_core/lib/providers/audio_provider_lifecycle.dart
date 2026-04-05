@@ -110,27 +110,39 @@ mixin _AudioProviderLifecycle
       );
     }
 
-    if (_settingsProvider == null ||
-        settingsProvider.handoffCrossfadeMs !=
-            _settingsProvider!.handoffCrossfadeMs) {
+    if (_lastHandoffCrossfadeMs == null ||
+        settingsProvider.handoffCrossfadeMs != _lastHandoffCrossfadeMs) {
       _audioPlayer.setHandoffCrossfadeMs(settingsProvider.handoffCrossfadeMs);
+      _lastHandoffCrossfadeMs = settingsProvider.handoffCrossfadeMs;
     }
 
-    if (_settingsProvider != null &&
-        settingsProvider.trackTransitionMode !=
-            _settingsProvider!.trackTransitionMode) {
+    if (_lastTrackTransitionMode == null ||
+        settingsProvider.trackTransitionMode != _lastTrackTransitionMode) {
       _audioPlayer.setTrackTransitionMode(settingsProvider.trackTransitionMode);
+      _lastTrackTransitionMode = settingsProvider.trackTransitionMode;
+    }
+
+    if (_lastPreventSleep == null ||
+        settingsProvider.preventSleep != _lastPreventSleep) {
+      _lastPreventSleep = settingsProvider.preventSleep;
+      _updateWakeLockState();
     }
 
     _settingsProvider = settingsProvider;
     _updateBufferAgent();
-    _audioCacheService.monitorCache(
-      _settingsProvider?.offlineBuffering ?? false,
-    );
+
+    if (_lastOfflineBuffering == null ||
+        _settingsProvider?.offlineBuffering != _lastOfflineBuffering) {
+      _lastOfflineBuffering = _settingsProvider?.offlineBuffering;
+      _audioCacheService.monitorCache(_lastOfflineBuffering ?? false);
+    }
   }
 
   void _updateBufferAgent() {
     final shouldEnable = _settingsProvider?.enableBufferAgent ?? false;
+
+    if (_lastEnableBufferAgent == shouldEnable) return;
+    _lastEnableBufferAgent = shouldEnable;
 
     if (shouldEnable && _bufferAgent == null) {
       _bufferAgent = BufferAgent(

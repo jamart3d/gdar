@@ -30,12 +30,17 @@ class StereoCapture {
 
     companion object {
         private const val TAG = "StereoCapture"
-        private const val SAMPLE_RATE = 44100
         const val WAVEFORM_POINTS = 256
+        const val RMS_HISTORY_SIZE = 512
         private const val MAX_CONSECUTIVE_SHORT_READS = 25
         private const val MAX_PCM_IDLE_MS = 2500L
         private const val HOT_PCM_LOG_THRESHOLD = 0.01
     }
+
+    data class RmsSnapshot(
+        val samples: FloatArray,
+        val count: Int,
+    )
 
     /** Latest downsampled left-channel PCM, range -1.0..1.0. Empty until capture starts. */
     @Volatile var waveformL: List<Float> = emptyList()
@@ -70,14 +75,15 @@ class StereoCapture {
         private set
 
     /** High-resolution RMS history for autocorrelation beat detection (e.g., 100 Hz). */
-    val rmsHistorySize = 512
-    val fullRmsHistory = FloatArray(rmsHistorySize)
-    @Volatile var rmsHistoryIndex = 0
-    @Volatile var rmsHistoryCount = 0
+    private val fullRmsHistory = FloatArray(RMS_HISTORY_SIZE)
+    private var rmsHistoryIndex = 0
+    private var rmsHistoryCount = 0
 
+    private val rmsHistoryLock = Any()
     private var rmsAccum = 0.0
     private var rmsSamples = 0
-    private val RMS_BLOCK_SIZE = 441 // 10ms at 44100Hz -> 100Hz RMS sample rate
+    private var capturedSampleRate = 44100
+    private var rmsBlockSize = 441
 
     private var audioRecord: AudioRecord? = null
     private var mediaProjection: MediaProjection? = null
@@ -109,11 +115,32 @@ class StereoCapture {
         monoSlowEnv = 0.0
         prevMonoLevel = 0.0
         hasLoggedHotFrame = false
-        rmsHistoryIndex = 0
-        rmsHistoryCount = 0
         rmsAccum = 0.0
         rmsSamples = 0
-        fullRmsHistory.fill(0f)
+        rmsBlockSize = maxOf(1, capturedSampleRate / 100)
+        synchronized(rmsHistoryLock) {
+            rmsHistoryIndex = 0
+            rmsHistoryCount = 0
+            fullRmsHistory.fill(0f)
+        }
+    }
+
+    /**
+     * Returns a stable, oldest-to-newest snapshot of the RMS ring buffer for beat analysis.
+     */
+    fun getRmsSnapshot(): RmsSnapshot? = synchronized(rmsHistoryLock) {
+        val count = rmsHistoryCount
+        if (count == 0) {
+            null
+        } else {
+            val idxHead = rmsHistoryIndex
+            val samples = FloatArray(count)
+            for (i in 0 until count) {
+                val idx = (idxHead - count + i + RMS_HISTORY_SIZE) % RMS_HISTORY_SIZE
+                samples[i] = fullRmsHistory[idx]
+            }
+            RmsSnapshot(samples, count)
+        }
     }
 
     private fun stopAndReleaseAudioRecord(
@@ -190,7 +217,7 @@ class StereoCapture {
      * Returns true on success; false if the device is below API 29, AudioRecord failed to
      * initialise, or permission was denied. Callers should treat false as graceful fallback.
      */
-    fun start(projection: MediaProjection): Boolean {
+    fun start(projection: MediaProjection, sampleRate: Int = 44100): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
             Log.d(TAG, "AudioPlaybackCapture requires API 29+ - skipping stereo capture")
             stopMediaProjection(projection, "api gate")
@@ -199,10 +226,13 @@ class StereoCapture {
         stop()
 
         return try {
+            val requestedSampleRate = sampleRate.takeIf { it > 0 } ?: 44100
+            capturedSampleRate = requestedSampleRate
+            rmsBlockSize = maxOf(1, requestedSampleRate / 100)
             val channelConfig = AudioFormat.CHANNEL_IN_STEREO
             val encoding = AudioFormat.ENCODING_PCM_16BIT
             val minBuf = AudioRecord.getMinBufferSize(
-                SAMPLE_RATE,
+                requestedSampleRate,
                 channelConfig,
                 encoding,
             )
@@ -213,11 +243,6 @@ class StereoCapture {
                 )
             }
             val bufferSize = maxOf(minBuf * 4, WAVEFORM_POINTS * 4)
-            Log.i(
-                TAG,
-                "Starting stereo capture " +
-                    "(minBuf=$minBuf, bufferSize=$bufferSize, ${deviceSummary()})",
-            )
 
             @Suppress("NewApi")
             val captureConfig = AudioPlaybackCaptureConfiguration.Builder(projection)
@@ -229,7 +254,7 @@ class StereoCapture {
                 .setAudioFormat(
                     AudioFormat.Builder()
                         .setEncoding(encoding)
-                        .setSampleRate(SAMPLE_RATE)
+                        .setSampleRate(requestedSampleRate)
                         .setChannelMask(channelConfig)
                         .build()
                 )
@@ -243,6 +268,16 @@ class StereoCapture {
                     record = record,
                 )
             }
+            capturedSampleRate = record.sampleRate.takeIf { it > 0 } ?: requestedSampleRate
+            rmsBlockSize = maxOf(1, capturedSampleRate / 100)
+            Log.i(
+                TAG,
+                "Starting stereo capture " +
+                    "(requestedSampleRate=$requestedSampleRate, " +
+                    "sampleRate=$capturedSampleRate, " +
+                    "rmsBlockSize=$rmsBlockSize, " +
+                    "minBuf=$minBuf, bufferSize=$bufferSize, ${deviceSummary()})",
+            )
 
             try {
                 record.startRecording()
@@ -372,11 +407,13 @@ class StereoCapture {
                 // High-resolution RMS tracking
                 rmsAccum += mono * mono
                 rmsSamples++
-                if (rmsSamples >= RMS_BLOCK_SIZE) {
+                if (rmsSamples >= rmsBlockSize) {
                     val rms = sqrt(rmsAccum / rmsSamples).toFloat()
-                    fullRmsHistory[rmsHistoryIndex] = rms
-                    rmsHistoryIndex = (rmsHistoryIndex + 1) % rmsHistorySize
-                    if (rmsHistoryCount < rmsHistorySize) rmsHistoryCount++
+                    synchronized(rmsHistoryLock) {
+                        fullRmsHistory[rmsHistoryIndex] = rms
+                        rmsHistoryIndex = (rmsHistoryIndex + 1) % RMS_HISTORY_SIZE
+                        if (rmsHistoryCount < RMS_HISTORY_SIZE) rmsHistoryCount++
+                    }
                     rmsAccum = 0.0
                     rmsSamples = 0
                 }

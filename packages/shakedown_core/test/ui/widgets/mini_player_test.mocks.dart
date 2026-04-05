@@ -20,6 +20,8 @@ import 'package:shakedown_core/providers/theme_provider.dart' as _i16;
 import 'package:shakedown_core/services/audio_cache_service.dart' as _i15;
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart'
     as _i2;
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart'
+    as _i17;
 import 'package:shared_preferences/shared_preferences.dart' as _i4;
 
 // ignore_for_file: type=lint
@@ -699,6 +701,19 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
           as bool);
 
   @override
+  bool get carMode =>
+      (super.noSuchMethod(Invocation.getter(#carMode), returnValue: false)
+          as bool);
+
+  @override
+  bool get fruitFloatingSpheres =>
+      (super.noSuchMethod(
+            Invocation.getter(#fruitFloatingSpheres),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
   int get glowMode =>
       (super.noSuchMethod(Invocation.getter(#glowMode), returnValue: 0) as int);
 
@@ -918,6 +933,22 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
             returnValue: false,
           )
           as bool);
+
+  @override
+  bool get enableTvBackgroundSpheres =>
+      (super.noSuchMethod(
+            Invocation.getter(#enableTvBackgroundSpheres),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
+  _i17.SphereAmount get tvBackgroundSphereAmount =>
+      (super.noSuchMethod(
+            Invocation.getter(#tvBackgroundSphereAmount),
+            returnValue: _i17.SphereAmount.tiny,
+          )
+          as _i17.SphereAmount);
 
   @override
   bool get showGlobalAlbumArt =>
@@ -1463,6 +1494,14 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
           as bool);
 
   @override
+  bool get oilPreviewShowGraph =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilPreviewShowGraph),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
   double get oilInnerRingScale =>
       (super.noSuchMethod(
             Invocation.getter(#oilInnerRingScale),
@@ -1865,10 +1904,35 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
   );
 
   @override
+  void toggleCarMode() => super.noSuchMethod(
+    Invocation.method(#toggleCarMode, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void toggleFruitFloatingSpheres() => super.noSuchMethod(
+    Invocation.method(#toggleFruitFloatingSpheres, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void toggleHideTvScrollbars() => super.noSuchMethod(
     Invocation.method(#toggleHideTvScrollbars, []),
     returnValueForMissingStub: null,
   );
+
+  @override
+  void toggleEnableTvBackgroundSpheres() => super.noSuchMethod(
+    Invocation.method(#toggleEnableTvBackgroundSpheres, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void setTvBackgroundSphereAmount(_i17.SphereAmount? amount) =>
+      super.noSuchMethod(
+        Invocation.method(#setTvBackgroundSphereAmount, [amount]),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void setGlowMode(int? mode) => super.noSuchMethod(
@@ -2208,6 +2272,15 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
   _i8.Future<void> toggleOilLogoAntiAlias() =>
       (super.noSuchMethod(
             Invocation.method(#toggleOilLogoAntiAlias, []),
+            returnValue: _i8.Future<void>.value(),
+            returnValueForMissingStub: _i8.Future<void>.value(),
+          )
+          as _i8.Future<void>);
+
+  @override
+  _i8.Future<void> toggleOilPreviewShowGraph() =>
+      (super.noSuchMethod(
+            Invocation.method(#toggleOilPreviewShowGraph, []),
             returnValue: _i8.Future<void>.value(),
             returnValueForMissingStub: _i8.Future<void>.value(),
           )

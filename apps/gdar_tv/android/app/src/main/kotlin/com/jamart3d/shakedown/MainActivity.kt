@@ -5,6 +5,7 @@ import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.media.AudioManager
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
@@ -115,7 +116,11 @@ class MainActivity : FlutterActivity() {
                 // devices has caused permission failures even though plain
                 // AudioPlaybackCapture may still work.
                 try {
-                    val ok = stereoCapture.start(projection)
+                    val preferredRate = (getSystemService(Context.AUDIO_SERVICE) as? AudioManager)
+                        ?.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
+                        ?.toIntOrNull()
+                        ?: 44100
+                    val ok = stereoCapture.start(projection, preferredRate)
                     if (!ok) {
                         resetStereoCaptureSession()
                         Log.w(
