@@ -69,6 +69,16 @@ class StereoCapture {
     @Volatile var lastAnalysisMs: Long = 0L
         private set
 
+    /** High-resolution RMS history for autocorrelation beat detection (e.g., 100 Hz). */
+    val rmsHistorySize = 512
+    val fullRmsHistory = FloatArray(rmsHistorySize)
+    @Volatile var rmsHistoryIndex = 0
+    @Volatile var rmsHistoryCount = 0
+
+    private var rmsAccum = 0.0
+    private var rmsSamples = 0
+    private val RMS_BLOCK_SIZE = 441 // 10ms at 44100Hz -> 100Hz RMS sample rate
+
     private var audioRecord: AudioRecord? = null
     private var mediaProjection: MediaProjection? = null
     private var captureThread: Thread? = null
@@ -99,6 +109,11 @@ class StereoCapture {
         monoSlowEnv = 0.0
         prevMonoLevel = 0.0
         hasLoggedHotFrame = false
+        rmsHistoryIndex = 0
+        rmsHistoryCount = 0
+        rmsAccum = 0.0
+        rmsSamples = 0
+        fullRmsHistory.fill(0f)
     }
 
     private fun stopAndReleaseAudioRecord(
@@ -351,14 +366,28 @@ class StereoCapture {
                 val left = buffer[si].toDouble() / 32768.0
                 val right = buffer[si + 1].toDouble() / 32768.0
                 val mono = (left + right) * 0.5
+
                 monoSumSq += mono * mono
 
-                if (l.size < WAVEFORM_POINTS) {
+                // High-resolution RMS tracking
+                rmsAccum += mono * mono
+                rmsSamples++
+                if (rmsSamples >= RMS_BLOCK_SIZE) {
+                    val rms = sqrt(rmsAccum / rmsSamples).toFloat()
+                    fullRmsHistory[rmsHistoryIndex] = rms
+                    rmsHistoryIndex = (rmsHistoryIndex + 1) % rmsHistorySize
+                    if (rmsHistoryCount < rmsHistorySize) rmsHistoryCount++
+                    rmsAccum = 0.0
+                    rmsSamples = 0
+                }
+
+                // Downsampling for oscilloscope
+                if (frameIdx % step == 0 && l.size < WAVEFORM_POINTS) {
                     l.add(left.toFloat())
                     r.add(right.toFloat())
                 }
             }
-            frameIdx += step
+            frameIdx++
         }
 
         waveformL = l
