@@ -37,7 +37,8 @@
             k.startsWith('flutter.') ||
             k === 'audio_engine_mode' ||
             k === 'allow_hidden_web_audio' ||
-            k === 'gdar_web_error_log_v1'
+            k === 'gdar_web_error_log_v1' ||
+            k === 'gdar_pwa_visited'
         );
         keysToRemove.forEach(k => localStorage.removeItem(k));
         sessionStorage.setItem('shakedown_flushed', 'true');
