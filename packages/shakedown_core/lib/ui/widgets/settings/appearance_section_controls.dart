@@ -840,6 +840,48 @@ extension _AppearanceSectionControls on _AppearanceSectionState {
     );
   }
 
+  Widget _buildBeatAutocorrSecondPassTile(
+    BuildContext context,
+    SettingsProvider settingsProvider,
+  ) {
+    return TvSwitchListTile(
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      title: _buildTileTitle(context, 'Beat Precision Refinement'),
+      subtitle: _buildTileSubtitle(
+        context,
+        'Improves BPM accuracy when no beat grid is locked',
+      ),
+      value: settingsProvider.beatAutocorrSecondPass,
+      onChanged: (_) {
+        AppHaptics.lightImpact(context.read<DeviceService>());
+        context.read<SettingsProvider>().toggleBeatAutocorrSecondPass();
+      },
+      secondary: const Icon(LucideIcons.activity),
+    );
+  }
+
+  Widget _buildBeatAutocorrSecondPassHqTile(
+    BuildContext context,
+    SettingsProvider settingsProvider,
+  ) {
+    return TvSwitchListTile(
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      title: _buildTileTitle(context, 'High-Quality Refinement'),
+      subtitle: _buildTileSubtitle(
+        context,
+        'Higher accuracy, more compute. Not available on all devices.',
+      ),
+      value: settingsProvider.beatAutocorrSecondPassHq,
+      onChanged: (_) {
+        AppHaptics.lightImpact(context.read<DeviceService>());
+        context.read<SettingsProvider>().toggleBeatAutocorrSecondPassHq();
+      },
+      secondary: const Icon(LucideIcons.cpu),
+    );
+  }
+
   Widget _buildTileTitle(BuildContext context, String text) {
     return FittedBox(
       fit: BoxFit.scaleDown,

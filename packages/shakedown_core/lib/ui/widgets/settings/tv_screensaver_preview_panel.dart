@@ -97,6 +97,8 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel>
               reactivityStrength: settings.oilAudioReactivityStrength,
               beatDetectorMode: settings.oilBeatDetectorMode,
               beatSensitivity: settings.oilBeatSensitivity,
+              autocorrSecondPass: settings.beatAutocorrSecondPass,
+              autocorrSecondPassHq: settings.beatAutocorrSecondPassHq,
             );
           }
         } else {
@@ -168,6 +170,8 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel>
         reactivityStrength: settings.oilAudioReactivityStrength,
         beatDetectorMode: settings.oilBeatDetectorMode,
         beatSensitivity: settings.oilBeatSensitivity,
+        autocorrSecondPass: settings.beatAutocorrSecondPass,
+        autocorrSecondPassHq: settings.beatAutocorrSecondPassHq,
       );
     }
 

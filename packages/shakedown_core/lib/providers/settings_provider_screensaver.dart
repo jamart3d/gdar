@@ -75,6 +75,8 @@ const String _oilWoodstockEveryHourKey = 'oil_woodstock_every_hour';
 const String _oilTvPremiumHighlightKey = 'oil_tv_premium_highlight';
 const String _showScreensaverCountdownKey = 'show_screensaver_countdown';
 const String _oilPreviewShowGraphKey = 'oil_preview_show_graph';
+const String _beatAutocorrSecondPassKey = 'beat_autocorr_second_pass';
+const String _beatAutocorrSecondPassHqKey = 'beat_autocorr_second_pass_hq';
 
 mixin _SettingsProviderScreensaverFields {
   late bool _useOilScreensaver;
@@ -149,6 +151,8 @@ mixin _SettingsProviderScreensaverFields {
   late double _oilScaleSineFreq;
   late double _oilScaleSineAmp;
   late bool _showScreensaverCountdown;
+  late bool _beatAutocorrSecondPass;
+  late bool _beatAutocorrSecondPassHq;
 }
 
 mixin _SettingsProviderScreensaverExtension
@@ -230,6 +234,8 @@ mixin _SettingsProviderScreensaverExtension
   double get oilScaleSineFreq => _oilScaleSineFreq;
   double get oilScaleSineAmp => _oilScaleSineAmp;
   bool get showScreensaverCountdown => _showScreensaverCountdown;
+  bool get beatAutocorrSecondPass => _beatAutocorrSecondPass;
+  bool get beatAutocorrSecondPassHq => _beatAutocorrSecondPassHq;
 
   void toggleUseOilScreensaver() => _updatePreference(
     _useOilScreensaverKey,
@@ -421,6 +427,16 @@ mixin _SettingsProviderScreensaverExtension
   Future<void> setOilBeatImpact(double value) => _updateDoublePreference(
     _oilBeatImpactKey,
     _oilBeatImpact = value.clamp(0.0, 1.0),
+  );
+
+  Future<void> toggleBeatAutocorrSecondPass() => _updatePreference(
+    _beatAutocorrSecondPassKey,
+    _beatAutocorrSecondPass = !_beatAutocorrSecondPass,
+  );
+
+  Future<void> toggleBeatAutocorrSecondPassHq() => _updatePreference(
+    _beatAutocorrSecondPassHqKey,
+    _beatAutocorrSecondPassHq = !_beatAutocorrSecondPassHq,
   );
 
   void toggleOilShowInfoBanner() => _updatePreference(

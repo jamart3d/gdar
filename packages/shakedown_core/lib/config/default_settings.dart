@@ -180,6 +180,10 @@ class DefaultSettings {
   static const double oilColorMultiplier = 1.0;
   static const bool oilWoodstockEveryHour = true;
 
+  /// Beat precision refinement via autocorrelation second pass.
+  static const bool beatAutocorrSecondPass = false;
+  static const bool beatAutocorrSecondPassHq = false;
+
   static const bool oilTvPremiumHighlight = false;
   static const bool omitHttpPathInCopy = true;
 }
@@ -230,6 +234,10 @@ class TvDefaults extends DefaultSettings {
   // Auto spacing helps Rock Salt avoid crowding on TV.
   static const bool oilAutoTextSpacing = true;
   static const bool oilAutoRingSpacing = true;
+
+  // Beat precision refinement: parabolic second pass is cheap enough for TV.
+  static const bool beatAutocorrSecondPass = true; // On by default for TV
+  static const bool beatAutocorrSecondPassHq = false; // HQ is user opt-in
 
   // Prevent screen sleep by default â€” TV is a lean-back device
   static const bool preventSleep = true;

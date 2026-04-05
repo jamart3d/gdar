@@ -74,6 +74,8 @@ class VisualizerAudioReactor implements AudioReactor {
     double? reactivityStrength,
     String? beatDetectorMode,
     double? beatSensitivity,
+    bool? autocorrSecondPass,
+    bool? autocorrSecondPassHq,
   }) {
     if (!_isRunning || _isDisposed) return;
     unawaited(
@@ -83,6 +85,8 @@ class VisualizerAudioReactor implements AudioReactor {
         'reactivityStrength': ?reactivityStrength,
         'beatDetectorMode': ?beatDetectorMode,
         'beatSensitivity': ?beatSensitivity,
+        'autocorrSecondPass': ?autocorrSecondPass,
+        'autocorrSecondPassHq': ?autocorrSecondPassHq,
       }),
     );
   }

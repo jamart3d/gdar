@@ -24,6 +24,8 @@ class FakeAudioReactor implements AudioReactor {
     double? reactivityStrength,
     String? beatDetectorMode,
     double? beatSensitivity,
+    bool? autocorrSecondPass,
+    bool? autocorrSecondPassHq,
   }) {}
   @override
   void dispose() => _controller.close();

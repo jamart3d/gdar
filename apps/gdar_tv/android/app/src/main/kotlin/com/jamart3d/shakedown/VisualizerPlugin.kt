@@ -932,13 +932,13 @@ class VisualizerPlugin(
             if (minLag < maxLag) {
                 var bestLag = -1
                 var bestCorr = -1.0
-                // Store correlations for parabolic refinement
-                val corrValues = DoubleArray(maxLag + 2)
+                // Only allocate for Mode A (parabolic) — Mode B and no-second-pass don't read it
+                val corrValues = if (autocorrSecondPass && !autocorrSecondPassHq) DoubleArray(maxLag + 2) else null
 
                 for (lag in minLag..maxLag) {
                     var corr = 0.0
                     for (i in 0 until count - lag) corr += rawRms[i] * rawRms[i + lag]
-                    corrValues[lag] = corr
+                    corrValues?.set(lag, corr)
                     if (corr > bestCorr) { bestCorr = corr; bestLag = lag }
                 }
 
@@ -949,7 +949,7 @@ class VisualizerPlugin(
                         if (!autocorrSecondPassHq) {
                             // Mode A: parabolic interpolation — ~3 extra ops, zero cost
                             if (bestLag > minLag && bestLag < maxLag) {
-                                val cPrev = corrValues[bestLag - 1]
+                                val cPrev = corrValues!![bestLag - 1]
                                 val cBest = corrValues[bestLag]
                                 val cNext = corrValues[bestLag + 1]
                                 val denom = cPrev - 2.0 * cBest + cNext
@@ -966,6 +966,7 @@ class VisualizerPlugin(
                                 val lagF = lagI.toDouble() / upsampleFactor
                                 var corr = 0.0
                                 for (i in 0 until count - windowEnd - 1) {
+                                    // -1: ensures lo+1 stays in bounds (lo = srcI.toInt() ≤ windowEnd)
                                     // Linear interpolation lookup
                                     val srcI = lagF + i
                                     val lo = srcI.toInt().coerceIn(0, count - 1)
@@ -980,11 +981,16 @@ class VisualizerPlugin(
                         }
                     }
 
-                    autocorrIbiMs = refinedLag * msPerSample
-                    autocorrBpm = 60000.0 / autocorrIbiMs!!
+                    val ibi = refinedLag * msPerSample
+                    autocorrIbiMs = ibi
+                    autocorrBpm = 60000.0 / ibi
                 }
             }
         }
+
+        // Only prefer autocorr when tracked grid has low or absent confidence
+        val useAutocorr = autocorrBpm != null &&
+            (trackedGridConfidence == null || trackedGridConfidence!! < 0.4)
 
         // Include stereo waveforms when AudioPlaybackCapture is active;
         // empty lists signal the Flutter side to fall back to fake-stereo FFT bands.
@@ -998,13 +1004,8 @@ class VisualizerPlugin(
             "beatThreshold" to finalBeatThreshold,
             "beatConfidence" to finalBeatConfidence,
             "beatSource" to finalBeatSource,
-            // Only prefer autocorr when tracked grid has low or absent confidence
-            "beatBpm" to if (autocorrBpm != null &&
-                (trackedGridConfidence == null || trackedGridConfidence!! < 0.4))
-                autocorrBpm else trackedBeatBpm,
-            "beatIbiMs" to if (autocorrIbiMs != null &&
-                (trackedGridConfidence == null || trackedGridConfidence!! < 0.4))
-                autocorrIbiMs else trackedBeatIbiMs,
+            "beatBpm"   to if (useAutocorr) autocorrBpm else trackedBeatBpm,
+            "beatIbiMs" to if (useAutocorr) autocorrIbiMs else trackedBeatIbiMs,
             "beatPhase" to trackedBeatPhase,
             "nextBeatMs" to trackedNextBeatMs,
             "beatGridConfidence" to trackedGridConfidence,

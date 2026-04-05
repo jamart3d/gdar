@@ -196,6 +196,8 @@ abstract class AudioReactor {
     double? reactivityStrength,
     String? beatDetectorMode,
     double? beatSensitivity,
+    bool? autocorrSecondPass,
+    bool? autocorrSecondPassHq,
   });
 
   /// Dispose of resources.

@@ -85,6 +85,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   double? _lastPushedReactivityStrength;
   String? _lastPushedBeatDetectorMode;
   double? _lastPushedBeatSensitivity;
+  bool? _lastPushedAutocorrSecondPass;
+  bool? _lastPushedAutocorrSecondPassHq;
 
   @override
   void initState() {
@@ -123,12 +125,16 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final reactivityStrength = settings.oilAudioReactivityStrength;
     final beatDetectorMode = settings.oilBeatDetectorMode;
     final beatSensitivity = settings.oilBeatSensitivity;
+    final autocorrSecondPass = settings.beatAutocorrSecondPass;
+    final autocorrSecondPassHq = settings.beatAutocorrSecondPassHq;
     final unchanged =
         _lastPushedPeakDecay == peakDecay &&
         _lastPushedBassBoost == bassBoost &&
         _lastPushedReactivityStrength == reactivityStrength &&
         _lastPushedBeatDetectorMode == beatDetectorMode &&
-        _lastPushedBeatSensitivity == beatSensitivity;
+        _lastPushedBeatSensitivity == beatSensitivity &&
+        _lastPushedAutocorrSecondPass == autocorrSecondPass &&
+        _lastPushedAutocorrSecondPassHq == autocorrSecondPassHq;
     if (unchanged) return;
 
     reactor.updateConfig(
@@ -137,6 +143,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       reactivityStrength: reactivityStrength,
       beatDetectorMode: beatDetectorMode,
       beatSensitivity: beatSensitivity,
+      autocorrSecondPass: autocorrSecondPass,
+      autocorrSecondPassHq: autocorrSecondPassHq,
     );
 
     _lastPushedPeakDecay = peakDecay;
@@ -144,6 +152,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _lastPushedReactivityStrength = reactivityStrength;
     _lastPushedBeatDetectorMode = beatDetectorMode;
     _lastPushedBeatSensitivity = beatSensitivity;
+    _lastPushedAutocorrSecondPass = autocorrSecondPass;
+    _lastPushedAutocorrSecondPassHq = autocorrSecondPassHq;
   }
 
   bool _wantsStereoCapture(SettingsProvider settings) {
@@ -538,6 +548,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _lastPushedReactivityStrength = null;
     _lastPushedBeatDetectorMode = null;
     _lastPushedBeatSensitivity = null;
+    _lastPushedAutocorrSecondPass = null;
+    _lastPushedAutocorrSecondPassHq = null;
   }
 
   Future<T> _runPermissionFlow<T>(Future<T> Function() action) async {

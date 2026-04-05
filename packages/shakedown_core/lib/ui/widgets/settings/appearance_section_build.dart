@@ -50,6 +50,11 @@ extension _AppearanceSectionBuild on _AppearanceSectionState {
         if (!context.read<DeviceService>().isTv &&
             themeProvider.themeStyle != ThemeStyle.fruit)
           _buildFontSelectionTile(context, settingsProvider),
+        if (context.read<DeviceService>().isTv) ...[
+          _buildBeatAutocorrSecondPassTile(context, settingsProvider),
+          if (settingsProvider.beatAutocorrSecondPass)
+            _buildBeatAutocorrSecondPassHqTile(context, settingsProvider),
+        ],
       ],
     );
   }

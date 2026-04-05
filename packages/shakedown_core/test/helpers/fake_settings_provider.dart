@@ -301,6 +301,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   double get oilBeatSensitivity => 0.5;
   @override
   Future<void> setOilBeatSensitivity(double value) async {}
+  @override
+  bool get beatAutocorrSecondPass => false;
+  @override
+  Future<void> toggleBeatAutocorrSecondPass() async {}
+  @override
+  bool get beatAutocorrSecondPassHq => false;
+  @override
+  Future<void> toggleBeatAutocorrSecondPassHq() async {}
 
   @override
   double get oilLogoTrailIntensity => 0.0;

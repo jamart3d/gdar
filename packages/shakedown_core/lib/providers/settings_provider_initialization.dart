@@ -708,6 +708,20 @@ mixin _SettingsProviderInitializationExtension
         DefaultSettings.oilBeatSensitivity;
     _oilBeatImpact =
         _prefs.getDouble(_oilBeatImpactKey) ?? DefaultSettings.oilBeatImpact;
+    _beatAutocorrSecondPass =
+        _prefs.getBool(_beatAutocorrSecondPassKey) ??
+        _dBool(
+          DefaultSettings.beatAutocorrSecondPass,
+          TvDefaults.beatAutocorrSecondPass,
+          DefaultSettings.beatAutocorrSecondPass,
+        );
+    _beatAutocorrSecondPassHq =
+        _prefs.getBool(_beatAutocorrSecondPassHqKey) ??
+        _dBool(
+          DefaultSettings.beatAutocorrSecondPassHq,
+          TvDefaults.beatAutocorrSecondPassHq,
+          DefaultSettings.beatAutocorrSecondPassHq,
+        );
     _oilEkgRadius =
         _prefs.getDouble(_oilEkgRadiusKey) ?? DefaultSettings.oilEkgRadius;
     _oilEkgReplication =
