@@ -97,7 +97,7 @@
       align-items: center;
       background-color: var(--splash-bg);
       z-index: 9999;
-      transition: opacity 0.6s ease-out;
+      transition: opacity 0.2s ease-out;
     }
     #loading-text {
       color: var(--splash-text);
@@ -131,24 +131,29 @@
   <!-- 0.2 Persistent MediaSession Anchor -->
   <script src="audio_mediasession.js"></script>
   <script>
-    // Splash Screen Management: Removes splash only when Flutter app element appears  
+    // Splash Screen Management: Removes splash only when Flutter app element appears
     (function() {
       const splash = document.getElementById('loading-splash');
       if (!splash) return;
 
+      const isReturning = !!localStorage.getItem('gdar_pwa_visited');
+      if (!isReturning) {
+        localStorage.setItem('gdar_pwa_visited', '1');
+      }
+
       const hideSplash = () => {
         console.log('[Splash] Flutter pane detected, fading out splash...');
+        splash.style.transition = isReturning ? 'opacity 0.1s ease-out' : 'opacity 0.2s ease-out';
         splash.style.opacity = '0';
         splash.style.pointerEvents = 'none';
-        setTimeout(() => { if (splash.parentNode) splash.remove(); }, 600);
+        setTimeout(() => { if (splash.parentNode) splash.remove(); }, isReturning ? 100 : 200);
       };
 
       // 1. Observe body for flt-glass-pane (Flutter's root element)
       const observer = new MutationObserver((mutations, obs) => {
         if (document.querySelector('flt-glass-pane')) {
-          // Tiny delay ensures the glass pane has a moment to paint its first frame   
-          setTimeout(hideSplash, 100);
           obs.disconnect();
+          hideSplash();
         }
       });
       observer.observe(document.body, { childList: true, subtree: true });
