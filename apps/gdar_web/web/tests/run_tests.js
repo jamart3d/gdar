@@ -6,6 +6,7 @@ const path = require('path');
 
 // Mock Harness
 require('./mock_harness.js');
+require('./stalled_progress_regression.js');
 
 // Load Engine Code
 function loadEngine(filename) {

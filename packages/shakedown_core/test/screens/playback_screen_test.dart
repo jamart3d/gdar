@@ -986,4 +986,58 @@ void main() {
     expect(find.text('00:02'), findsNothing);
     expect(find.text('212ms'), findsNothing);
   });
+
+  testWidgets(
+    'PlaybackScreen Fruit car mode progress text refreshes after delayed stream resume',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      final positionController = StreamController<Duration>.broadcast();
+      addTearDown(positionController.close);
+
+      when(
+        mockAudioProvider.positionStream,
+      ).thenAnswer((_) => positionController.stream);
+      when(
+        mockAudioProvider.durationStream,
+      ).thenAnswer((_) => Stream.value(const Duration(minutes: 3)));
+      when(
+        mockAudioProvider.bufferedPositionStream,
+      ).thenAnswer((_) => Stream.value(const Duration(minutes: 2)));
+      when(mockAudioProvider.playerStateStream).thenAnswer(
+        (_) => Stream.value(PlayerState(true, ProcessingState.ready)),
+      );
+      when(mockAudioPlayer.position).thenReturn(Duration.zero);
+      when(mockAudioPlayer.duration).thenReturn(const Duration(minutes: 3));
+      when(
+        mockAudioPlayer.bufferedPosition,
+      ).thenReturn(const Duration(minutes: 2));
+      when(
+        mockAudioPlayer.playerState,
+      ).thenReturn(PlayerState(true, ProcessingState.ready));
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+
+      positionController.add(const Duration(minutes: 1, seconds: 5));
+      await tester.pump();
+
+      expect(find.text('01:05'), findsOneWidget);
+
+      await tester.pump(const Duration(milliseconds: 100));
+      positionController.add(const Duration(minutes: 1, seconds: 11));
+      await tester.pump();
+
+      expect(find.text('01:11'), findsOneWidget);
+    },
+  );
 }

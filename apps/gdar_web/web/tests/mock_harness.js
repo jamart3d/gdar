@@ -5,6 +5,9 @@
 (function (exports) {
     'use strict';
 
+    let __stateCallbacksSuspended = false;
+    let __mockPlaybackSeconds = 0;
+
     // Mock AudioContext
     class MockAudioContext {
         constructor() {
@@ -69,6 +72,8 @@
                 end: (i) => 0
             };
             this.style = {};
+            if (!g.__mockAudioInstances) g.__mockAudioInstances = [];
+            g.__mockAudioInstances.push(this);
         }
         play() { this.paused = false; return Promise.resolve(); }
         pause() { this.paused = true; }
@@ -83,6 +88,34 @@
     g.__fetchCalls = [];
     g.__resetFetchCalls = function () {
         g.__fetchCalls = [];
+    };
+
+    g.__advanceMockPlayback = function (seconds) {
+        __mockPlaybackSeconds += seconds;
+        if (g.__mockAudioContextInstances) {
+            g.__mockAudioContextInstances.forEach((ctx) => {
+                ctx.currentTime += seconds;
+            });
+        }
+        if (g.__mockAudioInstances) {
+            g.__mockAudioInstances.forEach((audio) => {
+                if (!audio.paused) {
+                    audio.currentTime += seconds;
+                }
+            });
+        }
+    };
+
+    g.__suspendStateCallbacks = function (enabled) {
+        __stateCallbacksSuspended = enabled;
+    };
+
+    g.__resumeStateCallbacks = function () {
+        __stateCallbacksSuspended = false;
+    };
+
+    g.__areStateCallbacksSuspended = function () {
+        return __stateCallbacksSuspended;
     };
 
     g.fetch = function (url, options) {
@@ -126,10 +159,20 @@
         if (!g.navigator.mediaSession) {
             g.navigator.mediaSession = { setActionHandler: () => { }, metadata: {} };
         }
+        if (!g.navigator.userAgent) {
+            g.navigator.userAgent = 'Mozilla/5.0 (X11; Linux x86_64)';
+        }
+        if (g.navigator.maxTouchPoints == null) {
+            g.navigator.maxTouchPoints = 0;
+        }
     } catch (e) {
         // Fallback for Node built-in navigator (which is a getter-only on some versions)
         Object.defineProperty(g, 'navigator', {
-            value: { mediaSession: { setActionHandler: () => { }, metadata: {} } },
+            value: {
+                mediaSession: { setActionHandler: () => { }, metadata: {} },
+                userAgent: 'Mozilla/5.0 (X11; Linux x86_64)',
+                maxTouchPoints: 0
+            },
             configurable: true,
             enumerable: true,
             writable: true
@@ -140,6 +183,45 @@
         constructor() { this.signal = {}; }
         abort() { }
     };
+
+    if (!g._gdarIsHeartbeatNeeded) {
+        g._gdarIsHeartbeatNeeded = function () {
+            try {
+                if (
+                    typeof g.matchMedia === 'function' &&
+                    g.matchMedia('(display-mode: standalone)').matches
+                ) {
+                    return true;
+                }
+            } catch (_) { }
+
+            const ua = (g.navigator && g.navigator.userAgent) || '';
+            const maxTouchPoints =
+                (g.navigator && g.navigator.maxTouchPoints) || 0;
+
+            if (
+                /Windows/i.test(ua) ||
+                (/Macintosh/i.test(ua) && maxTouchPoints === 0)
+            ) {
+                return false;
+            }
+
+            return (
+                /Android|iPhone|iPad|iPod/i.test(ua) ||
+                (maxTouchPoints > 0 && /Macintosh/.test(ua))
+            );
+        };
+    }
+
+    if (!g._gdarMediaSession) {
+        g._gdarMediaSession = {
+            updateMetadata: () => { },
+            updatePlaybackState: () => { },
+            updatePositionState: () => { },
+            setActionHandlers: () => { },
+            forceSync: () => { }
+        };
+    }
 
     // Mock MediaMetadata
     if (!g.MediaMetadata) g.MediaMetadata = class { constructor(args) { Object.assign(this, args); } };
@@ -183,12 +265,29 @@
     if (!g.addEventListener) g.addEventListener = () => { };
     if (!g.removeEventListener) g.removeEventListener = () => { };
     if (!g.dispatchEvent) g.dispatchEvent = () => { };
+    if (!g.matchMedia) {
+        g.matchMedia = () => ({
+            matches: false,
+            addListener: () => { },
+            removeListener: () => { }
+        });
+    }
+    if (!g.Event) {
+        g.Event = class {
+            constructor(type) {
+                this.type = type;
+            }
+        };
+    }
     if (!g.CustomEvent) g.CustomEvent = class { constructor() { } };
     if (!g.requestAnimationFrame) g.requestAnimationFrame = (cb) => { setTimeout(cb, 16); };
 
     // Ensure window also exists in Node for IIFEs
     if (typeof window === 'undefined') {
         g.window = g;
+    }
+    if (!g.location) {
+        g.location = { href: 'http://localhost/' };
     }
 
 })(typeof window !== 'undefined' ? window : global);

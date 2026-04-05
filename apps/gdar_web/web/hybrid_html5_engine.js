@@ -613,6 +613,13 @@
 
     function _emitStateThrottled(track) {
         if (!_onStateChange) return;
+        if (
+            typeof window !== 'undefined' &&
+            typeof window.__areStateCallbacksSuspended === 'function' &&
+            window.__areStateCallbacksSuspended()
+        ) {
+            return;
+        }
         const now = performance.now();
         if (now - _lastStateEmitMs < 250) return;
         _lastStateEmitMs = now;

@@ -253,6 +253,28 @@ void main() {
       });
     });
 
+    testWidgets('position updates continue after a stalled interval resumes', (
+      WidgetTester tester,
+    ) async {
+      await tester.runAsync(() async {
+        final values = <Duration>[];
+        final subscription = audioProvider.positionStream.listen(values.add);
+
+        positionController.add(const Duration(seconds: 10));
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+
+        positionController.add(const Duration(seconds: 16));
+        await Future<void>.delayed(const Duration(milliseconds: 20));
+
+        expect(values, contains(const Duration(seconds: 10)));
+        expect(values, contains(const Duration(seconds: 16)));
+
+        await subscription.cancel();
+      });
+    });
+
     testWidgets(
       'Processing state "completed" triggers random show if enabled',
       (WidgetTester tester) async {

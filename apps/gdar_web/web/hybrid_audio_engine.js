@@ -486,7 +486,11 @@
             window._gdarHeartbeat.startVideoHeartbeat();
             return;
         }
-        // html5/none do not force heartbeat tricks.
+        if (_backgroundMode === 'html5' && window._gdarIsHeartbeatNeeded()) {
+            window._gdarHeartbeat.startAudioHeartbeat();
+            return;
+        }
+        // none does not force heartbeat tricks.
         window._gdarHeartbeat.stopHeartbeat();
     }
 
@@ -1041,6 +1045,12 @@
             const mapped = normalized === 'relisten' ? 'html5' : normalized;
             if (['html5', 'heartbeat', 'video', 'none'].includes(mapped)) {
                 _backgroundMode = mapped;
+                if (_fgEngine.setHybridBackgroundMode) {
+                    _fgEngine.setHybridBackgroundMode(mapped);
+                }
+                if (_bgEngine.setHybridBackgroundMode) {
+                    _bgEngine.setHybridBackgroundMode(mapped);
+                }
                 _syncHiddenAllowance();
                 _log.log('[hybrid engine] Background Mode set to:', mapped);
 
@@ -1050,6 +1060,10 @@
             }
         },
 
+        setBackgroundMode: function (mode) {
+            this.setHybridBackgroundMode(mode);
+        },
+
         setHybridHandoffMode: function (mode) {
             if (['buffered', 'immediate', 'boundary', 'none'].includes(mode)) {
                 _handoffMode = mode;
@@ -1057,6 +1071,14 @@
                 _log.log('[hybrid engine] Handoff Mode set to:', mode);
                 // If set to none, disable the buffer-exhaustion worker checks
             }
+        },
+
+        setHandoffMode: function (mode) {
+            this.setHybridHandoffMode(mode);
+        },
+
+        getIsHandoffPending: function () {
+            return _handoffMode !== 'immediate' && !!_instantHandoffPending;
         },
 
         setHybridAllowHiddenWebAudio: function (enabled) {
@@ -1079,6 +1101,7 @@
                 state.lastGapMs = _lastGapMs;
             }
             state.playing = _playing;
+            state.engineType = _activeEngine === _bgEngine ? 2 : 1;
             let __tech = '??';
             if (_activeEngine === _fgEngine) { __tech = '(WA)'; }
             else if (_activeEngine === _bgEngine) { __tech = '(H5B)'; }
@@ -1114,4 +1137,3 @@
     window._hybridAudio = api;
 
 })();
-

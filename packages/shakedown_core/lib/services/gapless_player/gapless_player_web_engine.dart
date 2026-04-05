@@ -11,6 +11,9 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
           _isVisible = state == 'visible';
           _visibilityStartTime = DateTime.now();
           _visibilityController.add(_visibilityStatus);
+          if (_isVisible) {
+            _resyncFromJsState(reason: 'visibility_visible');
+          }
         }).toJS,
       );
     } catch (error) {
@@ -99,6 +102,39 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
     if (engine != null) {
       action(_GdarAudioEngine(engine));
     }
+  }
+
+  void _resyncFromJsState({String reason = 'manual'}) {
+    if (!_useJsEngine) {
+      return;
+    }
+
+    _callEngine((engine) {
+      try {
+        final state = engine.getState();
+        logger.i('GaplessPlayerWeb: resyncFromJsState reason=$reason');
+        _onJsStateChange(state);
+      } catch (error, stackTrace) {
+        logger.w('GaplessPlayerWeb: resync failed: $error\n$stackTrace');
+      }
+    });
+  }
+
+  void _startStaleTickWatchdog() {
+    _staleTickTimer ??= Timer.periodic(
+      _GaplessPlayerBase._staleTickPollInterval,
+      (_) {
+        if (WebTickStallPolicy.shouldResync(
+          playing: _playing,
+          visible: _isVisible,
+          lastTickAt: _lastTickAt,
+          stallThreshold: _GaplessPlayerBase._staleTickThreshold,
+          now: DateTime.now(),
+        )) {
+          _resyncFromJsState(reason: 'stale_tick');
+        }
+      },
+    );
   }
 
   ProcessingState _mapProcessingState(String jsState) {

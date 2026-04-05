@@ -4,6 +4,7 @@ import 'dart:js_interop';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
+import 'package:shakedown_core/services/gapless_player/web_tick_stall_policy.dart';
 import 'package:shakedown_core/utils/logger.dart';
 
 part 'gapless_player_web_engine.dart';
@@ -270,6 +271,10 @@ class _GaplessPlayerBase {
   String? _handoffState;
   int? _handoffAttemptCount;
   int? _lastHandoffPollCount;
+  Timer? _staleTickTimer;
+
+  static const _staleTickThreshold = Duration(seconds: 2);
+  static const _staleTickPollInterval = Duration(seconds: 1);
 
   final bool _useJsEngine;
   final AudioPlayer? _fallbackPlayer;
@@ -306,6 +311,7 @@ class GaplessPlayer extends _GaplessPlayerBase
     if (_useJsEngine) {
       _initJsEngine();
       _setupVisibilityListener();
+      _startStaleTickWatchdog();
       if (hybridHandoffMode != null) {
         setHybridHandoffMode(hybridHandoffMode);
       }

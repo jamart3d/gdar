@@ -105,11 +105,19 @@ async function runTests() {
 
     // ─── TEST 5: Background Strategy Matrix ────────────────────────────────
     console.log('--- TEST 5: Background Strategy Matrix (html5/video/none) ---');
+    _webAudio.stop();
+    _html5.stop();
+    _hybrid.stop();
+    _heartbeat.stopHeartbeat();
+    setPWAStandalone(true);
     const strategies = ['html5', 'video', 'none'];
     for (const strategy of strategies) {
         console.log(`Verifying Strategy: ${strategy}`);
         _hybrid.setBackgroundMode(strategy);
+        _hybrid.setPlaylist([{ url: 'http://test_strategy.mp3', duration: 300 }], 0);
+        await _hybrid.play();
         global.document.visibilityState = 'hidden'; // Use global.document
+        global.document.hidden = true;
         global.document.dispatchEvent(new Event('visibilitychange')); // Use new Event
 
         if (strategy === 'html5') {
@@ -124,7 +132,9 @@ async function runTests() {
         }
 
         global.document.visibilityState = 'visible'; // Use global.document
+        global.document.hidden = false;
         global.document.dispatchEvent(new Event('visibilitychange')); // Use new Event
+        _hybrid.stop();
         _heartbeat.stopHeartbeat(); // Clean up heartbeat after each strategy test
     }
     console.log('--- TEST 5 PASSED: Strategy Matrix Verified ---\n');

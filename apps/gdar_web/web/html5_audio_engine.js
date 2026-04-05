@@ -591,12 +591,26 @@
 
     function _emitState(track) {
         if (!_onStateChange) return;
+        if (
+            typeof window !== 'undefined' &&
+            typeof window.__areStateCallbacksSuspended === 'function' &&
+            window.__areStateCallbacksSuspended()
+        ) {
+            return;
+        }
         _lastStateEmitMs = performance.now();
         _onStateChange(_translateState(track));
     }
 
     function _emitStateThrottled(track) {
         if (!_onStateChange) return;
+        if (
+            typeof window !== 'undefined' &&
+            typeof window.__areStateCallbacksSuspended === 'function' &&
+            window.__areStateCallbacksSuspended()
+        ) {
+            return;
+        }
         const now = performance.now();
         if (now - _lastStateEmitMs < 250) return;
         _lastStateEmitMs = now;
@@ -606,6 +620,34 @@
     let _onError = null;
     let _lastIndex = -1;
     let _backgroundMode = 'heartbeat';
+
+    function _syncHeartbeatForVisibility(forceStop = false) {
+        if (!window._gdarHeartbeat) return;
+
+        const shouldRunHeartbeat =
+            _backgroundMode !== 'none' &&
+            window._gdarIsHeartbeatNeeded() &&
+            document.visibilityState === 'hidden' &&
+            !!_queue?.currentTrack &&
+            !_queue.currentTrack.isPaused;
+
+        if (shouldRunHeartbeat) {
+            if (_backgroundMode === 'video') {
+                window._gdarHeartbeat.startVideoHeartbeat();
+            } else {
+                window._gdarHeartbeat.startAudioHeartbeat();
+            }
+            return;
+        }
+
+        if (
+            forceStop ||
+            _backgroundMode === 'none' ||
+            document.visibilityState === 'visible'
+        ) {
+            window._gdarHeartbeat.stopHeartbeat();
+        }
+    }
 
     function _translateState(track) {
         if (!track) return {
@@ -692,6 +734,14 @@
                     _updateMediaSession();
                 }
             });
+
+            document.addEventListener('visibilitychange', () => {
+                _syncHeartbeatForVisibility();
+                if (_queue?.currentTrack && _onStateChange) {
+                    _lastStateEmitMs = 0;
+                    _emitStateThrottled(_queue.currentTrack);
+                }
+            });
         },
 
         setPlaylist: function (tracks, startIndex) {
@@ -721,6 +771,7 @@
             if (_queue) {
                 _queue.resumeAudioContext();
                 _queue.play();
+                _syncHeartbeatForVisibility();
                 _updateMediaSession();
             }
         },
@@ -732,6 +783,7 @@
                     _lastStateEmitMs = 0;
                     _emitStateThrottled(_queue.currentTrack);
                 }
+                _syncHeartbeatForVisibility(true);
                 _updateMediaSession();
             }
         },
@@ -740,6 +792,7 @@
             if (_queue) {
                 _queue.stop();
             }
+            _syncHeartbeatForVisibility(true);
         },
 
         seek: function (seconds) {
@@ -756,6 +809,7 @@
             const mapped = normalized === 'relisten' ? 'html5' : normalized;
             if (['html5', 'heartbeat', 'video', 'none'].includes(mapped)) {
                 _backgroundMode = mapped;
+                _syncHeartbeatForVisibility(mapped === 'none');
             }
         },
 
@@ -780,6 +834,7 @@
                 _queue.currentTrack.seek(position);
                 _queue.pause();
             }
+            _syncHeartbeatForVisibility(!shouldPlay);
         },
 
         onStateChange: function (cb) { _onStateChange = cb; },

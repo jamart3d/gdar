@@ -79,6 +79,32 @@
   let _onTrackChange = null;
   let _onError = null;
 
+  function _syncHeartbeatForVisibility(forceStop = false) {
+    if (!window._gdarHeartbeat) return;
+
+    const shouldRunHeartbeat =
+      _backgroundMode !== 'none' &&
+      document.visibilityState === 'hidden' &&
+      _playing;
+
+    if (shouldRunHeartbeat) {
+      if (_backgroundMode === 'video') {
+        window._gdarHeartbeat.startVideoHeartbeat();
+      } else {
+        window._gdarHeartbeat.startAudioHeartbeat();
+      }
+      return;
+    }
+
+    if (
+      forceStop ||
+      _backgroundMode === 'none' ||
+      document.visibilityState === 'visible'
+    ) {
+      window._gdarHeartbeat.stopHeartbeat();
+    }
+  }
+
   // Safe Logger Utility
 
   // --- AudioContext Init ----------------------------------------------------
@@ -118,6 +144,7 @@
     window.addEventListener('gdar-worker-tick', _onWorkerTick);
 
     document.addEventListener('visibilitychange', () => {
+      _syncHeartbeatForVisibility();
       if (document.visibilityState === 'hidden' && _playing) {
         _log.log('[gdar engine] Tab hidden. Recalculating prefetch budget.');
         _schedulePrefetch();
@@ -791,6 +818,7 @@
     play: function () {
       _ensureContext();
       _playing = true; // Set playback intent early so resume callback triggers api.play() again
+      _syncHeartbeatForVisibility();
       _updateMediaSession();
 
       if (_ctx.state === 'suspended') {
@@ -865,6 +893,7 @@
       if (!_ctx || !_playing) return;
       _currentTrackStartOffset = _getCurrentPositionSeconds();
       _playing = false;
+      _syncHeartbeatForVisibility(true);
       _updateMediaSession();
       _ctx.suspend().then(() => {
         _stopPositionTimer();
@@ -880,6 +909,7 @@
       _clearScheduled();
       _cancelPrefetch(_currentIndex);
       _playing = false;
+      _syncHeartbeatForVisibility(true);
       _loadingState = 'idle';
       _currentTrackDuration = 0;
       _currentTrackBufferedSeconds = 0;
@@ -945,6 +975,7 @@
       const mapped = normalized === 'relisten' ? 'html5' : normalized;
       if (['html5', 'heartbeat', 'video', 'none'].includes(mapped)) {
           _backgroundMode = mapped;
+          _syncHeartbeatForVisibility(mapped === 'none');
       }
     },
 
@@ -994,4 +1025,3 @@
 
   window._gdarAudio = api;
 })();
-
