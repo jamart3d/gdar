@@ -1,51 +1,46 @@
 #!/bin/bash
 
 # Audit script for GDAR assets (Linux/bash equivalent)
-# In this monorepo, assets are generally in packages/gdar_design/assets and packages/shakedown_core/assets
-ASSET_DIRS=("packages/gdar_design/assets" "packages/shakedown_core/assets")
+ASSET_DIR="assets"
 MAX_SIZE_KB=500
 MAX_SIZE_BYTES=$((MAX_SIZE_KB * 1024))
 
 echo "--- GDAR Asset Audit Baseline ---"
-echo "Scanning recursively from: ${ASSET_DIRS[*]}"
+echo "Scanning recursively from: $ASSET_DIR"
 echo "Target threshold: $MAX_SIZE_KB KB"
 echo ""
 
-for dir in "${ASSET_DIRS[@]}"; do
-    if [ ! -d "$dir" ]; then
-        echo "Error: $dir directory not found."
-        exit 1
-    fi
-done
+if [ ! -d "$ASSET_DIR" ]; then
+    echo "Error: $ASSET_DIR directory not found."
+    exit 1
+fi
 
 OVER_LIMIT_COUNT=0
 TOTAL_SIZE_BYTES=0
 FILE_COUNT=0
 
 # Use find to get all files
-for dir in "${ASSET_DIRS[@]}"; do
-    while IFS= read -r -d '' file; do
-        FILE_COUNT=$((FILE_COUNT + 1))
-        SIZE_BYTES=$(stat -c%s "$file")
-        TOTAL_SIZE_BYTES=$((TOTAL_SIZE_BYTES + SIZE_BYTES))
-        SIZE_KB=$((SIZE_BYTES / 1024))
+while IFS= read -r -d '' file; do
+    FILE_COUNT=$((FILE_COUNT + 1))
+    SIZE_BYTES=$(stat -c%s "$file")
+    TOTAL_SIZE_BYTES=$((TOTAL_SIZE_BYTES + SIZE_BYTES))
+    SIZE_KB=$((SIZE_BYTES / 1024))
 
-        if [ "$SIZE_BYTES" -gt "$MAX_SIZE_BYTES" ]; then
-            OVER_LIMIT_COUNT=$((OVER_LIMIT_COUNT + 1))
-            EXT="${file##*.}"
-            EXT_LOWER=$(echo "$EXT" | tr '[:upper:]' '[:lower:]')
-            MSG=" [!] LARGE FILE ($SIZE_KB KB): $file"
+    if [ "$SIZE_BYTES" -gt "$MAX_SIZE_BYTES" ]; then
+        OVER_LIMIT_COUNT=$((OVER_LIMIT_COUNT + 1))
+        EXT="${file##*.}"
+        EXT_LOWER=$(echo "$EXT" | tr '[:upper:]' '[:lower:]')
+        MSG=" [!] LARGE FILE ($SIZE_KB KB): $file"
 
-            # Suggest WebP conversion for PNG/JPG
-            if [[ "$EXT_LOWER" == "png" || "$EXT_LOWER" == "jpg" || "$EXT_LOWER" == "jpeg" ]]; then
-                MSG="$MSG (Suggest: Convert to WebP)"
-            fi
-
-            # Yellow output using ANSI escape codes
-            echo -e "\e[33m$MSG\e[0m"
+        # Suggest WebP conversion for PNG/JPG
+        if [[ "$EXT_LOWER" == "png" || "$EXT_LOWER" == "jpg" || "$EXT_LOWER" == "jpeg" ]]; then
+            MSG="$MSG (Suggest: Convert to WebP)"
         fi
-    done < <(find "$dir" -type f -print0)
-done
+
+        # Yellow output using ANSI escape codes
+        echo -e "\e[33m$MSG\e[0m"
+    fi
+done < <(find "$ASSET_DIR" -type f -print0)
 
 echo -e "\n--- Summary ---"
 echo "Total Files Scanned: $FILE_COUNT"

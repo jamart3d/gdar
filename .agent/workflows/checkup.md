@@ -16,7 +16,7 @@ description: Rapid health check with automated fixes for linting, formatting, an
 - `dart scripts/preflight_check.dart`
 - If output contains `CHROMEBOOK:STOP` → notify user and **stop**.
   Checkup does not run design scans or commit on Chromebook.
-- If output contains `WINDOWS_10:VERIFIED` or `LINUX:VERIFIED` → proceed to Step 2.
+- If output contains `WINDOWS_10:VERIFIED` → proceed to Step 2.
 
 The script handles platform detection, toolchain checks, process hygiene,
 smart-skip melos (format, analyze, test), and `verification_status.json`

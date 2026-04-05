@@ -151,6 +151,12 @@ class VisualizerPlugin(
     // Written by onWaveFormDataCapture, read by processFftData (same thread).
     private var pendingWaveform: List<Float> = emptyList()
 
+    // High-resolution RMS history for fallback autocorrelation beat detection.
+    private val RMS_HISTORY_SIZE = 512
+    private val fallbackRmsHistory = FloatArray(RMS_HISTORY_SIZE)
+    private var fallbackRmsHistoryIndex = 0
+    private var fallbackRmsHistoryCount = 0
+
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "isAvailable" -> result.success(isVisualizerAvailable())
@@ -262,6 +268,10 @@ class VisualizerPlugin(
             trackedIbiMs = 0.0
             trackedLastBeatMs = 0L
 
+            fallbackRmsHistory.fill(0f)
+            fallbackRmsHistoryIndex = 0
+            fallbackRmsHistoryCount = 0
+
             visualizer?.enabled = true
             isRunning = true
             Log.d(TAG, "Visualizer started")
@@ -294,11 +304,22 @@ class VisualizerPlugin(
     private fun downsampleWaveform(waveform: ByteArray): List<Float> {
         val result = ArrayList<Float>(WAVEFORM_POINTS)
         val step = waveform.size.toDouble() / WAVEFORM_POINTS
+        var sumSq = 0.0
+
         for (i in 0 until WAVEFORM_POINTS) {
             val idx = (i * step).toInt().coerceIn(0, waveform.size - 1)
             // Convert unsigned 8-bit (0-255, centre=128) to signed -1.0..1.0
-            result.add(((waveform[idx].toInt() and 0xFF) - 128) / 128.0f)
+            val normalized = ((waveform[idx].toInt() and 0xFF) - 128) / 128.0f
+            result.add(normalized)
+            sumSq += normalized * normalized
         }
+
+        // Calculate RMS for this chunk and add it to our fallback history buffer
+        val rms = sqrt(sumSq / WAVEFORM_POINTS).toFloat()
+        fallbackRmsHistory[fallbackRmsHistoryIndex] = rms
+        fallbackRmsHistoryIndex = (fallbackRmsHistoryIndex + 1) % RMS_HISTORY_SIZE
+        if (fallbackRmsHistoryCount < RMS_HISTORY_SIZE) fallbackRmsHistoryCount++
+
         return result
     }
 
@@ -890,6 +911,72 @@ class VisualizerPlugin(
             ?.takeIf { algoLevels[it] > 0.0 }
             ?: -1
 
+        // ── Auto-correlation Beat Detection (Pitch-style) ────────────────────
+        var autocorrBpm: Double? = null
+        var autocorrIbiMs: Double? = null
+
+        val useStereoRms = hasStereoPcm && stereoCapture.rmsHistoryCount >= 200
+        val useFallbackRms = !useStereoRms && fallbackRmsHistoryCount >= 100 // Lower count for 20Hz
+
+        if (useStereoRms || useFallbackRms) {
+            val count = if (useStereoRms) stereoCapture.rmsHistoryCount else fallbackRmsHistoryCount
+            val size = if (useStereoRms) stereoCapture.rmsHistorySize else RMS_HISTORY_SIZE
+            val idxHead = if (useStereoRms) stereoCapture.rmsHistoryIndex else fallbackRmsHistoryIndex
+            val srcBuffer = if (useStereoRms) stereoCapture.fullRmsHistory else fallbackRmsHistory
+
+            // Unroll the circular RMS buffer into a flat array
+            val rawRms = FloatArray(count)
+            var sum = 0f
+            for (i in 0 until count) {
+                // Older samples first, newest at the end
+                val idx = (idxHead - count + i + size) % size
+                val v = srcBuffer[idx]
+                rawRms[i] = v
+                sum += v
+            }
+
+            // Subtract mean to center the signal at zero
+            val mean = sum / count
+            for (i in 0 until count) {
+                rawRms[i] -= mean
+            }
+
+            // Determine sample rate and lags
+            // Stereo RMS is collected at 100Hz (10ms/sample)
+            // Fallback RMS is collected at the visualizer callback rate (typically 20Hz -> 50ms/sample)
+            val sampleRateHz = if (useStereoRms) 100.0 else 20.0
+            val msPerSample = 1000.0 / sampleRateHz
+
+            // Search range for BPM: 60 to 180 BPM -> 1000ms to ~333ms.
+            val minLag = (333.0 / msPerSample).toInt().coerceAtLeast(1)
+            val maxLag = (1000.0 / msPerSample).toInt().coerceAtMost(count / 2) // Need enough data
+
+            if (minLag < maxLag) {
+                var bestLag = -1
+                var bestCorr = -1.0
+
+                for (lag in minLag..maxLag) {
+                    var corr = 0.0
+                    for (i in 0 until count - lag) {
+                        corr += rawRms[i] * rawRms[i + lag]
+                    }
+                    if (corr > bestCorr) {
+                        bestCorr = corr
+                        bestLag = lag
+                    }
+                }
+
+                if (bestLag > 0 && bestCorr > 0.0) {
+                    val detectedIbiMs = bestLag * msPerSample
+                    autocorrIbiMs = detectedIbiMs
+                    autocorrBpm = 60000.0 / detectedIbiMs
+
+                    // You could do a second pass around bestLag at higher sample rate
+                    // if you needed more precision.
+                }
+            }
+        }
+
         // Include stereo waveforms when AudioPlaybackCapture is active;
         // empty lists signal the Flutter side to fall back to fake-stereo FFT bands.
         val data = mapOf(
@@ -902,11 +989,12 @@ class VisualizerPlugin(
             "beatThreshold" to finalBeatThreshold,
             "beatConfidence" to finalBeatConfidence,
             "beatSource" to finalBeatSource,
-            "beatBpm" to trackedBeatBpm,
-            "beatIbiMs" to trackedBeatIbiMs,
+            "beatBpm" to autocorrBpm ?: trackedBeatBpm,
+            "beatIbiMs" to autocorrIbiMs ?: trackedBeatIbiMs,
             "beatPhase" to trackedBeatPhase,
             "nextBeatMs" to trackedNextBeatMs,
             "beatGridConfidence" to trackedGridConfidence,
+            "autocorrBpm" to autocorrBpm,
             "bands" to finalBands.toList(),
             "waveform" to pendingWaveform,
             "waveformL" to stereoCapture.waveformL, // real L PCM or empty

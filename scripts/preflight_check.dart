@@ -22,7 +22,7 @@ void _debug(String msg) => _log('  ', _dim, msg);
 /// Unified Preflight & Verification script for GDAR.
 ///
 /// Handles the entire pre-build pipeline in one shot:
-/// 1. Detects host platform (WINDOWS_10, LINUX, or CHROMEBOOK).
+/// 1. Detects host platform (WINDOWS_10 or CHROMEBOOK).
 /// 2. Verifies toolchain (git, dart, flutter, firebase).
 /// 3. Checks for hung processes.
 /// 4. Smart-skip: compares verification_status.json SHA
@@ -30,8 +30,8 @@ void _debug(String msg) => _log('  ', _dim, msg);
 /// 5. Updates verification_status.json on success.
 ///
 /// Exit codes:
-///   0 = success (stdout ends with WINDOWS_10:VERIFIED,
-///       LINUX:VERIFIED, or CHROMEBOOK:STOP)
+///   0 = success (stdout ends with WINDOWS_10:VERIFIED
+///       or CHROMEBOOK:STOP)
 ///   1 = toolchain missing or melos suite failed
 void main(List<String> args) async {
   final isRelease = args.contains('--release');
@@ -141,17 +141,15 @@ void main(List<String> args) async {
     );
   }
 
-  _info('--- Preflight Complete [$platform:VERIFIED] ---');
+  _info('--- Preflight Complete [WINDOWS_10:VERIFIED] ---');
   // ignore: avoid_print
-  print('$platform:VERIFIED');
+  print('WINDOWS_10:VERIFIED');
 }
 
 // ── Helpers ──────────────────────────────────────────────
 
 String _detectPlatform() {
-  if (Platform.isWindows) return 'WINDOWS_10';
-  if (Platform.isLinux) return 'LINUX';
-  return 'CHROMEBOOK';
+  return Platform.isWindows ? 'WINDOWS_10' : 'CHROMEBOOK';
 }
 
 Future<bool> _commandExists(String cmd) async {
