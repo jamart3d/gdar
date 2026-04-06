@@ -7,6 +7,7 @@ import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown_core/ui/widgets/rating_dialog.dart';
 
 class SourceListItem extends StatelessWidget {
   final Source source;

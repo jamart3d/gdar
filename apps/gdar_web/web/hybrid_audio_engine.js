@@ -91,6 +91,13 @@
     let _onStateChange = null;
     let _onTrackChange = null;
     let _onError = null;
+    let _onPlayBlocked = null;
+
+    function _emitPlayBlocked() {
+        if (_onPlayBlocked) {
+            try { _onPlayBlocked(); } catch (_) { }
+        }
+    }
 
     function _syncHiddenAllowance() {
         try {
@@ -840,6 +847,12 @@
         init: function () {
             _fgEngine.init();
             _bgEngine.init();
+            if (typeof _fgEngine.onPlayBlocked === 'function') {
+                _fgEngine.onPlayBlocked(_emitPlayBlocked);
+            }
+            if (typeof _bgEngine.onPlayBlocked === 'function') {
+                _bgEngine.onPlayBlocked(_emitPlayBlocked);
+            }
             if (window._gdarScheduler) window._gdarScheduler.start();
             _setupMediaSession();
         },
@@ -1131,6 +1144,7 @@
         onStateChange: function (cb) { _onStateChange = cb; },
         onTrackChange: function (cb) { _onTrackChange = cb; },
         onError: function (cb) { _onError = cb; },
+        onPlayBlocked: function (cb) { _onPlayBlocked = cb; },
     };
 
 

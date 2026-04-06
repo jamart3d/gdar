@@ -15,45 +15,37 @@ extension _AppearanceSectionBuild on _AppearanceSectionState {
       lucideIcon: LucideIcons.palette,
       initiallyExpanded: widget.initiallyExpanded,
       children: [
-        _buildThemeModeSection(context, themeProvider),
+        ThemeModeSection(scaleFactor: widget.scaleFactor),
         if (themeProvider.isFruitAllowed) ...[
-          _buildThemeStyleSection(context, themeProvider),
-          _buildFruitOptionsSwitcher(context, themeProvider, settingsProvider),
+          ThemeStyleSection(scaleFactor: widget.scaleFactor),
+          FruitOptionsSwitcher(scaleFactor: widget.scaleFactor),
           if (themeProvider.themeStyle != ThemeStyle.fruit)
-            _buildPerformanceModeTile(context, settingsProvider),
+            PerformanceModeTile(scaleFactor: widget.scaleFactor),
         ],
         if (themeProvider.themeStyle != ThemeStyle.fruit)
-          _buildDynamicColorTile(context, settingsProvider, themeProvider),
+          DynamicColorTile(scaleFactor: widget.scaleFactor),
         if (isDarkMode && themeProvider.themeStyle != ThemeStyle.fruit)
-          _buildTrueBlackTile(context, settingsProvider, themeProvider),
+          TrueBlackTile(scaleFactor: widget.scaleFactor),
         if (themeProvider.themeStyle != ThemeStyle.fruit &&
             !settingsProvider.useDynamicColor)
-          _buildCustomThemeColorControl(
-            context,
-            settingsProvider,
-            themeProvider,
-          ),
+          CustomThemeColorControl(scaleFactor: widget.scaleFactor),
         if (showExpressiveAccents && !context.read<DeviceService>().isTv) ...[
-          _buildGlowBorderTile(context, settingsProvider, themeProvider),
+          GlowBorderTile(scaleFactor: widget.scaleFactor),
           if (settingsProvider.glowMode > 0 &&
               !settingsProvider.performanceMode)
-            _buildGlowIntensityControl(context, settingsProvider),
+            GlowIntensityControl(scaleFactor: widget.scaleFactor),
         ],
         if (showExpressiveAccents)
-          _buildHighlightPlayingTile(context, settingsProvider, themeProvider),
+          HighlightPlayingTile(scaleFactor: widget.scaleFactor),
         if (settingsProvider.highlightPlayingWithRgb)
-          _buildRgbAnimationSpeedControl(
-            context,
-            settingsProvider,
-            themeProvider,
-          ),
+          RgbAnimationSpeedControl(scaleFactor: widget.scaleFactor),
         if (!context.read<DeviceService>().isTv &&
             themeProvider.themeStyle != ThemeStyle.fruit)
-          _buildFontSelectionTile(context, settingsProvider),
+          FontSelectionTile(scaleFactor: widget.scaleFactor),
         if (context.read<DeviceService>().isTv) ...[
-          _buildBeatAutocorrSecondPassTile(context, settingsProvider),
+          BeatAutocorrSecondPassTile(scaleFactor: widget.scaleFactor),
           if (settingsProvider.beatAutocorrSecondPass)
-            _buildBeatAutocorrSecondPassHqTile(context, settingsProvider),
+            BeatAutocorrSecondPassHqTile(scaleFactor: widget.scaleFactor),
         ],
       ],
     );

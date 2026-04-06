@@ -1,3 +1,16 @@
+What's new in v1.3.63+273
+- Web/PWA startup: guarded `GaplessPlayer` web interop so startup no longer
+- Added regression coverage for the stale-bundle compatibility path and kept
+- Added a pre-deploy web artifact verifier at
+- Updated GitHub CI to:
+- Web/PWA playback engines: added `onPlayBlocked()` support to the gapless Web
+- Added JS contract regression coverage in
+- Refactored Fruit now playing UI by splitting the pending progress overlay,
+- Refactored Dev Audio HUD rendering by extracting the long chip/field-wrap
+- Extended widget coverage for the refactors:
+
+---
+
 What's new in v1.3.62+272
 - Jules merge (`b87e230`, `a1f70b4`) broke Linux checkup: `preflight_check.dart` treated Linux as Chromebook, `checkup.md` removed `LINUX:VERIFIED` from proceed condition, `audit_assets.sh` scanned a non-existent `assets/` dir. All three restored.
 - Merged locally to `main` in `2791a6b`, then completed the parked follow-up

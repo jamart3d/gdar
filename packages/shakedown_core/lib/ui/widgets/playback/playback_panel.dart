@@ -20,6 +20,7 @@ import 'package:shakedown_core/ui/widgets/shnid_badge.dart';
 import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/utils/utils.dart';
+import 'package:shakedown_core/ui/widgets/rating_dialog.dart';
 
 class PlaybackPanel extends StatelessWidget {
   final Show currentShow;

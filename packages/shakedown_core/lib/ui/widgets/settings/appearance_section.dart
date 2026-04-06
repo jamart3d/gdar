@@ -1,23 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
-import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown_core/ui/widgets/section_card.dart';
-import 'package:shakedown_core/ui/widgets/settings/color_picker_dialog.dart';
 import 'package:shakedown_core/ui/widgets/settings/font_selection_dialog.dart';
-import 'package:shakedown_core/ui/widgets/settings/rainbow_color_picker.dart';
-import 'package:shakedown_core/ui/widgets/theme/fruit_segmented_control.dart';
-import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
-import 'package:shakedown_core/ui/widgets/tv/tv_list_tile.dart';
-import 'package:shakedown_core/ui/widgets/tv/tv_switch_list_tile.dart';
-import 'package:shakedown_core/utils/app_haptics.dart';
+import 'package:shakedown_core/ui/widgets/settings/appearance_fruit_controls.dart';
+import 'package:shakedown_core/ui/widgets/settings/appearance_fx_controls.dart';
+import 'package:shakedown_core/ui/widgets/settings/appearance_theme_controls.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-
 part 'appearance_section_build.dart';
-part 'appearance_section_controls.dart';
 
 class AppearanceSection extends StatefulWidget {
   final double scaleFactor;
@@ -45,19 +37,6 @@ class _AppearanceSectionState extends State<AppearanceSection> {
           FontSelectionDialog.show(context);
         }
       });
-    }
-  }
-
-  String _getFontDisplayName(String fontKey) {
-    switch (fontKey) {
-      case 'caveat':
-        return 'Caveat';
-      case 'permanent_marker':
-        return 'Permanent Marker';
-      case 'rock_salt':
-        return 'Rock Salt';
-      default:
-        return 'Default (Roboto)';
     }
   }
 

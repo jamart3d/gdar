@@ -14,8 +14,8 @@ import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:shakedown_core/ui/widgets/rating_control.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_interaction_modal.dart';
+import 'package:shakedown_core/ui/widgets/rating_dialog.dart';
 
 /// Mixin providing business logic and event handlers for [ShowListScreen].
 mixin ShowListLogicMixin<T extends StatefulWidget>

@@ -585,9 +585,16 @@
 
     let _queue = null;
     let _onStateChange = null;
+    let _onPlayBlocked = null;
     let _lastStateEmitMs = 0;
     let _trackEndedAtMs = 0;
     let _lastGapMs = null;
+
+    function _emitPlayBlocked() {
+        if (_onPlayBlocked) {
+            try { _onPlayBlocked(); } catch (_) { }
+        }
+    }
 
     function _emitState(track) {
         if (!_onStateChange) return;
@@ -769,7 +776,11 @@
 
         play: function () {
             if (_queue) {
-                _queue.resumeAudioContext();
+                _queue.resumeAudioContext().catch((err) => {
+                    if (err && err.name === 'NotAllowedError') {
+                        _emitPlayBlocked();
+                    }
+                });
                 _queue.play();
                 _syncHeartbeatForVisibility();
                 _updateMediaSession();
@@ -840,6 +851,12 @@
         onStateChange: function (cb) { _onStateChange = cb; },
         onTrackChange: function (cb) { _onTrackChange = cb; },
         onError: function (cb) { _onError = cb; },
+        onPlayBlocked: function (cb) {
+            _onPlayBlocked = cb;
+            if (_queue) {
+                _queue.setProps({ onPlayBlocked: cb });
+            }
+        },
         engineType: 'html5'
     };
 

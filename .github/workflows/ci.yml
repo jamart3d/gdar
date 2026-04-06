@@ -42,6 +42,16 @@ jobs:
           export PATH="$PATH:$HOME/.pub-cache/bin"
           melos run test
 
+      - name: Test Root Scripts
+        run: flutter test test/scripts
+
+      - name: Build Web
+        working-directory: apps/gdar_web
+        run: flutter build web --release
+
+      - name: Verify Web Build Contracts
+        run: dart run scripts/verify_web_build_contracts.dart apps/gdar_web/build/web
+
       - name: Verify Clean Worktree
         run: |
           if [ -n "$(git status --porcelain)" ]; then

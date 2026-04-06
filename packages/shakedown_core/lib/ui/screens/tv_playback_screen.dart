@@ -37,6 +37,7 @@ import 'package:shakedown_core/ui/widgets/tv/tv_scrollbar.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:sliding_up_panel2/sliding_up_panel2.dart';
+import 'package:shakedown_core/ui/widgets/rating_dialog.dart';
 
 part 'tv_playback_screen_build.dart';
 part 'tv_playback_screen_controls.dart';

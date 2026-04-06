@@ -78,6 +78,7 @@
   let _onStateChange = null;
   let _onTrackChange = null;
   let _onError = null;
+  let _onPlayBlocked = null;
 
   function _syncHeartbeatForVisibility(forceStop = false) {
     if (!window._gdarHeartbeat) return;
@@ -769,6 +770,12 @@
     }
   }
 
+  function _emitPlayBlocked() {
+    if (_onPlayBlocked) {
+      try { _onPlayBlocked(); } catch (_) { }
+    }
+  }
+
   // Action handlers are owned exclusively by the Hybrid Orchestrator.
   // Child engines must NOT call setActionHandlers.
 
@@ -829,7 +836,11 @@
             if (_playing) api.play();
           }).catch(err => {
             _ctx._isResuming = false;
-            _log.error('[gdar engine] AudioContext resume failed (potential autoplay block):', err);
+            if (err && err.name === 'NotAllowedError') {
+              _emitPlayBlocked();
+              return;
+            }
+            _log.error('[gdar engine] AudioContext resume failed:', err);
           });
         }
         return;
@@ -1021,6 +1032,7 @@
     onStateChange: function (cb) { _onStateChange = cb; },
     onTrackChange: function (cb) { _onTrackChange = cb; },
     onError: function (cb) { _onError = cb; },
+    onPlayBlocked: function (cb) { _onPlayBlocked = cb; },
   };
 
   window._gdarAudio = api;

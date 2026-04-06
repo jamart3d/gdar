@@ -41,6 +41,7 @@
     let _onStateChange = null;
     let _onTrackChange = null;
     let _onError = null;
+    let _onPlayBlocked = null;
 
     let _lastTimeUpdate = 0;
     let _backgroundMode = 'heartbeat';
@@ -136,7 +137,10 @@
                 _playPromise = null;
                 // Only emit significant errors. 
                 // AbortError is expected when pause() interrupts play().
-                if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+                if (err.name === 'NotAllowedError') {
+                    _emitPlayBlocked();
+                    _log.log('[passive engine] Play promise NotAllowedError (handled)');
+                } else if (err.name !== 'AbortError') {
                     _emitError('Play failed: ' + err.message);
                 } else {
                     _log.log(`[passive engine] Play promise ${err.name} (handled)`);
@@ -205,7 +209,9 @@
             _playPromise = null;
             const gapMs = performance.now() - transitionGapStart;
             _isTransitioning = false;
-            if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+            if (err.name === 'NotAllowedError') {
+                _emitPlayBlocked();
+            } else if (err.name !== 'AbortError') {
                 _log.error(`[passive engine] Next track play failed after ${gapMs.toFixed(2)}ms:`, err.message);
                 _emitError('Next track play failed: ' + err.message);
             }
@@ -288,6 +294,12 @@
         }
     }
 
+    function _emitPlayBlocked() {
+        if (_onPlayBlocked) {
+            try { _onPlayBlocked(); } catch (_) { }
+        }
+    }
+
     // ─── Public API ───────────────────────────────────────────────────────────
 
     const api = {
@@ -338,7 +350,9 @@
                     _updateMediaSession();
                 }).catch(err => {
                     _playPromise = null;
-                    if (err.name !== 'AbortError' && err.name !== 'NotAllowedError') {
+                    if (err.name === 'NotAllowedError') {
+                        _emitPlayBlocked();
+                    } else if (err.name !== 'AbortError') {
                         _emitError('Resume failed: ' + err.message);
                     }
                 });
@@ -487,6 +501,7 @@
         onStateChange: function (cb) { _onStateChange = cb; },
         onTrackChange: function (cb) { _onTrackChange = cb; },
         onError: function (cb) { _onError = cb; },
+        onPlayBlocked: function (cb) { _onPlayBlocked = cb; },
     };
 
     window._passiveAudio = api;

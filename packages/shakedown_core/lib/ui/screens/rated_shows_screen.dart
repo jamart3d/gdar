@@ -19,6 +19,7 @@ import 'package:shakedown_core/models/rating.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/utils/color_generator.dart';
+import 'package:shakedown_core/ui/widgets/rating_dialog.dart';
 
 class RatedShowsScreen extends StatelessWidget {
   const RatedShowsScreen({super.key});

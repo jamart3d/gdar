@@ -29,6 +29,7 @@ import 'package:shakedown_core/models/rating.dart';
 import 'package:shakedown_core/models/hud_snapshot.dart';
 
 import 'playback_screen_test.mocks.dart';
+import 'package:shakedown_core/ui/widgets/rating_dialog.dart';
 
 class MockDeviceService extends ChangeNotifier implements DeviceService {
   @override

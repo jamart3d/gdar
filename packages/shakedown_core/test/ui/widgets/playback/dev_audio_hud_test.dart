@@ -45,7 +45,7 @@ void main() {
   late _FakeAudioProvider audioProvider;
   late FakeSettingsProvider settingsProvider;
 
-  Widget createWidget({bool isAppVisible = true}) {
+  Widget createWidget({bool isAppVisible = true, bool compact = true}) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
@@ -62,7 +62,7 @@ void main() {
             labelsFontSize: 12,
             colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
             fontFamily: 'RobotoMono',
-            compact: true,
+            compact: compact,
             isAppVisible: isAppVisible,
           ),
         ),
@@ -294,5 +294,29 @@ void main() {
       ),
       findsOneWidget,
     );
+  });
+
+  testWidgets('renders non-compact summary text from the HUD snapshot', (
+    tester,
+  ) async {
+    audioProvider.emit(
+      HudSnapshot.empty().copyWith(
+        engine: 'WBA',
+        activeEngine: 'WA',
+        visibility: 'VIS(0m)',
+        processing: 'RDY',
+        engineState: 'ACT',
+        isPlaying: true,
+      ),
+    );
+
+    await tester.pumpWidget(createWidget(compact: false));
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pump();
+
+    expect(find.textContaining('ENG:WBA'), findsOneWidget);
+    expect(find.textContaining('AE:WA'), findsOneWidget);
+    expect(find.textContaining('PS:RDY'), findsOneWidget);
+    expect(find.textContaining(' • '), findsOneWidget);
   });
 }

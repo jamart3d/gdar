@@ -16,6 +16,8 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/ui/widgets/playback/playback_messages.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:shakedown_core/ui/widgets/playback/fruit_now_playing_progress_bar.dart';
+import 'package:shakedown_core/ui/widgets/playback/fruit_now_playing_transport_glyph.dart';
 
 class FruitNowPlayingCard extends StatelessWidget {
   final Show trackShow;
@@ -163,15 +165,23 @@ class FruitNowPlayingCard extends StatelessWidget {
                                           .inMilliseconds;
                                   final int bufferedMs =
                                       buffered.inMilliseconds;
-                                  final progressBar = _buildCompactProgressBar(
-                                    colorScheme,
-                                    isLoading: isLoading,
-                                    isBuffering: isBuffering,
-                                    bufferedPositionMs: bufferedMs,
-                                    positionMs: positionMs,
-                                    durationMs: durationMs,
-                                    glassEnabled: enableLiquidGlass,
-                                  );
+                                  final progressBar =
+                                      FruitNowPlayingProgressBar(
+                                        colorScheme: colorScheme,
+                                        scaleFactor: scaleFactor,
+                                        isLoading: isLoading,
+                                        bufferedPositionMs: bufferedMs,
+                                        positionMs: positionMs,
+                                        durationMs: durationMs,
+                                        glassEnabled: enableLiquidGlass,
+                                        showPendingState: _shouldShowPendingCue(
+                                          isLoading: isLoading,
+                                          isBuffering: isBuffering,
+                                          bufferedPositionMs: bufferedMs,
+                                          positionMs: positionMs,
+                                          durationMs: durationMs,
+                                        ),
+                                      );
                                   if (!showCompactHud) return progressBar;
 
                                   return Column(
@@ -368,7 +378,7 @@ class FruitNowPlayingCard extends StatelessWidget {
                                       ],
                               ),
                               child: Center(
-                                child: _LiquidTransportGlyph(
+                                child: FruitNowPlayingTransportGlyph(
                                   isPlaying: isPlaying,
                                   isPending: showPendingCue,
                                   glassEnabled: glassEnabled,
@@ -467,74 +477,6 @@ class FruitNowPlayingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCompactProgressBar(
-    ColorScheme colorScheme, {
-    required bool isLoading,
-    required bool isBuffering,
-    required int bufferedPositionMs,
-    required int positionMs,
-    required int durationMs,
-    required bool glassEnabled,
-  }) {
-    final duration = durationMs;
-    final position = positionMs;
-    final double progress = (duration > 0)
-        ? (position / duration).clamp(0.0, 1.0)
-        : 0.0;
-    final double bufferedProgress = (duration > 0)
-        ? (bufferedPositionMs / duration).clamp(0.0, 1.0)
-        : 0.0;
-    final bool showPendingState = _shouldShowPendingCue(
-      isLoading: isLoading,
-      isBuffering: isBuffering,
-      bufferedPositionMs: bufferedPositionMs,
-      positionMs: positionMs,
-      durationMs: durationMs,
-    );
-
-    return Stack(
-      children: [
-        Container(
-          height: 3.0 * scaleFactor,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: colorScheme.onSurface.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(4 * scaleFactor),
-          ),
-        ),
-        if (bufferedProgress > 0)
-          FractionallySizedBox(
-            widthFactor: bufferedProgress,
-            child: Container(
-              height: 3.0 * scaleFactor,
-              decoration: BoxDecoration(
-                color: colorScheme.tertiary.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(4 * scaleFactor),
-              ),
-            ),
-          ),
-        if (showPendingState)
-          _FruitPendingProgressOverlay(
-            key: const Key('fruit_pending_progress_overlay'),
-            colorScheme: colorScheme,
-            scaleFactor: scaleFactor,
-            glassEnabled: glassEnabled,
-            isLoading: isLoading,
-          ),
-        FractionallySizedBox(
-          widthFactor: progress,
-          child: Container(
-            height: 3.0 * scaleFactor,
-            decoration: BoxDecoration(
-              color: colorScheme.primary,
-              borderRadius: BorderRadius.circular(4 * scaleFactor),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   bool _shouldShowPendingCue({
     required bool isLoading,
     required bool isBuffering,
@@ -549,355 +491,5 @@ class FruitNowPlayingCard extends StatelessWidget {
     return isLoading ||
         isBuffering ||
         (hasPlayableTail && !hasVisibleBufferHeadroom);
-  }
-}
-
-class _FruitPendingProgressOverlay extends StatefulWidget {
-  final ColorScheme colorScheme;
-  final double scaleFactor;
-  final bool glassEnabled;
-  final bool isLoading;
-
-  const _FruitPendingProgressOverlay({
-    super.key,
-    required this.colorScheme,
-    required this.scaleFactor,
-    required this.glassEnabled,
-    required this.isLoading,
-  });
-
-  @override
-  State<_FruitPendingProgressOverlay> createState() =>
-      _FruitPendingProgressOverlayState();
-}
-
-class _FruitPendingProgressOverlayState
-    extends State<_FruitPendingProgressOverlay>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1450),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final double barHeight = 3.0 * widget.scaleFactor;
-    final BorderRadius borderRadius = BorderRadius.circular(
-      4 * widget.scaleFactor,
-    );
-    final Color sweepColor = widget.isLoading
-        ? widget.colorScheme.primary
-        : widget.colorScheme.tertiary;
-
-    return RepaintBoundary(
-      child: SizedBox(
-        height: barHeight,
-        width: double.infinity,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) {
-                final double travel = _controller.value;
-                final double pulse = 1.0 - ((travel - 0.5).abs() * 2.0);
-                final double sweepWidth =
-                    (widget.glassEnabled ? 84.0 : 66.0) * widget.scaleFactor;
-                final double sweepOverflow = sweepWidth * 0.22;
-                final double sweepTravelWidth =
-                    (constraints.maxWidth + (sweepOverflow * 2.0) - sweepWidth)
-                        .clamp(0.0, double.infinity);
-                final double sweepLeft =
-                    -sweepOverflow + (sweepTravelWidth * travel);
-                final double beadWidth =
-                    (widget.glassEnabled ? 18.0 : 14.0) * widget.scaleFactor;
-                final double beadHeight = barHeight;
-                final double beadTravelWidth =
-                    (constraints.maxWidth - beadWidth).clamp(
-                      0.0,
-                      double.infinity,
-                    );
-                final double beadLeft = beadTravelWidth * travel;
-                final double baseAlpha = widget.glassEnabled ? 0.18 : 0.24;
-                final double sweepAlpha = widget.glassEnabled ? 0.76 : 0.92;
-                final double coreAlpha = widget.glassEnabled ? 0.44 : 0.60;
-                final double haloAlpha = widget.glassEnabled ? 0.32 : 0.26;
-
-                return ClipRRect(
-                  borderRadius: borderRadius,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                widget.colorScheme.primary.withValues(
-                                  alpha: baseAlpha,
-                                ),
-                                widget.colorScheme.tertiary.withValues(
-                                  alpha: baseAlpha * 0.96,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 0,
-                        bottom: 0,
-                        left: sweepLeft,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Colors.transparent,
-                                sweepColor.withValues(alpha: 0.0),
-                                Colors.white.withValues(alpha: coreAlpha),
-                                sweepColor.withValues(alpha: sweepAlpha),
-                                Colors.white.withValues(alpha: coreAlpha),
-                                sweepColor.withValues(alpha: 0.0),
-                                Colors.transparent,
-                              ],
-                              stops: const [
-                                0.0,
-                                0.12,
-                                0.28,
-                                0.5,
-                                0.72,
-                                0.88,
-                                1.0,
-                              ],
-                            ),
-                          ),
-                          child: SizedBox(width: sweepWidth, height: barHeight),
-                        ),
-                      ),
-                      Positioned(
-                        left: beadLeft,
-                        top: 0,
-                        child: Container(
-                          key: const Key('fruit_pending_progress_bead'),
-                          width: beadWidth,
-                          height: beadHeight,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(
-                              999 * widget.scaleFactor,
-                            ),
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Colors.white.withValues(
-                                  alpha: 0.82 + (pulse * 0.1),
-                                ),
-                                sweepColor.withValues(alpha: 0.92),
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: sweepColor.withValues(alpha: haloAlpha),
-                                blurRadius: widget.glassEnabled ? 10 : 7,
-                                spreadRadius:
-                                    (widget.glassEnabled ? 0.7 : 0.45) * pulse,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class _LiquidTransportGlyph extends StatefulWidget {
-  final bool isPlaying;
-  final bool isPending;
-  final bool glassEnabled;
-  final Color color;
-  final double size;
-
-  const _LiquidTransportGlyph({
-    required this.isPlaying,
-    required this.isPending,
-    required this.glassEnabled,
-    required this.color,
-    required this.size,
-  });
-
-  @override
-  State<_LiquidTransportGlyph> createState() => _LiquidTransportGlyphState();
-}
-
-class _LiquidTransportGlyphState extends State<_LiquidTransportGlyph>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _shimmerController;
-
-  @override
-  void initState() {
-    super.initState();
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1100),
-    );
-    if (widget.isPending) {
-      _shimmerController.repeat();
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant _LiquidTransportGlyph oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isPending && !_shimmerController.isAnimating) {
-      _shimmerController.repeat();
-    } else if (!widget.isPending && _shimmerController.isAnimating) {
-      _shimmerController.stop();
-      _shimmerController.value = 0.0;
-    }
-  }
-
-  @override
-  void dispose() {
-    _shimmerController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final iconData = widget.isPlaying ? LucideIcons.pause : LucideIcons.play;
-
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 260),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
-      transitionBuilder: (child, animation) {
-        final scale = Tween<double>(
-          begin: widget.isPending ? 0.72 : 0.9,
-          end: 1.0,
-        ).animate(animation);
-        return FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(scale: scale, child: child),
-        );
-      },
-      child: widget.isPending
-          ? AnimatedBuilder(
-              key: const ValueKey('pending'),
-              animation: _shimmerController,
-              builder: (context, _) {
-                final t = _shimmerController.value;
-                final pulse = 1.0 - ((t - 0.5).abs() * 2.0);
-                final shimmerX = ((t * 2.0) - 1.0) * (widget.size * 0.6);
-                return SizedBox(
-                  key: const Key('fruit_pending_transport_halo'),
-                  width: widget.size,
-                  height: widget.size,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.center,
-                    children: [
-                      Transform.scale(
-                        scale: 0.92 + (pulse * 0.18),
-                        child: Container(
-                          width: widget.size * 1.04,
-                          height: widget.size * 1.04,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                widget.color.withValues(
-                                  alpha: widget.glassEnabled ? 0.26 : 0.20,
-                                ),
-                                widget.color.withValues(alpha: 0.0),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        width: widget.size * 0.9,
-                        height: widget.size * 0.9,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: widget.color.withValues(
-                            alpha: widget.glassEnabled ? 0.18 : 0.14,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: widget.color.withValues(
-                                alpha: widget.glassEnabled ? 0.18 : 0.12,
-                              ),
-                              blurRadius: widget.glassEnabled ? 10 : 6,
-                              spreadRadius: pulse * 0.8,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: widget.size * 0.48,
-                        height: widget.size * 0.48,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: widget.color.withValues(alpha: 0.88),
-                        ),
-                      ),
-                      Transform.translate(
-                        offset: Offset(shimmerX, 0),
-                        child: Transform.rotate(
-                          angle: -0.35,
-                          child: Container(
-                            width: widget.size * 0.22,
-                            height: widget.size * 0.92,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(widget.size),
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent,
-                                  widget.color.withValues(alpha: 0.0),
-                                  widget.color.withValues(alpha: 0.95),
-                                  Colors.transparent,
-                                ],
-                                stops: const [0.0, 0.2, 0.55, 1.0],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            )
-          : Icon(
-              key: ValueKey<String>('icon-$iconData'),
-              iconData,
-              size: widget.size,
-              color: widget.color,
-            ),
-    );
   }
 }

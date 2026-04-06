@@ -21,6 +21,7 @@ import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
+import 'package:shakedown_core/ui/widgets/rating_dialog.dart';
 
 class PlaybackAppBar extends StatelessWidget {
   final Show currentShow;

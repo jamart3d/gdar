@@ -15,6 +15,7 @@ import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/utils/utils.dart';
 
 part 'dev_audio_hud_build.dart';
+part 'dev_audio_hud_fields.dart';
 part 'dev_audio_hud_helpers.dart';
 part 'dev_audio_hud_painter.dart';
 

@@ -84,11 +84,19 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
         _onJsError(message);
       }).toJS,
     );
-    gdar.onPlayBlocked(
-      ((JSAny? raw) {
-        _emitPlayBlocked();
-      }).toJS,
-    );
+    if (_JSObject(engine).hasOwnProperty('onPlayBlocked'.toJS)) {
+      gdar.onPlayBlocked(
+        ((JSAny? raw) {
+          _emitPlayBlocked();
+        }).toJS,
+      );
+    } else {
+      logger.w(
+        'GaplessPlayerWeb: JS engine missing onPlayBlocked(). '
+        'Likely stale deployed web bundle; continuing without play-blocked '
+        'callback.',
+      );
+    }
   }
 
   void _onJsError(String message) {

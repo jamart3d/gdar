@@ -6,6 +6,7 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/rating_control.dart';
+import 'package:shakedown_core/ui/widgets/rating_dialog.dart';
 
 const Color _expectedFruitRatingYellow = Color(0xFFFFC107);
 const Color _testThemePrimary = Color(0xFF00BFA5);
