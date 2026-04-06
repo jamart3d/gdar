@@ -216,6 +216,7 @@ mixin _GaplessPlayerWebApi on _GaplessPlayerBase, _GaplessPlayerWebEngine {
     _callEngine((engine) => engine.stop());
     await _playerStateController.close();
     await _playbackEventController.close();
+    await _playBlockedController.close();
     await _playingController.close();
     await _processingStateController.close();
     await _engineStateStringController.close();

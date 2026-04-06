@@ -84,6 +84,11 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
         _onJsError(message);
       }).toJS,
     );
+    gdar.onPlayBlocked(
+      ((JSAny? raw) {
+        _emitPlayBlocked();
+      }).toJS,
+    );
   }
 
   void _onJsError(String message) {

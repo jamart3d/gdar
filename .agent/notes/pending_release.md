@@ -72,6 +72,31 @@
   - add Dart regression coverage for resumed progress updates
 - No runtime fix has been implemented yet in this session
 
+### Changed (web-buffer-agent-recovery — implemented in this worktree)
+- Implemented and verified Task 1:
+  - added `packages/shakedown_core/lib/services/buffer_agent_stall_policy.dart`
+  - updated `BufferAgent` to use `10s` for visible web playback and `20s` otherwise
+  - treated web `AppLifecycleState.inactive` as visible for both threshold selection and recovery visibility behavior
+  - added `packages/shakedown_core/test/services/buffer_agent_stall_policy_test.dart`
+- Implemented and verified Task 2:
+  - added `GaplessPlayer.playBlockedStream` on web and native
+  - bridged JS `onPlayBlocked` into Dart in the web player
+  - added a dispose-safe `_emitPlayBlocked()` guard to avoid late callback writes after stream closure
+  - added `packages/shakedown_core/test/services/gapless_player_play_blocked_stream_test.dart`
+  - regenerated only the mock files that needed the new `playBlockedStream` getter
+- Implemented and verified Task 3:
+  - updated `audio_provider.dart`, `audio_provider_diagnostics.dart`, `audio_provider_lifecycle.dart`, and `audio_provider_state.dart`
+  - `AudioProvider` resume prompts now use a transient playback-recovery path instead of seeding sticky issue state
+  - `playBlockedStream` and `suspended_by_os` prompts now clear when playback reports `playing=true`
+  - added provider coverage for the real recovery path:
+    - `playBlockedStream sets the browser resume agent message`
+    - `playBlockedStream prompt clears after playback resumes`
+  - updated `packages/shakedown_core/test/ui/widgets/playback/playback_messages_test.dart`
+  - fixed `packages/shakedown_core/test/verify_data_integrity_test.dart` so package-level test runs succeed from the monorepo root
+- Session handoff saved to:
+  - `.agent/notes/session_handoff.md`
+- No commit was made in this session
+
 ### Verification Notes
 - `git diff --check` passed for the updated Kotlin, plan, and Android test files
 - `flutter build apk --debug` reached Android SDK configuration, then failed on host setup before Kotlin compilation:
@@ -83,3 +108,10 @@
 - Fruit car mode stat-lens follow-up verified in `feat/fruit-car-mode-stat-font-size-v2`:
   - `flutter test packages/shakedown_core/test/screens/playback_screen_test.dart` passed (`11` tests)
   - `flutter analyze` passed with `No issues found!`
+- Web buffer agent recovery work verified in `web-buffer-agent-recovery` worktree:
+  - `git diff --check` passed
+  - `flutter test packages/shakedown_core/test/services/buffer_agent_stall_policy_test.dart` passed
+  - `flutter test packages/shakedown_core/test/services/buffer_agent_test.dart` passed
+  - `flutter test packages/shakedown_core/test/services/gapless_player_play_blocked_stream_test.dart -r compact` passed
+  - Dart MCP analyze of `packages/shakedown_core/lib` and `packages/shakedown_core/test` returned no errors
+  - Dart MCP full `packages/shakedown_core/test` run passed

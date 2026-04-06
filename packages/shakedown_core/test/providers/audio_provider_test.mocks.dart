@@ -282,6 +282,15 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i5.GaplessPlayer {
           as _i7.Stream<_i2.PlaybackEvent>);
 
   @override
+  _i7.Stream<void> get playBlockedStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#playBlockedStream),
+            returnValue: _i7.Stream<void>.empty(),
+            returnValueForMissingStub: _i7.Stream<void>.empty(),
+          )
+          as _i7.Stream<void>);
+
+  @override
   _i7.Stream<bool> get playingStream =>
       (super.noSuchMethod(
             Invocation.getter(#playingStream),

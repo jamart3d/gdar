@@ -148,6 +148,9 @@ mixin _GaplessPlayerWebAccessors
       ? _playbackEventController.stream
       : _fallbackPlayer!.playbackEventStream;
 
+  Stream<void> get playBlockedStream =>
+      _useJsEngine ? _playBlockedController.stream : const Stream.empty();
+
   Stream<bool> get playingStream =>
       _useJsEngine ? _playingController.stream : _fallbackPlayer!.playingStream;
 

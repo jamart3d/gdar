@@ -41,6 +41,8 @@ void main() {
   late StreamController<ProcessingState> processingStateController;
   late StreamController<Duration> positionController;
   late StreamController<int?> currentIndexController;
+  late StreamController<void> playBlockedController;
+  late StreamController<bool> playingController;
 
   setUp(() {
     mockSettingsProvider = MockSettingsProvider();
@@ -61,6 +63,8 @@ void main() {
     processingStateController = StreamController<ProcessingState>.broadcast();
     positionController = StreamController<Duration>.broadcast();
     currentIndexController = StreamController<int?>.broadcast();
+    playBlockedController = StreamController<void>.broadcast();
+    playingController = StreamController<bool>.broadcast();
 
     // Stub SettingsProvider methods FIRST
     when(mockSettingsProvider.randomOnlyUnplayed).thenReturn(false);
@@ -80,6 +84,12 @@ void main() {
       mockAudioPlayer.playbackEventStream,
     ).thenAnswer((_) => const Stream.empty());
     when(
+      mockAudioPlayer.playerState,
+    ).thenReturn(PlayerState(false, ProcessingState.idle));
+    when(mockAudioPlayer.position).thenReturn(Duration.zero);
+    when(mockAudioPlayer.bufferedPosition).thenReturn(Duration.zero);
+    when(mockAudioPlayer.nextTrackBuffered).thenReturn(null);
+    when(
       mockAudioPlayer.currentIndexStream,
     ).thenAnswer((_) => currentIndexController.stream);
     when(
@@ -91,6 +101,12 @@ void main() {
     when(
       mockAudioPlayer.bufferedPositionStream,
     ).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.playBlockedStream,
+    ).thenAnswer((_) => playBlockedController.stream);
+    when(
+      mockAudioPlayer.playingStream,
+    ).thenAnswer((_) => playingController.stream);
 
     when(mockAudioPlayer.play()).thenAnswer((_) async {});
     when(mockAudioPlayer.stop()).thenAnswer((_) async {});
@@ -148,6 +164,8 @@ void main() {
     processingStateController.close();
     positionController.close();
     currentIndexController.close();
+    playBlockedController.close();
+    playingController.close();
     audioProvider.dispose();
   });
 
@@ -245,6 +263,46 @@ void main() {
         expect(playedShow, isNull);
         verifyNever(mockAudioPlayer.setAudioSources(any));
         verifyNever(mockAudioPlayer.play());
+      });
+    });
+
+    testWidgets('playBlockedStream sets the browser resume agent message', (
+      WidgetTester tester,
+    ) async {
+      await tester.runAsync(() async {
+        playBlockedController.add(null);
+        await Future<void>.delayed(Duration.zero);
+
+        final hud = audioProvider.currentHudSnapshot;
+
+        expect(hud.message, 'Playback paused by browser. Tap play to resume.');
+        expect(hud.signal, isNot('--'));
+      });
+    });
+
+    testWidgets('playBlockedStream prompt clears after playback resumes', (
+      WidgetTester tester,
+    ) async {
+      await tester.runAsync(() async {
+        playBlockedController.add(null);
+        await Future<void>.delayed(Duration.zero);
+
+        expect(
+          audioProvider.currentHudSnapshot.message,
+          'Playback paused by browser. Tap play to resume.',
+        );
+
+        when(
+          mockAudioPlayer.playerState,
+        ).thenReturn(PlayerState(true, ProcessingState.ready));
+        playingController.add(true);
+        await Future<void>.delayed(Duration.zero);
+
+        final hud = audioProvider.currentHudSnapshot;
+        expect(hud.signal, '--');
+        expect(hud.message, '--');
+        expect(hud.isPlaying, isTrue);
+        expect(hud.processing, 'RDY');
       });
     });
 

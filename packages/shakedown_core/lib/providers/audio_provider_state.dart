@@ -34,6 +34,7 @@ mixin _AudioProviderState {
   String? _lastAgentMessage;
   String? _lastNotificationMessage;
   String? _lastIssueMessage;
+  String? _playbackResumePromptMessage;
   DateTime? _lastIssueAt;
   Timer? _notificationTimeoutTimer;
   Timer? _issueTimeoutTimer;

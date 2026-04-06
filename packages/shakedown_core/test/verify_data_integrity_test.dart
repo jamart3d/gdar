@@ -5,12 +5,28 @@ import 'package:shakedown_core/models/show.dart';
 
 import 'package:flutter/foundation.dart';
 
+Future<File> _resolveOptimizedSrcJson() async {
+  const candidatePaths = [
+    'assets/data/output.optimized_src.json',
+    'packages/shakedown_core/assets/data/output.optimized_src.json',
+  ];
+
+  for (final path in candidatePaths) {
+    final file = File(path);
+    if (await file.exists()) {
+      return file;
+    }
+  }
+
+  fail(
+    'output.optimized_src.json not found. Tried: '
+    '${candidatePaths.join(', ')}',
+  );
+}
+
 void main() {
   test('Verify output.optimized_src.json integrity and parsing', () async {
-    final file = File('assets/data/output.optimized_src.json');
-    if (!await file.exists()) {
-      fail('assets/data/output.optimized_src.json not found');
-    }
+    final file = await _resolveOptimizedSrcJson();
 
     final jsonString = await file.readAsString();
     final List<dynamic> jsonList = json.decode(jsonString);

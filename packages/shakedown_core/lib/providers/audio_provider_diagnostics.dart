@@ -32,6 +32,12 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
     notifyListeners();
   }
 
+  void _setPlaybackResumePrompt(String message) {
+    _playbackResumePromptMessage = message;
+    _startIssueClearTimer(message);
+    notifyListeners();
+  }
+
   void _setNotificationMessage(String message) {
     _lastNotificationMessage = message;
     _startIssueClearTimer(message);
@@ -48,10 +54,26 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
     _lastIssueMessage = message;
     _lastIssueAt = DateTime.now();
     _issueTimeoutTimer = Timer(const Duration(seconds: 8), () {
+      if (_playbackResumePromptMessage == message) {
+        _playbackResumePromptMessage = null;
+      }
       _lastIssueMessage = null;
       _lastIssueAt = null;
       notifyListeners();
     });
+  }
+
+  void _clearPlaybackResumePrompt() {
+    final prompt = _playbackResumePromptMessage;
+    if (prompt == null) return;
+
+    _playbackResumePromptMessage = null;
+    if (_lastIssueMessage == prompt) {
+      _issueTimeoutTimer?.cancel();
+      _lastIssueMessage = null;
+      _lastIssueAt = null;
+    }
+    notifyListeners();
   }
 
   void _startDiagnosticsTimer() {

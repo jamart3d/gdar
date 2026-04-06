@@ -3019,6 +3019,14 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
           as _i8.Stream<_i5.PlaybackEvent>);
 
   @override
+  _i8.Stream<void> get playBlockedStream =>
+      (super.noSuchMethod(
+            Invocation.getter(#playBlockedStream),
+            returnValue: _i8.Stream<void>.empty(),
+          )
+          as _i8.Stream<void>);
+
+  @override
   _i8.Stream<bool> get playingStream =>
       (super.noSuchMethod(
             Invocation.getter(#playingStream),

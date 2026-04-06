@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shakedown_core/services/buffer_agent_stall_policy.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/utils/logger.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 
 /// Intelligent playback recovery agent that monitors buffering state and
 /// automatically attempts recovery from network issues and buffering failures.
@@ -118,7 +120,7 @@ class BufferAgent with WidgetsBindingObserver {
     }
 
     _isRecovering = true;
-    final isAppVisible = _appLifecycleState == AppLifecycleState.resumed;
+    final isAppVisible = _isAppVisible;
 
     if (isAppVisible) {
       // App is visible: Notify user via callback
@@ -179,6 +181,10 @@ class BufferAgent with WidgetsBindingObserver {
     logger.d('BufferAgent: App lifecycle changed to $state');
   }
 
+  bool get _isAppVisible =>
+      _appLifecycleState == AppLifecycleState.resumed ||
+      (kIsWeb && _appLifecycleState == AppLifecycleState.inactive);
+
   void _onPlayerStateChanged(PlayerState state) {
     final processingState = state.processingState;
     final isBuffering = processingState == ProcessingState.buffering;
@@ -210,11 +216,15 @@ class BufferAgent with WidgetsBindingObserver {
       }
 
       final bufferingDuration = DateTime.now().difference(_bufferingStartTime!);
+      final stallThreshold = BufferAgentStallPolicy.stallThreshold(
+        isWeb: kIsWeb,
+        isAppVisible: _isAppVisible,
+      );
 
-      // Threshold: 20 seconds (aligns with ExoPlayer min buffer)
-      if (bufferingDuration.inSeconds >= 20 && !_isRecovering) {
+      if (bufferingDuration >= stallThreshold && !_isRecovering) {
         logger.w(
-          'BufferAgent: Buffering stalled for ${bufferingDuration.inSeconds}s, attempting recovery',
+          'BufferAgent: Buffering stalled for ${bufferingDuration.inSeconds}s '
+          '(threshold: ${stallThreshold.inSeconds}s), attempting recovery',
         );
         _attemptRecovery();
         timer.cancel();

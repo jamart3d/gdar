@@ -49,6 +49,7 @@ extension type _GdarAudioEngine(JSObject _) {
   external void onStateChange(JSFunction callback);
   external void onTrackChange(JSFunction callback);
   external void onError(JSFunction callback);
+  external void onPlayBlocked(JSFunction callback);
   external void setHybridBackgroundMode(JSString mode);
   external void setHybridHandoffMode(JSString mode);
   external void setHybridAllowHiddenWebAudio(JSBoolean enabled);
@@ -209,6 +210,7 @@ extension type _JSObject(JSObject _) implements JSObject {
 class _GaplessPlayerBase {
   final _playerStateController = StreamController<PlayerState>.broadcast();
   final _playbackEventController = StreamController<PlaybackEvent>.broadcast();
+  final _playBlockedController = StreamController<void>.broadcast();
   final _playingController = StreamController<bool>.broadcast();
   final _processingStateController =
       StreamController<ProcessingState>.broadcast();
@@ -278,6 +280,13 @@ class _GaplessPlayerBase {
 
   final bool _useJsEngine;
   final AudioPlayer? _fallbackPlayer;
+
+  void _emitPlayBlocked() {
+    if (_playBlockedController.isClosed) {
+      return;
+    }
+    _playBlockedController.add(null);
+  }
 
   _GaplessPlayerBase({
     AudioPlayer? audioPlayer,

@@ -1,7 +1,11 @@
 part of 'audio_provider.dart';
 
 mixin _AudioProviderLifecycle
-    on ChangeNotifier, _AudioProviderState, _AudioProviderPlayback {
+    on
+        ChangeNotifier,
+        _AudioProviderState,
+        _AudioProviderPlayback,
+        _AudioProviderDiagnostics {
   void _listenForProcessingState() {
     _processingStateSubscription = _audioPlayer.processingStateStream.listen((
       state,
@@ -42,8 +46,11 @@ mixin _AudioProviderLifecycle
       }
     });
 
-    _audioPlayer.playingStream.listen((_) {
+    _audioPlayer.playingStream.listen((isPlaying) {
       _updateWakeLockState();
+      if (isPlaying) {
+        _clearPlaybackResumePrompt();
+      }
     });
   }
 

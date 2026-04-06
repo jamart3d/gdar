@@ -141,6 +141,10 @@ class GaplessPlayer {
   /// Stream of [PlaybackEvent] changes.
   Stream<PlaybackEvent> get playbackEventStream => _player.playbackEventStream;
 
+  /// Stream of browser play-blocked notifications.
+  /// Empty on native platforms.
+  Stream<void> get playBlockedStream => const Stream.empty();
+
   /// Stream of playing state (bool) changes.
   Stream<bool> get playingStream => _player.playingStream;
 

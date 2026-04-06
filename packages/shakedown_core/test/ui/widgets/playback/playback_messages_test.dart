@@ -110,16 +110,21 @@ void main() {
       expect(find.text('Buffering...'), findsOneWidget);
     });
 
-    testWidgets('Displays message from signal when present', (tester) async {
+    testWidgets('Displays AGT resume message instead of Buffering', (
+      tester,
+    ) async {
       when(mockAudioProvider.currentHudSnapshot).thenReturn(
         HudSnapshot.empty().copyWith(
           signal: 'AGT',
-          message: 'Network issue detected',
+          message: 'Playback paused by browser. Tap play to resume.',
           processing: 'BUF',
         ),
       );
       await tester.pumpWidget(createWidgetUnderTest());
-      expect(find.text('Network issue detected'), findsOneWidget);
+      expect(
+        find.text('Playback paused by browser. Tap play to resume.'),
+        findsOneWidget,
+      );
       expect(find.text('Buffering...'), findsNothing);
     });
 

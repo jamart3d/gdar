@@ -74,8 +74,16 @@ class AudioProvider extends ChangeNotifier
 
     _audioPlayer.engineStateStringStream.listen((state) {
       if (state == 'suspended_by_os') {
-        _setAgentMessage('Playback suspended by system. Tap play to resume.');
+        _setPlaybackResumePrompt(
+          'Playback suspended by system. Tap play to resume.',
+        );
       }
+    });
+
+    _audioPlayer.playBlockedStream.listen((_) {
+      _setPlaybackResumePrompt(
+        'Playback paused by browser. Tap play to resume.',
+      );
     });
 
     _bufferAgentNotificationController.stream.listen((event) {
