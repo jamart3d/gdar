@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-// ── Zero-dependency ANSI logger ─────────────────────────
-// Replaces package:logger to avoid slow workspace-wide
-// package resolution in the monorepo root.
+import 'preflight_support.dart';
+
 const _reset = '\x1B[0m';
 const _green = '\x1B[32m';
 const _yellow = '\x1B[33m';
@@ -13,10 +12,10 @@ const _dim = '\x1B[2m';
 
 void _log(String icon, String color, String msg) =>
     stdout.writeln('$color$icon $msg$_reset');
-void _info(String msg) => _log('ℹ️', _green, msg);
-void _step(String msg) => _log('🔹', _cyan, msg);
-void _warn(String msg) => _log('⚠️', _yellow, msg);
-void _err(String msg) => _log('❌', _red, msg);
+void _info(String msg) => _log('info', _green, msg);
+void _step(String msg) => _log('step', _cyan, msg);
+void _warn(String msg) => _log('warn', _yellow, msg);
+void _err(String msg) => _log('fail', _red, msg);
 void _debug(String msg) => _log('  ', _dim, msg);
 
 /// Unified Preflight & Verification script for GDAR.
@@ -25,221 +24,182 @@ void _debug(String msg) => _log('  ', _dim, msg);
 /// 1. Detects host platform (WINDOWS_10, LINUX, or CHROMEBOOK).
 /// 2. Verifies toolchain (git, dart, flutter, firebase).
 /// 3. Checks for hung processes.
-/// 4. Smart-skip: compares verification_status.json SHA
-///    against current HEAD. Runs melos suite only if needed.
-/// 5. Updates verification_status.json on success.
+/// 4. Smart-skip: compares verification_status.json SHA against current HEAD.
+/// 5. Updates verification_status.json on success unless `--preflight-only`
+///    was requested for `/checkup`.
 ///
 /// Exit codes:
 ///   0 = success (stdout ends with WINDOWS_10:VERIFIED,
 ///       LINUX:VERIFIED, or CHROMEBOOK:STOP)
 ///   1 = toolchain missing or melos suite failed
 void main(List<String> args) async {
-  final isRelease = args.contains('--release');
-  final forceRun = args.contains('--force');
+  final options = parsePreflightOptions(args);
 
   _info('--- Starting GDAR Preflight ---');
 
-  // ── Step 1: Detect Platform ──────────────────────────
   _step('Step 1: Detecting Host Class...');
   final platform = _detectPlatform();
   _info('Host: $platform');
 
-  // ── Step 2: Toolchain ────────────────────────────────
   _step('Step 2: Checking Toolchain...');
   final commands = ['git', 'dart', 'flutter'];
-  if (isRelease) commands.add('firebase');
+  if (options.isRelease) {
+    commands.add('firebase');
+  }
 
-  for (final cmd in commands) {
-    if (!await _commandExists(cmd)) {
-      _err('FAIL: Command "$cmd" not found in PATH.');
+  for (final command in commands) {
+    if (!await _commandExists(command)) {
+      _err('FAIL: Command "$command" not found in PATH.');
       exit(1);
     }
   }
   _info('Toolchain verified: ${commands.join(", ")}');
 
-  // ── Step 3: Process Hygiene ──────────────────────────
   _step('Step 3: Checking Process Hygiene...');
   final hungProcesses = await _findHungProcesses();
   if (hungProcesses.isNotEmpty) {
-    _warn(
-      'Warning: Hung processes detected: '
-      '${hungProcesses.join(", ")}',
-    );
-    _warn(
-      'Consider running "melos run clean" before a '
-      'production build.',
-    );
+    _warn('Warning: Hung processes detected: ${hungProcesses.join(", ")}');
+    _warn('Consider running "melos run clean" before a production build.');
   } else {
     _info('No hung Dart/Flutter processes detected.');
   }
 
-  // ── Chromebook early exit ────────────────────────────
   if (platform == 'CHROMEBOOK') {
     _info('--- Preflight Complete [CHROMEBOOK:STOP] ---');
-    // ignore: avoid_print
     print('CHROMEBOOK:STOP');
     return;
   }
 
-  // ── Step 4: Smart Skip Check ─────────────────────────
-  _step('Step 4: Checking verification status...');
-  final shouldRunMelos =
-      forceRun || await _shouldRunMelos();
-  if (forceRun) {
-    _info('--force flag set — skipping smart-skip.');
-  }
-
-  if (shouldRunMelos) {
-    _info('Verification stale or missing — running '
-        'melos health suite...');
-
-    // Format → Analyze → Test (sequential)
-    final steps = [
-      ['melos', 'run', 'format'],
-      ['melos', 'run', 'analyze'],
-      ['melos', 'run', 'test'],
-    ];
-
-    for (final step in steps) {
-      final label = step.join(' ');
-      _info('Running: $label');
-      final process = await Process.start(
-        step[0],
-        step.sublist(1),
-        runInShell: true,
-      );
-
-      // Drain both pipes AND wait for exit concurrently.
-      // Using Future.wait prevents OS pipe-buffer deadlock
-      // on Windows when a melos step writes >4KB to stderr.
-      final results = await Future.wait([
-        process.stdout
-            .transform(utf8.decoder)
-            .transform(const LineSplitter())
-            .forEach((line) => _debug(line)),
-        process.stderr
-            .transform(utf8.decoder)
-            .transform(const LineSplitter())
-            .forEach((line) => _err(line)),
-        process.exitCode,
-      ]);
-
-      final exitCode = results[2] as int;
-      if (exitCode != 0) {
-        _err('FAIL: $label exited with $exitCode');
-        exit(1);
-      }
-      _info('PASS: $label');
-    }
-
-    // Update verification_status.json
+  if (options.recordStatusOnly) {
     await _updateVerificationStatus();
     _info('verification_status.json updated.');
+    _info('--- Preflight Complete [$platform:VERIFIED] ---');
+    print('$platform:VERIFIED');
+    return;
+  }
+
+  _step('Step 4: Checking verification status...');
+  if (!options.runMelos) {
+    _info('Preflight-only mode: skipping melos suite and receipt write.');
   } else {
-    _info(
-      'Verification current — skipping melos suite.',
-    );
+    final shouldRunMelos = options.forceRun || await _shouldRunMelos();
+    if (options.forceRun) {
+      _info('--force flag set: skipping smart-skip.');
+    }
+
+    if (shouldRunMelos) {
+      _info('Verification stale or missing: running melos health suite...');
+
+      final steps = [
+        ['melos', 'run', 'format'],
+        ['melos', 'run', 'analyze'],
+        ['melos', 'run', 'test'],
+      ];
+
+      for (final step in steps) {
+        final label = step.join(' ');
+        _info('Running: $label');
+        final process = await Process.start(
+          step[0],
+          step.sublist(1),
+          runInShell: true,
+        );
+
+        final results = await Future.wait([
+          process.stdout
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())
+              .forEach((line) => _debug(line)),
+          process.stderr
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())
+              .forEach((line) => _err(line)),
+          process.exitCode,
+        ]);
+
+        final exitCode = results[2] as int;
+        if (exitCode != 0) {
+          _err('FAIL: $label exited with $exitCode');
+          exit(1);
+        }
+        _info('PASS: $label');
+      }
+
+      if (options.writeStatus) {
+        await _updateVerificationStatus();
+        _info('verification_status.json updated.');
+      }
+    } else {
+      _info('Verification current: skipping melos suite.');
+    }
   }
 
   _info('--- Preflight Complete [$platform:VERIFIED] ---');
-  // ignore: avoid_print
   print('$platform:VERIFIED');
 }
 
-// ── Helpers ──────────────────────────────────────────────
-
 String _detectPlatform() {
-  if (Platform.isWindows) return 'WINDOWS_10';
-  if (Platform.isLinux) return 'LINUX';
+  if (Platform.isWindows) {
+    return 'WINDOWS_10';
+  }
+  if (Platform.isLinux) {
+    return 'LINUX';
+  }
   return 'CHROMEBOOK';
 }
 
-Future<bool> _commandExists(String cmd) async {
-  final checkCmd = Platform.isWindows ? 'where' : 'which';
-  final result = await Process.run(checkCmd, [cmd]);
+Future<bool> _commandExists(String command) async {
+  final checkCommand = Platform.isWindows ? 'where' : 'which';
+  final result = await Process.run(checkCommand, [command]);
   return result.exitCode == 0;
 }
 
 Future<List<String>> _findHungProcesses() async {
-  final hung = <String>[];
   if (Platform.isWindows) {
-    final selfPid = pid.toString();
-    final result = await Process.run('tasklist', []);
-    final output = result.stdout.toString();
-    if (output.contains('flutter.exe')) {
-      hung.add('flutter');
-    }
-    // Filter out our own dart.exe process
-    if (output.contains('dart.exe')) {
-      final lines = output.split('\n').where(
-        (l) => l.contains('dart.exe') && !l.contains(selfPid),
-      );
-      if (lines.isNotEmpty) hung.add('dart');
-    }
+    final result = await Process.run('tasklist', ['/fo', 'csv', '/nh']);
+    return detectWindowsToolProcesses(result.stdout.toString(), selfPid: pid);
   }
-  return hung;
+
+  return <String>[];
 }
 
-/// Returns true if the melos health suite needs to run.
-///
-/// Compares the SHA in verification_status.json against
-/// the current git HEAD. Skips only if both match AND
-/// the status is exactly "PASS".
 Future<bool> _shouldRunMelos() async {
-  final statusFile = File(
-    '.agent/notes/verification_status.json',
-  );
-  if (!statusFile.existsSync()) return true;
+  final statusFile = File('.agent/notes/verification_status.json');
+  if (!statusFile.existsSync()) {
+    return true;
+  }
 
   try {
-    final data = jsonDecode(statusFile.readAsStringSync())
-        as Map<String, dynamic>;
-    final lastSha =
-        data['last_verification_commit'] as String? ?? '';
+    final data =
+        jsonDecode(statusFile.readAsStringSync()) as Map<String, dynamic>;
+    final lastSha = data['last_verification_commit'] as String? ?? '';
     final status = data['status'] as String? ?? '';
 
     if (status != 'PASS') {
-      _info(
-        'Status is "$status" (not PASS) — '
-        'suite required.',
-      );
+      _info('Status is "$status" (not PASS): suite required.');
       return true;
     }
 
-    final headResult = await Process.run(
-      'git',
-      ['rev-parse', 'HEAD'],
-    );
-    final currentSha =
-        headResult.stdout.toString().trim();
+    final headResult = await Process.run('git', ['rev-parse', 'HEAD']);
+    final currentSha = headResult.stdout.toString().trim();
 
     if (lastSha == currentSha) {
-      _info(
-        'SHA match: $currentSha — skip eligible.',
-      );
+      _info('SHA match: $currentSha : skip eligible.');
       return false;
     }
 
     _info(
-      'SHA mismatch: HEAD=$currentSha vs '
-      'verified=$lastSha — suite required.',
+      'SHA mismatch: HEAD=$currentSha vs verified=$lastSha : suite required.',
     );
     return true;
-  } catch (e) {
-    _warn(
-      'Could not parse verification_status.json: $e',
-    );
+  } catch (error) {
+    _warn('Could not parse verification_status.json: $error');
     return true;
   }
 }
 
-/// Writes a fresh PASS record to
-/// verification_status.json.
 Future<void> _updateVerificationStatus() async {
-  final headResult = await Process.run(
-    'git',
-    ['rev-parse', 'HEAD'],
-  );
+  final headResult = await Process.run('git', ['rev-parse', 'HEAD']);
   final sha = headResult.stdout.toString().trim();
 
   final data = {
@@ -254,10 +214,6 @@ Future<void> _updateVerificationStatus() async {
     'timestamp': DateTime.now().toIso8601String(),
   };
 
-  final file = File(
-    '.agent/notes/verification_status.json',
-  );
-  file.writeAsStringSync(
-    const JsonEncoder.withIndent('  ').convert(data),
-  );
+  final file = File('.agent/notes/verification_status.json');
+  file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(data));
 }

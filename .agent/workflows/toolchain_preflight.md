@@ -12,23 +12,25 @@ inherits the parent workflow's approval automatically.
 
 Run the unified preflight script:
 
-```
-dart scripts/preflight_check.dart          # checkup, verify
+``` 
+dart scripts/preflight_check.dart --preflight-only # checkup
+dart scripts/preflight_check.dart          # verify
 dart scripts/preflight_check.dart --release # shipit, deploy (adds firebase check)
+dart scripts/preflight_check.dart --record-pass # refresh receipt after /checkup
 ```
 
 The script handles:
 - Host detection (`WINDOWS_10` or `CHROMEBOOK`).
 - Toolchain verification (`git`, `dart`, `flutter`, optionally `firebase`).
 - Process hygiene (hung flutter/dart detection).
-- Smart-skip melos verification (SHA comparison + suite run if stale).
-- `verification_status.json` update on success.
+- Smart-skip melos verification (SHA comparison + suite run if stale) unless `--preflight-only` is used.
+- `verification_status.json` update on success unless `--preflight-only` is used.
 
 ## Output
 
 | Output | Meaning |
 |---|---|
-| `WINDOWS_10:VERIFIED` | All clear — proceed with the parent workflow. |
+| `WINDOWS_10:VERIFIED` or `LINUX:VERIFIED` | All clear — proceed with the parent workflow. |
 | `CHROMEBOOK:STOP` | Health suite ran but builds/deploy must run on Windows. |
 | Exit code 1 | Toolchain missing or melos suite failed — abort. |
 

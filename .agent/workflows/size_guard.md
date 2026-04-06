@@ -21,14 +21,14 @@ for Android and TV targets where storage pressure matters most.
 ## Workflow
 
 ### 1. Fast Asset Scan
-Run the platform-appropriate asset audit script from the workspace root:
-- **Windows:** `./scripts/size_guard/audit_assets.ps1`
-- **Linux/bash:** `./scripts/size_guard/audit_assets.sh`
+Run the workspace asset audit from the repo root:
+- `dart run scripts/size_guard/audit_assets.dart`
 
 Checks:
+- Scan source asset roots under `apps/` and `packages/`
 - Flag files over 500 KB
 - Identify PNG/JPG candidates for WebP conversion
-- Surface likely dead assets that are not referenced in `pubspec.yaml`
+- Keep build outputs and archived/temp folders out of the scan
 
 ### 2. Binary Size Audit
 Run Flutter size analysis from the target app directory.

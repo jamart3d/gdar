@@ -10,9 +10,11 @@ Run the `/checkup` workflow with the following overrides:
 
 | Behaviour | Checkup default | Hammer override |
 |---|---|---|
-| Smart skip | Skips melos if SHA matches + PASS | Never skips — always runs full suite and design scan |
+| Smart skip | Uses preflight-only, then runs fix + verify + scans | Never skips — always runs full suite and design scan |
 | Output | Concise summary | Full verbose: print complete output of every command |
-| Commit message | `chore: checkup pass [score: <N>/100] [skip ci]` | `chore: hammer pass [score: <N>/100]` |
+| Finalization | Summarizes and leaves commit choice to `/save` or `/shipit` | Same, but with verbose logs and forced verification |
 
-To force full melos execution, pass `--force` to the preflight script:
-`dart scripts/preflight_check.dart --force`
+To force full verification after fixes, run:
+`melos run format`
+`melos run analyze`
+`melos run test`
