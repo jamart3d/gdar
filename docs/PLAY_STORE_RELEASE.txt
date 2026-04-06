@@ -1,3 +1,13 @@
+What's new in v1.3.64+274
+- **Web PWA crash on load** (`NoSuchMethodError: onPlayBlocked is not a function`):
+  - Root cause: commit `4259462` added `gdar.onPlayBlocked(...)` in Dart without a guard, while the JS engines (`html5_audio_engine.js`, `hybrid_audio_engine.js`, etc.) did not yet expose `onPlayBlocked` at the top level.
+  - The crash cascades into `Bad state: Tried to read a provider that threw during the creation of its value` (AudioProvider init failure).
+  - Fixed in `1f36ec7`: added `hasOwnProperty` guard in `gapless_player_web_engine.dart` and added `onPlayBlocked` to all JS engines.
+  - **Deployed PWA still running old build** — needs a `shipit` redeploy to pick up the fix.
+  - Firebase 403 errors (`Firebase Management API not enabled`) are pre-existing, non-fatal, and unrelated to the crash.
+
+---
+
 What's new in v1.3.63+273
 - Web/PWA startup: guarded `GaplessPlayer` web interop so startup no longer
 - Added regression coverage for the stale-bundle compatibility path and kept
