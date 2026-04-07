@@ -1,3 +1,17 @@
+What's new in v1.3.65+275
+- Web/Fruit PWA settings: turning car mode on now enables abbreviated month
+- Web/Fruit car mode: removed embedded player controls and duration text from
+- Web/Fruit car mode: added a compact real playback progress strip with a pulse
+- Web/Fruit car mode: tightened non-current show cards in the PWA show list by
+- Web/Fruit car mode: allow the current show card to grow when needed so long
+- Web tests: expanded `packages/shakedown_core/test/widgets/show_list_card_test.dart`
+- Web/Fruit: added a visible-playback stall watchdog to the HTML5 engine so
+- Web/Hybrid: mirrored the same visible-stall watchdog in the hybrid HTML5
+- Web tests: added `apps/gdar_web/web/tests/visible_stalled_progress_regression.js`
+- Web tests: repaired `apps/gdar_web/web/tests/run_tests.js` so the browser
+
+---
+
 What's new in v1.3.64+274
 - **Web PWA crash on load** (`NoSuchMethodError: onPlayBlocked is not a function`):
   - Root cause: commit `4259462` added `gdar.onPlayBlocked(...)` in Dart without a guard, while the JS engines (`html5_audio_engine.js`, `hybrid_audio_engine.js`, etc.) did not yet expose `onPlayBlocked` at the top level.

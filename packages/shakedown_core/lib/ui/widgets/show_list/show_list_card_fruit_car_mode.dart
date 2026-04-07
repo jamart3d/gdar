@@ -55,8 +55,9 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
     final double trackBlockGap =
         (showTrackTitle ? 6.0 : 8.0) * style.effectiveScale;
     final bool shouldAllowWrappedPrimaryHeadline = isCurrentCard && !dateFirst;
-    final int primaryHeadlineMaxLines =
-        shouldAllowWrappedPrimaryHeadline ? 2 : (useCompactTextLayout ? 1 : 2);
+    final int primaryHeadlineMaxLines = shouldAllowWrappedPrimaryHeadline
+        ? 2
+        : (useCompactTextLayout ? 1 : 2);
     final int secondaryVenueMaxLines = isCurrentCard && dateFirst
         ? 2
         : (useCompactTextLayout ? 1 : 2);
@@ -123,9 +124,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                       letterSpacing: -0.8,
                     ),
                     maxWidth:
-                        cardWidth -
-                        (horizontalPadding * 2) -
-                        trailingMetaWidth,
+                        cardWidth - (horizontalPadding * 2) - trailingMetaWidth,
                     maxLines: primaryHeadlineMaxLines,
                     scaleFactor: style.effectiveScale,
                   )
