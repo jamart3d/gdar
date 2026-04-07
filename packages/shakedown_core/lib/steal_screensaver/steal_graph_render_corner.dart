@@ -4,7 +4,7 @@ extension _StealGraphCornerRender on StealGraph {
   /// Render 8-bar EQ + beat anchored bottom-left using FFT band data.
   void _renderCorner(Canvas canvas) {
     final drift = _burnInDrift();
-    final startY = game.size.y - _bottomPadding + drift.dy;
+    final startY = _logicalSize.y - _bottomPadding + drift.dy;
     final startX = _leftPadding + drift.dx;
 
     if (!_isFast) {
@@ -152,8 +152,8 @@ extension _StealGraphCornerRender on StealGraph {
   /// panel width matching the bar-graph panel footprint.
   void _renderScope(Canvas canvas, {double? panelWidth}) {
     final drift = _burnInDrift();
-    final w = game.size.x;
-    final h = game.size.y;
+    final w = _logicalSize.x;
+    final h = _logicalSize.y;
 
     final isPanelMode = panelWidth != null;
     final scopeHeight = isPanelMode ? _maxBarHeight : 70.0;
@@ -500,8 +500,8 @@ extension _StealGraphCornerRender on StealGraph {
   /// Render dual VU needle meters.
   void _renderVu(Canvas canvas) {
     final drift = _burnInDrift();
-    final cx = game.size.x / 2 + drift.dx;
-    final baseY = game.size.y - _bottomPadding + drift.dy;
+    final cx = _logicalSize.x / 2 + drift.dx;
+    final baseY = _logicalSize.y - _bottomPadding + drift.dy;
     const gap = 60.0;
     final lRange = _hasRealStereo ? 'ST' : 'LO';
     final rRange = _hasRealStereo ? 'ST' : 'HI';
@@ -651,30 +651,14 @@ extension _StealGraphCornerRender on StealGraph {
       }
     }
 
-    if (peakLevel > 0.02) {
-      final peakAngle =
-          -pi / 2 + (-_vuSweepHalf + peakLevel.clamp(0.0, 1.0) * totalSweep);
-      final peakColor = peakLevel < 0.65
-          ? const Color(0xFF4AF3C6)
-          : peakLevel < 0.82
-          ? const Color(0xFFFFE66D)
-          : const Color(0xFFFF5555);
-      canvas.drawCircle(
-        Offset(
-          pivotX + cos(peakAngle) * (_vuNeedleLength - 3),
-          pivotY + sin(peakAngle) * (_vuNeedleLength - 3),
-        ),
-        2.2,
-        Paint()
-          ..color = peakColor.withValues(alpha: 0.9)
-          ..style = PaintingStyle.fill,
-      );
-    }
-
     final needleLevel = level.clamp(0.0, 1.0);
     final needleAngle = -pi / 2 + (-_vuSweepHalf + needleLevel * totalSweep);
     final tipX = pivotX + cos(needleAngle) * _vuNeedleLength;
     final tipY = pivotY + sin(needleAngle) * _vuNeedleLength;
+    // Start needle at the spindle edge so it never bleeds through the hub.
+    const spindleRadius = 4.5;
+    final needleStartX = pivotX + cos(needleAngle) * spindleRadius;
+    final needleStartY = pivotY + sin(needleAngle) * spindleRadius;
 
     final needleColor = needleLevel < 0.65
         ? const Color(0xFFDDDDDD)
@@ -684,7 +668,7 @@ extension _StealGraphCornerRender on StealGraph {
 
     if (_glowSigma > 0.0 && needleLevel > 0.05) {
       canvas.drawLine(
-        Offset(pivotX, pivotY),
+        Offset(needleStartX, needleStartY),
         Offset(tipX, tipY),
         Paint()
           ..color = needleColor.withValues(alpha: 0.18)
@@ -695,7 +679,7 @@ extension _StealGraphCornerRender on StealGraph {
       );
     }
     canvas.drawLine(
-      Offset(pivotX, pivotY),
+      Offset(needleStartX, needleStartY),
       Offset(tipX, tipY),
       Paint()
         ..color = needleColor.withValues(alpha: 0.95)

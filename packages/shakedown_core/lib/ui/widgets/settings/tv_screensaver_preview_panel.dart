@@ -189,6 +189,7 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel>
       flatColor: settings.oilFlatColor,
       bannerGlow: settings.oilBannerGlow,
       bannerFlicker: settings.oilBannerFlicker,
+      bannerGlowBlur: settings.oilBannerGlowBlur,
       showInfoBanner: false,
       bannerText: '',
       venue: '',
@@ -220,7 +221,11 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel>
       beatSensitivity: settings.oilBeatSensitivity,
       beatImpact: settings.oilBeatImpact,
       innerRingFontScale: settings.oilInnerRingFontScale,
+      middleRingFontScale: settings.oilMiddleRingFontScale,
+      outerRingFontScale: settings.oilOuterRingFontScale,
       innerRingSpacingMultiplier: settings.oilInnerRingSpacingMultiplier,
+      middleRingSpacingMultiplier: settings.oilMiddleRingSpacingMultiplier,
+      outerRingSpacingMultiplier: settings.oilOuterRingSpacingMultiplier,
       trackLetterSpacing: settings.oilTrackLetterSpacing,
       trackWordSpacing: settings.oilTrackWordSpacing,
       logoAntiAlias: settings.oilLogoAntiAlias,
@@ -228,6 +233,7 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel>
       bannerResolution: settings.oilBannerResolution,
       bannerPixelSnap: settings.oilBannerPixelSnap,
       autoTextSpacing: settings.oilAutoTextSpacing,
+      autoRingSpacing: settings.oilAutoRingSpacing,
       bannerLetterSpacing: settings.oilBannerLetterSpacing,
       bannerWordSpacing: settings.oilBannerWordSpacing,
       flatLineSpacing: settings.oilFlatLineSpacing,
@@ -241,38 +247,34 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel>
       woodstockEveryHour: settings.oilWoodstockEveryHour,
     );
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.black,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: colorScheme.primary.withValues(alpha: 0.55),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.45),
-                blurRadius: 12,
-                spreadRadius: 1,
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colorScheme.primary.withValues(alpha: 0.55),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.45),
+            blurRadius: 12,
+            spreadRadius: 1,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: AspectRatio(
-              aspectRatio: 16 / 9,
-              child: StealVisualizer(
-                config: config,
-                audioReactor: _previewReactor,
-                debugAudioSessionId: _previewAudioSessionId,
-              ),
-            ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: AspectRatio(
+          aspectRatio: 16 / 9,
+          child: StealVisualizer(
+            config: config,
+            audioReactor: _previewReactor,
+            debugAudioSessionId: _previewAudioSessionId,
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }

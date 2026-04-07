@@ -119,6 +119,7 @@ void main() {
     vec2 centeredUV = uv - pos;
     centeredUV.x *= aspect;
 
+    float logoVisible = step(0.001, uLogoScale);
     float safeLogoScale = clamp(uLogoScale, 0.05, 1.0);
     float baseScale = (110.0 / resolution.y) * safeLogoScale;
     float scale = baseScale * (1.0 + ebass * 0.2 * pulse);
@@ -168,7 +169,8 @@ void main() {
         }
     }
 
-    texColor.rgb += vec3(etreble) * 0.3 * pulse;
+    texColor *= logoVisible;
+    texColor.rgb += vec3(etreble) * 0.3 * pulse * logoVisible;
 
     vec3 cycleColor;
     if (uFlatColor > 0.5) {

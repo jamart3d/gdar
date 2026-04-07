@@ -39,7 +39,7 @@ class TvScreensaverSection extends StatefulWidget {
 class _TvScreensaverSectionState extends State<TvScreensaverSection> {
   static const Map<String, String> _beatDetectorDescriptions = {
     'auto':
-        'Auto stays on Hybrid by default. If Enhanced Audio Capture is already active in this app session, Auto can use PCM instead.',
+        'Auto stays on Hybrid by default. If Enhanced Audio Capture is already active in this app session, Auto can use PCM instead. Won\'t start Android capture by itself — choose Enhanced to explicitly enable it.',
     'hybrid':
         'Hybrid blends low-end hits, mid transients, and broadband changes. Best default for most music.',
     'bass':
@@ -49,7 +49,7 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
     'broad':
         'Broad reacts to overall band energy instead of one narrow range. A safer choice when Bass or Mid feels too picky.',
     'pcm':
-        'Enhanced uses Android system audio capture for cleaner onset timing and stereo waveforms. Best when you want the richest detector.',
+        'Enhanced uses Android system audio capture for cleaner onset timing and stereo waveforms. Does not BPM-lock the screensaver. May show a share-audio permission prompt on first use.',
   };
 
   final FocusNode _firstFocusNode = FocusNode();
@@ -183,6 +183,15 @@ class _TvScreensaverSectionState extends State<TvScreensaverSection> {
           'the Android system prompt to enable PCM.';
     }
 
+    return null;
+  }
+
+  Color? _enhancedCaptureStatusColor() {
+    if (_enhancedCaptureStatus.isActive) return const Color(0xFF55D98A);
+    if (_isEnhancedCaptureRequestPending || _enhancedCaptureStatus.isPending) {
+      return const Color(0xFFFFB84D);
+    }
+    if (_didEnhancedCaptureRequestFail) return const Color(0xFFFF5E5E);
     return null;
   }
 

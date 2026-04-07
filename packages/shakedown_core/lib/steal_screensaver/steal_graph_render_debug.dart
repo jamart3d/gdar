@@ -11,8 +11,8 @@ extension _StealGraphDebugRender on StealGraph {
     const labelH = 32.0;
     const panelPad = 20.0;
 
-    final w = game.size.x;
-    final h = game.size.y;
+    final w = _logicalSize.x;
+    final h = _logicalSize.y;
     const totalW = numAlgos * barW + (numAlgos - 1) * barGap;
     final startX = (w - totalW) / 2;
     final baseY = h - bottomPad;
@@ -322,6 +322,27 @@ extension _StealGraphDebugRender on StealGraph {
     );
     _textPainter.layout();
     _textPainter.paint(canvas, Offset(finalMeterLeft, finalMeterTop - 10));
+    final finalLabelWidth = _textPainter.width;
+
+    _textPainter.text = TextSpan(
+      text: '● BEAT',
+      style: TextStyle(
+        color: Color.lerp(
+          Colors.white.withValues(alpha: 0.2),
+          const Color(0xFF55FF88),
+          _beatFlash,
+        ),
+        fontSize: 7,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.3,
+        fontFamily: 'RobotoMono',
+      ),
+    );
+    _textPainter.layout();
+    _textPainter.paint(
+      canvas,
+      Offset(finalMeterLeft + finalLabelWidth + 8, finalMeterTop - 10),
+    );
 
     canvas.drawRRect(
       RRect.fromRectAndRadius(
@@ -429,25 +450,6 @@ extension _StealGraphDebugRender on StealGraph {
           ..strokeWidth = isWinning || flash > 0.1 ? 2.0 : 1.0,
       );
 
-      if (flash > 0.3) {
-        canvas.drawCircle(
-          Offset(barLeft + barW / 2, levelTop - 7),
-          5.0 * flash,
-          Paint()
-            ..color = Colors.white.withValues(alpha: flash * 0.9)
-            ..style = PaintingStyle.fill,
-        );
-      }
-
-      if (isWinning) {
-        canvas.drawCircle(
-          Offset(barLeft + barW / 2, baseY - maxH - 10),
-          3.0,
-          Paint()
-            ..color = color.withValues(alpha: 0.9)
-            ..style = PaintingStyle.fill,
-        );
-      }
 
       final lines = _algoLabels[i].split('\n');
       for (int l = 0; l < lines.length; l++) {

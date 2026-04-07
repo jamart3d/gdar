@@ -4,8 +4,8 @@ extension _StealGraphWaveRender on StealGraph {
   /// Render 150-sample horizontal EKG line across the bottom.
   void _renderEKG(Canvas canvas) {
     final drift = _burnInDrift();
-    final w = game.size.x;
-    final h = game.size.y;
+    final w = _logicalSize.x;
+    final h = _logicalSize.y;
     final centerY = h - _bottomPadding + drift.dy - (_ekgMaxHeight / 2);
     final startX = _leftPadding + drift.dx;
     final availableWidth = w - (_leftPadding * 2);
@@ -91,10 +91,10 @@ extension _StealGraphWaveRender on StealGraph {
   void _renderCircularEKG(Canvas canvas) {
     final logoUV = game.smoothedLogoPos;
     final drift = _burnInDrift();
-    final cx = logoUV.dx * game.size.x + (drift.dx * 0.4);
-    final cy = logoUV.dy * game.size.y + (drift.dy * 0.4);
+    final cx = logoUV.dx * _logicalSize.x + (drift.dx * 0.4);
+    final cy = logoUV.dy * _logicalSize.y + (drift.dy * 0.4);
 
-    final minDim = min(game.size.x, game.size.y);
+    final minDim = min(_logicalSize.x, _logicalSize.y);
     final baseRadius =
         (game.config.logoScale * minDim * 0.52 * game.config.ekgRadius).clamp(
           20.0,
@@ -170,10 +170,10 @@ extension _StealGraphWaveRender on StealGraph {
   void _renderCircular(Canvas canvas) {
     final logoUV = game.smoothedLogoPos;
     final drift = _burnInDrift();
-    final cx = logoUV.dx * game.size.x + (drift.dx * 0.4);
-    final cy = logoUV.dy * game.size.y + (drift.dy * 0.4);
+    final cx = logoUV.dx * _logicalSize.x + (drift.dx * 0.4);
+    final cy = logoUV.dy * _logicalSize.y + (drift.dy * 0.4);
 
-    final minDim = min(game.size.x, game.size.y);
+    final minDim = min(_logicalSize.x, _logicalSize.y);
     final dynamicRadius =
         (game.config.logoScale *
                 minDim *

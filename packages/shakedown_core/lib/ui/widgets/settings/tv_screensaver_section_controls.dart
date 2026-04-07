@@ -160,24 +160,27 @@ class _ReactiveHint extends StatelessWidget {
   final ColorScheme colorScheme;
   final TextTheme textTheme;
   final bool isFruit;
+  final Color? accentColor;
 
   const _ReactiveHint({
     required this.message,
     required this.colorScheme,
     required this.textTheme,
     required this.isFruit,
+    this.accentColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final color = accentColor ?? colorScheme.primary;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: colorScheme.primary.withValues(alpha: 0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: colorScheme.primary.withValues(alpha: 0.28),
+          color: color.withValues(alpha: 0.28),
           width: 1,
         ),
       ),
@@ -189,7 +192,7 @@ class _ReactiveHint extends StatelessWidget {
             child: Icon(
               isFruit ? LucideIcons.activity : Icons.graphic_eq,
               size: 14,
-              color: colorScheme.primary,
+              color: color,
             ),
           ),
           const SizedBox(width: 8),

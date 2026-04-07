@@ -78,6 +78,19 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   bool get _isFast => game.config.performanceLevel >= 2;
   bool get _isBalanced => game.config.performanceLevel == 1;
 
+  /// Scale factor so graph renderers work correctly inside the small settings
+  /// preview panel. All render functions use [_logicalSize] for positioning
+  /// and the canvas is pre-scaled by this factor in [render].
+  /// When the game is in a small container (preview panel, ~380–500px wide),
+  /// use a 512-px reference so graph elements fill ~75% of the panel instead
+  /// of the ~30% they would at the full 1280-px reference.
+  double get _graphScale {
+    final refWidth = game.size.x < 600 ? 512.0 : 1280.0;
+    return (game.size.x / refWidth).clamp(0.25, 2.0);
+  }
+
+  Vector2 get _logicalSize => game.size / _graphScale;
+
   double get _glowSigma {
     if (_isFast) return 0.0;
     if (_isBalanced) return 3.0;
@@ -174,6 +187,9 @@ class StealGraph extends Component with HasGameReference<StealGame> {
   void render(Canvas canvas) {
     if (!isVisible) return;
 
+    final scale = _graphScale;
+    canvas.save();
+    canvas.scale(scale, scale);
     switch (graphMode) {
       case 'corner':
         _renderCorner(canvas);
@@ -194,5 +210,6 @@ class StealGraph extends Component with HasGameReference<StealGame> {
       case 'beat_debug':
         _renderBeatDebug(canvas);
     }
+    canvas.restore();
   }
 }

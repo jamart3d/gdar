@@ -282,42 +282,11 @@ extension _TvScreensaverSectionAudioBuild on _TvScreensaverSectionState {
             message:
                 _TvScreensaverSectionState._beatDetectorDescriptions[settings
                     .oilBeatDetectorMode] ??
-                'Chooses what kind of hit fires the pulse. This stays reactive '
-                    'only and does not BPM-lock the screensaver.',
+                'Chooses what kind of hit fires the pulse.',
             colorScheme: colorScheme,
             textTheme: textTheme,
             isFruit: isFruit,
           ),
-          const SizedBox(height: 8),
-          _ReactiveHint(
-            message:
-                'This stays reactive only and does not BPM-lock the screensaver.',
-            colorScheme: colorScheme,
-            textTheme: textTheme,
-            isFruit: isFruit,
-          ),
-          if (settings.oilBeatDetectorMode == 'pcm') ...[
-            const SizedBox(height: 8),
-            _ReactiveHint(
-              message:
-                  'Enhanced Audio Capture uses Android system audio capture and '
-                  'may show a share-audio permission prompt the first time it '
-                  'starts in an app session.',
-              colorScheme: colorScheme,
-              textTheme: textTheme,
-              isFruit: isFruit,
-            ),
-          ] else if (settings.oilBeatDetectorMode == 'auto') ...[
-            const SizedBox(height: 8),
-            _ReactiveHint(
-              message:
-                  'Auto will not start Android capture by itself. Choose '
-                  'Enhanced if you want to explicitly turn PCM capture on.',
-              colorScheme: colorScheme,
-              textTheme: textTheme,
-              isFruit: isFruit,
-            ),
-          ],
           if (_enhancedCaptureStatusMessage(settings)
               case final statusMessage?) ...[
             const SizedBox(height: 8),
@@ -326,6 +295,7 @@ extension _TvScreensaverSectionAudioBuild on _TvScreensaverSectionState {
               colorScheme: colorScheme,
               textTheme: textTheme,
               isFruit: isFruit,
+              accentColor: _enhancedCaptureStatusColor(),
             ),
           ],
         ],

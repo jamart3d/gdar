@@ -365,7 +365,9 @@ class StealBackground extends PositionComponent
     // Note: shader renders the logo itself, so ghosts drawn after will
     // appear in front. We use BlendMode.screen so they add light rather
     // than occlude.
-    if (config.logoTrailIntensity > 0.0 && _logoTexture != null) {
+    if (config.logoTrailIntensity > 0.0 &&
+        config.logoScale > 0.0 &&
+        _logoTexture != null) {
       _renderTrail(canvas);
     }
   }
@@ -420,6 +422,7 @@ class StealBackground extends PositionComponent
   }
 
   void _tickTrailBuffer() {
+    if (config.logoScale <= 0.0) return;
     final interval = (1 + (config.logoTrailLength * 14.5).round()).clamp(1, 30);
     _trailFrameCount++;
     if (_trailFrameCount >= interval) {
@@ -555,7 +558,10 @@ class StealBackground extends PositionComponent
     final beatBoost = config.enableAudioReactivity
         ? _sharedBeatPulseBoost
         : 0.0;
-    _shader!.setFloat(idx++, (config.logoScale + beatBoost).clamp(0.05, 1.1));
+    final effectiveLogoScale = config.logoScale <= 0.0
+        ? 0.0
+        : (config.logoScale + beatBoost).clamp(0.05, 1.1);
+    _shader!.setFloat(idx++, effectiveLogoScale);
     _shader!.setFloat(idx++, config.blurAmount.clamp(0.0, 1.0));
     _shader!.setFloat(idx++, config.flatColor ? 1.0 : 0.0);
     _shader!.setFloat(idx++, config.logoAntiAlias ? 1.0 : 0.0); // uAntiAlias
