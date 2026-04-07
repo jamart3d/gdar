@@ -126,19 +126,19 @@
         var themeMode = parseInt(
           localStorage.getItem('flutter.theme_mode_preference') || '0', 10);
         var themeStyle = parseInt(
-          localStorage.getItem('flutter.theme_style_preference') || '1', 10);
+          localStorage.getItem('flutter.theme_style_preference') || '0', 10);
 
         var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         // themeMode: 0=system, 1=light, 2=dark
         var isDark = themeMode === 2 || (themeMode === 0 && prefersDark);
+        if (isNaN(colorOption)) colorOption = 0;
         var idx = Math.min(Math.max(colorOption, 0), 2);
-        if (isNaN(idx)) idx = 0;
 
         var primary, bg;
         if (themeStyle !== 1) {
           // Android theme — no per-palette variants
           primary = '#00E676';
-          bg = isDark ? '#080808' : '#F5F5F5';
+          bg = isDark ? '#000000' : '#F5F5F5';
         } else if (isDark) {
           // Fruit dark: sophisticate / minimalist / creative
           var dp = ['#00E676', '#30D158', '#FF375F'];
