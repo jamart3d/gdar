@@ -23,6 +23,8 @@ class ShowListProvider with ChangeNotifier {
   bool _sortOldestFirst = true;
   bool _hasUsedRandomButton = false; // Tracks usage for onboarding pulse
   bool _isChoosingRandomShow = false; // Tracks the 2s dice roll window globally
+  bool _isRandomShowSelected =
+      false; // Phase 2: show picked, track list loading
 
   // Completer for initialization
   final Completer<void> _initCompleter = Completer<void>();
@@ -63,10 +65,19 @@ class ShowListProvider with ChangeNotifier {
   }
 
   bool get isChoosingRandomShow => _isChoosingRandomShow;
+  bool get isRandomShowSelected => _isRandomShowSelected;
 
   void setIsChoosingRandomShow(bool value) {
     if (_isChoosingRandomShow != value) {
       _isChoosingRandomShow = value;
+      if (!value) _isRandomShowSelected = false; // auto-reset phase 2
+      notifyListeners();
+    }
+  }
+
+  void setIsRandomShowSelected(bool value) {
+    if (_isRandomShowSelected != value) {
+      _isRandomShowSelected = value;
       notifyListeners();
     }
   }

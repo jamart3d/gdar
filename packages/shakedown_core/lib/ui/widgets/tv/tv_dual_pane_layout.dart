@@ -13,6 +13,7 @@ import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
 import 'package:shakedown_core/ui/widgets/playback/playback_messages.dart';
+import 'package:shakedown_core/ui/widgets/tv/tv_pane_context.dart';
 
 // TV Remote Control Intents
 class TvPlayPauseIntent extends Intent {
@@ -85,6 +86,8 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
           // Focus the selected show card directly
           _showListScreenKey.currentState?.focusShowByObject(event.show);
           setState(() => _focusedPane = 0); // Focus Show List pane
+          // Phase 2: show is confirmed — advance status text in right pane
+          showListProvider.setIsRandomShowSelected(true);
 
           // Stage 3: Wait for scroll to finish and user to see the show (2.0s)
           Future.delayed(const Duration(milliseconds: 2000), () {
@@ -295,6 +298,7 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                           animate: true,
                           sphereCount:
                               settingsProvider.tvBackgroundSphereAmount,
+                          speedMultiplier: 0.25,
                         ),
                       ),
                     ),
@@ -356,16 +360,19 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
                                       ).createShader(bounds);
                                     },
                                     blendMode: BlendMode.dstIn,
-                                    child: ShowListScreen(
-                                      key: _showListScreenKey,
-                                      isPane: true,
-                                      scrollbarFocusNode:
-                                          _showListScrollbarFocusNode,
-                                      onFocusLeft: () {
-                                        _diceFocusNode.requestFocus();
-                                      },
-                                      onFocusPlayback: _focusRightPane,
-                                      onSettingsRequested: null,
+                                    child: TvPaneContext(
+                                      isLeftPaneActive: _focusedPane == 0,
+                                      child: ShowListScreen(
+                                        key: _showListScreenKey,
+                                        isPane: true,
+                                        scrollbarFocusNode:
+                                            _showListScrollbarFocusNode,
+                                        onFocusLeft: () {
+                                          _diceFocusNode.requestFocus();
+                                        },
+                                        onFocusPlayback: _focusRightPane,
+                                        onSettingsRequested: null,
+                                      ),
                                     ),
                                   ),
                                 ),

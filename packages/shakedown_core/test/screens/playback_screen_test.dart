@@ -319,6 +319,8 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   @override
   bool get isChoosingRandomShow => false;
   @override
+  bool get isRandomShowSelected => false;
+  @override
   int get totalShnids => 0;
   @override
   String getShowKey(Show show) => show.key;
@@ -366,6 +368,8 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   void markRandomButtonUsed() {}
   @override
   void setIsChoosingRandomShow(bool value) {}
+  @override
+  void setIsRandomShowSelected(bool value) {}
   @override
   void setSearchVisible(bool visible) {}
   @override

@@ -248,7 +248,11 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
     final currentShow = audioProvider.currentShow;
     final currentSource = audioProvider.currentSource;
 
-    const Color backgroundColor = Colors.black;
+    // In TV dual-pane mode the right pane sits on top of the shared
+    // FloatingSpheresBackground — use transparent so that layer shows through.
+    final Color backgroundColor = widget.isPane
+        ? Colors.transparent
+        : Colors.black;
     final bool isDarkMode = theme.brightness == Brightness.dark;
     final bool isTrueBlackMode = isDarkMode && settingsProvider.useTrueBlack;
 
@@ -277,16 +281,7 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isChoosing) ...[
-                const CircularProgressIndicator(),
-                const SizedBox(height: 24),
-                Text(
-                  'SELECTING RANDOM SHOW...',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: colorScheme.primary,
-                    letterSpacing: 2.0,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                const _TvRandomStatusWidget(),
               ] else ...[
                 Text(
                   'No show selected.',
@@ -631,7 +626,9 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
     );
 
     if (widget.isPane) {
-      return Container(color: backgroundColor, child: playbackContent);
+      // backgroundColor is already Colors.transparent in pane mode;
+      // wrapping in a Container here is a no-op but kept for future overrides.
+      return ColoredBox(color: backgroundColor, child: playbackContent);
     }
 
     if (isFruit) {
@@ -819,6 +816,127 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
                 ),
               );
             },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// TV right-pane: two-phase animated status during random show selection.
+//   Phase 1 (isChoosingRandomShow && !isRandomShowSelected):
+//     "SELECTING RANDOM SHOW" + cycling dots
+//   Phase 2 (isRandomShowSelected):
+//     "SELECTED" + cycling dots (until track list renders)
+// ---------------------------------------------------------------------------
+
+class _TvRandomStatusWidget extends StatefulWidget {
+  const _TvRandomStatusWidget();
+
+  @override
+  State<_TvRandomStatusWidget> createState() => _TvRandomStatusWidgetState();
+}
+
+class _TvRandomStatusWidgetState extends State<_TvRandomStatusWidget> {
+  late final Timer _timer;
+  int _dotCount = 1;
+  bool? _wasSelected;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(milliseconds: 480), (_) {
+      if (mounted) {
+        setState(() {
+          _dotCount++;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final showListProvider = context.watch<ShowListProvider>();
+    final isSelected = showListProvider.isRandomShowSelected;
+
+    // Reset back to 1 dot whenever the status string changes!
+    if (_wasSelected != null && _wasSelected != isSelected) {
+      _dotCount = 1;
+    }
+    _wasSelected = isSelected;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final dots = '.' * _dotCount;
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.15),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+          child: child,
+        ),
+      ),
+      child: Column(
+        key: ValueKey<bool>(isSelected),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!isSelected) ...[
+            SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 20),
+          ] else ...[
+            Icon(
+              Icons.check_circle_outline_rounded,
+              color: colorScheme.primary,
+              size: 28,
+            ),
+            const SizedBox(height: 20),
+          ],
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 80,
+              ), // Counterbalance to keep base text perfectly centered
+              Text(
+                isSelected ? 'SELECTED' : 'SELECTING RANDOM SHOW',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: colorScheme.primary,
+                  letterSpacing: 2.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(
+                width: 80, // Ample width for infinite dot accumulation
+                child: Text(
+                  dots,
+                  maxLines: 1,
+                  overflow: TextOverflow.visible,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: colorScheme.primary,
+                    letterSpacing: 2.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

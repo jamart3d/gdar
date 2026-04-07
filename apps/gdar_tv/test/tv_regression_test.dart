@@ -713,6 +713,8 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   @override
   bool get isChoosingRandomShow => false;
   @override
+  bool get isRandomShowSelected => false;
+  @override
   bool get isSearchVisible => false;
   @override
   String? get expandedShowKey => null;
@@ -756,6 +758,8 @@ class MockShowListProvider extends ChangeNotifier implements ShowListProvider {
   void setArchiveStatus(bool isReachable) {}
   @override
   void setIsChoosingRandomShow(bool value) {}
+  @override
+  void setIsRandomShowSelected(bool value) {}
   @override
   void setLoadingShow(String? key) {}
   @override

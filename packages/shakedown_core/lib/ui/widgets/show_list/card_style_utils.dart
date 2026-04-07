@@ -8,6 +8,7 @@ import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/ui/widgets/tv/tv_pane_context.dart';
 
 /// Holds computed style values for [ShowListCard].
 class CardStyle {
@@ -62,7 +63,12 @@ class CardStyle {
       context,
     ).colorScheme; // Define colorScheme here
 
-    final cardBorderColor = isPlaying
+    final deviceService = Provider.of<DeviceService>(context, listen: false);
+
+    final bool isTvActive = TvPaneContext.of(context);
+    final cardBorderColor = (deviceService.isTv && !isTvActive)
+        ? Colors.transparent
+        : isPlaying
         ? colorScheme.primary
         : show.hasFeaturedTrack
         ? colorScheme.tertiary
@@ -80,7 +86,6 @@ class CardStyle {
     );
 
     // Apply the same TV multiplier used in AppTypography (1.2x)
-    final deviceService = Provider.of<DeviceService>(context, listen: false);
     if (deviceService.isTv) {
       effectiveScale *= 1.2;
     }
@@ -218,7 +223,7 @@ class CardStyle {
 
     // Background Color
     Color backgroundColor = deviceService.isTv
-        ? Colors.black
+        ? (TvPaneContext.of(context) ? Colors.black : Colors.transparent)
         : colorScheme.surface;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTrueBlackMode = isDarkMode && settings.useTrueBlack;
@@ -271,6 +276,13 @@ class CardStyle {
             ? 1.0
             : 0.5; // Hairline is thicker on TV
       }
+    }
+
+    // Disable all card effects when inactive on TV
+    if (deviceService.isTv && !isTvActive) {
+      showGlow = false;
+      showShadow = false;
+      useRgb = false;
     }
 
     return CardStyle(

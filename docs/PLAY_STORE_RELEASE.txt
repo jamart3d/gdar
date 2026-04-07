@@ -1,3 +1,10 @@
+What's new in v1.3.66+276
+- Refined TV Dual Pane experience: inactive show list card backgrounds are now fully transparent.
+- Dialed TV floating spheres into a gentle, 15-second ambient "breathing" drift that never visually loops.
+- Polished the TV "Play Random Show" loading animation with a locked-center layout and uninterrupted dot progress stream.
+
+---
+
 What's new in v1.3.65+275
 - Web/Fruit PWA settings: turning car mode on now enables abbreviated month
 - Web/Fruit car mode: removed embedded player controls and duration text from

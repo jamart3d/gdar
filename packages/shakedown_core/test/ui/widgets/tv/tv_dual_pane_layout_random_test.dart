@@ -195,6 +195,7 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
 
 class FakeShowListProvider extends ChangeNotifier implements ShowListProvider {
   bool _isChoosingRandomShow = false;
+  bool _isRandomShowSelected = false;
   late final List<Show> _shows;
 
   FakeShowListProvider() {
@@ -229,11 +230,19 @@ class FakeShowListProvider extends ChangeNotifier implements ShowListProvider {
   bool get isChoosingRandomShow => _isChoosingRandomShow;
 
   @override
+  bool get isRandomShowSelected => _isRandomShowSelected;
+
+  @override
   String? get expandedShowKey => null;
 
   @override
   void setIsChoosingRandomShow(bool value) {
     _isChoosingRandomShow = value;
+  }
+
+  @override
+  void setIsRandomShowSelected(bool value) {
+    _isRandomShowSelected = value;
   }
 
   @override

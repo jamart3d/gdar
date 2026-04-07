@@ -45,6 +45,7 @@ class FloatingSpheresBackground extends StatefulWidget {
     required this.colorScheme,
     required this.animate,
     this.sphereCount = SphereAmount.small,
+    this.speedMultiplier = 1.0,
   });
 
   final ColorScheme colorScheme;
@@ -54,6 +55,9 @@ class FloatingSpheresBackground extends StatefulWidget {
 
   /// Controls how many spheres are rendered.
   final SphereAmount sphereCount;
+
+  /// Multiplies the animation speed without affecting the simulation.
+  final double speedMultiplier;
 
   @override
   State<FloatingSpheresBackground> createState() =>
@@ -106,22 +110,38 @@ class _FloatingSpheresBackgroundState extends State<FloatingSpheresBackground> {
   }
 
   SphereNode _advance(SphereNode s) {
-    double x = s.x + s.vx;
-    double y = s.y + s.vy;
+    // Create an organic breathing variance in the speed (cycles roughly every 15 seconds)
+    // Offset by paletteIndex so different color tiers accelerate/decelerate at different times.
+    final double breathingVariance =
+        1.0 + 0.3 * math.sin((_tickCount * 0.02) + s.paletteIndex);
+    final double currentSpeed = widget.speedMultiplier * breathingVariance;
+
+    double x = s.x + (s.vx * currentSpeed);
+    double y = s.y + (s.vy * currentSpeed);
     double vx = s.vx;
     double vy = s.vy;
 
-    if (x < -_wrapMargin) x = 1 + _wrapMargin;
-    if (x > 1 + _wrapMargin) x = -_wrapMargin;
-    if (y < -_wrapMargin) y = 1 + _wrapMargin;
-    if (y > 1 + _wrapMargin) y = -_wrapMargin;
+    double ax = s.ax;
+    double ay = s.ay;
 
-    if (_tickCount % 18 == 0) {
-      vx = (vx + (s.ax * 0.0009)).clamp(-0.0036, 0.0036);
-      vy = (vy + (s.ay * 0.0009)).clamp(-0.0036, 0.0036);
+    // Bounce seamlessly off the invisible margins instead of teleporting (no looping)
+    if (x < -_wrapMargin || x > 1 + _wrapMargin) {
+      vx = -vx;
+      ax = -ax;
+      x = x.clamp(-_wrapMargin, 1 + _wrapMargin);
+    }
+    if (y < -_wrapMargin || y > 1 + _wrapMargin) {
+      vy = -vy;
+      ay = -ay;
+      y = y.clamp(-_wrapMargin, 1 + _wrapMargin);
     }
 
-    return s.copyWith(x: x, y: y, vx: vx, vy: vy);
+    if (_tickCount % 18 == 0) {
+      vx = (vx + (ax * 0.0009)).clamp(-0.0036, 0.0036);
+      vy = (vy + (ay * 0.0009)).clamp(-0.0036, 0.0036);
+    }
+
+    return s.copyWith(x: x, y: y, vx: vx, vy: vy, ax: ax, ay: ay);
   }
 
   @override

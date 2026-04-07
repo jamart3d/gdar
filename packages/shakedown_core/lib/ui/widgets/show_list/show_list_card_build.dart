@@ -108,6 +108,9 @@ extension _ShowListCardBuild on _ShowListCardState {
       );
     } else {
       content = Card(
+        color: const Color(
+          0x00000000,
+        ), // Transparent, inner container draws the background
         margin: EdgeInsets.zero,
         elevation: widget.isExpanded ? 2 : 0,
         shadowColor: colorScheme.shadow.withValues(alpha: 0.1),
