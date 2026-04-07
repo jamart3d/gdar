@@ -283,35 +283,25 @@ extension _TrackListScreenBuild on _TrackListScreenState {
     }
 
     final source = widget.source;
-    final Map<String, List<Track>> tracksBySet = {};
-    for (final track in source.tracks) {
-      tracksBySet.putIfAbsent(track.setName, () => []).add(track);
-    }
-
-    final List<dynamic> listItems = ['SHOW_HEADER'];
-    tracksBySet.forEach((setName, tracks) {
-      listItems.add(setName);
-      listItems.addAll(tracks);
-    });
+    final layout = buildTrackListLayout(source, includeShowHeader: true);
 
     if (themeProvider.themeStyle == ThemeStyle.fruit) {
-      return _buildFruitBody(context, listItems, bottomPadding);
+      return _buildFruitBody(context, layout.items, bottomPadding);
     }
 
     return ListView.builder(
       padding: EdgeInsets.fromLTRB(12, 8, 12, bottomPadding),
-      itemCount: listItems.length,
+      itemCount: layout.items.length,
       itemBuilder: (context, index) {
-        final item = listItems[index];
-        if (item == 'SHOW_HEADER') {
+        final item = layout.items[index];
+        if (item is TrackListShowHeaderItem) {
           return _buildShowHeader(context);
         }
-        if (item is String) {
-          return _buildSetHeader(context, item);
+        if (item is TrackListSetHeaderItem) {
+          return _buildSetHeader(context, item.setName);
         }
-        if (item is Track) {
-          final trackIndex = source.tracks.indexOf(item);
-          return _buildTrackItem(context, item, source, trackIndex);
+        if (item is TrackListTrackItem) {
+          return _buildTrackItem(context, item.track, source, item.trackIndex);
         }
         return const SizedBox.shrink();
       },
@@ -320,7 +310,7 @@ extension _TrackListScreenBuild on _TrackListScreenState {
 
   Widget _buildFruitBody(
     BuildContext context,
-    List<dynamic> listItems,
+    List<TrackListItem> listItems,
     double bottomPadding,
   ) {
     final double scaleFactor = FontLayoutConfig.getEffectiveScale(
@@ -338,15 +328,15 @@ extension _TrackListScreenBuild on _TrackListScreenState {
         bottomPadding,
       ),
       children: [
-        for (int i = 0; i < listItems.length; i++) ...[
-          if (listItems[i] is String && listItems[i] != 'SHOW_HEADER')
-            _buildSetHeader(context, listItems[i] as String),
-          if (listItems[i] is Track)
+        for (final item in listItems) ...[
+          if (item is TrackListSetHeaderItem)
+            _buildSetHeader(context, item.setName),
+          if (item is TrackListTrackItem)
             _buildTrackItem(
               context,
-              listItems[i] as Track,
+              item.track,
               widget.source,
-              widget.source.tracks.indexOf(listItems[i] as Track),
+              item.trackIndex,
             ),
         ],
       ],

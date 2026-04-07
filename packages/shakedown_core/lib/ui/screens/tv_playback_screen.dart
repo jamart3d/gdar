@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:gdar_design/typography/font_config.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shakedown_core/models/rating.dart';
+import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
@@ -41,7 +42,9 @@ import 'package:shakedown_core/ui/widgets/rating_dialog.dart';
 
 part 'tv_playback_screen_build.dart';
 part 'tv_playback_screen_controls.dart';
+part 'tv_playback_screen_fruit_build.dart';
 part 'tv_playback_screen_helpers.dart';
+part 'tv_playback_screen_layout_build.dart';
 
 class PlaybackScreen extends StatefulWidget {
   final bool initiallyOpen;

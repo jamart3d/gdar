@@ -1,3 +1,19 @@
+What's new in v1.3.68+278
+- Refactored the TV playback screen split so
+- Updated
+- Formatted the TV playback refactor files; analyzer/test verification is still
+- Added `docs/monorepo_scorecard_2026-04-07.md` with a fresh monorepo rerun
+- Fixed `scripts/preflight_check.dart --record-pass` so it writes a fresh
+- Added shared receipt builders in `scripts/verification_status_support.dart`
+- Updated `scripts/save_sync.dart` so successful saves mark the new commit SHA
+- Synced workflow docs in `.agent/workflows/toolchain_preflight.md` and
+- Refactored
+- Added visible-for-testing Fruit progress helpers in
+- Simplified
+- Verified the Fruit car-mode and Steal graph refactor with targeted format,
+
+---
+
 What's new in v1.3.67+277
 - **Preview panel now updates live** — settings changes reflect in the preview
 - **Audio graph scales to fit preview** — all graph modes (corner, EKG, circular,

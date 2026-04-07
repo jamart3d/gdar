@@ -1,6 +1,188 @@
 part of 'steal_graph.dart';
 
 extension _StealGraphCornerRender on StealGraph {
+  TextStyle _monoTextStyle({
+    required Color color,
+    required double fontSize,
+    required FontWeight fontWeight,
+    double letterSpacing = 1.0,
+  }) {
+    return TextStyle(
+      color: color,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      letterSpacing: letterSpacing,
+      fontFamily: 'RobotoMono',
+    );
+  }
+
+  void _paintMonoText(
+    Canvas canvas, {
+    required String text,
+    required Offset offset,
+    required TextStyle style,
+  }) {
+    _textPainter
+      ..text = TextSpan(text: text, style: style)
+      ..layout();
+    _textPainter.paint(canvas, offset);
+  }
+
+  void _paintRightAlignedMonoText(
+    Canvas canvas, {
+    required String text,
+    required double right,
+    required double top,
+    required TextStyle style,
+  }) {
+    _textPainter
+      ..text = TextSpan(text: text, style: style)
+      ..layout();
+    _textPainter.paint(canvas, Offset(right - _textPainter.width, top));
+  }
+
+  void _paintCenteredMonoText(
+    Canvas canvas, {
+    required String text,
+    required Offset center,
+    required TextStyle style,
+  }) {
+    _textPainter
+      ..text = TextSpan(text: text, style: style)
+      ..layout();
+    _textPainter.paint(
+      canvas,
+      Offset(
+        center.dx - (_textPainter.width / 2),
+        center.dy - (_textPainter.height / 2),
+      ),
+    );
+  }
+
+  void _paintRotatedCornerLabel(
+    Canvas canvas, {
+    required String text,
+    required double centerX,
+    required double baselineY,
+    required TextStyle style,
+  }) {
+    canvas.save();
+    canvas.translate(centerX, baselineY);
+    canvas.rotate(-pi / 2);
+    _textPainter
+      ..text = TextSpan(text: text, style: style)
+      ..layout();
+    _textPainter.paint(
+      canvas,
+      Offset(-_textPainter.width, -_textPainter.height / 2),
+    );
+    canvas.restore();
+  }
+
+  void _drawPanelChrome(
+    Canvas canvas,
+    RRect panelRect, {
+    required double fillAlpha,
+    required double borderAlpha,
+  }) {
+    canvas.drawRRect(
+      panelRect,
+      Paint()
+        ..color = Colors.white.withValues(alpha: fillAlpha)
+        ..style = PaintingStyle.fill,
+    );
+    canvas.drawRRect(
+      panelRect,
+      Paint()
+        ..color = Colors.white.withValues(alpha: borderAlpha)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0,
+    );
+  }
+
+  Paint _strokePaint({
+    required Color color,
+    required double width,
+    StrokeCap strokeCap = StrokeCap.round,
+  }) {
+    return Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width
+      ..strokeCap = strokeCap;
+  }
+
+  Paint _glowFillPaint({required Color color, required double sigma}) {
+    return Paint()
+      ..color = color
+      ..style = PaintingStyle.fill
+      ..maskFilter = isWasmSafeMode()
+          ? null
+          : MaskFilter.blur(BlurStyle.normal, sigma);
+  }
+
+  Paint _glowStrokePaint({
+    required Color color,
+    required double width,
+    required double sigma,
+    StrokeCap strokeCap = StrokeCap.round,
+  }) {
+    return Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width
+      ..strokeCap = strokeCap
+      ..maskFilter = isWasmSafeMode()
+          ? null
+          : MaskFilter.blur(BlurStyle.normal, sigma);
+  }
+
+  Path _buildWaveformPath({
+    required List<double> waveform,
+    required double startX,
+    required double availableWidth,
+    required double centerY,
+    required double laneHeight,
+    required double Function(double value) normalize,
+  }) {
+    final path = Path();
+    path.moveTo(startX, centerY - normalize(waveform.first) * (laneHeight / 2));
+    for (int i = 1; i < waveform.length; i++) {
+      final x = startX + (i / (waveform.length - 1)) * availableWidth;
+      final y = centerY - normalize(waveform[i]) * (laneHeight / 2);
+      path.lineTo(x, y);
+    }
+    return path;
+  }
+
+  void _drawTrace(
+    Canvas canvas, {
+    required Path path,
+    required Color traceColor,
+    required double glowAlpha,
+    required double glowWidth,
+    required double lineAlpha,
+    required double lineWidth,
+  }) {
+    if (_glowSigma > 0.0) {
+      canvas.drawPath(
+        path,
+        _glowStrokePaint(
+          color: traceColor.withValues(alpha: glowAlpha),
+          width: glowWidth,
+          sigma: _glowSigma,
+        ),
+      );
+    }
+    canvas.drawPath(
+      path,
+      _strokePaint(
+        color: traceColor.withValues(alpha: lineAlpha),
+        width: lineWidth,
+      ),
+    );
+  }
+
   /// Render 8-bar EQ + beat anchored bottom-left using FFT band data.
   void _renderCorner(Canvas canvas) {
     final drift = _burnInDrift();
@@ -29,13 +211,13 @@ extension _StealGraphCornerRender on StealGraph {
             ? (0.35 + _beatFlash * 0.55).clamp(0.0, 1.0)
             : (0.22 + _beatFlash * 0.18).clamp(0.0, 1.0);
         final glowSigma = isBeatBar ? _glowSigma * 2.0 : _glowSigma;
-        final glowPaint = Paint()
-          ..color = color.withValues(alpha: glowAlpha)
-          ..style = PaintingStyle.fill
-          ..maskFilter = isWasmSafeMode()
-              ? null
-              : MaskFilter.blur(BlurStyle.normal, glowSigma);
-        canvas.drawRRect(rect, glowPaint);
+        canvas.drawRRect(
+          rect,
+          _glowFillPaint(
+            color: color.withValues(alpha: glowAlpha),
+            sigma: glowSigma,
+          ),
+        );
       }
 
       final topAlpha = isBeatBar
@@ -52,50 +234,37 @@ extension _StealGraphCornerRender on StealGraph {
 
       if (isBeatBar && _beatFlash > 0.45) {
         final sparkAlpha = ((_beatFlash - 0.45) / 0.55).clamp(0.0, 1.0);
-        final sparkPaint = Paint()
-          ..color = Colors.white.withValues(alpha: sparkAlpha * 0.95)
-          ..strokeWidth = 2.0
-          ..strokeCap = StrokeCap.round;
         canvas.drawLine(
           Offset(barLeft - 1.0, barTop),
           Offset(barLeft + _barWidth + 1.0, barTop),
-          sparkPaint,
+          _strokePaint(
+            color: Colors.white.withValues(alpha: sparkAlpha * 0.95),
+            width: 2.0,
+          ),
         );
       }
 
       final peakY = startY - _cornerPeakHeights[i].clamp(0.0, _maxBarHeight);
-      final capPaint = Paint()
-        ..color = color.withValues(alpha: 0.92)
-        ..strokeWidth = 1.3
-        ..strokeCap = StrokeCap.round;
       canvas.drawLine(
         Offset(barLeft - 0.5, peakY),
         Offset(barLeft + _barWidth + 0.5, peakY),
-        capPaint,
+        _strokePaint(color: color.withValues(alpha: 0.92), width: 1.3),
       );
 
-      canvas.save();
-      canvas.translate(centerX, startY + 6.0);
-      canvas.rotate(-pi / 2);
-
-      _textPainter.text = TextSpan(
+      _paintRotatedCornerLabel(
+        canvas,
         text: _cornerLabels[i],
-        style: TextStyle(
+        centerX: centerX,
+        baselineY: startY + 6.0,
+        style: _monoTextStyle(
           color: isBeatBar
               ? Colors.white.withValues(alpha: 0.9)
               : color.withValues(alpha: 0.7),
           fontSize: 8,
           fontWeight: isBeatBar ? FontWeight.w700 : FontWeight.w600,
           letterSpacing: 1.0,
-          fontFamily: 'RobotoMono',
         ),
       );
-      _textPainter.layout();
-      _textPainter.paint(
-        canvas,
-        Offset(-_textPainter.width, -_textPainter.height / 2),
-      );
-      canvas.restore();
     }
   }
 
@@ -108,16 +277,12 @@ extension _StealGraphCornerRender on StealGraph {
       const Radius.circular(10),
     );
 
-    final panelPaint = Paint()
-      ..color = Colors.white.withValues(alpha: _isBalanced ? 0.035 : 0.06)
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(panelRect, panelPaint);
-
-    final borderPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.14 + (_beatFlash * 0.1))
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    canvas.drawRRect(panelRect, borderPaint);
+    _drawPanelChrome(
+      canvas,
+      panelRect,
+      fillAlpha: _isBalanced ? 0.035 : 0.06,
+      borderAlpha: 0.14 + (_beatFlash * 0.1),
+    );
 
     final linePaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.08)
@@ -132,18 +297,17 @@ extension _StealGraphCornerRender on StealGraph {
       );
     }
 
-    _textPainter.text = TextSpan(
+    _paintMonoText(
+      canvas,
       text: 'FFT 8B',
-      style: TextStyle(
+      offset: Offset(startX - 2, startY + 16),
+      style: _monoTextStyle(
         color: Colors.white.withValues(alpha: 0.45),
         fontSize: 8,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.1,
-        fontFamily: 'RobotoMono',
       ),
     );
-    _textPainter.layout();
-    _textPainter.paint(canvas, Offset(startX - 2, startY + 16));
   }
 
   /// Render phosphor oscilloscope.
@@ -177,18 +341,11 @@ extension _StealGraphCornerRender on StealGraph {
         ),
         const Radius.circular(10),
       );
-      canvas.drawRRect(
+      _drawPanelChrome(
+        canvas,
         panelRect,
-        Paint()
-          ..color = Colors.white.withValues(alpha: _isBalanced ? 0.035 : 0.06)
-          ..style = PaintingStyle.fill,
-      );
-      canvas.drawRRect(
-        panelRect,
-        Paint()
-          ..color = Colors.white.withValues(alpha: 0.14 + _beatFlash * 0.1)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.0,
+        fillAlpha: _isBalanced ? 0.035 : 0.06,
+        borderAlpha: 0.14 + _beatFlash * 0.1,
       );
     }
 
@@ -212,70 +369,6 @@ extension _StealGraphCornerRender on StealGraph {
         ? Color.lerp(phosphorColor, const Color(0xFFFFFFFF), _beatFlash * 0.5)!
         : phosphorColor;
 
-    void drawTrace(Path path) {
-      if (_glowSigma > 0.0) {
-        canvas.drawPath(
-          path,
-          Paint()
-            ..color = traceColor.withValues(alpha: 0.22 + _beatFlash * 0.28)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 4.0
-            ..strokeCap = StrokeCap.round
-            ..maskFilter = isWasmSafeMode()
-                ? null
-                : MaskFilter.blur(BlurStyle.normal, _glowSigma),
-        );
-      }
-      canvas.drawPath(
-        path,
-        Paint()
-          ..color = traceColor.withValues(alpha: 0.92)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.5 + _beatFlash * 0.8
-          ..strokeCap = StrokeCap.round,
-      );
-    }
-
-    void drawStereoLane(
-      List<double> waveform,
-      double laneCenterY,
-      double laneHeight,
-      Color color,
-    ) {
-      if (waveform.length < 2) return;
-      final path = Path();
-      path.moveTo(
-        startX,
-        laneCenterY - softClip(waveform[0]) * (laneHeight / 2),
-      );
-      for (int i = 1; i < waveform.length; i++) {
-        final x = startX + (i / (waveform.length - 1)) * availableWidth;
-        final y = laneCenterY - softClip(waveform[i]) * (laneHeight / 2);
-        path.lineTo(x, y);
-      }
-      if (_glowSigma > 0.0) {
-        canvas.drawPath(
-          path,
-          Paint()
-            ..color = color.withValues(alpha: 0.18 + _beatFlash * 0.18)
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 3.0
-            ..strokeCap = StrokeCap.round
-            ..maskFilter = isWasmSafeMode()
-                ? null
-                : MaskFilter.blur(BlurStyle.normal, _glowSigma),
-        );
-      }
-      canvas.drawPath(
-        path,
-        Paint()
-          ..color = color.withValues(alpha: 0.92)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2 + _beatFlash * 0.6
-          ..strokeCap = StrokeCap.round,
-      );
-    }
-
     final waveform = _scopeWaveform;
     final hasPcm = waveform.length >= 2 && _scopePeak > 0.015;
     final hasStereoScope =
@@ -295,131 +388,143 @@ extension _StealGraphCornerRender on StealGraph {
         canvas.drawLine(
           Offset(startX, laneY),
           Offset(startX + availableWidth, laneY),
-          Paint()
-            ..color = phosphorColor.withValues(alpha: 0.08)
-            ..strokeWidth = 0.5,
+          _strokePaint(
+            color: phosphorColor.withValues(alpha: 0.08),
+            width: 0.5,
+            strokeCap: StrokeCap.butt,
+          ),
         );
       }
 
-      drawStereoLane(_scopeWaveformL, upperCenterY, laneHeight, leftColor);
-      drawStereoLane(_scopeWaveformR, lowerCenterY, laneHeight, rightColor);
+      _drawTrace(
+        canvas,
+        path: _buildWaveformPath(
+          waveform: _scopeWaveformL,
+          startX: startX,
+          availableWidth: availableWidth,
+          centerY: upperCenterY,
+          laneHeight: laneHeight,
+          normalize: softClip,
+        ),
+        traceColor: leftColor,
+        glowAlpha: 0.18 + _beatFlash * 0.18,
+        glowWidth: 3.0,
+        lineAlpha: 0.92,
+        lineWidth: 1.2 + _beatFlash * 0.6,
+      );
+      _drawTrace(
+        canvas,
+        path: _buildWaveformPath(
+          waveform: _scopeWaveformR,
+          startX: startX,
+          availableWidth: availableWidth,
+          centerY: lowerCenterY,
+          laneHeight: laneHeight,
+          normalize: softClip,
+        ),
+        traceColor: rightColor,
+        glowAlpha: 0.18 + _beatFlash * 0.18,
+        glowWidth: 3.0,
+        lineAlpha: 0.92,
+        lineWidth: 1.2 + _beatFlash * 0.6,
+      );
 
-      _textPainter.text = TextSpan(
+      _paintMonoText(
+        canvas,
         text: 'OSC PCM ST  256pt',
-        style: TextStyle(
+        offset: Offset(startX, centerY + scopeHeight / 2 + 6.0),
+        style: _monoTextStyle(
           color: phosphorColor.withValues(alpha: 0.42),
           fontSize: 8,
           fontWeight: FontWeight.w600,
           letterSpacing: 1.1,
-          fontFamily: 'RobotoMono',
         ),
       );
-      _textPainter.layout();
-      _textPainter.paint(
-        canvas,
-        Offset(startX, centerY + scopeHeight / 2 + 6.0),
-      );
 
-      _textPainter.text = TextSpan(
+      _paintRightAlignedMonoText(
+        canvas,
         text:
             'L ${(_scopePeakL * 100).clamp(0.0, 100.0).toStringAsFixed(0).padLeft(3)}%  '
             'R ${(_scopePeakR * 100).clamp(0.0, 100.0).toStringAsFixed(0).padLeft(3)}%',
-        style: TextStyle(
+        right: startX + availableWidth,
+        top: centerY + scopeHeight / 2 + 6.0,
+        style: _monoTextStyle(
           color: phosphorColor.withValues(alpha: 0.32),
           fontSize: 7,
           fontWeight: FontWeight.w600,
           letterSpacing: 1.0,
-          fontFamily: 'RobotoMono',
         ),
       );
-      _textPainter.layout();
-      canvas.save();
-      canvas.translate(
-        startX + availableWidth - _textPainter.width,
-        centerY + scopeHeight / 2 + 6.0,
-      );
-      _textPainter.paint(canvas, Offset.zero);
-      canvas.restore();
 
-      _textPainter.text = TextSpan(
+      _paintMonoText(
+        canvas,
         text: 'L',
-        style: TextStyle(
+        offset: Offset(startX + 4, upperCenterY - laneHeight / 2),
+        style: _monoTextStyle(
           color: leftColor.withValues(alpha: 0.7),
           fontSize: 8,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.2,
-          fontFamily: 'RobotoMono',
         ),
       );
-      _textPainter.layout();
-      _textPainter.paint(
-        canvas,
-        Offset(startX + 4, upperCenterY - laneHeight / 2),
-      );
 
-      _textPainter.text = TextSpan(
+      _paintMonoText(
+        canvas,
         text: 'R',
-        style: TextStyle(
+        offset: Offset(startX + 4, lowerCenterY - laneHeight / 2),
+        style: _monoTextStyle(
           color: rightColor.withValues(alpha: 0.7),
           fontSize: 8,
           fontWeight: FontWeight.w700,
           letterSpacing: 1.2,
-          fontFamily: 'RobotoMono',
         ),
-      );
-      _textPainter.layout();
-      _textPainter.paint(
-        canvas,
-        Offset(startX + 4, lowerCenterY - laneHeight / 2),
       );
       return;
     }
 
     if (hasPcm) {
-      final path = Path();
-      path.moveTo(startX, centerY - softClip(waveform[0]) * (scopeHeight / 2));
-      for (int i = 1; i < waveform.length; i++) {
-        final x = startX + (i / (waveform.length - 1)) * availableWidth;
-        final y = centerY - softClip(waveform[i]) * (scopeHeight / 2);
-        path.lineTo(x, y);
-      }
-      drawTrace(path);
+      _drawTrace(
+        canvas,
+        path: _buildWaveformPath(
+          waveform: waveform,
+          startX: startX,
+          availableWidth: availableWidth,
+          centerY: centerY,
+          laneHeight: scopeHeight,
+          normalize: softClip,
+        ),
+        traceColor: traceColor,
+        glowAlpha: 0.22 + _beatFlash * 0.28,
+        glowWidth: 4.0,
+        lineAlpha: 0.92,
+        lineWidth: 1.5 + _beatFlash * 0.8,
+      );
 
-      canvas.save();
-      canvas.translate(startX, centerY + scopeHeight / 2 + 6.0);
-      _textPainter.text = TextSpan(
+      _paintMonoText(
+        canvas,
         text: 'OSC PCM  256pt',
-        style: TextStyle(
+        offset: Offset(startX, centerY + scopeHeight / 2 + 6.0),
+        style: _monoTextStyle(
           color: phosphorColor.withValues(alpha: 0.4),
           fontSize: 8,
           fontWeight: FontWeight.w600,
           letterSpacing: 1.1,
-          fontFamily: 'RobotoMono',
         ),
       );
-      _textPainter.layout();
-      _textPainter.paint(canvas, Offset.zero);
-      canvas.restore();
 
       final peakPct = (_scopePeak * 100).clamp(0.0, 100.0).toStringAsFixed(0);
-      _textPainter.text = TextSpan(
+      _paintRightAlignedMonoText(
+        canvas,
         text: 'LVL $peakPct%',
-        style: TextStyle(
+        right: startX + availableWidth,
+        top: centerY + scopeHeight / 2 + 6.0,
+        style: _monoTextStyle(
           color: phosphorColor.withValues(alpha: 0.3),
           fontSize: 7,
           fontWeight: FontWeight.w600,
           letterSpacing: 1.0,
-          fontFamily: 'RobotoMono',
         ),
       );
-      _textPainter.layout();
-      canvas.save();
-      canvas.translate(
-        startX + availableWidth - _textPainter.width,
-        centerY + scopeHeight / 2 + 6.0,
-      );
-      _textPainter.paint(canvas, Offset.zero);
-      canvas.restore();
     } else {
       final bands = energy.bands;
       final hasSignal = bands.length >= 8 && energy.overall > 0.008;
@@ -451,48 +556,50 @@ extension _StealGraphCornerRender on StealGraph {
             path.lineTo(x, y);
           }
         }
-        drawTrace(path);
+        _drawTrace(
+          canvas,
+          path: path,
+          traceColor: traceColor,
+          glowAlpha: 0.22 + _beatFlash * 0.28,
+          glowWidth: 4.0,
+          lineAlpha: 0.92,
+          lineWidth: 1.5 + _beatFlash * 0.8,
+        );
 
-        canvas.save();
-        canvas.translate(startX, centerY + scopeHeight / 2 + 6.0);
-        _textPainter.text = TextSpan(
+        _paintMonoText(
+          canvas,
           text: 'OSC FFT-SYN  8B',
-          style: TextStyle(
+          offset: Offset(startX, centerY + scopeHeight / 2 + 6.0),
+          style: _monoTextStyle(
             color: phosphorColor.withValues(alpha: 0.4),
             fontSize: 8,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.1,
-            fontFamily: 'RobotoMono',
           ),
         );
-        _textPainter.layout();
-        _textPainter.paint(canvas, Offset.zero);
-        canvas.restore();
       } else {
         final flatAlpha = 0.15 + energy.overall * 0.35 + _beatFlash * 0.3;
         canvas.drawLine(
           Offset(startX, centerY),
           Offset(startX + availableWidth, centerY),
-          Paint()
-            ..color = phosphorColor.withValues(alpha: flatAlpha.clamp(0.0, 1.0))
-            ..strokeWidth = 1.2,
+          _strokePaint(
+            color: phosphorColor.withValues(alpha: flatAlpha.clamp(0.0, 1.0)),
+            width: 1.2,
+            strokeCap: StrokeCap.butt,
+          ),
         );
 
-        canvas.save();
-        canvas.translate(startX, centerY + scopeHeight / 2 + 6.0);
-        _textPainter.text = TextSpan(
+        _paintMonoText(
+          canvas,
           text: 'OSC - SILENT',
-          style: TextStyle(
+          offset: Offset(startX, centerY + scopeHeight / 2 + 6.0),
+          style: _monoTextStyle(
             color: phosphorColor.withValues(alpha: 0.25),
             fontSize: 8,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.1,
-            fontFamily: 'RobotoMono',
           ),
         );
-        _textPainter.layout();
-        _textPainter.paint(canvas, Offset.zero);
-        canvas.restore();
       }
     }
   }
@@ -547,18 +654,11 @@ extension _StealGraphCornerRender on StealGraph {
         Rect.fromLTWH(left, bottom - _vuHeight, _vuWidth, _vuHeight),
         const Radius.circular(8),
       );
-      canvas.drawRRect(
+      _drawPanelChrome(
+        canvas,
         panelRect,
-        Paint()
-          ..color = Colors.white.withValues(alpha: 0.05)
-          ..style = PaintingStyle.fill,
-      );
-      canvas.drawRRect(
-        panelRect,
-        Paint()
-          ..color = Colors.white.withValues(alpha: 0.12 + _beatFlash * 0.06)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.0,
+        fillAlpha: 0.05,
+        borderAlpha: 0.12 + _beatFlash * 0.06,
       );
     }
 
@@ -578,30 +678,30 @@ extension _StealGraphCornerRender on StealGraph {
       arcStart,
       totalSweep * 0.65,
       false,
-      Paint()
-        ..color = const Color(0xFF4AF3C6).withValues(alpha: 0.10)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5.0,
+      _strokePaint(
+        color: const Color(0xFF4AF3C6).withValues(alpha: 0.10),
+        width: 5.0,
+      ),
     );
     canvas.drawArc(
       arcRect,
       arcStart + totalSweep * 0.65,
       totalSweep * 0.17,
       false,
-      Paint()
-        ..color = const Color(0xFFFFE66D).withValues(alpha: 0.12)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5.0,
+      _strokePaint(
+        color: const Color(0xFFFFE66D).withValues(alpha: 0.12),
+        width: 5.0,
+      ),
     );
     canvas.drawArc(
       arcRect,
       arcStart + totalSweep * 0.82,
       totalSweep * 0.18,
       false,
-      Paint()
-        ..color = const Color(0xFFFF4444).withValues(alpha: 0.15)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 5.0,
+      _strokePaint(
+        color: const Color(0xFFFF4444).withValues(alpha: 0.15),
+        width: 5.0,
+      ),
     );
 
     const markFracs = [0.0, 0.2, 0.4, 0.58, 0.72, 0.84, 1.0];
@@ -627,22 +727,24 @@ extension _StealGraphCornerRender on StealGraph {
       canvas.drawLine(
         Offset(mx1, my1),
         Offset(mx2, my2),
-        Paint()
-          ..color = tickColor.withValues(alpha: 0.65)
-          ..strokeWidth = frac == 0.72 ? 1.5 : 0.8,
+        _strokePaint(
+          color: tickColor.withValues(alpha: 0.65),
+          width: frac == 0.72 ? 1.5 : 0.8,
+        ),
       );
 
       if (showLabel[m]) {
-        _textPainter.text = TextSpan(
-          text: markLabels[m],
-          style: TextStyle(
-            color: tickColor.withValues(alpha: 0.55),
-            fontSize: 7,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'RobotoMono',
-          ),
-        );
-        _textPainter.layout();
+        _textPainter
+          ..text = TextSpan(
+            text: markLabels[m],
+            style: _monoTextStyle(
+              color: tickColor.withValues(alpha: 0.55),
+              fontSize: 7,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.0,
+            ),
+          )
+          ..layout();
         final lx =
             pivotX + cos(angle) * (arcRadius + 15) - _textPainter.width / 2;
         final ly =
@@ -655,7 +757,6 @@ extension _StealGraphCornerRender on StealGraph {
     final needleAngle = -pi / 2 + (-_vuSweepHalf + needleLevel * totalSweep);
     final tipX = pivotX + cos(needleAngle) * _vuNeedleLength;
     final tipY = pivotY + sin(needleAngle) * _vuNeedleLength;
-    // Start needle at the spindle edge so it never bleeds through the hub.
     const spindleRadius = 4.5;
     final needleStartX = pivotX + cos(needleAngle) * spindleRadius;
     final needleStartY = pivotY + sin(needleAngle) * spindleRadius;
@@ -670,21 +771,17 @@ extension _StealGraphCornerRender on StealGraph {
       canvas.drawLine(
         Offset(needleStartX, needleStartY),
         Offset(tipX, tipY),
-        Paint()
-          ..color = needleColor.withValues(alpha: 0.18)
-          ..strokeWidth = 3.0
-          ..maskFilter = isWasmSafeMode()
-              ? null
-              : const MaskFilter.blur(BlurStyle.normal, 4.0),
+        _glowStrokePaint(
+          color: needleColor.withValues(alpha: 0.18),
+          width: 3.0,
+          sigma: 4.0,
+        ),
       );
     }
     canvas.drawLine(
       Offset(needleStartX, needleStartY),
       Offset(tipX, tipY),
-      Paint()
-        ..color = needleColor.withValues(alpha: 0.95)
-        ..strokeWidth = 1.4
-        ..strokeCap = StrokeCap.round,
+      _strokePaint(color: needleColor.withValues(alpha: 0.95), width: 1.4),
     );
 
     canvas.drawCircle(
@@ -703,79 +800,62 @@ extension _StealGraphCornerRender on StealGraph {
         ..strokeWidth = 1.0,
     );
 
-    _textPainter.text = TextSpan(
+    _paintMonoText(
+      canvas,
       text: chanLabel,
-      style: const TextStyle(
-        color: Color(0xFF99AABB),
+      offset: Offset(left + 7, bottom - _vuHeight + 6),
+      style: _monoTextStyle(
+        color: const Color(0xFF99AABB),
         fontSize: 13,
         fontWeight: FontWeight.w700,
         letterSpacing: 2.0,
-        fontFamily: 'RobotoMono',
       ),
     );
-    _textPainter.layout();
-    _textPainter.paint(canvas, Offset(left + 7, bottom - _vuHeight + 6));
-
-    _textPainter.text = TextSpan(
+    _paintRightAlignedMonoText(
+      canvas,
       text: rangeLabel,
-      style: TextStyle(
+      right: left + _vuWidth - 7,
+      top: bottom - _vuHeight + 6,
+      style: _monoTextStyle(
         color: const Color(0xFF667788).withValues(alpha: 0.8),
         fontSize: 7,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.5,
-        fontFamily: 'RobotoMono',
       ),
-    );
-    _textPainter.layout();
-    _textPainter.paint(
-      canvas,
-      Offset(left + _vuWidth - _textPainter.width - 7, bottom - _vuHeight + 6),
     );
 
     final rawPct = (rawLevel * 100).clamp(0.0, 100.0).toStringAsFixed(0);
-    _textPainter.text = TextSpan(
+    _paintMonoText(
+      canvas,
       text: 'SIG ${rawPct.padLeft(3)}%',
-      style: TextStyle(
+      offset: Offset(left + 7, bottom - 18),
+      style: _monoTextStyle(
         color: const Color(0xFF7FA0B8).withValues(alpha: 0.75),
         fontSize: 7,
         fontWeight: FontWeight.w600,
-        letterSpacing: 1.0,
-        fontFamily: 'RobotoMono',
       ),
     );
-    _textPainter.layout();
-    _textPainter.paint(canvas, Offset(left + 7, bottom - 18));
-
-    _textPainter.text = TextSpan(
+    _paintRightAlignedMonoText(
+      canvas,
       text: 'x${drive.toStringAsFixed(1)}',
-      style: TextStyle(
+      right: left + _vuWidth - 7,
+      top: bottom - 18,
+      style: _monoTextStyle(
         color: const Color(0xFF667788).withValues(alpha: 0.8),
         fontSize: 7,
         fontWeight: FontWeight.w600,
-        letterSpacing: 1.0,
-        fontFamily: 'RobotoMono',
       ),
     );
-    _textPainter.layout();
-    _textPainter.paint(
+    _paintCenteredMonoText(
       canvas,
-      Offset(left + _vuWidth - _textPainter.width - 7, bottom - 18),
-    );
-
-    _textPainter.text = const TextSpan(
       text: 'VU',
-      style: TextStyle(
-        color: Color(0xFF445566),
+      center: Offset(pivotX, bottom - 6),
+      style: _monoTextStyle(
+        color: const Color(0xFF445566),
         fontSize: 7,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.5,
-        fontFamily: 'RobotoMono',
       ),
-    );
-    _textPainter.layout();
-    _textPainter.paint(
-      canvas,
-      Offset(pivotX - _textPainter.width / 2, bottom - 6),
     );
   }
 
@@ -797,20 +877,11 @@ extension _StealGraphCornerRender on StealGraph {
         ),
         const Radius.circular(4),
       );
-      canvas.drawRRect(
+      _drawPanelChrome(
+        canvas,
         panelRect,
-        Paint()
-          ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.05)
-          ..style = PaintingStyle.fill,
-      );
-      canvas.drawRRect(
-        panelRect,
-        Paint()
-          ..color = const Color(
-            0xFFFFFFFF,
-          ).withValues(alpha: 0.12 + _beatFlash * 0.06)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.0,
+        fillAlpha: 0.05,
+        borderAlpha: 0.12 + _beatFlash * 0.06,
       );
     }
 
@@ -860,20 +931,16 @@ extension _StealGraphCornerRender on StealGraph {
     final lLabelX = stripLeft + _ledHPad + colW / 2;
     final rLabelX = stripLeft + _ledHPad + colW + _ledColGap + colW / 2;
     for (final entry in [('L', lLabelX), ('R', rLabelX)]) {
-      _textPainter.text = TextSpan(
+      _paintCenteredMonoText(
+        canvas,
         text: entry.$1,
-        style: const TextStyle(
+        center: Offset(entry.$2, baseY - _ledLabelReserve + 7),
+        style: _monoTextStyle(
           color: Color(0xFF445566),
           fontSize: 6,
           fontWeight: FontWeight.w600,
           letterSpacing: 1.0,
-          fontFamily: 'RobotoMono',
         ),
-      );
-      _textPainter.layout();
-      _textPainter.paint(
-        canvas,
-        Offset(entry.$2 - _textPainter.width / 2, baseY - _ledLabelReserve + 4),
       );
     }
   }

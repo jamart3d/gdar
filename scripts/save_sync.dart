@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
+
+import 'verification_status_support.dart';
 
 // ── Zero-dependency ANSI logger ─────────────────────────
 const _reset = '\x1B[0m';
@@ -27,6 +30,7 @@ void main(List<String> args) async {
   final commitRes =
       await _run('git', ['commit', '-m', message]);
   if (commitRes.exitCode == 0) {
+    await _markSavedVerificationStatus();
     await _run('git', ['push']);
   } else {
     _err('No changes to commit or commit failed.');
@@ -66,4 +70,21 @@ Future<ProcessResult> _run(
     _err(res.stderr.toString());
   }
   return res;
+}
+
+Future<void> _markSavedVerificationStatus() async {
+  final headRes = await _run('git', ['rev-parse', 'HEAD']);
+  if (headRes.exitCode != 0) {
+    _err('Could not resolve HEAD for verification_status.json update.');
+    return;
+  }
+
+  final sha = headRes.stdout.toString().trim();
+  final data = buildSavedVerificationStatus(
+    sha: sha,
+    timestamp: DateTime.now(),
+  );
+  final file = File('.agent/notes/verification_status.json');
+  file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(data));
+  _info('verification_status.json marked SAVED for $sha');
 }

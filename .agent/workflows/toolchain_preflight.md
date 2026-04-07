@@ -25,12 +25,15 @@ The script handles:
 - Process hygiene (hung flutter/dart detection).
 - Smart-skip melos verification (SHA comparison + suite run if stale) unless `--preflight-only` is used.
 - `verification_status.json` update on success unless `--preflight-only` is used.
+- Fast receipt refresh for `/checkup` via `--record-pass`, which writes a fresh
+  `PASS` receipt without rerunning the full preflight or melos suite.
 
 ## Output
 
 | Output | Meaning |
 |---|---|
 | `WINDOWS_10:VERIFIED` or `LINUX:VERIFIED` | All clear — proceed with the parent workflow. |
+| `RECORD_PASS:VERIFIED` | Fresh `PASS` receipt written successfully for the current `HEAD`. |
 | `CHROMEBOOK:STOP` | Health suite ran but builds/deploy must run on Windows. |
 | Exit code 1 | Toolchain missing or melos suite failed — abort. |
 

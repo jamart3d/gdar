@@ -10,48 +10,23 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
     required double scaleFactor,
     required SettingsProvider settingsProvider,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final topPadding = MediaQuery.paddingOf(context).top;
-
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Container(
         key: const ValueKey('fruit_car_mode_layout'),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              colorScheme.surface,
-              colorScheme.surfaceContainerLowest,
-              colorScheme.surface,
-            ],
-          ),
+          gradient: _fruitCarModeBackgroundGradient(context),
         ),
         child: Stack(
           children: [
-            if (settingsProvider.fruitFloatingSpheres)
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: RepaintBoundary(
-                    child: FloatingSpheresBackground(
-                      key: const ValueKey('fruit_car_mode_floating_spheres'),
-                      colorScheme: colorScheme,
-                      animate: !settingsProvider.performanceMode,
-                      sphereCount: SphereAmount.tiny,
-                    ),
-                  ),
-                ),
-              ),
+            _buildFruitCarModeFloatingSpheres(
+              context: context,
+              settingsProvider: settingsProvider,
+            ),
             SafeArea(
               bottom: false,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  16 * scaleFactor,
-                  math.max(8.0, topPadding * 0.15),
-                  16 * scaleFactor,
-                  0,
-                ),
+                padding: _fruitCarModePagePadding(context, scaleFactor),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -128,6 +103,28 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
     );
   }
 
+  Widget _buildFruitCarModeFloatingSpheres({
+    required BuildContext context,
+    required SettingsProvider settingsProvider,
+  }) {
+    if (!settingsProvider.fruitFloatingSpheres) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: RepaintBoundary(
+          child: FloatingSpheresBackground(
+            key: const ValueKey('fruit_car_mode_floating_spheres'),
+            colorScheme: Theme.of(context).colorScheme,
+            animate: !settingsProvider.performanceMode,
+            sphereCount: SphereAmount.tiny,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildFruitCarModeHero({
     required BuildContext context,
     required AudioProvider audioProvider,
@@ -137,17 +134,7 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
     required SettingsProvider settingsProvider,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
-
-    String dateText;
-    try {
-      dateText = DateFormat(
-        'MMMM d, y',
-      ).format(DateTime.parse(currentShow.date));
-    } catch (_) {
-      dateText = currentShow.formattedDate;
-    }
-
-    final locationText = currentSource.location;
+    final String? locationText = currentSource.location;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,9 +143,9 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
           currentShow.venue,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontFamily: FontConfig.resolve('Inter'),
-            fontSize: 34 * scaleFactor,
+          style: _fruitCarModeTextStyle(
+            scaleFactor: scaleFactor,
+            fontSize: 34,
             fontWeight: FontWeight.w800,
             height: 1.0,
             letterSpacing: -0.8,
@@ -171,9 +158,9 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
             locationText,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontFamily: FontConfig.resolve('Inter'),
-              fontSize: 19 * scaleFactor,
+            style: _fruitCarModeTextStyle(
+              scaleFactor: scaleFactor,
+              fontSize: 19,
               fontWeight: FontWeight.w700,
               height: 1.1,
               color: colorScheme.onSurfaceVariant.withValues(alpha: 0.85),
@@ -182,12 +169,12 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
           SizedBox(height: 6 * scaleFactor),
         ],
         Text(
-          dateText,
+          _fruitCarModeDateText(currentShow),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontFamily: FontConfig.resolve('Inter'),
-            fontSize: 25 * scaleFactor,
+          style: _fruitCarModeTextStyle(
+            scaleFactor: scaleFactor,
+            fontSize: 25,
             fontWeight: FontWeight.w800,
             height: 1.1,
             color: colorScheme.onSurfaceVariant.withValues(alpha: 0.78),
@@ -205,9 +192,9 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
             pauseAfterRound: const Duration(milliseconds: 1200),
             fadingEdgeStartFraction: 0.03,
             fadingEdgeEndFraction: 0.08,
-            style: TextStyle(
-              fontFamily: FontConfig.resolve('Inter'),
-              fontSize: 46 * scaleFactor,
+            style: _fruitCarModeTextStyle(
+              scaleFactor: scaleFactor,
+              fontSize: 46,
               fontWeight: FontWeight.w900,
               height: 0.92,
               letterSpacing: -2.0,
@@ -225,31 +212,6 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
     required Source currentSource,
     required double scaleFactor,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final catalog = CatalogService();
-    final rating = catalog.getRating(currentSource.id);
-    final isPlayed = catalog.isPlayed(currentSource.id);
-
-    Future<void> openRatingDialog() async {
-      await showDialog(
-        context: context,
-        builder: (context) => RatingDialog(
-          initialRating: rating,
-          sourceId: currentSource.id,
-          sourceUrl: currentSource.tracks.firstOrNull?.url,
-          isPlayed: isPlayed,
-          onRatingChanged: (newRating) {
-            catalog.setRating(currentSource.id, newRating);
-          },
-          onPlayedChanged: (newIsPlayed) {
-            if (newIsPlayed != catalog.isPlayed(currentSource.id)) {
-              catalog.togglePlayed(currentSource.id);
-            }
-          },
-        ),
-      );
-    }
-
     final chipRowHeight = _fruitCarModeChipCardHeight(scaleFactor);
 
     return GestureDetector(
@@ -267,162 +229,208 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
             children: [...previousChildren, ?currentChild],
           ),
           child: _fruitCarModeHudShowsMeta
-              ? SizedBox.expand(
-                  key: const ValueKey('fruit_car_mode_chip_row_meta'),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 220 * scaleFactor,
-                        height: chipRowHeight,
-                        child: Semantics(
-                          button: true,
-                          label: 'Rate source ${currentSource.id}',
-                          child: GestureDetector(
-                            key: const ValueKey('fruit_car_mode_rating_zone'),
-                            behavior: HitTestBehavior.opaque,
-                            onTap: openRatingDialog,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12 * scaleFactor,
-                              ),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: IgnorePointer(
-                                  child: RatingControl(
-                                    rating: rating,
-                                    isPlayed: isPlayed,
-                                    compact: true,
-                                    size: 56 * scaleFactor,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10 * scaleFactor),
-                      Expanded(
-                        child: SizedBox(
-                          height: chipRowHeight,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Column(
-                              key: const ValueKey('fruit_car_mode_meta_stack'),
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if ((currentSource.src ?? '').isNotEmpty)
-                                  Text(
-                                    (currentSource.src ?? '').toUpperCase(),
-                                    key: const ValueKey(
-                                      'fruit_car_mode_src_label',
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontFamily: FontConfig.resolve('Inter'),
-                                      fontSize: 12.5 * scaleFactor,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1.0,
-                                      letterSpacing: 0.9,
-                                      color: colorScheme.onSurfaceVariant
-                                          .withValues(alpha: 0.92),
-                                    ),
-                                  ),
-                                if ((currentSource.src ?? '').isNotEmpty)
-                                  SizedBox(height: 4 * scaleFactor),
-                                Text(
-                                  currentSource.id,
-                                  key: const ValueKey(
-                                    'fruit_car_mode_shnid_label',
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontFamily: FontConfig.resolve('Inter'),
-                                    fontSize: 12.5 * scaleFactor,
-                                    fontWeight: FontWeight.w700,
-                                    height: 1.0,
-                                    letterSpacing: 0.2,
-                                    color: colorScheme.onSurfaceVariant
-                                        .withValues(alpha: 0.78),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+              ? _buildFruitCarModeHudMeta(
+                  context: context,
+                  currentSource: currentSource,
+                  scaleFactor: scaleFactor,
+                  chipRowHeight: chipRowHeight,
                 )
-              : SizedBox.expand(
-                  key: const ValueKey('fruit_car_mode_chip_row_stats'),
-                  child: StreamBuilder<HudSnapshot>(
-                    stream: audioProvider.hudSnapshotStream,
-                    initialData: audioProvider.currentHudSnapshot,
-                    builder: (context, snapshot) {
-                      final liveHud = snapshot.data ?? HudSnapshot.empty();
-
-                      return StreamBuilder<PlayerState>(
-                        stream: audioProvider.playerStateStream,
-                        initialData: audioProvider.audioPlayer.playerState,
-                        builder: (context, playerSnapshot) {
-                          final playerState =
-                              playerSnapshot.data ??
-                              audioProvider.audioPlayer.playerState;
-                          final isPlaying = playerState.playing;
-                          final hud = isPlaying
-                              ? (_fruitCarModeFrozenHud = liveHud)
-                              : (_fruitCarModeFrozenHud ?? liveHud);
-
-                          return Row(
-                            children: [
-                              Expanded(
-                                child: _FruitCarModeStatCard(
-                                  label: 'DFT',
-                                  value: hud.drift,
-                                  accentColor: colorScheme.primary,
-                                  scaleFactor: scaleFactor,
-                                ),
-                              ),
-                              SizedBox(width: 6 * scaleFactor),
-                              Expanded(
-                                child: _FruitCarModeStatCard(
-                                  label: 'HD',
-                                  value: hud.headroom,
-                                  accentColor: colorScheme.secondary,
-                                  scaleFactor: scaleFactor,
-                                ),
-                              ),
-                              SizedBox(width: 6 * scaleFactor),
-                              Expanded(
-                                child: _FruitCarModeStatCard(
-                                  label: 'NXT',
-                                  value: hud.nextBuffered,
-                                  accentColor: colorScheme.tertiary,
-                                  scaleFactor: scaleFactor,
-                                ),
-                              ),
-                              SizedBox(width: 6 * scaleFactor),
-                              Expanded(
-                                child: _FruitCarModeStatCard(
-                                  label: 'LG',
-                                  value: hud.lastGapMs == null
-                                      ? '--'
-                                      : '${hud.lastGapMs!.toStringAsFixed(0)}ms',
-                                  accentColor: colorScheme.onSurface,
-                                  scaleFactor: scaleFactor,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  ),
+              : _buildFruitCarModeHudStats(
+                  context: context,
+                  audioProvider: audioProvider,
+                  scaleFactor: scaleFactor,
                 ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFruitCarModeHudMeta({
+    required BuildContext context,
+    required Source currentSource,
+    required double scaleFactor,
+    required double chipRowHeight,
+  }) {
+    final catalog = CatalogService();
+    final rating = catalog.getRating(currentSource.id);
+    final isPlayed = catalog.isPlayed(currentSource.id);
+
+    return SizedBox.expand(
+      key: const ValueKey('fruit_car_mode_chip_row_meta'),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 220 * scaleFactor,
+            height: chipRowHeight,
+            child: Semantics(
+              button: true,
+              label: 'Rate source ${currentSource.id}',
+              child: GestureDetector(
+                key: const ValueKey('fruit_car_mode_rating_zone'),
+                behavior: HitTestBehavior.opaque,
+                onTap: () => _showFruitCarModeRatingDialog(
+                  context,
+                  currentSource: currentSource,
+                  catalog: catalog,
+                  rating: rating,
+                  isPlayed: isPlayed,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12 * scaleFactor),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: IgnorePointer(
+                      child: RatingControl(
+                        rating: rating,
+                        isPlayed: isPlayed,
+                        compact: true,
+                        size: 56 * scaleFactor,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 10 * scaleFactor),
+          Expanded(
+            child: _buildFruitCarModeMetaDetails(
+              context: context,
+              currentSource: currentSource,
+              scaleFactor: scaleFactor,
+              chipRowHeight: chipRowHeight,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFruitCarModeMetaDetails({
+    required BuildContext context,
+    required Source currentSource,
+    required double scaleFactor,
+    required double chipRowHeight,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final String sourceLabel = (currentSource.src ?? '').toUpperCase();
+    final bool hasSourceLabel = sourceLabel.isNotEmpty;
+
+    return SizedBox(
+      height: chipRowHeight,
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Column(
+          key: const ValueKey('fruit_car_mode_meta_stack'),
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (hasSourceLabel)
+              Text(
+                sourceLabel,
+                key: const ValueKey('fruit_car_mode_src_label'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: _fruitCarModeTextStyle(
+                  scaleFactor: scaleFactor,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  height: 1.0,
+                  letterSpacing: 0.9,
+                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.92),
+                ),
+              ),
+            if (hasSourceLabel) SizedBox(height: 4 * scaleFactor),
+            Text(
+              currentSource.id,
+              key: const ValueKey('fruit_car_mode_shnid_label'),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: _fruitCarModeTextStyle(
+                scaleFactor: scaleFactor,
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+                height: 1.0,
+                letterSpacing: 0.2,
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.78),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFruitCarModeHudStats({
+    required BuildContext context,
+    required AudioProvider audioProvider,
+    required double scaleFactor,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SizedBox.expand(
+      key: const ValueKey('fruit_car_mode_chip_row_stats'),
+      child: StreamBuilder<HudSnapshot>(
+        stream: audioProvider.hudSnapshotStream,
+        initialData: audioProvider.currentHudSnapshot,
+        builder: (context, snapshot) {
+          final liveHud = snapshot.data ?? HudSnapshot.empty();
+
+          return StreamBuilder<PlayerState>(
+            stream: audioProvider.playerStateStream,
+            initialData: audioProvider.audioPlayer.playerState,
+            builder: (context, playerSnapshot) {
+              final playerState =
+                  playerSnapshot.data ?? audioProvider.audioPlayer.playerState;
+              final hud = _resolveFruitCarModeHudSnapshot(
+                liveHud: liveHud,
+                isPlaying: playerState.playing,
+              );
+
+              return Row(
+                children: [
+                  Expanded(
+                    child: _FruitCarModeStatCard(
+                      label: 'DFT',
+                      value: hud.drift,
+                      accentColor: colorScheme.primary,
+                      scaleFactor: scaleFactor,
+                    ),
+                  ),
+                  SizedBox(width: 6 * scaleFactor),
+                  Expanded(
+                    child: _FruitCarModeStatCard(
+                      label: 'HD',
+                      value: hud.headroom,
+                      accentColor: colorScheme.secondary,
+                      scaleFactor: scaleFactor,
+                    ),
+                  ),
+                  SizedBox(width: 6 * scaleFactor),
+                  Expanded(
+                    child: _FruitCarModeStatCard(
+                      label: 'NXT',
+                      value: hud.nextBuffered,
+                      accentColor: colorScheme.tertiary,
+                      scaleFactor: scaleFactor,
+                    ),
+                  ),
+                  SizedBox(width: 6 * scaleFactor),
+                  Expanded(
+                    child: _FruitCarModeStatCard(
+                      label: 'LG',
+                      value: hud.lastGapMs == null
+                          ? '--'
+                          : '${hud.lastGapMs!.toStringAsFixed(0)}ms',
+                      accentColor: colorScheme.onSurface,
+                      scaleFactor: scaleFactor,
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -432,8 +440,6 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
     required AudioProvider audioProvider,
     required double scaleFactor,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return StreamBuilder<Duration>(
       stream: audioProvider.positionStream,
       initialData: audioProvider.audioPlayer.position,
@@ -445,24 +451,18 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
           initialData: audioProvider.audioPlayer.duration,
           builder: (context, durationSnapshot) {
             final total = durationSnapshot.data ?? Duration.zero;
-            final totalMs = total.inMilliseconds;
-            final positionMs = position.inMilliseconds.clamp(
-              0,
-              totalMs > 0 ? totalMs : 0,
-            );
-            final progress = totalMs <= 0 ? 0.0 : positionMs / totalMs;
+
             return StreamBuilder<Duration>(
               stream: audioProvider.bufferedPositionStream,
               initialData: audioProvider.audioPlayer.bufferedPosition,
               builder: (context, bufferedSnapshot) {
                 final buffered = bufferedSnapshot.data ?? Duration.zero;
-                final bufferedMs = buffered.inMilliseconds.clamp(
-                  0,
-                  totalMs > 0 ? totalMs : 0,
+                final metrics = computeFruitCarModeProgressMetrics(
+                  position: position,
+                  buffered: buffered,
+                  total: total,
                 );
-                final bufferedProgress = totalMs <= 0
-                    ? 0.0
-                    : bufferedMs / totalMs;
+
                 return StreamBuilder<PlayerState>(
                   stream: audioProvider.playerStateStream,
                   initialData: audioProvider.audioPlayer.playerState,
@@ -475,136 +475,24 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
                         processingState == ProcessingState.loading;
                     final isBuffering =
                         processingState == ProcessingState.buffering;
-                    final showPendingState = _shouldShowFruitCarModePendingCue(
+                    final showPendingState = computeFruitCarModePendingCue(
                       isLoading: isLoading,
                       isBuffering: isBuffering,
-                      bufferedPositionMs: bufferedMs,
-                      positionMs: positionMs,
-                      durationMs: totalMs,
+                      bufferedPositionMs: metrics.bufferedMs,
+                      positionMs: metrics.positionMs,
+                      durationMs: metrics.totalMs,
                     );
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final trackWidth = constraints.maxWidth;
-                            final trackHeight = 16 * scaleFactor;
-                            final thumbSize = 28 * scaleFactor;
-                            final thumbLeft =
-                                (trackWidth - thumbSize) *
-                                progress.clamp(0.0, 1.0);
-
-                            void seekToLocalDx(double localDx) {
-                              if (totalMs <= 0) return;
-                              final normalized = (localDx / trackWidth).clamp(
-                                0.0,
-                                1.0,
-                              );
-                              audioProvider.seek(
-                                Duration(
-                                  milliseconds: (normalized * totalMs).round(),
-                                ),
-                              );
-                            }
-
-                            return GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTapDown: (details) =>
-                                  seekToLocalDx(details.localPosition.dx),
-                              onHorizontalDragUpdate: (details) =>
-                                  seekToLocalDx(details.localPosition.dx),
-                              child: SizedBox(
-                                height: 40 * scaleFactor,
-                                child: Stack(
-                                  alignment: Alignment.centerLeft,
-                                  children: [
-                                    Container(
-                                      height: trackHeight,
-                                      decoration: BoxDecoration(
-                                        color: colorScheme
-                                            .surfaceContainerHighest
-                                            .withValues(alpha: 0.45),
-                                        borderRadius: BorderRadius.circular(
-                                          trackHeight / 2,
-                                        ),
-                                      ),
-                                    ),
-                                    FractionallySizedBox(
-                                      widthFactor: bufferedProgress.clamp(
-                                        0.0,
-                                        1.0,
-                                      ),
-                                      child: Container(
-                                        height: trackHeight,
-                                        decoration: BoxDecoration(
-                                          color: colorScheme.secondary
-                                              .withValues(alpha: 0.5),
-                                          borderRadius: BorderRadius.circular(
-                                            trackHeight / 2,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    if (showPendingState)
-                                      _FruitCarModePendingProgressOverlay(
-                                        key: const Key(
-                                          'fruit_car_mode_pending_progress_overlay',
-                                        ),
-                                        colorScheme: colorScheme,
-                                        scaleFactor: scaleFactor,
-                                        isLoading: isLoading,
-                                      ),
-                                    FractionallySizedBox(
-                                      widthFactor: progress.clamp(0.0, 1.0),
-                                      child: Container(
-                                        height: trackHeight,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              colorScheme.primary,
-                                              colorScheme.primary.withValues(
-                                                alpha: 0.74,
-                                              ),
-                                            ],
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            trackHeight / 2,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      left: thumbLeft,
-                                      child: Container(
-                                        width: thumbSize,
-                                        height: thumbSize,
-                                        decoration: BoxDecoration(
-                                          color: colorScheme.primary,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: colorScheme.surface,
-                                            width: 4 * scaleFactor,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: colorScheme.primary
-                                                  .withValues(alpha: 0.24),
-                                              blurRadius: 18 * scaleFactor,
-                                              offset: Offset(
-                                                0,
-                                                6 * scaleFactor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+                        _buildFruitCarModeProgressTrack(
+                          context: context,
+                          audioProvider: audioProvider,
+                          scaleFactor: scaleFactor,
+                          metrics: metrics,
+                          showPendingState: showPendingState,
+                          isLoading: isLoading,
                         ),
                         Padding(
                           padding: EdgeInsets.symmetric(
@@ -613,23 +501,17 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
+                              _buildFruitCarModeDurationText(
+                                context,
                                 formatDuration(position),
-                                style: TextStyle(
-                                  fontFamily: FontConfig.resolve('Inter'),
-                                  fontSize: 24 * scaleFactor,
-                                  fontWeight: FontWeight.w800,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
+                                scaleFactor,
                               ),
-                              Text(
-                                totalMs <= 0 ? '--:--' : formatDuration(total),
-                                style: TextStyle(
-                                  fontFamily: FontConfig.resolve('Inter'),
-                                  fontSize: 24 * scaleFactor,
-                                  fontWeight: FontWeight.w800,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
+                              _buildFruitCarModeDurationText(
+                                context,
+                                metrics.totalMs <= 0
+                                    ? '--:--'
+                                    : formatDuration(total),
+                                scaleFactor,
                               ),
                             ],
                           ),
@@ -646,20 +528,146 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
     );
   }
 
-  bool _shouldShowFruitCarModePendingCue({
+  Widget _buildFruitCarModeProgressTrack({
+    required BuildContext context,
+    required AudioProvider audioProvider,
+    required double scaleFactor,
+    required FruitCarModeProgressMetrics metrics,
+    required bool showPendingState,
     required bool isLoading,
-    required bool isBuffering,
-    required int bufferedPositionMs,
-    required int positionMs,
-    required int durationMs,
   }) {
-    final int remainingMs = durationMs - positionMs;
-    final bool hasPlayableTail = durationMs <= 0 || remainingMs > 900;
-    final bool hasVisibleBufferHeadroom =
-        bufferedPositionMs > (positionMs + 350);
-    return isLoading ||
-        isBuffering ||
-        (hasPlayableTail && !hasVisibleBufferHeadroom);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final trackWidth = constraints.maxWidth;
+        final trackHeight = 16 * scaleFactor;
+        final thumbSize = 28 * scaleFactor;
+        final thumbLeft =
+            (trackWidth - thumbSize) * metrics.progress.clamp(0.0, 1.0);
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (details) => _seekFruitCarModeProgress(
+            audioProvider: audioProvider,
+            trackWidth: trackWidth,
+            totalMs: metrics.totalMs,
+            localDx: details.localPosition.dx,
+          ),
+          onHorizontalDragUpdate: (details) => _seekFruitCarModeProgress(
+            audioProvider: audioProvider,
+            trackWidth: trackWidth,
+            totalMs: metrics.totalMs,
+            localDx: details.localPosition.dx,
+          ),
+          child: SizedBox(
+            height: 40 * scaleFactor,
+            child: Stack(
+              alignment: Alignment.centerLeft,
+              children: [
+                _buildFruitCarModeProgressSegment(
+                  height: trackHeight,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.45,
+                    ),
+                    borderRadius: BorderRadius.circular(trackHeight / 2),
+                  ),
+                ),
+                FractionallySizedBox(
+                  widthFactor: metrics.bufferedProgress.clamp(0.0, 1.0),
+                  child: _buildFruitCarModeProgressSegment(
+                    height: trackHeight,
+                    decoration: BoxDecoration(
+                      color: colorScheme.secondary.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(trackHeight / 2),
+                    ),
+                  ),
+                ),
+                if (showPendingState)
+                  _FruitCarModePendingProgressOverlay(
+                    key: const Key('fruit_car_mode_pending_progress_overlay'),
+                    colorScheme: colorScheme,
+                    scaleFactor: scaleFactor,
+                    isLoading: isLoading,
+                  ),
+                FractionallySizedBox(
+                  widthFactor: metrics.progress.clamp(0.0, 1.0),
+                  child: _buildFruitCarModeProgressSegment(
+                    height: trackHeight,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          colorScheme.primary,
+                          colorScheme.primary.withValues(alpha: 0.74),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(trackHeight / 2),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: thumbLeft,
+                  child: _buildFruitCarModeProgressThumb(
+                    context: context,
+                    scaleFactor: scaleFactor,
+                    thumbSize: thumbSize,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFruitCarModeProgressSegment({
+    required double height,
+    required BoxDecoration decoration,
+  }) {
+    return Container(height: height, decoration: decoration);
+  }
+
+  Widget _buildFruitCarModeProgressThumb({
+    required BuildContext context,
+    required double scaleFactor,
+    required double thumbSize,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      width: thumbSize,
+      height: thumbSize,
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
+        shape: BoxShape.circle,
+        border: Border.all(color: colorScheme.surface, width: 4 * scaleFactor),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.primary.withValues(alpha: 0.24),
+            blurRadius: 18 * scaleFactor,
+            offset: Offset(0, 6 * scaleFactor),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFruitCarModeDurationText(
+    BuildContext context,
+    String text,
+    double scaleFactor,
+  ) {
+    return Text(
+      text,
+      style: _fruitCarModeTextStyle(
+        scaleFactor: scaleFactor,
+        fontSize: 24,
+        fontWeight: FontWeight.w800,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
+    );
   }
 
   Widget _buildFruitCarModeControls({
@@ -756,8 +764,7 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
       initialData: audioProvider.audioPlayer.currentIndex,
       builder: (context, snapshot) {
         final currentIndex = snapshot.data ?? 0;
-        final tracks = currentSource.tracks;
-        final nextTracks = tracks.skip(currentIndex + 1).toList();
+        final nextTracks = currentSource.tracks.skip(currentIndex + 1).toList();
 
         if (nextTracks.isEmpty) {
           return const SizedBox.shrink();
@@ -771,27 +778,13 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
                 nextTracks[i].title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontFamily: FontConfig.resolve('Inter'),
-                  fontSize: switch (i) {
-                    0 => 24 * scaleFactor,
-                    1 => 21 * scaleFactor,
-                    2 => 19 * scaleFactor,
-                    _ => 17 * scaleFactor,
-                  },
-                  fontWeight: switch (i) {
-                    0 => FontWeight.w700,
-                    1 => FontWeight.w600,
-                    _ => FontWeight.w500,
-                  },
+                style: _fruitCarModeTextStyle(
+                  scaleFactor: scaleFactor,
+                  fontSize: _fruitCarModeUpcomingFontSize(i),
+                  fontWeight: _fruitCarModeUpcomingFontWeight(i),
                   height: 1.04,
                   color: colorScheme.onSurface.withValues(
-                    alpha: switch (i) {
-                      0 => 0.68,
-                      1 => 0.48,
-                      2 => 0.34,
-                      _ => 0.24,
-                    },
+                    alpha: _fruitCarModeUpcomingOpacity(i),
                   ),
                 ),
               ),
@@ -801,6 +794,133 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
         );
       },
     );
+  }
+
+  Future<void> _showFruitCarModeRatingDialog(
+    BuildContext context, {
+    required Source currentSource,
+    required CatalogService catalog,
+    required int rating,
+    required bool isPlayed,
+  }) async {
+    await showDialog(
+      context: context,
+      builder: (context) => RatingDialog(
+        initialRating: rating,
+        sourceId: currentSource.id,
+        sourceUrl: currentSource.tracks.firstOrNull?.url,
+        isPlayed: isPlayed,
+        onRatingChanged: (newRating) {
+          catalog.setRating(currentSource.id, newRating);
+        },
+        onPlayedChanged: (newIsPlayed) {
+          if (newIsPlayed != catalog.isPlayed(currentSource.id)) {
+            catalog.togglePlayed(currentSource.id);
+          }
+        },
+      ),
+    );
+  }
+
+  HudSnapshot _resolveFruitCarModeHudSnapshot({
+    required HudSnapshot liveHud,
+    required bool isPlaying,
+  }) {
+    return isPlaying
+        ? (_fruitCarModeFrozenHud = liveHud)
+        : (_fruitCarModeFrozenHud ?? liveHud);
+  }
+
+  void _seekFruitCarModeProgress({
+    required AudioProvider audioProvider,
+    required double trackWidth,
+    required int totalMs,
+    required double localDx,
+  }) {
+    if (totalMs <= 0 || trackWidth <= 0) {
+      return;
+    }
+
+    final normalized = (localDx / trackWidth).clamp(0.0, 1.0);
+    audioProvider.seek(Duration(milliseconds: (normalized * totalMs).round()));
+  }
+
+  LinearGradient _fruitCarModeBackgroundGradient(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        colorScheme.surface,
+        colorScheme.surfaceContainerLowest,
+        colorScheme.surface,
+      ],
+    );
+  }
+
+  EdgeInsets _fruitCarModePagePadding(
+    BuildContext context,
+    double scaleFactor,
+  ) {
+    final topPadding = MediaQuery.paddingOf(context).top;
+    return EdgeInsets.fromLTRB(
+      16 * scaleFactor,
+      math.max(8.0, topPadding * 0.15),
+      16 * scaleFactor,
+      0,
+    );
+  }
+
+  String _fruitCarModeDateText(Show currentShow) {
+    try {
+      return DateFormat('MMMM d, y').format(DateTime.parse(currentShow.date));
+    } catch (_) {
+      return currentShow.formattedDate;
+    }
+  }
+
+  TextStyle _fruitCarModeTextStyle({
+    required double scaleFactor,
+    required double fontSize,
+    required FontWeight fontWeight,
+    required Color color,
+    double height = 1.0,
+    double letterSpacing = 0.0,
+  }) {
+    return TextStyle(
+      fontFamily: FontConfig.resolve('Inter'),
+      fontSize: fontSize * scaleFactor,
+      fontWeight: fontWeight,
+      height: height,
+      letterSpacing: letterSpacing,
+      color: color,
+    );
+  }
+
+  double _fruitCarModeUpcomingFontSize(int index) {
+    return switch (index) {
+      0 => 24,
+      1 => 21,
+      2 => 19,
+      _ => 17,
+    };
+  }
+
+  FontWeight _fruitCarModeUpcomingFontWeight(int index) {
+    return switch (index) {
+      0 => FontWeight.w700,
+      1 => FontWeight.w600,
+      _ => FontWeight.w500,
+    };
+  }
+
+  double _fruitCarModeUpcomingOpacity(int index) {
+    return switch (index) {
+      0 => 0.68,
+      1 => 0.48,
+      2 => 0.34,
+      _ => 0.24,
+    };
   }
 
   void _handleFruitTabSelection(BuildContext context, int index) {

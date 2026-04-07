@@ -77,6 +77,59 @@ double computeFruitFloatingNowPlayingBottomOffset({
   return reservedCardHeight + baseMargin + (12.0 * scaleFactor);
 }
 
+@visibleForTesting
+bool computeFruitCarModePendingCue({
+  required bool isLoading,
+  required bool isBuffering,
+  required int bufferedPositionMs,
+  required int positionMs,
+  required int durationMs,
+}) {
+  final int remainingMs = durationMs - positionMs;
+  final bool hasPlayableTail = durationMs <= 0 || remainingMs > 900;
+  final bool hasVisibleBufferHeadroom = bufferedPositionMs > (positionMs + 350);
+  return isLoading ||
+      isBuffering ||
+      (hasPlayableTail && !hasVisibleBufferHeadroom);
+}
+
+@visibleForTesting
+FruitCarModeProgressMetrics computeFruitCarModeProgressMetrics({
+  required Duration position,
+  required Duration buffered,
+  required Duration total,
+}) {
+  final totalMs = total.inMilliseconds;
+  final maxProgressMs = totalMs > 0 ? totalMs : 0;
+  final positionMs = position.inMilliseconds.clamp(0, maxProgressMs);
+  final bufferedMs = buffered.inMilliseconds.clamp(0, maxProgressMs);
+
+  return FruitCarModeProgressMetrics(
+    totalMs: totalMs,
+    positionMs: positionMs,
+    bufferedMs: bufferedMs,
+    progress: totalMs <= 0 ? 0.0 : positionMs / totalMs,
+    bufferedProgress: totalMs <= 0 ? 0.0 : bufferedMs / totalMs,
+  );
+}
+
+@visibleForTesting
+class FruitCarModeProgressMetrics {
+  const FruitCarModeProgressMetrics({
+    required this.totalMs,
+    required this.positionMs,
+    required this.bufferedMs,
+    required this.progress,
+    required this.bufferedProgress,
+  });
+
+  final int totalMs;
+  final int positionMs;
+  final int bufferedMs;
+  final double progress;
+  final double bufferedProgress;
+}
+
 class PlaybackScreen extends StatefulWidget {
   final bool initiallyOpen;
   final bool isPane;
