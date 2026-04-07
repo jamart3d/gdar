@@ -135,6 +135,14 @@ void main() {
     test('oilBeatDetectorMode defaults to auto', () {
       expect(provider.oilBeatDetectorMode, 'auto');
     });
+
+    test('oilAutocorrBeatVariant defaults to bpm', () {
+      expect(provider.oilAutocorrBeatVariant, 'bpm');
+    });
+
+    test('oilAutocorrLogoVariant defaults to pulse', () {
+      expect(provider.oilAutocorrLogoVariant, 'pulse');
+    });
   });
 
   group('SettingsProvider platform defaults — user override wins', () {

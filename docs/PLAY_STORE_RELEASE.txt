@@ -1,3 +1,22 @@
+What's new in v1.3.67+277
+- **Preview panel now updates live** — settings changes reflect in the preview
+- **Audio graph scales to fit preview** — all graph modes (corner, EKG, circular,
+- **Logo hidden when audio graph preview is active** — fixed shader clamp that
+- Removed peak-hold indicator dots from VU needle meters.
+- VU needles no longer bleed through the spindle hub — needle now starts at the
+- Added live `● BEAT` indicator next to the FINAL PCM meter label.
+- Removed flash-burst and winning-algo indicator dots from the algorithm bars.
+- Reduced info tiles from 4 to 2 (merged redundant descriptions).
+- Status tile is now colour-coded: green (active), orange (stale/fallback),
+- Added `Autocorr` as a new beat detector mode in the TV screensaver settings.
+- Added two autocorr-only 3-way sub-rows: `Beat Variant` (`BPM`, `Grid`,
+- Persisted the new autocorr settings and wired them through the live preview
+- Implemented a native autocorr-driven beat grid so `Grid` and `Both` can drive
+- Logo scale can now follow the autocorr beat pulse, BPM-locked sine breathing,
+- Added test coverage for the new defaults and the conditional settings UI.
+
+---
+
 What's new in v1.3.66+276
 - Refined TV Dual Pane experience: inactive show list card backgrounds are now fully transparent.
 - Dialed TV floating spheres into a gentle, 15-second ambient "breathing" drift that never visually loops.

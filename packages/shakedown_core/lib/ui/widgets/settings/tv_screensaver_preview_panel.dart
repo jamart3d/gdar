@@ -96,6 +96,8 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel>
               bassBoost: settings.oilAudioBassBoost,
               reactivityStrength: settings.oilAudioReactivityStrength,
               beatDetectorMode: settings.oilBeatDetectorMode,
+              autocorrBeatVariant: settings.oilAutocorrBeatVariant,
+              autocorrLogoVariant: settings.oilAutocorrLogoVariant,
               beatSensitivity: settings.oilBeatSensitivity,
               autocorrSecondPass: settings.beatAutocorrSecondPass,
               autocorrSecondPassHq: settings.beatAutocorrSecondPassHq,
@@ -169,6 +171,8 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel>
         bassBoost: settings.oilAudioBassBoost,
         reactivityStrength: settings.oilAudioReactivityStrength,
         beatDetectorMode: settings.oilBeatDetectorMode,
+        autocorrBeatVariant: settings.oilAutocorrBeatVariant,
+        autocorrLogoVariant: settings.oilAutocorrLogoVariant,
         beatSensitivity: settings.oilBeatSensitivity,
         autocorrSecondPass: settings.beatAutocorrSecondPass,
         autocorrSecondPassHq: settings.beatAutocorrSecondPassHq,
@@ -215,6 +219,9 @@ class _TvScreensaverPreviewPanelState extends State<TvScreensaverPreviewPanel>
       audioGraphMode: settings.oilPreviewShowGraph
           ? settings.oilAudioGraphMode
           : 'off',
+      beatDetectorMode: settings.oilBeatDetectorMode,
+      autocorrBeatVariant: settings.oilAutocorrBeatVariant,
+      autocorrLogoVariant: settings.oilAutocorrLogoVariant,
       ekgRadius: settings.oilEkgRadius,
       ekgReplication: settings.oilEkgReplication,
       ekgSpread: settings.oilEkgSpread,

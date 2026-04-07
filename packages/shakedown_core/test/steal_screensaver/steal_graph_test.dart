@@ -23,6 +23,8 @@ class FakeAudioReactor implements AudioReactor {
     double? bassBoost,
     double? reactivityStrength,
     String? beatDetectorMode,
+    String? autocorrBeatVariant,
+    String? autocorrLogoVariant,
     double? beatSensitivity,
     bool? autocorrSecondPass,
     bool? autocorrSecondPassHq,

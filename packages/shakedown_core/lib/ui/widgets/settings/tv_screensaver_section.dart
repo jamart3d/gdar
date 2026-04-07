@@ -39,17 +39,19 @@ class TvScreensaverSection extends StatefulWidget {
 class _TvScreensaverSectionState extends State<TvScreensaverSection> {
   static const Map<String, String> _beatDetectorDescriptions = {
     'auto':
-        'Auto stays on Hybrid by default. If Enhanced Audio Capture is already active in this app session, Auto can use PCM instead. Won\'t start Android capture by itself — choose Enhanced to explicitly enable it.',
+        'Auto stays on Hybrid by default. If Enhanced Audio Capture is already active in this app session, Auto can use PCM instead. Auto will not start Android capture by itself — choose Enhanced to explicitly enable it.',
     'hybrid':
         'Hybrid blends low-end hits, mid transients, and broadband changes. Best default for most music.',
     'bass':
-        'Bass listens for kick and low-end thump. Good when you want the pulse to follow the rhythm section.',
+        'Bass listens for kick and low-end thump. Good when you want the pulse to follow the rhythm section. This stays reactive only and does not BPM-lock the screensaver.',
     'mid':
         'Mid listens more to snare, guitar, and vocal attack. Often better for live recordings and thinner mixes.',
     'broad':
         'Broad reacts to overall band energy instead of one narrow range. A safer choice when Bass or Mid feels too picky.',
     'pcm':
-        'Enhanced uses Android system audio capture for cleaner onset timing and stereo waveforms. Does not BPM-lock the screensaver. May show a share-audio permission prompt on first use.',
+        'Enhanced Audio Capture uses Android system audio capture for cleaner onset timing and stereo waveforms. Does not BPM-lock the screensaver. May show a share-audio permission prompt on first use.',
+    'autocorr':
+        'Autocorr uses autocorrelation of the audio waveform to estimate tempo. Use the sub-options below to control how it drives beats and logo scale.',
   };
 
   final FocusNode _firstFocusNode = FocusNode();

@@ -708,6 +708,12 @@ mixin _SettingsProviderInitializationExtension
     _oilBeatDetectorMode =
         _prefs.getString(_oilBeatDetectorModeKey) ??
         DefaultSettings.oilBeatDetectorMode;
+    _oilAutocorrBeatVariant =
+        _prefs.getString(_oilAutocorrBeatVariantKey) ??
+        DefaultSettings.oilAutocorrBeatVariant;
+    _oilAutocorrLogoVariant =
+        _prefs.getString(_oilAutocorrLogoVariantKey) ??
+        DefaultSettings.oilAutocorrLogoVariant;
     _oilBeatSensitivity =
         _prefs.getDouble(_oilBeatSensitivityKey) ??
         DefaultSettings.oilBeatSensitivity;

@@ -62,8 +62,12 @@ class _FakeSettings extends FakeSettingsProvider {
     String beatDetectorMode = 'auto',
     bool enableAudioReactivity = true,
     this.scaleSineEnabled = false,
+    String autocorrBeatVariant = 'bpm',
+    String autocorrLogoVariant = 'pulse',
   }) : _beatDetectorMode = beatDetectorMode,
-       _enableAudioReactivity = enableAudioReactivity {
+       _enableAudioReactivity = enableAudioReactivity,
+       _autocorrBeatVariant = autocorrBeatVariant,
+       _autocorrLogoVariant = autocorrLogoVariant {
     isTv = true;
   }
 
@@ -71,6 +75,8 @@ class _FakeSettings extends FakeSettingsProvider {
   final bool scaleSineEnabled;
   String _beatDetectorMode;
   bool _enableAudioReactivity;
+  String _autocorrBeatVariant;
+  String _autocorrLogoVariant;
 
   @override
   String get oilAudioGraphMode => _graphMode;
@@ -85,8 +91,26 @@ class _FakeSettings extends FakeSettingsProvider {
   bool get oilScaleSineEnabled => scaleSineEnabled;
 
   @override
+  String get oilAutocorrBeatVariant => _autocorrBeatVariant;
+
+  @override
+  String get oilAutocorrLogoVariant => _autocorrLogoVariant;
+
+  @override
   Future<void> setOilBeatDetectorMode(String mode) async {
     _beatDetectorMode = mode;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setOilAutocorrBeatVariant(String value) async {
+    _autocorrBeatVariant = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setOilAutocorrLogoVariant(String value) async {
+    _autocorrLogoVariant = value;
     notifyListeners();
   }
 
@@ -102,19 +126,25 @@ Widget _buildSection(
   String beatDetectorMode = 'auto',
   bool enableAudioReactivity = true,
   bool scaleSineEnabled = false,
+  String autocorrBeatVariant = 'bpm',
+  String autocorrLogoVariant = 'pulse',
+  _FakeSettings? settingsOverride,
   ScreensaverLaunchDelegate? launchDelegate,
   String deviceName = 'Android TV',
 }) {
+  final settings =
+      settingsOverride ??
+      _FakeSettings(
+        graphMode,
+        beatDetectorMode: beatDetectorMode,
+        enableAudioReactivity: enableAudioReactivity,
+        scaleSineEnabled: scaleSineEnabled,
+        autocorrBeatVariant: autocorrBeatVariant,
+        autocorrLogoVariant: autocorrLogoVariant,
+      );
   return MultiProvider(
     providers: [
-      ChangeNotifierProvider<SettingsProvider>.value(
-        value: _FakeSettings(
-          graphMode,
-          beatDetectorMode: beatDetectorMode,
-          enableAudioReactivity: enableAudioReactivity,
-          scaleSineEnabled: scaleSineEnabled,
-        ),
-      ),
+      ChangeNotifierProvider<SettingsProvider>.value(value: settings),
       ChangeNotifierProvider<ThemeProvider>.value(value: _FakeThemeProvider()),
       ChangeNotifierProvider<DeviceService>.value(
         value: _FakeDeviceService(name: deviceName),
@@ -304,6 +334,49 @@ void main() {
         ),
         findsOneWidget,
       );
+    });
+
+    testWidgets('autocorr mode shows beat and logo variant sub-rows', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildSection('off', beatDetectorMode: 'autocorr'),
+      );
+
+      expect(find.text('Autocorr Beat'), findsOneWidget);
+      expect(find.text('Autocorr Logo Scale'), findsOneWidget);
+      expect(find.text('BPM'), findsOneWidget);
+      expect(find.text('Grid'), findsOneWidget);
+      expect(find.text('Pulse'), findsOneWidget);
+      expect(find.text('Sine'), findsOneWidget);
+    });
+
+    testWidgets('non-autocorr mode hides autocorr sub-rows', (tester) async {
+      await tester.pumpWidget(_buildSection('off', beatDetectorMode: 'auto'));
+
+      expect(find.text('Autocorr Beat'), findsNothing);
+      expect(find.text('Autocorr Logo Scale'), findsNothing);
+    });
+
+    testWidgets('autocorr sub-row selections update settings', (tester) async {
+      final settings = _FakeSettings(
+        'off',
+        beatDetectorMode: 'autocorr',
+        autocorrBeatVariant: 'bpm',
+        autocorrLogoVariant: 'pulse',
+      );
+      await tester.pumpWidget(_buildSection('off', settingsOverride: settings));
+
+      await tester.ensureVisible(find.text('Both').first);
+      await tester.tap(find.text('Both').first);
+      await tester.pump();
+
+      await tester.ensureVisible(find.text('Sine'));
+      await tester.tap(find.text('Sine'));
+      await tester.pump();
+
+      expect(settings.oilAutocorrBeatVariant, 'both');
+      expect(settings.oilAutocorrLogoVariant, 'sine');
     });
 
     testWidgets(

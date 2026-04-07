@@ -73,6 +73,9 @@ class StealConfig {
 
   /// Audio graph display mode: 'off', 'corner', 'corner_only', 'circular', 'ekg', or 'circular_ekg'.
   final String audioGraphMode;
+  final String beatDetectorMode;
+  final String autocorrBeatVariant;
+  final String autocorrLogoVariant;
 
   /// Radius multiplier for EKG (0.5x to 2.0x of base logo radius).
   final double ekgRadius;
@@ -221,6 +224,9 @@ class StealConfig {
     this.trackWordSpacing = 0.4,
     this.flatLineSpacing = 1.0,
     this.audioGraphMode = 'off',
+    this.beatDetectorMode = 'auto',
+    this.autocorrBeatVariant = 'bpm',
+    this.autocorrLogoVariant = 'pulse',
     this.ekgRadius = 1.0,
     this.ekgReplication = 1,
     this.ekgSpread = 4.0,
@@ -301,6 +307,9 @@ class StealConfig {
       trackWordSpacing: (map['trackWordSpacing'] as num?)?.toDouble() ?? 0.4,
       flatLineSpacing: (map['flatLineSpacing'] as num?)?.toDouble() ?? 1.0,
       audioGraphMode: map['audioGraphMode'] as String? ?? 'off',
+      beatDetectorMode: map['beatDetectorMode'] as String? ?? 'auto',
+      autocorrBeatVariant: map['autocorrBeatVariant'] as String? ?? 'bpm',
+      autocorrLogoVariant: map['autocorrLogoVariant'] as String? ?? 'pulse',
       ekgRadius: (map['ekgRadius'] as num?)?.toDouble() ?? 1.0,
       ekgReplication: (map['ekgReplication'] as int?) ?? 1,
       ekgSpread: (map['ekgSpread'] as num?)?.toDouble() ?? 4.0,
@@ -380,6 +389,9 @@ class StealConfig {
       'trackWordSpacing': trackWordSpacing,
       'flatLineSpacing': flatLineSpacing,
       'audioGraphMode': audioGraphMode,
+      'beatDetectorMode': beatDetectorMode,
+      'autocorrBeatVariant': autocorrBeatVariant,
+      'autocorrLogoVariant': autocorrLogoVariant,
       'ekgRadius': ekgRadius,
       'ekgReplication': ekgReplication,
       'beatSensitivity': beatSensitivity,
@@ -451,6 +463,9 @@ class StealConfig {
     double? trackWordSpacing,
     double? flatLineSpacing,
     String? audioGraphMode,
+    String? beatDetectorMode,
+    String? autocorrBeatVariant,
+    String? autocorrLogoVariant,
     double? ekgRadius,
     int? ekgReplication,
     double? ekgSpread,
@@ -524,6 +539,9 @@ class StealConfig {
       trackWordSpacing: trackWordSpacing ?? this.trackWordSpacing,
       flatLineSpacing: flatLineSpacing ?? this.flatLineSpacing,
       audioGraphMode: audioGraphMode ?? this.audioGraphMode,
+      beatDetectorMode: beatDetectorMode ?? this.beatDetectorMode,
+      autocorrBeatVariant: autocorrBeatVariant ?? this.autocorrBeatVariant,
+      autocorrLogoVariant: autocorrLogoVariant ?? this.autocorrLogoVariant,
       ekgRadius: ekgRadius ?? this.ekgRadius,
       ekgReplication: ekgReplication ?? this.ekgReplication,
       ekgSpread: ekgSpread ?? this.ekgSpread,
@@ -602,6 +620,9 @@ class StealConfig {
         trackWordSpacing == other.trackWordSpacing &&
         flatLineSpacing == other.flatLineSpacing &&
         audioGraphMode == other.audioGraphMode &&
+        beatDetectorMode == other.beatDetectorMode &&
+        autocorrBeatVariant == other.autocorrBeatVariant &&
+        autocorrLogoVariant == other.autocorrLogoVariant &&
         ekgRadius == other.ekgRadius &&
         ekgReplication == other.ekgReplication &&
         ekgSpread == other.ekgSpread &&
@@ -674,6 +695,9 @@ class StealConfig {
     trackWordSpacing,
     flatLineSpacing,
     audioGraphMode,
+    beatDetectorMode,
+    autocorrBeatVariant,
+    autocorrLogoVariant,
     ekgRadius,
     ekgReplication,
     ekgSpread,

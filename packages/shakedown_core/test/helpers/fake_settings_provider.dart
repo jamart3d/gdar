@@ -290,6 +290,14 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   Future<void> setOilBeatDetectorMode(String mode) async {}
   @override
+  String get oilAutocorrBeatVariant => 'bpm';
+  @override
+  Future<void> setOilAutocorrBeatVariant(String value) async {}
+  @override
+  String get oilAutocorrLogoVariant => 'pulse';
+  @override
+  Future<void> setOilAutocorrLogoVariant(String value) async {}
+  @override
   Future<void> setOilColorSource(int value) async {}
   @override
   Future<void> setOilScaleSource(int value) async {}

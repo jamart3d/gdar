@@ -121,6 +121,8 @@ class VisualizerPlugin(
     private var bassBoost = 1.0
     private var reactivityStrength = 1.0
     private var beatDetectorMode = "auto"
+    private var autocorrBeatVariant = "bpm"
+    private var autocorrLogoVariant = "pulse"
     private var beatSensitivity = 0.5
 
     // ── Multi-algorithm beat detection state ─────────────────────────────────
@@ -147,6 +149,8 @@ class VisualizerPlugin(
     private val trackedBeatIntervalsMs = ArrayDeque<Double>(TRACKING_HISTORY_SIZE)
     private var trackedIbiMs = 0.0
     private var trackedLastBeatMs = 0L
+    private var autocorrGridIbiMs = 0.0
+    private var autocorrGridNextBeatMs = 0.0
 
     // Independent last-beat timestamps so algorithms don't suppress each other.
     private val lastBeatMs = LongArray(NUM_BEAT_ALGOS)
@@ -175,6 +179,8 @@ class VisualizerPlugin(
                 bassBoost = call.argument<Double>("bassBoost") ?: bassBoost
                 reactivityStrength = call.argument<Double>("reactivityStrength") ?: reactivityStrength
                 beatDetectorMode = call.argument<String>("beatDetectorMode") ?: beatDetectorMode
+                autocorrBeatVariant = call.argument<String>("autocorrBeatVariant") ?: autocorrBeatVariant
+                autocorrLogoVariant = call.argument<String>("autocorrLogoVariant") ?: autocorrLogoVariant
                 beatSensitivity = call.argument<Double>("beatSensitivity") ?: beatSensitivity
                 autocorrSecondPass = call.argument<Boolean>("autocorrSecondPass") ?: autocorrSecondPass
                 val requestedHq = call.argument<Boolean>("autocorrSecondPassHq") ?: autocorrSecondPassHq
@@ -692,6 +698,9 @@ class VisualizerPlugin(
 
         val preferPcmBeat = pcmWarmupReady && pcmHasSignal
         val selectedMode = beatDetectorMode.lowercase()
+        val selectedAutocorrBeatVariant = autocorrBeatVariant.lowercase()
+        val effectiveAutocorrSecondPass = autocorrSecondPass || selectedMode == "autocorr"
+        val effectiveAutocorrSecondPassHq = effectiveAutocorrSecondPass && autocorrSecondPassHq
         val selection = when (selectedMode) {
             "bass" -> DetectorSelection(
                 isBeat = beats[0],
@@ -738,6 +747,13 @@ class VisualizerPlugin(
                 threshold = beatThreshold,
                 confidence = hybridConfidence,
                 source = "HYBRID",
+            )
+            "autocorr" -> DetectorSelection(
+                isBeat = hybridIsBeat,
+                score = hybridScore,
+                threshold = beatThreshold,
+                confidence = hybridConfidence,
+                source = "AUTOCORR_BPM",
             )
             else ->
                 if (preferPcmBeat) {
@@ -933,7 +949,12 @@ class VisualizerPlugin(
                 var bestLag = -1
                 var bestCorr = -1.0
                 // Only allocate for Mode A (parabolic) — Mode B and no-second-pass don't read it
-                val corrValues = if (autocorrSecondPass && !autocorrSecondPassHq) DoubleArray(maxLag + 2) else null
+                val corrValues =
+                    if (effectiveAutocorrSecondPass && !effectiveAutocorrSecondPassHq) {
+                        DoubleArray(maxLag + 2)
+                    } else {
+                        null
+                    }
 
                 for (lag in minLag..maxLag) {
                     var corr = 0.0
@@ -945,8 +966,8 @@ class VisualizerPlugin(
                 if (bestLag > 0 && bestCorr > 0.0) {
                     var refinedLag = bestLag.toDouble()
 
-                    if (autocorrSecondPass) {
-                        if (!autocorrSecondPassHq) {
+                    if (effectiveAutocorrSecondPass) {
+                        if (!effectiveAutocorrSecondPassHq) {
                             // Mode A: parabolic interpolation — ~3 extra ops, zero cost
                             if (bestLag > minLag && bestLag < maxLag) {
                                 val cPrev = corrValues!![bestLag - 1]
@@ -988,9 +1009,76 @@ class VisualizerPlugin(
             }
         }
 
-        // Only prefer autocorr when tracked grid has low or absent confidence
-        val useAutocorr = autocorrBpm != null &&
-            (trackedGridConfidence == null || trackedGridConfidence!! < 0.4)
+        var autocorrGridIsBeat = false
+        var autocorrBeatPhase: Double? = null
+        var autocorrNextBeatMs: Double? = null
+        var autocorrGridConfidence: Double? = null
+        if (autocorrIbiMs != null) {
+            val targetIbi = autocorrIbiMs!!.coerceIn(250.0, 1500.0)
+            val needsReset =
+                autocorrGridIbiMs <= 0.0 ||
+                    autocorrGridNextBeatMs <= 0.0 ||
+                    kotlin.math.abs(autocorrGridIbiMs - targetIbi) / targetIbi > 0.20
+
+            autocorrGridIbiMs =
+                if (needsReset) targetIbi
+                else autocorrGridIbiMs * 0.82 + targetIbi * 0.18
+
+            if (needsReset) {
+                autocorrGridNextBeatMs = nowMs.toDouble()
+            }
+
+            while (nowMs.toDouble() >= autocorrGridNextBeatMs - 1.0) {
+                autocorrGridIsBeat = true
+                autocorrGridNextBeatMs += autocorrGridIbiMs
+            }
+
+            val prevBeatMs = autocorrGridNextBeatMs - autocorrGridIbiMs
+            val cycleOffsetMs = (nowMs.toDouble() - prevBeatMs).coerceAtLeast(0.0)
+            autocorrBeatPhase = (cycleOffsetMs / autocorrGridIbiMs).coerceIn(0.0, 1.0)
+            autocorrNextBeatMs =
+                (autocorrGridNextBeatMs - nowMs.toDouble()).coerceIn(0.0, 5000.0)
+            autocorrGridConfidence = 1.0
+        } else {
+            autocorrGridIbiMs = 0.0
+            autocorrGridNextBeatMs = 0.0
+        }
+
+        val useAutocorrBeatGrid =
+            selectedMode == "autocorr" &&
+                (selectedAutocorrBeatVariant == "grid" ||
+                    selectedAutocorrBeatVariant == "both")
+        val forceAutocorrBpm =
+            selectedMode == "autocorr" &&
+                (selectedAutocorrBeatVariant == "bpm" ||
+                    selectedAutocorrBeatVariant == "both")
+        // Only prefer autocorr automatically when tracked grid has low or absent confidence.
+        val useAutocorr =
+            forceAutocorrBpm ||
+                (selectedMode != "autocorr" &&
+                    autocorrBpm != null &&
+                    (trackedGridConfidence == null || trackedGridConfidence!! < 0.4))
+        val emittedIsBeat = if (useAutocorrBeatGrid) autocorrGridIsBeat else isBeat
+        val emittedBeatScore = if (useAutocorrBeatGrid) autocorrBpm ?: 0.0 else finalBeatScore
+        val emittedBeatThreshold = if (useAutocorrBeatGrid) 1.0 else finalBeatThreshold
+        val emittedBeatConfidence =
+            if (useAutocorrBeatGrid) {
+                if (autocorrBeatPhase != null) 1.0 else 0.0
+            } else {
+                finalBeatConfidence
+            }
+        val emittedBeatSource =
+            when {
+                useAutocorrBeatGrid && forceAutocorrBpm -> "AUTOCORR_BOTH"
+                useAutocorrBeatGrid -> "AUTOCORR_GRID"
+                forceAutocorrBpm -> "AUTOCORR_BPM"
+                else -> finalBeatSource
+            }
+        val emittedBeatPhase = if (useAutocorrBeatGrid) autocorrBeatPhase else trackedBeatPhase
+        val emittedNextBeatMs =
+            if (useAutocorrBeatGrid) autocorrNextBeatMs else trackedNextBeatMs
+        val emittedGridConfidence =
+            if (useAutocorrBeatGrid) autocorrGridConfidence else trackedGridConfidence
 
         // Include stereo waveforms when AudioPlaybackCapture is active;
         // empty lists signal the Flutter side to fall back to fake-stereo FFT bands.
@@ -999,16 +1087,16 @@ class VisualizerPlugin(
             "mid" to finalMid,
             "treble" to finalTreble,
             "overall" to overall,
-            "isBeat" to isBeat,
-            "beatScore" to finalBeatScore,
-            "beatThreshold" to finalBeatThreshold,
-            "beatConfidence" to finalBeatConfidence,
-            "beatSource" to finalBeatSource,
+            "isBeat" to emittedIsBeat,
+            "beatScore" to emittedBeatScore,
+            "beatThreshold" to emittedBeatThreshold,
+            "beatConfidence" to emittedBeatConfidence,
+            "beatSource" to emittedBeatSource,
             "beatBpm"   to if (useAutocorr) autocorrBpm else trackedBeatBpm,
             "beatIbiMs" to if (useAutocorr) autocorrIbiMs else trackedBeatIbiMs,
-            "beatPhase" to trackedBeatPhase,
-            "nextBeatMs" to trackedNextBeatMs,
-            "beatGridConfidence" to trackedGridConfidence,
+            "beatPhase" to emittedBeatPhase,
+            "nextBeatMs" to emittedNextBeatMs,
+            "beatGridConfidence" to emittedGridConfidence,
             "autocorrBpm" to autocorrBpm,
             "bands" to finalBands.toList(),
             "waveform" to pendingWaveform,

@@ -317,10 +317,10 @@ class StealBackground extends PositionComponent
           config.scaleMultiplier;
 
       double sineAmp = 0.0;
-      if (config.scaleSineEnabled) {
+      if (_effectiveScaleSineEnabled) {
         final double t = DateTime.now().millisecondsSinceEpoch / 1000.0;
         sineAmp =
-            math.sin(t * 2.0 * math.pi * config.scaleSineFreq) *
+            math.sin(t * 2.0 * math.pi * _effectiveScaleSineFreq) *
             config.scaleSineAmp;
       }
       ebass = (sE + sineAmp).clamp(0.0, 5.0);
@@ -372,10 +372,35 @@ class StealBackground extends PositionComponent
     }
   }
 
-  double get _sharedBeatPulseBoost => game.beatPulse * 0.08;
+  bool get _usesAutocorrLogoScale =>
+      config.beatDetectorMode == 'autocorr' &&
+      (config.autocorrLogoVariant == 'pulse' ||
+          config.autocorrLogoVariant == 'sine' ||
+          config.autocorrLogoVariant == 'both');
+
+  bool get _usesAutocorrPulse =>
+      !_usesAutocorrLogoScale ||
+      config.autocorrLogoVariant == 'pulse' ||
+      config.autocorrLogoVariant == 'both';
+
+  bool get _usesAutocorrSine =>
+      _usesAutocorrLogoScale &&
+      (config.autocorrLogoVariant == 'sine' ||
+          config.autocorrLogoVariant == 'both');
+
+  double get _effectiveScaleSineFreq =>
+      _usesAutocorrSine && game.currentEnergy.beatBpm != null
+      ? (game.currentEnergy.beatBpm! / 60.0).clamp(0.05, 8.0)
+      : config.scaleSineFreq;
+
+  bool get _effectiveScaleSineEnabled =>
+      config.scaleSineEnabled || _usesAutocorrSine;
+
+  double get _sharedBeatPulseBoost =>
+      _usesAutocorrPulse ? game.beatPulse * 0.08 : 0.0;
 
   bool get _hasExplicitLogoScaleDriver =>
-      config.scaleSource != -2 || config.scaleSineEnabled;
+      config.scaleSource != -2 || _effectiveScaleSineEnabled;
 
   bool get _hasExplicitLogoColorDriver => config.colorSource != -2;
 
@@ -587,9 +612,11 @@ class StealBackground extends PositionComponent
       sE *= config.scaleMultiplier;
     }
 
-    if (config.scaleSineEnabled) {
+    if (_effectiveScaleSineEnabled) {
       final double time = DateTime.now().millisecondsSinceEpoch / 1000.0;
-      final double sine = math.sin(time * 2.0 * math.pi * config.scaleSineFreq);
+      final double sine = math.sin(
+        time * 2.0 * math.pi * _effectiveScaleSineFreq,
+      );
       sE += sine * config.scaleSineAmp;
     }
 

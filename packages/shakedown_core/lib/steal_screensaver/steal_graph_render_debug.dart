@@ -450,7 +450,6 @@ extension _StealGraphDebugRender on StealGraph {
           ..strokeWidth = isWinning || flash > 0.1 ? 2.0 : 1.0,
       );
 
-
       final lines = _algoLabels[i].split('\n');
       for (int l = 0; l < lines.length; l++) {
         _textPainter.text = TextSpan(

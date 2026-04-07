@@ -41,6 +41,8 @@ const String _oilEkgRadiusKey = 'oil_ekg_radius';
 const String _oilEkgReplicationKey = 'oil_ekg_replication';
 const String _oilEkgSpreadKey = 'oil_ekg_spread';
 const String _oilBeatDetectorModeKey = 'oil_beat_detector_mode';
+const String _oilAutocorrBeatVariantKey = 'oil_autocorr_beat_variant';
+const String _oilAutocorrLogoVariantKey = 'oil_autocorr_logo_variant';
 const String _oilBeatSensitivityKey = 'oil_beat_sensitivity';
 const String _oilBeatImpactKey = 'oil_beat_impact';
 const String _oilShowInfoBannerKey = 'oil_show_info_banner';
@@ -116,6 +118,8 @@ mixin _SettingsProviderScreensaverFields {
   late double _oilAudioReactivityStrength;
   late String _oilAudioGraphMode;
   late String _oilBeatDetectorMode;
+  late String _oilAutocorrBeatVariant;
+  late String _oilAutocorrLogoVariant;
   late double _oilBeatSensitivity;
   late double _oilBeatImpact;
   late bool _oilShowInfoBanner;
@@ -202,6 +206,8 @@ mixin _SettingsProviderScreensaverExtension
   int get oilEkgReplication => _oilEkgReplication;
   double get oilEkgSpread => _oilEkgSpread;
   String get oilBeatDetectorMode => _oilBeatDetectorMode;
+  String get oilAutocorrBeatVariant => _oilAutocorrBeatVariant;
+  String get oilAutocorrLogoVariant => _oilAutocorrLogoVariant;
   double get oilBeatSensitivity => _oilBeatSensitivity;
   double get oilBeatImpact => _oilBeatImpact;
   bool get oilShowInfoBanner => _oilShowInfoBanner;
@@ -418,6 +424,18 @@ mixin _SettingsProviderScreensaverExtension
     _oilBeatDetectorModeKey,
     _oilBeatDetectorMode = mode,
   );
+
+  Future<void> setOilAutocorrBeatVariant(String value) =>
+      _updateStringPreference(
+        _oilAutocorrBeatVariantKey,
+        _oilAutocorrBeatVariant = value,
+      );
+
+  Future<void> setOilAutocorrLogoVariant(String value) =>
+      _updateStringPreference(
+        _oilAutocorrLogoVariantKey,
+        _oilAutocorrLogoVariant = value,
+      );
 
   Future<void> setOilBeatSensitivity(double value) => _updateDoublePreference(
     _oilBeatSensitivityKey,

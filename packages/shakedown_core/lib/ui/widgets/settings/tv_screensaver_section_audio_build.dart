@@ -298,6 +298,64 @@ extension _TvScreensaverSectionAudioBuild on _TvScreensaverSectionState {
               accentColor: _enhancedCaptureStatusColor(),
             ),
           ],
+          if (settings.oilBeatDetectorMode == 'autocorr') ...[
+            const SizedBox(height: 16),
+            Text(
+              'Autocorr Beat',
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _StringSegmentedButton(
+              options: const ['bpm', 'grid', 'both'],
+              labels: const {'bpm': 'BPM', 'grid': 'Grid', 'both': 'Both'},
+              selected: settings.oilAutocorrBeatVariant,
+              onSelect: settings.setOilAutocorrBeatVariant,
+            ),
+            const SizedBox(height: 8),
+            _ReactiveHint(
+              message: switch (settings.oilAutocorrBeatVariant) {
+                'grid' =>
+                  'Grid synthesizes a metronome from autocorr tempo and fires beats on that native beat grid.',
+                'both' =>
+                  'Both uses autocorr BPM reporting and the synthesized autocorr beat grid for onsets.',
+                _ =>
+                  'BPM keeps Hybrid onset timing but reports BPM from autocorrelation.',
+              },
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+              isFruit: isFruit,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Autocorr Logo Scale',
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _StringSegmentedButton(
+              options: const ['pulse', 'sine', 'both'],
+              labels: const {'pulse': 'Pulse', 'sine': 'Sine', 'both': 'Both'},
+              selected: settings.oilAutocorrLogoVariant,
+              onSelect: settings.setOilAutocorrLogoVariant,
+            ),
+            const SizedBox(height: 8),
+            _ReactiveHint(
+              message: switch (settings.oilAutocorrLogoVariant) {
+                'sine' =>
+                  'Sine locks the logo breathing frequency to autocorr BPM, even if manual sine drive is off.',
+                'both' =>
+                  'Both layers the autocorr grid pulse with BPM-locked sine breathing.',
+                _ =>
+                  'Pulse keeps the normal beat bump, but the beat source comes from the autocorr-driven detector.',
+              },
+              colorScheme: colorScheme,
+              textTheme: textTheme,
+              isFruit: isFruit,
+            ),
+          ],
         ],
       ),
     );

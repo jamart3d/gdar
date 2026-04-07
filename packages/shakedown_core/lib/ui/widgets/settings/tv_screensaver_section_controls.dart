@@ -179,10 +179,7 @@ class _ReactiveHint extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: color.withValues(alpha: 0.28),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.28), width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,6 +503,7 @@ class _BeatDetectorSegmentedButton extends StatelessWidget {
     'mid',
     'broad',
     'pcm',
+    'autocorr',
   ];
 
   static const Map<String, String> _labels = {
@@ -515,6 +513,7 @@ class _BeatDetectorSegmentedButton extends StatelessWidget {
     'mid': 'Mid',
     'broad': 'Broad',
     'pcm': 'Enhanced',
+    'autocorr': 'Autocorr',
   };
 
   @override
@@ -558,6 +557,72 @@ class _BeatDetectorSegmentedButton extends StatelessWidget {
               (mode) => ButtonSegment<String>(
                 value: mode,
                 label: Text(_labels[mode] ?? mode.toUpperCase()),
+              ),
+            )
+            .toList(),
+        selected: {selected},
+        onSelectionChanged: (Set<String> selection) =>
+            onSelect(selection.first),
+        showSelectedIcon: false,
+      ),
+    );
+  }
+}
+
+class _StringSegmentedButton extends StatelessWidget {
+  final List<String> options;
+  final Map<String, String> labels;
+  final String selected;
+  final ValueChanged<String> onSelect;
+
+  const _StringSegmentedButton({
+    required this.options,
+    required this.labels,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TvFocusWrapper(
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          final idx = options.indexOf(selected);
+          if (event.logicalKey == LogicalKeyboardKey.arrowLeft && idx > 0) {
+            onSelect(options[idx - 1]);
+            return KeyEventResult.handled;
+          } else if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
+              idx >= 0 &&
+              idx < options.length - 1) {
+            onSelect(options[idx + 1]);
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      borderRadius: BorderRadius.circular(12),
+      focusDecoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      showGlow: false,
+      useRgbBorder: true,
+      tightDecorativeBorder: true,
+      decorativeBorderGap: 1.0,
+      overridePremiumHighlight: false,
+      child: SegmentedButton<String>(
+        segments: options
+            .map(
+              (option) => ButtonSegment<String>(
+                value: option,
+                label: Text(labels[option] ?? option),
               ),
             )
             .toList(),

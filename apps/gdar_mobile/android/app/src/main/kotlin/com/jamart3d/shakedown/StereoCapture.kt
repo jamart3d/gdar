@@ -32,10 +32,16 @@ class StereoCapture {
         private const val TAG = "StereoCapture"
         private const val SAMPLE_RATE = 44100
         const val WAVEFORM_POINTS = 256
+        const val RMS_HISTORY_SIZE = 512
         private const val MAX_CONSECUTIVE_SHORT_READS = 25
         private const val MAX_PCM_IDLE_MS = 2500L
         private const val HOT_PCM_LOG_THRESHOLD = 0.01
     }
+
+    data class RmsSnapshot(
+        val samples: FloatArray,
+        val count: Int,
+    )
 
     @Volatile var waveformL: List<Float> = emptyList()
         private set
@@ -60,6 +66,11 @@ class StereoCapture {
 
     @Volatile var lastAnalysisMs: Long = 0L
         private set
+
+    private val fullRmsHistory = FloatArray(RMS_HISTORY_SIZE)
+    private var rmsHistoryIndex = 0
+    private var rmsHistoryCount = 0
+    private val rmsHistoryLock = Any()
 
     private var audioRecord: AudioRecord? = null
     private var mediaProjection: MediaProjection? = null
@@ -91,6 +102,26 @@ class StereoCapture {
         monoSlowEnv = 0.0
         prevMonoLevel = 0.0
         hasLoggedHotFrame = false
+        synchronized(rmsHistoryLock) {
+            rmsHistoryIndex = 0
+            rmsHistoryCount = 0
+            fullRmsHistory.fill(0f)
+        }
+    }
+
+    fun getRmsSnapshot(): RmsSnapshot? = synchronized(rmsHistoryLock) {
+        val count = rmsHistoryCount
+        if (count == 0) {
+            null
+        } else {
+            val idxHead = rmsHistoryIndex
+            val samples = FloatArray(count)
+            for (i in 0 until count) {
+                val idx = (idxHead - count + i + RMS_HISTORY_SIZE) % RMS_HISTORY_SIZE
+                samples[i] = fullRmsHistory[idx]
+            }
+            RmsSnapshot(samples, count)
+        }
     }
 
     private fun stopAndReleaseAudioRecord(
@@ -349,6 +380,13 @@ class StereoCapture {
         monoFastEnv = monoFastEnv * 0.45 + monoLevel * 0.55
         monoSlowEnv = monoSlowEnv * 0.97 + monoLevel * 0.03
         monoLevelRms = monoLevel
+        synchronized(rmsHistoryLock) {
+            fullRmsHistory[rmsHistoryIndex] = monoLevel.toFloat()
+            rmsHistoryIndex = (rmsHistoryIndex + 1) % RMS_HISTORY_SIZE
+            if (rmsHistoryCount < RMS_HISTORY_SIZE) {
+                rmsHistoryCount += 1
+            }
+        }
         monoOnset = max(0.0, monoFastEnv - monoSlowEnv)
         monoFlux = max(0.0, monoLevel - prevMonoLevel)
         prevMonoLevel = monoLevel

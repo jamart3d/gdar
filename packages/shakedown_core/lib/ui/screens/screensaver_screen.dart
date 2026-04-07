@@ -84,6 +84,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   double? _lastPushedBassBoost;
   double? _lastPushedReactivityStrength;
   String? _lastPushedBeatDetectorMode;
+  String? _lastPushedAutocorrBeatVariant;
+  String? _lastPushedAutocorrLogoVariant;
   double? _lastPushedBeatSensitivity;
   bool? _lastPushedAutocorrSecondPass;
   bool? _lastPushedAutocorrSecondPassHq;
@@ -124,6 +126,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     final bassBoost = settings.oilAudioBassBoost;
     final reactivityStrength = settings.oilAudioReactivityStrength;
     final beatDetectorMode = settings.oilBeatDetectorMode;
+    final autocorrBeatVariant = settings.oilAutocorrBeatVariant;
+    final autocorrLogoVariant = settings.oilAutocorrLogoVariant;
     final beatSensitivity = settings.oilBeatSensitivity;
     final autocorrSecondPass = settings.beatAutocorrSecondPass;
     final autocorrSecondPassHq = settings.beatAutocorrSecondPassHq;
@@ -132,6 +136,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
         _lastPushedBassBoost == bassBoost &&
         _lastPushedReactivityStrength == reactivityStrength &&
         _lastPushedBeatDetectorMode == beatDetectorMode &&
+        _lastPushedAutocorrBeatVariant == autocorrBeatVariant &&
+        _lastPushedAutocorrLogoVariant == autocorrLogoVariant &&
         _lastPushedBeatSensitivity == beatSensitivity &&
         _lastPushedAutocorrSecondPass == autocorrSecondPass &&
         _lastPushedAutocorrSecondPassHq == autocorrSecondPassHq;
@@ -142,6 +148,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       bassBoost: bassBoost,
       reactivityStrength: reactivityStrength,
       beatDetectorMode: beatDetectorMode,
+      autocorrBeatVariant: autocorrBeatVariant,
+      autocorrLogoVariant: autocorrLogoVariant,
       beatSensitivity: beatSensitivity,
       autocorrSecondPass: autocorrSecondPass,
       autocorrSecondPassHq: autocorrSecondPassHq,
@@ -151,6 +159,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _lastPushedBassBoost = bassBoost;
     _lastPushedReactivityStrength = reactivityStrength;
     _lastPushedBeatDetectorMode = beatDetectorMode;
+    _lastPushedAutocorrBeatVariant = autocorrBeatVariant;
+    _lastPushedAutocorrLogoVariant = autocorrLogoVariant;
     _lastPushedBeatSensitivity = beatSensitivity;
     _lastPushedAutocorrSecondPass = autocorrSecondPass;
     _lastPushedAutocorrSecondPassHq = autocorrSecondPassHq;
@@ -547,6 +557,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _lastPushedBassBoost = null;
     _lastPushedReactivityStrength = null;
     _lastPushedBeatDetectorMode = null;
+    _lastPushedAutocorrBeatVariant = null;
+    _lastPushedAutocorrLogoVariant = null;
     _lastPushedBeatSensitivity = null;
     _lastPushedAutocorrSecondPass = null;
     _lastPushedAutocorrSecondPassHq = null;
@@ -681,6 +693,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
       flatTextProximity: settings.oilFlatTextProximity,
       flatTextPlacement: settings.oilFlatTextPlacement,
       audioGraphMode: settings.oilAudioGraphMode,
+      beatDetectorMode: settings.oilBeatDetectorMode,
+      autocorrBeatVariant: settings.oilAutocorrBeatVariant,
+      autocorrLogoVariant: settings.oilAutocorrLogoVariant,
       ekgRadius: settings.oilEkgRadius,
       ekgReplication: settings.oilEkgReplication,
       ekgSpread: settings.oilEkgSpread,

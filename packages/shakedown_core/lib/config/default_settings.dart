@@ -166,6 +166,8 @@ class DefaultSettings {
   /// 1.0 = more aggressive / easier to trigger).
   /// Detector mode: 'auto', 'hybrid', 'bass', 'mid', 'broad', or 'pcm'.
   static const String oilBeatDetectorMode = 'auto';
+  static const String oilAutocorrBeatVariant = 'bpm';
+  static const String oilAutocorrLogoVariant = 'pulse';
   static const double oilBeatSensitivity = 0.80;
   static const double oilBeatImpact = 0.25;
 
