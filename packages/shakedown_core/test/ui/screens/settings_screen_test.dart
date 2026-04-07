@@ -19,6 +19,7 @@ import 'package:shakedown_core/providers/update_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/settings/collection_statistics.dart';
 import 'package:shakedown_core/ui/widgets/settings/data_section.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_tooltip.dart';
 import '../../helpers/test_helpers.dart';
 
 // Mock Providers (Simple versions for testing)
@@ -92,11 +93,17 @@ void main() {
     await CatalogService().reset();
   });
 
-  Widget createTestableWidget(SettingsProvider settingsProvider) {
+  Widget createTestableWidget(
+    SettingsProvider settingsProvider, {
+    ThemeProvider? themeProvider,
+    bool showFruitTabBar = true,
+  }) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => settingsProvider),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => themeProvider ?? ThemeProvider(),
+        ),
         ChangeNotifierProvider<AudioProvider>(
           create: (_) => MockAudioProvider(),
         ),
@@ -110,9 +117,59 @@ void main() {
           create: (_) => MockDeviceService(),
         ),
       ],
-      child: const MaterialApp(home: SettingsScreen()),
+      child: MaterialApp(
+        home: SettingsScreen(showFruitTabBar: showFruitTabBar),
+      ),
     );
   }
+
+  testWidgets(
+    'Fruit settings header car button toggles scoped car mode state',
+    (WidgetTester tester) async {
+      final settingsProvider = SettingsProvider(prefs);
+      await prefs.setInt('theme_style_preference', 1);
+      final themeProvider = ThemeProvider();
+      themeProvider.testOnlyOverrideFruitAllowed = true;
+      await themeProvider.initializationComplete;
+
+      expect(settingsProvider.carMode, isFalse);
+      expect(settingsProvider.preventSleep, isFalse);
+      expect(settingsProvider.fruitFloatingSpheres, isFalse);
+      expect(settingsProvider.fruitEnableLiquidGlass, isFalse);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          settingsProvider,
+          themeProvider: themeProvider,
+          showFruitTabBar: false,
+        ),
+      );
+      await tester.pump(const Duration(seconds: 1));
+
+      final enableFinder = find.bySemanticsLabel('Enable Car Mode');
+      expect(enableFinder, findsOneWidget);
+      expect(find.byType(FruitTooltip), findsNothing);
+
+      await tester.tap(enableFinder);
+      await tester.pump();
+
+      expect(settingsProvider.carMode, isTrue);
+      expect(settingsProvider.preventSleep, isTrue);
+      expect(settingsProvider.fruitFloatingSpheres, isTrue);
+      expect(settingsProvider.fruitEnableLiquidGlass, isTrue);
+
+      final disableFinder = find.bySemanticsLabel('Disable Car Mode');
+      expect(disableFinder, findsOneWidget);
+
+      await tester.tap(disableFinder);
+      await tester.pump();
+
+      expect(settingsProvider.carMode, isFalse);
+      expect(settingsProvider.preventSleep, isFalse);
+      expect(settingsProvider.fruitFloatingSpheres, isTrue);
+      expect(settingsProvider.fruitEnableLiquidGlass, isTrue);
+    },
+  );
 
   testWidgets('Random switch toggles text in other Random settings', (
     WidgetTester tester,

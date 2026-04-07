@@ -936,7 +936,7 @@ extension _StealGraphCornerRender on StealGraph {
         text: entry.$1,
         center: Offset(entry.$2, baseY - _ledLabelReserve + 7),
         style: _monoTextStyle(
-          color: Color(0xFF445566),
+          color: const Color(0xFF445566),
           fontSize: 6,
           fontWeight: FontWeight.w600,
           letterSpacing: 1.0,

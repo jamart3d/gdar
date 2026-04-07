@@ -52,6 +52,24 @@ class _SettingsScreenState extends State<SettingsScreen>
   String? _activeHighlightKey;
   int _highlightTriggerCount = 0;
 
+  void _toggleFruitHeaderCarMode(SettingsProvider settingsProvider) {
+    final bool enabling = !settingsProvider.carMode;
+
+    settingsProvider.toggleCarMode();
+
+    if (settingsProvider.preventSleep != enabling) {
+      settingsProvider.togglePreventSleep();
+    }
+
+    if (enabling && !settingsProvider.fruitFloatingSpheres) {
+      settingsProvider.toggleFruitFloatingSpheres();
+    }
+
+    if (enabling && !settingsProvider.fruitEnableLiquidGlass) {
+      settingsProvider.toggleFruitEnableLiquidGlass();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -402,6 +420,17 @@ class _SettingsScreenState extends State<SettingsScreen>
             ),
             _buildFruitHeaderButton(
               context,
+              icon: LucideIcons.car,
+              color: settingsProvider.carMode
+                  ? Theme.of(context).colorScheme.primary
+                  : null,
+              semanticLabel: settingsProvider.carMode
+                  ? 'Disable Car Mode'
+                  : 'Enable Car Mode',
+              onPressed: () => _toggleFruitHeaderCarMode(settingsProvider),
+            ),
+            _buildFruitHeaderButton(
+              context,
               icon: Theme.of(context).brightness == Brightness.dark
                   ? LucideIcons.sun
                   : LucideIcons.moon,
@@ -459,12 +488,27 @@ class _SettingsScreenState extends State<SettingsScreen>
     BuildContext context, {
     required IconData icon,
     required VoidCallback onPressed,
+    Color? color,
+    String? tooltip,
+    String? semanticLabel,
   }) {
     return SizedBox(
       width: 44,
       height: 44,
       child: Center(
-        child: FruitActionButton(icon: icon, onPressed: onPressed),
+        child: FruitSurface(
+          borderRadius: BorderRadius.circular(100),
+          blur: FruitTokens.blurSoft,
+          opacity: FruitTokens.opacitySoft,
+          padding: const EdgeInsets.all(2),
+          child: FruitIconButton(
+            icon: Icon(icon),
+            color: color,
+            onPressed: onPressed,
+            tooltip: tooltip,
+            semanticLabel: semanticLabel,
+          ),
+        ),
       ),
     );
   }

@@ -529,6 +529,56 @@ void main() {
   );
 
   testWidgets(
+    'ShowListCard Fruit car mode current show uses a tighter leading inset for the date headline',
+    (WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(360, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final currentTrack = Track(
+        trackNumber: 1,
+        title: 'Dark Star',
+        duration: 1400,
+        url: 'https://archive.org/darkstar.mp3',
+        setName: 'Set 2',
+      );
+      final dummyShow = createDummyShow(
+        'Fillmore East',
+        '1970-09-19',
+        primarySrc: 'matrix',
+        sourceLocation: 'New York, NY',
+      );
+      dummyShow.location = 'New York, NY';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: dummyShow,
+          isPlaying: true,
+          currentTrack: currentTrack,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
+      final cardFinder = find.byKey(
+        const ValueKey('fruit_show_list_car_mode_card'),
+      );
+      final dateFinder = find.text('Sep 19, 1970');
+
+      final double leadingInset =
+          tester.getTopLeft(dateFinder).dx - tester.getTopLeft(cardFinder).dx;
+
+      expect(leadingInset, lessThanOrEqualTo(14.0));
+    },
+  );
+
+  testWidgets(
     'ShowListCard Fruit car mode current show grows to allow venue wrapping when date-first is off',
     (WidgetTester tester) async {
       tester.view.devicePixelRatio = 1.0;

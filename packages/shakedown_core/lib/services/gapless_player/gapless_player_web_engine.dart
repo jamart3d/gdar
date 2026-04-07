@@ -212,7 +212,6 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
       final processingState = state.processingState;
       _lastJsState = processingState;
       _processingState = _mapProcessingState(processingState ?? 'idle');
-      _processingStateController.add(_processingState);
       _engineStateStringController.add(processingState ?? 'idle');
 
       if (wasIndex != _currentIndex || wasDuration != _durationSec) {

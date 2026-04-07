@@ -37,6 +37,10 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
         style.effectiveScale;
     final double horizontalPadding =
         (isCurrentCard ? 24.0 : 22.0) * style.effectiveScale;
+    final double leadingPadding = isCurrentCard && dateFirst
+        ? 12.0 * style.effectiveScale
+        : horizontalPadding;
+    final double trailingPadding = horizontalPadding;
     final double verticalPadding =
         (isCurrentCard ? 20.0 : 15.0) * style.effectiveScale;
     final double headlineFontSize =
@@ -124,7 +128,10 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                       letterSpacing: -0.8,
                     ),
                     maxWidth:
-                        cardWidth - (horizontalPadding * 2) - trailingMetaWidth,
+                        cardWidth -
+                        leadingPadding -
+                        trailingPadding -
+                        trailingMetaWidth,
                     maxLines: primaryHeadlineMaxLines,
                     scaleFactor: style.effectiveScale,
                   )
@@ -133,7 +140,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                 ? _measureWrappedTextExtraHeight(
                     text: widget.show.venue,
                     style: venueTextStyle,
-                    maxWidth: cardWidth - (horizontalPadding * 2),
+                    maxWidth: cardWidth - leadingPadding - trailingPadding,
                     maxLines: secondaryVenueMaxLines,
                     scaleFactor: style.effectiveScale,
                   )
@@ -162,9 +169,9 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                   onLongPress: widget.onLongPress,
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
-                      horizontalPadding,
+                      leadingPadding,
                       verticalPadding,
-                      horizontalPadding,
+                      trailingPadding,
                       verticalPadding,
                     ),
                     child: Column(

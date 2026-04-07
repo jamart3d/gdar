@@ -109,6 +109,7 @@ async function testPauseResumeMath(engineName, engineObj) {
 async function main() {
     runStandalone('stalled_progress_regression.js');
     runStandalone('visible_stalled_progress_regression.js');
+    runStandalone('append_tracks_regression.js');
 
     console.log('\n--- Running Hybrid Engine Regression Tests ---\n');
 

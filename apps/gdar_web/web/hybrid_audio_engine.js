@@ -935,7 +935,13 @@
         appendTracks: function (tracks) {
             if (tracks && tracks.length > 0) {
                 _playlist = _playlist.concat(tracks);
-                _activeEngine.appendTracks(tracks);
+                // Always update BOTH engines so handoffs have the complete
+                // playlist. If only the active engine is updated, a WA→HTML5
+                // fence handoff will land on an out-of-bounds index, causing
+                // HTML5 to report index:-1, which blanks the UI and silences
+                // the auto-random-on-completion trigger.
+                _fgEngine.appendTracks(tracks);
+                _bgEngine.appendTracks(tracks);
             }
         },
 
