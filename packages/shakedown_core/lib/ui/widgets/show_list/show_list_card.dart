@@ -1,14 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown_core/ui/widgets/conditional_marquee.dart';
+import 'package:shakedown_core/ui/widgets/playback/fruit_now_playing_progress_bar.dart';
 import 'package:shakedown_core/ui/widgets/rating_control.dart';
 import 'package:shakedown_core/ui/widgets/shnid_badge.dart';
 import 'package:shakedown_core/ui/widgets/show_list/card_style_utils.dart';

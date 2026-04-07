@@ -18,31 +18,53 @@ class _FruitCarModeStatCard extends StatelessWidget {
     final settings = context.watch<SettingsProvider>();
     final colorScheme = Theme.of(context).colorScheme;
     final glassEnabled = settings.fruitEnableLiquidGlass;
+    final unitMatch = RegExp(r'^([+-]?\d+(?:\.\d+)?)(ms|s)$').firstMatch(value);
+    final String displayValue = unitMatch?.group(1) ?? value;
+    final String? displayUnit = unitMatch?.group(2);
+    final chipHorizontalPadding = 10 * scaleFactor;
+    final chipVerticalPadding = 5 * scaleFactor;
+    final unitRightInset = 6 * scaleFactor;
+    final unitBottomInset = 5 * scaleFactor;
+    final valueUnitReserve = displayUnit == null ? 0.0 : 18 * scaleFactor;
 
     final valueText = Text(
-      value,
-      key: const ValueKey('fruit_car_mode_stat_value_text'),
+      displayValue,
+      key: ValueKey('fruit_car_mode_stat_value_text_$label'),
       maxLines: 1,
-      overflow: TextOverflow.ellipsis,
+      overflow: TextOverflow.visible,
+      softWrap: false,
       style: TextStyle(
         fontFamily: FontConfig.resolve('Inter'),
-        fontSize: 24 * scaleFactor,
+        fontSize: 22 * scaleFactor,
         fontWeight: FontWeight.w900,
         color: accentColor,
       ),
     );
+    final unitText = displayUnit == null
+        ? null
+        : Text(
+            displayUnit,
+            key: ValueKey('fruit_car_mode_stat_unit_text_$label'),
+            maxLines: 1,
+            style: TextStyle(
+              fontFamily: FontConfig.resolve('Inter'),
+              fontSize: 9 * scaleFactor,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.15,
+              color: accentColor.withValues(alpha: 0.8),
+            ),
+          );
 
     final valueContent = glassEnabled
         ? SizedBox(
             height: 34 * scaleFactor,
             child: Stack(
-              alignment: Alignment.centerLeft,
               children: [
                 Positioned.fill(
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: FractionallySizedBox(
-                      widthFactor: 0.92,
+                      widthFactor: displayUnit == null ? 0.9 : 0.74,
                       child: IgnorePointer(
                         child: DecoratedBox(
                           key: const ValueKey('fruit_car_mode_stat_value_lens'),
@@ -67,7 +89,7 @@ class _FruitCarModeStatCard extends StatelessWidget {
                             boxShadow: [
                               BoxShadow(
                                 color: accentColor.withValues(alpha: 0.12),
-                                blurRadius: 10 * scaleFactor,
+                                blurRadius: 8 * scaleFactor,
                                 offset: Offset(0, 2 * scaleFactor),
                               ),
                             ],
@@ -77,47 +99,86 @@ class _FruitCarModeStatCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Transform.scale(
-                  scale: 1.03,
-                  alignment: Alignment.centerLeft,
-                  child: valueText,
+                Positioned.fill(
+                  right: valueUnitReserve,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: valueText,
+                    ),
+                  ),
                 ),
               ],
             ),
           )
-        : valueText;
+        : SizedBox(
+            height: 34 * scaleFactor,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  right: valueUnitReserve,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: valueText,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
 
     return FruitSurface(
+      key: ValueKey('fruit_car_mode_stat_card_$label'),
       borderRadius: BorderRadius.circular(18 * scaleFactor),
       blur: 14,
       opacity: 0.82,
       child: SizedBox(
         height: _fruitCarModeChipCardHeight(scaleFactor),
         child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: 12 * scaleFactor,
-            vertical: 6 * scaleFactor,
-          ),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(18 * scaleFactor),
             border: Border.all(color: accentColor.withValues(alpha: 0.16)),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: FontConfig.resolve('Inter'),
-                  fontSize: 9 * scaleFactor,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.8,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: chipHorizontalPadding,
+                  vertical: chipVerticalPadding,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      key: ValueKey('fruit_car_mode_stat_label_text_$label'),
+                      style: TextStyle(
+                        fontFamily: FontConfig.resolve('Inter'),
+                        fontSize: 9 * scaleFactor,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.8,
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.7,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 2 * scaleFactor),
+                    valueContent,
+                  ],
                 ),
               ),
-              SizedBox(height: 2 * scaleFactor),
-              valueContent,
+              if (unitText != null)
+                Positioned(
+                  right: unitRightInset,
+                  bottom: unitBottomInset,
+                  child: unitText,
+                ),
             ],
           ),
         ),

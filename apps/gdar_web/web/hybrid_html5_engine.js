@@ -610,6 +610,10 @@
     let _lastStateEmitMs = 0;
     let _trackEndedAtMs = 0;
     let _lastGapMs = null;
+    let _visibleStallWatchdogId = null;
+
+    const VISIBLE_STALL_EMIT_THRESHOLD_MS = 1000;
+    const VISIBLE_STALL_WATCHDOG_POLL_MS = 500;
 
     function _emitStateThrottled(track) {
         if (!_onStateChange) return;
@@ -624,6 +628,19 @@
         if (now - _lastStateEmitMs < 250) return;
         _lastStateEmitMs = now;
         _onStateChange(_translateState(track));
+    }
+
+    function _startVisibleStallWatchdog() {
+        if (_visibleStallWatchdogId !== null) return;
+        _visibleStallWatchdogId = setInterval(() => {
+            if (!_onStateChange || !_queue?.currentTrack) return;
+            if (document.visibilityState !== 'visible') return;
+            if (_queue.currentTrack.isPaused) return;
+            if (performance.now() - _lastStateEmitMs < VISIBLE_STALL_EMIT_THRESHOLD_MS) {
+                return;
+            }
+            _emitStateThrottled(_queue.currentTrack);
+        }, VISIBLE_STALL_WATCHDOG_POLL_MS);
     }
     let _onTrackChange = null;
     let _onError = null;
@@ -708,6 +725,7 @@
                 }
             });
             _log.log('[html5] Initialized Exact Relisten Engine');
+            _startVisibleStallWatchdog();
 
             // Background survival sync: Ensure prefetching logic runs even when RAF is throttled.
             window.addEventListener('gdar-worker-tick', () => {

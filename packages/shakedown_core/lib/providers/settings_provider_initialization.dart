@@ -200,13 +200,18 @@ mixin _SettingsProviderInitializationExtension
     _fruitFloatingSpheres =
         _prefs.getBool(_fruitFloatingSpheresKey) ??
         DefaultSettings.fruitFloatingSpheres;
-    if (_carMode && _uiScale) {
-      _uiScale = false;
-      _abbreviateDayOfWeek = false;
-      _abbreviateMonth = false;
-      _prefs.setBool(_uiScaleKey, false);
-      _prefs.setBool(_abbreviateDayOfWeekKey, false);
-      _prefs.setBool(_abbreviateMonthKey, false);
+    if (_carMode) {
+      _showDayOfWeek = false;
+      _abbreviateMonth = true;
+      _prefs.setBool(_showDayOfWeekKey, false);
+      _prefs.setBool(_abbreviateMonthKey, true);
+
+      if (_uiScale) {
+        _uiScale = false;
+        _abbreviateDayOfWeek = false;
+        _prefs.setBool(_uiScaleKey, false);
+        _prefs.setBool(_abbreviateDayOfWeekKey, false);
+      }
     }
 
     _loadLegacyCoreMigrations();

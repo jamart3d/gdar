@@ -773,6 +773,48 @@ void main() {
   );
 
   testWidgets(
+    'PlaybackScreen Fruit car mode top-row toggle does not shift lower layout',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      final chipRowFinder = find.byKey(
+        const ValueKey('fruit_car_mode_chip_row'),
+      );
+      final controlsFinder = find.byKey(
+        const ValueKey('fruit_car_mode_controls_row'),
+      );
+
+      expect(chipRowFinder, findsOneWidget);
+      expect(controlsFinder, findsOneWidget);
+
+      final controlsTopBefore = tester.getTopLeft(controlsFinder).dy;
+
+      await tester.tap(chipRowFinder);
+      await tester.pump();
+
+      expect(tester.getTopLeft(controlsFinder).dy, controlsTopBefore);
+
+      await tester.pump(const Duration(milliseconds: 200));
+
+      expect(tester.getTopLeft(controlsFinder).dy, controlsTopBefore);
+    },
+  );
+
+  testWidgets(
     'PlaybackScreen stacks src over shnid in Fruit car mode meta hud without chip badges',
     (WidgetTester tester) async {
       setLargeCarModeViewport(tester);
@@ -877,7 +919,7 @@ void main() {
   );
 
   testWidgets(
-    'PlaybackScreen Fruit car mode shows a magnified value lens when glass is enabled',
+    'PlaybackScreen Fruit car mode splits trailing units into compact chip markers when glass is enabled',
     (WidgetTester tester) async {
       setLargeCarModeViewport(tester);
       when(mockAudioProvider.currentShow).thenReturn(dummyShow);
@@ -904,13 +946,41 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('1.25s'), findsOneWidget);
-      expect(find.text('+12s'), findsOneWidget);
+      expect(find.text('1.25s'), findsNothing);
+      expect(find.text('+12s'), findsNothing);
       expect(find.text('00:34'), findsOneWidget);
-      expect(find.text('1200ms'), findsOneWidget);
+      expect(find.text('1200ms'), findsNothing);
+      expect(find.text('1.25'), findsOneWidget);
+      expect(find.text('+12'), findsOneWidget);
+      expect(find.text('1200'), findsOneWidget);
+      expect(find.text('s'), findsNWidgets(2));
+      expect(find.text('ms'), findsOneWidget);
 
-      final Text gapText = tester.widget<Text>(find.text('1200ms'));
-      expect(gapText.style?.fontSize, 24.0);
+      final dftCard = find.byKey(
+        const ValueKey('fruit_car_mode_stat_card_DFT'),
+      );
+      final dftLabel = find.byKey(
+        const ValueKey('fruit_car_mode_stat_label_text_DFT'),
+      );
+      final dftUnit = find.byKey(
+        const ValueKey('fruit_car_mode_stat_unit_text_DFT'),
+      );
+
+      expect(dftCard, findsOneWidget);
+      expect(dftLabel, findsOneWidget);
+      expect(dftUnit, findsOneWidget);
+
+      final Rect dftCardRect = tester.getRect(dftCard);
+      final Rect dftLabelRect = tester.getRect(dftLabel);
+      final Rect dftUnitRect = tester.getRect(dftUnit);
+
+      expect(dftUnitRect.left, greaterThan(dftLabelRect.right));
+      expect(dftUnitRect.top, greaterThan(dftLabelRect.bottom));
+      expect(dftCardRect.right - dftUnitRect.right, lessThan(8.0));
+      expect(dftCardRect.bottom - dftUnitRect.bottom, lessThan(8.0));
+
+      final Text gapValueText = tester.widget<Text>(find.text('1200'));
+      expect(gapValueText.style?.fontSize, lessThan(24.0));
       expect(
         find.byKey(const ValueKey('fruit_car_mode_stat_value_lens')),
         findsNWidgets(4),
@@ -966,10 +1036,12 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('1.25s'), findsOneWidget);
-    expect(find.text('+12s'), findsOneWidget);
+    expect(find.text('1.25'), findsOneWidget);
+    expect(find.text('+12'), findsOneWidget);
     expect(find.text('00:34'), findsOneWidget);
-    expect(find.text('47ms'), findsOneWidget);
+    expect(find.text('47'), findsOneWidget);
+    expect(find.text('s'), findsNWidgets(2));
+    expect(find.text('ms'), findsOneWidget);
 
     when(
       mockAudioPlayer.playerState,
@@ -978,14 +1050,14 @@ void main() {
     hudController.add(pausedHud);
     await tester.pump();
 
-    expect(find.text('1.25s'), findsOneWidget);
-    expect(find.text('+12s'), findsOneWidget);
+    expect(find.text('1.25'), findsOneWidget);
+    expect(find.text('+12'), findsOneWidget);
     expect(find.text('00:34'), findsOneWidget);
-    expect(find.text('47ms'), findsOneWidget);
-    expect(find.text('8.50s'), findsNothing);
-    expect(find.text('+1s'), findsNothing);
+    expect(find.text('47'), findsOneWidget);
+    expect(find.text('8.50'), findsNothing);
+    expect(find.text('+1'), findsNothing);
     expect(find.text('00:02'), findsNothing);
-    expect(find.text('212ms'), findsNothing);
+    expect(find.text('212'), findsNothing);
   });
 
   testWidgets(

@@ -9,6 +9,11 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
     required SettingsProvider settingsProvider,
     required ColorScheme colorScheme,
   }) {
+    final String currentTrackTitle =
+        context.select<AudioProvider, String?>(
+          (audioProvider) => audioProvider.currentTrack?.title.trim(),
+        ) ??
+        '';
     final Source? targetSource =
         (widget.isPlaying ? widget.playingSource : null) ??
         (widget.show.sources.length == 1
@@ -24,15 +29,16 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
         ? style.formattedDate
         : widget.show.venue;
     final bool isCurrentCard = widget.isPlaying;
-    final bool showFooterRow = widget.isPlaying || style.shouldShowBadge;
+    final bool showTrackTitle = isCurrentCard && currentTrackTitle.isNotEmpty;
+    final bool showFooterRow = showTrackTitle || style.shouldShowBadge;
     final bool useCompactTextLayout = isCurrentCard && showFooterRow;
     final double cardHeight =
-        (widget.isPlaying ? 254.0 : (style.shouldShowBadge ? 212.0 : 204.0)) *
+        (widget.isPlaying ? 232.0 : (style.shouldShowBadge ? 202.0 : 194.0)) *
         style.effectiveScale;
     final double horizontalPadding =
         (isCurrentCard ? 24.0 : 22.0) * style.effectiveScale;
     final double verticalPadding =
-        (isCurrentCard ? 20.0 : 18.0) * style.effectiveScale;
+        (isCurrentCard ? 20.0 : 15.0) * style.effectiveScale;
     final double headlineFontSize =
         (isCurrentCard ? 38.0 : 36.0) * style.effectiveScale;
     final double supportingFontSize =
@@ -41,16 +47,22 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
         (isCurrentCard ? 22.0 : 20.0) * style.effectiveScale;
     final double ratingSize =
         (isCurrentCard ? 38.0 : 36.0) * style.effectiveScale;
-    final double playerRowHeight =
-        (isCurrentCard ? 62.0 : 56.0) * style.effectiveScale;
-    final double playerScale =
-        style.effectiveScale * (isCurrentCard ? 1.12 : 1.0);
-    final int primaryHeadlineMaxLines = useCompactTextLayout ? 1 : 2;
-    final int secondaryVenueMaxLines = useCompactTextLayout ? 1 : 2;
-    final double contentGap =
-        (useCompactTextLayout ? 8.0 : 10.0) * style.effectiveScale;
+    final double footerRowHeight =
+        (showTrackTitle ? 58.0 : 32.0) * style.effectiveScale;
+    final double progressIndicatorScale = style.effectiveScale * 0.82;
+    final double trackTitleFontSize =
+        (isCurrentCard ? 27.0 : 25.0) * style.effectiveScale;
+    final double trackBlockGap =
+        (showTrackTitle ? 6.0 : 8.0) * style.effectiveScale;
+    final bool shouldAllowWrappedPrimaryHeadline = isCurrentCard && !dateFirst;
+    final int primaryHeadlineMaxLines =
+        shouldAllowWrappedPrimaryHeadline ? 2 : (useCompactTextLayout ? 1 : 2);
+    final int secondaryVenueMaxLines = isCurrentCard && dateFirst
+        ? 2
+        : (useCompactTextLayout ? 1 : 2);
+    final double contentGap = 8.0 * style.effectiveScale;
     final double metadataGap =
-        (useCompactTextLayout ? 4.0 : 6.0) * style.effectiveScale;
+        (useCompactTextLayout ? 4.0 : 5.0) * style.effectiveScale;
     final double compactSupportingFontSize =
         supportingFontSize * (useCompactTextLayout ? 0.94 : 1.0);
     final double compactLocationFontSize =
@@ -88,10 +100,53 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                         settingsProvider.abbreviateDayOfWeek,
                   )
                 : style.formattedDate;
+            final venueTextStyle = TextStyle(
+              fontFamily: 'Inter',
+              fontSize: compactSupportingFontSize,
+              fontWeight: FontWeight.w800,
+              height: 1.05,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
+            );
+            final double trailingMetaWidth =
+                (ratingKey != null || shouldShowSrcBadge)
+                ? ((ratingSize + 16.0 + 72.0) * style.effectiveScale)
+                : 0.0;
+            final double primaryHeadlineWrapExtraHeight =
+                shouldAllowWrappedPrimaryHeadline
+                ? _measureWrappedTextExtraHeight(
+                    text: primaryHeadline,
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: headlineFontSize,
+                      fontWeight: FontWeight.w900,
+                      height: 0.95,
+                      letterSpacing: -0.8,
+                    ),
+                    maxWidth:
+                        cardWidth -
+                        (horizontalPadding * 2) -
+                        trailingMetaWidth,
+                    maxLines: primaryHeadlineMaxLines,
+                    scaleFactor: style.effectiveScale,
+                  )
+                : 0.0;
+            final double venueWrapExtraHeight = isCurrentCard && dateFirst
+                ? _measureWrappedTextExtraHeight(
+                    text: widget.show.venue,
+                    style: venueTextStyle,
+                    maxWidth: cardWidth - (horizontalPadding * 2),
+                    maxLines: secondaryVenueMaxLines,
+                    scaleFactor: style.effectiveScale,
+                  )
+                : 0.0;
+            final double resolvedCardHeight =
+                cardHeight +
+                primaryHeadlineWrapExtraHeight +
+                venueWrapExtraHeight;
 
             return Container(
               key: const ValueKey('fruit_show_list_car_mode_card'),
-              height: cardHeight,
+              height: resolvedCardHeight,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(borderRadius),
                 color: backgroundColor,
@@ -214,15 +269,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                             widget.show.venue,
                             maxLines: secondaryVenueMaxLines,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: compactSupportingFontSize,
-                              fontWeight: FontWeight.w800,
-                              height: 1.05,
-                              color: colorScheme.onSurfaceVariant.withValues(
-                                alpha: 0.9,
-                              ),
-                            ),
+                            style: venueTextStyle,
                           ),
                           SizedBox(height: metadataGap),
                         ],
@@ -275,26 +322,55 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                                     ? 12 * style.effectiveScale
                                     : 0,
                               ),
-                              Expanded(
-                                child: SizedBox(
-                                  height: playerRowHeight,
-                                  child: AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 120),
-                                    curve: Curves.easeOutCubic,
-                                    opacity: widget.isPlaying ? 1.0 : 0.0,
-                                    child: IgnorePointer(
-                                      ignoring: !widget.isPlaying,
-                                      child: widget.isPlaying
-                                          ? EmbeddedMiniPlayer(
-                                              scaleFactor: playerScale,
-                                              compact: true,
-                                              showFullDuration: true,
-                                            )
-                                          : const SizedBox.shrink(),
+                              if (showTrackTitle)
+                                Expanded(
+                                  child: SizedBox(
+                                    height: footerRowHeight,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          height: 32 * style.effectiveScale,
+                                          child: Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: ConditionalMarquee(
+                                              key: ValueKey(currentTrackTitle),
+                                              text: currentTrackTitle,
+                                              enableAnimation: settingsProvider
+                                                  .marqueeEnabled,
+                                              velocity: 44.0,
+                                              blankSpace: 56.0,
+                                              pauseAfterRound: const Duration(
+                                                milliseconds: 1000,
+                                              ),
+                                              fadingEdgeStartFraction: 0.02,
+                                              fadingEdgeEndFraction: 0.08,
+                                              style: TextStyle(
+                                                fontFamily: 'Inter',
+                                                fontSize: trackTitleFontSize,
+                                                fontWeight: FontWeight.w900,
+                                                height: 0.96,
+                                                letterSpacing: -0.8,
+                                                color: colorScheme.onSurface,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(height: trackBlockGap),
+                                        _buildFruitCarModeTrackProgress(
+                                          context: context,
+                                          colorScheme: colorScheme,
+                                          scaleFactor: progressIndicatorScale,
+                                          glassEnabled: settingsProvider
+                                              .fruitEnableLiquidGlass,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         ],
@@ -305,6 +381,237 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildFruitCarModeTrackProgress({
+    required BuildContext context,
+    required ColorScheme colorScheme,
+    required double scaleFactor,
+    required bool glassEnabled,
+  }) {
+    final audioProvider = context.watch<AudioProvider>();
+
+    return StreamBuilder<Duration>(
+      stream: audioProvider.positionStream,
+      initialData: audioProvider.audioPlayer.position,
+      builder: (context, positionSnapshot) {
+        final position = positionSnapshot.data ?? Duration.zero;
+
+        return StreamBuilder<Duration?>(
+          stream: audioProvider.durationStream,
+          initialData: audioProvider.audioPlayer.duration,
+          builder: (context, durationSnapshot) {
+            final total = durationSnapshot.data ?? Duration.zero;
+            final totalMs = total.inMilliseconds;
+            final positionMs = position.inMilliseconds.clamp(
+              0,
+              totalMs > 0 ? totalMs : 0,
+            );
+
+            return StreamBuilder<Duration>(
+              stream: audioProvider.bufferedPositionStream,
+              initialData: audioProvider.audioPlayer.bufferedPosition,
+              builder: (context, bufferedSnapshot) {
+                final buffered = bufferedSnapshot.data ?? Duration.zero;
+                final bufferedMs = buffered.inMilliseconds.clamp(
+                  0,
+                  totalMs > 0 ? totalMs : 0,
+                );
+
+                return StreamBuilder<PlayerState>(
+                  stream: audioProvider.playerStateStream,
+                  initialData: audioProvider.audioPlayer.playerState,
+                  builder: (context, stateSnapshot) {
+                    final playerState =
+                        stateSnapshot.data ??
+                        audioProvider.audioPlayer.playerState;
+                    final processingState = playerState.processingState;
+                    final isLoading =
+                        processingState == ProcessingState.loading;
+                    final isBuffering =
+                        processingState == ProcessingState.buffering;
+                    final showPendingState = _shouldShowTrackPendingCue(
+                      isLoading: isLoading,
+                      isBuffering: isBuffering,
+                      bufferedPositionMs: bufferedMs,
+                      positionMs: positionMs,
+                      durationMs: totalMs,
+                    );
+                    final bool pulseActive =
+                        playerState.playing || isLoading || isBuffering;
+
+                    return Row(
+                      children: [
+                        _FruitCarModeTrackPulse(
+                          key: const ValueKey(
+                            'fruit_show_list_car_mode_track_pulse',
+                          ),
+                          colorScheme: colorScheme,
+                          scaleFactor: scaleFactor,
+                          active: pulseActive,
+                        ),
+                        SizedBox(width: 8 * scaleFactor),
+                        Expanded(
+                          child: KeyedSubtree(
+                            key: const ValueKey(
+                              'fruit_show_list_car_mode_track_progress',
+                            ),
+                            child: FruitNowPlayingProgressBar(
+                              colorScheme: colorScheme,
+                              scaleFactor: scaleFactor,
+                              isLoading: isLoading,
+                              bufferedPositionMs: bufferedMs,
+                              positionMs: positionMs,
+                              durationMs: totalMs,
+                              glassEnabled: glassEnabled,
+                              showPendingState: showPendingState,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  bool _shouldShowTrackPendingCue({
+    required bool isLoading,
+    required bool isBuffering,
+    required int bufferedPositionMs,
+    required int positionMs,
+    required int durationMs,
+  }) {
+    final int remainingMs = durationMs - positionMs;
+    final bool hasPlayableTail = durationMs <= 0 || remainingMs > 900;
+    final bool hasVisibleBufferHeadroom =
+        bufferedPositionMs > (positionMs + 350);
+    return isLoading ||
+        isBuffering ||
+        (hasPlayableTail && !hasVisibleBufferHeadroom);
+  }
+
+  double _measureWrappedTextExtraHeight({
+    required String text,
+    required TextStyle style,
+    required double maxWidth,
+    required int maxLines,
+    required double scaleFactor,
+  }) {
+    if (text.isEmpty || maxLines <= 1 || maxWidth <= 0) {
+      return 0;
+    }
+
+    final painter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      maxLines: maxLines,
+    )..layout(maxWidth: maxWidth);
+
+    final int lineCount = painter.computeLineMetrics().length;
+    if (lineCount <= 1) {
+      return 0;
+    }
+
+    final double lineHeight = (style.fontSize ?? 0) * (style.height ?? 1.0);
+    return ((lineCount - 1) * lineHeight) + (2 * scaleFactor);
+  }
+}
+
+class _FruitCarModeTrackPulse extends StatefulWidget {
+  final ColorScheme colorScheme;
+  final double scaleFactor;
+  final bool active;
+
+  const _FruitCarModeTrackPulse({
+    super.key,
+    required this.colorScheme,
+    required this.scaleFactor,
+    required this.active,
+  });
+
+  @override
+  State<_FruitCarModeTrackPulse> createState() =>
+      _FruitCarModeTrackPulseState();
+}
+
+class _FruitCarModeTrackPulseState extends State<_FruitCarModeTrackPulse>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 950),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _syncAnimation();
+  }
+
+  @override
+  void didUpdateWidget(covariant _FruitCarModeTrackPulse oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.active != widget.active) {
+      _syncAnimation();
+    }
+  }
+
+  void _syncAnimation() {
+    if (widget.active) {
+      _controller.repeat(reverse: true);
+    } else {
+      _controller.stop();
+      _controller.value = 0.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Color pulseColor = widget.active
+        ? widget.colorScheme.primary
+        : widget.colorScheme.onSurfaceVariant.withValues(alpha: 0.42);
+    final double baseSize = 8 * widget.scaleFactor;
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final double t = Curves.easeInOut.transform(_controller.value);
+        final double scale = widget.active ? (0.9 + (t * 0.35)) : 1.0;
+        final double alpha = widget.active ? (0.55 + (t * 0.35)) : 0.42;
+
+        return Transform.scale(
+          scale: scale,
+          child: Container(
+            width: baseSize,
+            height: baseSize,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: pulseColor.withValues(alpha: alpha),
+              boxShadow: widget.active
+                  ? [
+                      BoxShadow(
+                        color: pulseColor.withValues(alpha: 0.22 + (t * 0.12)),
+                        blurRadius: 6 * widget.scaleFactor,
+                        spreadRadius: 0.8 * t,
+                      ),
+                    ]
+                  : const [],
+            ),
+          ),
         );
       },
     );

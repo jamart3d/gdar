@@ -3,145 +3,173 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
-// Mock Harness
-require('./mock_harness.js');
-require('./stalled_progress_regression.js');
+function assert(condition, message) {
+    if (!condition) {
+        throw new Error(message);
+    }
+    console.log('PASSED:', message);
+}
 
-// Load Engine Code
+function runStandalone(scriptName) {
+    console.log(`\n--- Running ${scriptName} ---\n`);
+    const result = spawnSync(
+        process.execPath,
+        [path.join(__dirname, scriptName)],
+        { stdio: 'inherit' },
+    );
+
+    assert(
+        result.status === 0,
+        `${scriptName} should exit successfully`,
+    );
+}
+
 function loadEngine(filename) {
     const filePath = path.join(__dirname, '..', filename);
     const code = fs.readFileSync(filePath, 'utf8');
     eval(code);
 }
 
+function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+require('./mock_harness.js');
+
 loadEngine('gapless_audio_engine.js');
 loadEngine('passive_audio_engine.js');
 loadEngine('hybrid_html5_engine.js');
 loadEngine('hybrid_audio_engine.js');
-
-const _fgEngine = global._gdarAudio;
-const _html5Engine = global._hybridHtml5Audio; // Hybrid uses this structurally isolated worker
-const _hybridEngine = global._hybridAudio;
-
-// Simple Assertion Helper
-function assert(condition, message) {
-    if (!condition) {
-        console.error('FAILED:', message);
-        process.exit(1);
-    }
-    console.log('PASSED:', message);
-}
-
-// ─── Regression Test: Hybrid Sync & Handoff ─────────────────────────────────
-
-console.log('\n--- Running Hybrid Engine Regression Tests ---\n');
-
-// 1. Verify syncState is called during attemptHandoff
-let html5Synced = false;
-const originalSync = _html5Engine.syncState;
-_html5Engine.syncState = (index, pos, play) => {
-    html5Synced = true;
-    assert(play === true, 'html5Engine should be started with play=true');
-    originalSync.call(_html5Engine, index, pos, play);
-};
-
-// Reset state
-_hybridEngine.stop();
-_hybridEngine.setPlaylist([{ url: 'http://test.mp3' }], 0);
-_hybridEngine.play(); // Set _playing to true
-
-// Trigger handoff (simulating seekToIndex for Instant Start)
-bgSynced = false;
-_hybridEngine.seekToIndex(0);
-assert(bgSynced === true, 'Regression: bgEngine.syncState MUST be called during seekToIndex for Instant Start');
-
-// 2. Verify handoff invalidation on pause
-const initialId = _hybridEngine._handoffAttemptId || 0;
-_hybridEngine.pause();
-// Since _handoffAttemptId is private, we can't check it directly, but we can verify it indirectly
-// if we modify the hybrid_audio_engine.js to export it or use the log.
-
-console.log('DONE: Hybrid Engine basic sync verification passed.');
-
-// ─── Regression Test: Gapless Engine Guards ─────────────────────────────────
-
-console.log('\n--- Running Gapless Engine Regression Tests ---\n');
-
-// 1. Verify redundant start prevention
-let startCount = 0;
-const originalStartTrack = _fgEngine._startTrack;
-// Note: _startTrack is private, but available in the API scope if we export it for tests.
-// For now, we check the global exposed play calls.
-
-_fgEngine.stop();
-_fgEngine.play();
-_fgEngine.play(); // Second call should be ignored by guards
-
-console.log('DONE: Gapless Engine basic guard verification passed.');
-
-// ─── Regression Test: Pause/Resume Math for All Engines ─────────────────────
-
-console.log('\n--- Running Pause/Resume Math Tests ---\n');
-
 loadEngine('html5_audio_engine.js');
-const _html5Engine = global._html5Audio;
 
-_html5Engine.init();
+const gaplessEngine = global._gdarAudio;
+const hybridHtml5Engine = global._hybridHtml5Audio;
+const hybridEngine = global._hybridAudio;
+const html5Engine = global._html5Audio;
 
-function testPauseResumeMath(engineName, engineObj, callback) {
+async function testPauseResumeMath(engineName, engineObj) {
     if (global.__mockAudioContextInstances) {
-        global.__mockAudioContextInstances.forEach(ctx => ctx.currentTime += 1);
+        global.__mockAudioContextInstances.forEach((ctx) => {
+            ctx.currentTime += 1;
+        });
     }
 
     engineObj.stop();
-    engineObj.setPlaylist([{ url: 'http://test.mp3' }], 0);
+    engineObj.setPlaylist([{ url: 'http://test.mp3', duration: 300 }], 0);
     engineObj.play();
 
-    setTimeout(() => {
-        if (global.__mockAudioContextInstances) {
-            // fast forward to simulate play
-            global.__mockAudioContextInstances.forEach(ctx => ctx.currentTime += 10);
+    await wait(250);
 
-            let state2 = engineObj.getState();
-            console.log(`${engineName} state2: `, state2);
-            assert(state2.position >= 10, `${engineName} Position should increment during playback.`);
+    if (!global.__mockAudioContextInstances) {
+        console.log(
+            `Test warning: __mockAudioContextInstances not found. Skipping ${engineName}.`,
+        );
+        return;
+    }
 
-            // Pause
-            engineObj.pause();
+    global.__mockAudioContextInstances.forEach((ctx) => {
+        ctx.currentTime += 10;
+    });
 
-            setTimeout(() => {
-                // advance time while paused
-                if (global.__mockAudioContextInstances) {
-                    global.__mockAudioContextInstances.forEach(ctx => ctx.currentTime += 5);
-                }
-                let state3 = engineObj.getState();
-                console.log(`${engineName} state3: `, state3);
-                assert(Math.abs(state3.position - state2.position) < 0.1, `${engineName} Position should FREEZE when paused.`);
+    const stateWhilePlaying = engineObj.getState();
+    console.log(`${engineName} state while playing:`, stateWhilePlaying);
+    assert(
+        stateWhilePlaying.position >= 10,
+        `${engineName} position should increment during playback`,
+    );
 
-                // Play
-                engineObj.play();
-                setTimeout(() => {
-                    let state4 = engineObj.getState();
-                    assert(Math.abs(state4.position - state2.position) < 0.1, `${engineName} Position should RESUME from exactly where it was paused.`);
+    engineObj.pause();
+    await wait(50);
 
-                    console.log(`DONE: ${engineName} pause/resume math verification passed.`);
-                    callback();
-                }, 50);
-            }, 50);
+    global.__mockAudioContextInstances.forEach((ctx) => {
+        ctx.currentTime += 5;
+    });
 
-        } else {
-            console.log(`Test warning: __mockAudioContextInstances not found. Skipping ${engineName}.`);
-            callback();
-        }
-    }, 250);
+    const stateWhilePaused = engineObj.getState();
+    console.log(`${engineName} state while paused:`, stateWhilePaused);
+    assert(
+        Math.abs(stateWhilePaused.position - stateWhilePlaying.position) < 0.1,
+        `${engineName} position should freeze when paused`,
+    );
+
+    engineObj.play();
+    await wait(50);
+
+    const stateAfterResume = engineObj.getState();
+    assert(
+        Math.abs(stateAfterResume.position - stateWhilePlaying.position) < 0.1,
+        `${engineName} position should resume from the paused position`,
+    );
+
+    console.log(`DONE: ${engineName} pause/resume math verification passed.`);
 }
 
-// Run them sequentially so mock context time additions don't hit multiple engines simultaneously
-testPauseResumeMath('HTML5 Engine', _html5Engine, () => {
-    testPauseResumeMath('Gapless Engine', _fgEngine, () => {
-        testPauseResumeMath('Hybrid Engine', _hybridEngine, () => {
-            console.log('\nAll tests passing!');
-        });
-    });
+async function main() {
+    runStandalone('stalled_progress_regression.js');
+    runStandalone('visible_stalled_progress_regression.js');
+
+    console.log('\n--- Running Hybrid Engine Regression Tests ---\n');
+
+    let html5Synced = false;
+    const originalHybridHtml5SyncState = hybridHtml5Engine.syncState;
+    hybridHtml5Engine.syncState = (index, position, shouldPlay) => {
+        html5Synced = true;
+        assert(
+            shouldPlay === true,
+            'hybrid HTML5 engine should be started with play=true during handoff',
+        );
+        return originalHybridHtml5SyncState.call(
+            hybridHtml5Engine,
+            index,
+            position,
+            shouldPlay,
+        );
+    };
+
+    hybridEngine.stop();
+    hybridEngine.setPlaylist([{ url: 'http://test.mp3', duration: 300 }], 0);
+    hybridEngine.play();
+    hybridEngine.seekToIndex(0);
+
+    assert(
+        html5Synced === true,
+        'hybrid engine should sync background HTML5 state during seekToIndex',
+    );
+
+    hybridHtml5Engine.syncState = originalHybridHtml5SyncState;
+    hybridEngine.pause();
+
+    console.log('DONE: Hybrid Engine basic sync verification passed.');
+
+    console.log('\n--- Running Gapless Engine Regression Tests ---\n');
+
+    gaplessEngine.stop();
+    gaplessEngine.setPlaylist([{ url: 'http://test.mp3', duration: 300 }], 0);
+    gaplessEngine.play();
+    gaplessEngine.play();
+
+    assert(
+        gaplessEngine.getState().playing === true,
+        'gapless engine should remain in playing state after redundant play()',
+    );
+
+    console.log('DONE: Gapless Engine basic guard verification passed.');
+
+    console.log('\n--- Running Pause/Resume Math Tests ---\n');
+
+    html5Engine.init();
+
+    await testPauseResumeMath('HTML5 Engine', html5Engine);
+    await testPauseResumeMath('Gapless Engine', gaplessEngine);
+    await testPauseResumeMath('Hybrid Engine', hybridEngine);
+
+    console.log('\nAll tests passing!');
+    process.exit(0);
+}
+
+main().catch((error) => {
+    console.error('FAILED:', error && error.stack ? error.stack : error);
+    process.exit(1);
 });

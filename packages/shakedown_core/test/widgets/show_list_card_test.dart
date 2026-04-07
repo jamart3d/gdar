@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
@@ -20,6 +22,19 @@ import '../mocks/fake_catalog_service.dart';
 import '../helpers/test_helpers.dart';
 
 class SimpleAudioProvider extends ChangeNotifier implements AudioProvider {
+  final Stream<Duration> _positionStream = Stream<Duration>.value(
+    const Duration(minutes: 1, seconds: 30),
+  ).asBroadcastStream();
+  final Stream<Duration?> _durationStream = Stream<Duration?>.value(
+    const Duration(minutes: 5),
+  ).asBroadcastStream();
+  final Stream<Duration> _bufferedPositionStream = Stream<Duration>.value(
+    const Duration(minutes: 2),
+  ).asBroadcastStream();
+  final Stream<PlayerState> _playerStateStream = Stream<PlayerState>.value(
+    PlayerState(true, ProcessingState.ready),
+  ).asBroadcastStream();
+
   @override
   bool isPlaying = false;
 
@@ -27,10 +42,45 @@ class SimpleAudioProvider extends ChangeNotifier implements AudioProvider {
   Show? currentShow;
 
   @override
-  Stream<PlayerState> get playerStateStream => const Stream.empty();
+  Track? currentTrack;
+
+  @override
+  Stream<PlayerState> get playerStateStream => _playerStateStream;
+
+  @override
+  Stream<Duration> get positionStream => _positionStream;
+
+  @override
+  Stream<Duration?> get durationStream => _durationStream;
+
+  @override
+  Stream<Duration> get bufferedPositionStream => _bufferedPositionStream;
+
+  @override
+  GaplessPlayer get audioPlayer => _MockGaplessPlayer();
 
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
+}
+
+class _MockGaplessPlayer extends Fake implements GaplessPlayer {
+  @override
+  Duration get position => Duration.zero;
+
+  @override
+  Duration? get duration => const Duration(minutes: 5);
+
+  @override
+  Duration get bufferedPosition => const Duration(minutes: 2);
+
+  @override
+  ProcessingState get processingState => ProcessingState.ready;
+
+  @override
+  bool get playing => true;
+
+  @override
+  PlayerState get playerState => PlayerState(true, ProcessingState.ready);
 }
 
 class _FruitThemeProvider extends ChangeNotifier implements ThemeProvider {
@@ -101,6 +151,7 @@ void main() {
     bool isExpanded = false,
     bool isPlaying = false,
     bool isLoading = false,
+    Track? currentTrack,
     VoidCallback? onTap,
     VoidCallback? onLongPress,
     SettingsProvider? settingsProvider,
@@ -110,6 +161,7 @@ void main() {
     final audioProvider = SimpleAudioProvider();
     audioProvider.isPlaying = isPlaying;
     audioProvider.currentShow = isPlaying ? show : null;
+    audioProvider.currentTrack = currentTrack;
     final resolvedThemeProvider = themeProvider ?? ThemeProvider();
     final resolvedDeviceService = deviceService ?? MockDeviceService();
 
@@ -252,7 +304,7 @@ void main() {
           .height;
 
       expect(idleHeight, lessThan(activeHeight));
-      expect(activeHeight - idleHeight, greaterThan(20.0));
+      expect(activeHeight - idleHeight, greaterThan(35.0));
     },
   );
 
@@ -367,8 +419,15 @@ void main() {
   });
 
   testWidgets(
-    'ShowListCard Fruit car mode expands player from the left and keeps it right-anchored',
+    'ShowListCard Fruit car mode current show shows compact progress and pulse below the track title',
     (WidgetTester tester) async {
+      final currentTrack = Track(
+        trackNumber: 1,
+        title: 'Scarlet Begonias',
+        duration: 622,
+        url: 'https://archive.org/scarlet.mp3',
+        setName: 'Set 2',
+      );
       final dummyShow = createDummyShow(
         'Winterland Arena',
         '1974-10-20',
@@ -384,6 +443,7 @@ void main() {
         createTestableWidget(
           show: dummyShow,
           isPlaying: true,
+          currentTrack: currentTrack,
           settingsProvider: settingsProvider,
           themeProvider: _FruitThemeProvider(),
         ),
@@ -393,28 +453,126 @@ void main() {
 
       final ratingFinder = find.byType(RatingControl);
       final srcFinder = find.byType(SrcBadge);
-      final playerFinder = find.byType(EmbeddedMiniPlayer);
+
+      expect(ratingFinder, findsOneWidget);
+      expect(srcFinder, findsOneWidget);
+      expect(find.byType(EmbeddedMiniPlayer), findsNothing);
+      expect(
+        find.byKey(const ValueKey('fruit_show_list_car_mode_track_progress')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_show_list_car_mode_track_pulse')),
+        findsOneWidget,
+      );
+      expect(find.text(currentTrack.title), findsOneWidget);
+      expect(
+        tester.getTopLeft(find.text(currentTrack.title)).dy,
+        lessThan(
+          tester
+              .getTopLeft(
+                find.byKey(
+                  const ValueKey('fruit_show_list_car_mode_track_progress'),
+                ),
+              )
+              .dy,
+        ),
+      );
+    },
+  );
+
+  testWidgets(
+    'ShowListCard Fruit car mode current show grows to allow venue wrapping when needed',
+    (WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(430, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final currentTrack = Track(
+        trackNumber: 1,
+        title: 'Playing in the Band',
+        duration: 640,
+        url: 'https://archive.org/pitb.mp3',
+        setName: 'Set 2',
+      );
+      final dummyShow = createDummyShow(
+        'Oakland-Alameda County Coliseum Arena and Exhibition Hall',
+        '1989-12-28',
+        primarySrc: 'matrix',
+        sourceLocation: 'Oakland, CA',
+      );
+      dummyShow.location = 'Oakland, CA';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: dummyShow,
+          isPlaying: true,
+          currentTrack: currentTrack,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
       final cardFinder = find.byKey(
         const ValueKey('fruit_show_list_car_mode_card'),
       );
 
-      expect(ratingFinder, findsOneWidget);
-      expect(srcFinder, findsOneWidget);
-      expect(playerFinder, findsOneWidget);
-      expect(cardFinder, findsOneWidget);
+      expect(find.text(dummyShow.venue), findsOneWidget);
+      expect(tester.getSize(cardFinder).height, greaterThan(232.0));
+    },
+  );
 
-      expect(
-        tester.getTopLeft(srcFinder).dy,
-        greaterThan(tester.getTopLeft(ratingFinder).dy),
+  testWidgets(
+    'ShowListCard Fruit car mode current show grows to allow venue wrapping when date-first is off',
+    (WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(430, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final currentTrack = Track(
+        trackNumber: 1,
+        title: 'Playing in the Band',
+        duration: 640,
+        url: 'https://archive.org/pitb.mp3',
+        setName: 'Set 2',
       );
-      expect(
-        tester.getTopRight(cardFinder).dx - tester.getTopRight(playerFinder).dx,
-        lessThan(40.0),
+      final dummyShow = createDummyShow(
+        'Oakland-Alameda County Coliseum Arena and Exhibition Hall',
+        '1989-12-28',
+        primarySrc: 'matrix',
+        sourceLocation: 'Oakland, CA',
       );
-      expect(
-        tester.getSize(playerFinder).width,
-        greaterThan(tester.getSize(cardFinder).width * 0.5),
+      dummyShow.location = 'Oakland, CA';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+      settingsProvider.toggleDateFirstInShowCard();
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: dummyShow,
+          isPlaying: true,
+          currentTrack: currentTrack,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
       );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
+      final cardFinder = find.byKey(
+        const ValueKey('fruit_show_list_car_mode_card'),
+      );
+
+      expect(find.text(dummyShow.venue), findsOneWidget);
+      expect(tester.getSize(cardFinder).height, greaterThan(232.0));
     },
   );
 

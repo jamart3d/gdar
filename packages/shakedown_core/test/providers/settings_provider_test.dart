@@ -256,11 +256,55 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(settingsProvider.carMode, true);
       expect(settingsProvider.uiScale, false);
+      expect(settingsProvider.showDayOfWeek, false);
       expect(settingsProvider.abbreviateDayOfWeek, false);
-      expect(settingsProvider.abbreviateMonth, false);
+      expect(settingsProvider.abbreviateMonth, true);
       expect(prefs.getBool('car_mode'), true);
       expect(prefs.getBool('ui_scale'), false);
+      expect(prefs.getBool('show_day_of_week'), false);
+      expect(prefs.getBool('abbreviate_month'), true);
     });
+
+    test('turning Car Mode on enables compact date preferences', () async {
+      if (!settingsProvider.showDayOfWeek) {
+        settingsProvider.toggleShowDayOfWeek();
+      }
+      if (settingsProvider.abbreviateMonth) {
+        settingsProvider.toggleAbbreviateMonth();
+      }
+
+      expect(settingsProvider.showDayOfWeek, true);
+      expect(settingsProvider.abbreviateMonth, false);
+
+      settingsProvider.toggleCarMode();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(settingsProvider.carMode, true);
+      expect(settingsProvider.showDayOfWeek, false);
+      expect(settingsProvider.abbreviateMonth, true);
+      expect(prefs.getBool('show_day_of_week'), false);
+      expect(prefs.getBool('abbreviate_month'), true);
+    });
+
+    test(
+      'persisted Car Mode restores compact date preferences on startup',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'first_run_check_done': true,
+          'car_mode': true,
+          'show_day_of_week': true,
+          'abbreviate_month': false,
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final provider = SettingsProvider(prefs);
+
+        expect(provider.carMode, true);
+        expect(provider.showDayOfWeek, false);
+        expect(provider.abbreviateMonth, true);
+        expect(prefs.getBool('show_day_of_week'), false);
+        expect(prefs.getBool('abbreviate_month'), true);
+      },
+    );
 
     test(
       'floating spheres defaults to off and persists when toggled',
