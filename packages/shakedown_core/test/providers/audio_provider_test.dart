@@ -938,6 +938,92 @@ void main() {
           expect(audioProvider.undoCheckpointForTest, isNull);
         });
       });
+
+      testWidgets(
+        'playRandomShow clears a fresh undo checkpoint when no selection exists',
+        (WidgetTester tester) async {
+          await tester.runAsync(() async {
+            final show = createDummyShow(1);
+            final source = show.sources.first;
+
+            await audioProvider.playSource(show, source);
+            primeSequence(source, currentLocalIndex: 0);
+            when(
+              mockAudioPlayer.position,
+            ).thenReturn(const Duration(seconds: 12));
+            audioProvider.captureUndoCheckpoint();
+
+            when(mockShowListProvider.filteredShows).thenReturn([]);
+            when(mockShowListProvider.allShows).thenReturn([]);
+
+            final playedShow = await audioProvider.playRandomShow();
+
+            expect(playedShow, isNull);
+            expect(audioProvider.undoCheckpointForTest, isNull);
+          });
+        },
+      );
+
+      testWidgets(
+        'playRandomShow clears a fresh undo checkpoint after delayed failure',
+        (WidgetTester tester) async {
+          await tester.runAsync(() async {
+            final show = createDummyShow(1);
+            final source = show.sources.first;
+            final initializationCompleter = Completer<void>();
+
+            await audioProvider.playSource(show, source);
+            primeSequence(source, currentLocalIndex: 0);
+            when(
+              mockAudioPlayer.position,
+            ).thenReturn(const Duration(seconds: 12));
+            audioProvider.captureUndoCheckpoint();
+
+            when(mockShowListProvider.isLoading).thenReturn(true);
+            when(mockShowListProvider.allShows).thenReturn([]);
+            when(mockShowListProvider.filteredShows).thenReturn([]);
+            when(
+              mockShowListProvider.initializationComplete,
+            ).thenAnswer((_) => initializationCompleter.future);
+
+            final playedShowFuture = audioProvider.playRandomShow();
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+            when(
+              mockAudioPlayer.position,
+            ).thenReturn(const Duration(seconds: 15));
+            initializationCompleter.complete();
+
+            final playedShow = await playedShowFuture;
+
+            expect(playedShow, isNull);
+            expect(audioProvider.undoCheckpointForTest, isNull);
+          });
+        },
+      );
+
+      testWidgets(
+        'playFromShareString clears a fresh undo checkpoint when parsing fails',
+        (WidgetTester tester) async {
+          await tester.runAsync(() async {
+            final show = createDummyShow(1);
+            final source = show.sources.first;
+
+            await audioProvider.playSource(show, source);
+            primeSequence(source, currentLocalIndex: 0);
+            when(
+              mockAudioPlayer.position,
+            ).thenReturn(const Duration(seconds: 12));
+            audioProvider.captureUndoCheckpoint();
+
+            final success = await audioProvider.playFromShareString(
+              'not a share string',
+            );
+
+            expect(success, isFalse);
+            expect(audioProvider.undoCheckpointForTest, isNull);
+          });
+        },
+      );
     });
 
     group('Regression: Web Playback Race Condition', () {

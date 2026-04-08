@@ -44,6 +44,7 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
     bool animationOnly = false,
     bool delayPlayback = false,
   }) async {
+    final failedActionCheckpoint = _lastCapturedUndoCheckpoint;
     if (_showListProvider != null &&
         _showListProvider!.isLoading &&
         _showListProvider!.allShows.isEmpty) {
@@ -53,7 +54,10 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
     }
 
     final selection = pickRandomShow(filterBySearch: filterBySearch);
-    if (selection == null) return null;
+    if (selection == null) {
+      _clearUndoCheckpointIfCurrent(failedActionCheckpoint);
+      return null;
+    }
 
     final show = selection.show;
     final source = selection.source;
@@ -73,6 +77,7 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
         'playRandomShow: [TEST MODE] Skipping playback, triggering '
         'animation/scroll only.',
       );
+      _lastCapturedUndoCheckpoint = null;
       return show;
     }
 
@@ -82,10 +87,12 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
       _currentSource = source;
       _showListProvider?.setPlayingShow(show.name, source.id);
       notifyListeners();
+      _lastCapturedUndoCheckpoint = null;
       return show;
     }
 
     await playSource(show, source);
+    _lastCapturedUndoCheckpoint = null;
     return show;
   }
 
@@ -108,6 +115,7 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
     int initialIndex = 0,
     Duration? initialPosition,
   }) async {
+    _lastCapturedUndoCheckpoint = null;
     final requestId = ++_playbackRequestSerial;
     _currentShow = show;
     _currentSource = source;
@@ -148,11 +156,16 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
   }
 
   Future<bool> playFromShareString(String shareString) async {
-    if (_showListProvider == null) return false;
+    final failedActionCheckpoint = _lastCapturedUndoCheckpoint;
+    if (_showListProvider == null) {
+      _clearUndoCheckpointIfCurrent(failedActionCheckpoint);
+      return false;
+    }
 
     final data = ShareLinkParser.parse(shareString);
     if (data == null) {
       logger.w('Clipboard Playback: Could not parse share string');
+      _clearUndoCheckpointIfCurrent(failedActionCheckpoint);
       return false;
     }
 
@@ -184,6 +197,7 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
 
       if (targetShow == null || targetSource == null) {
         logger.w('Clipboard Playback: No source found for SHNID "$shnid"');
+        _clearUndoCheckpointIfCurrent(failedActionCheckpoint);
         return false;
       }
 
@@ -215,9 +229,11 @@ mixin _AudioProviderPlayback on ChangeNotifier, _AudioProviderState {
         source: targetSource,
       ));
 
+      _lastCapturedUndoCheckpoint = null;
       return true;
     } catch (e) {
       logger.e('Error preparing clipboard playback: $e');
+      _clearUndoCheckpointIfCurrent(failedActionCheckpoint);
       return false;
     }
   }

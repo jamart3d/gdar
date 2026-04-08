@@ -30,6 +30,7 @@ class _RecordingAudioProvider extends ChangeNotifier implements AudioProvider {
   final GaplessPlayer audioPlayer;
 
   final List<int> seekRequests = <int>[];
+  int captureUndoCheckpointCalls = 0;
 
   @override
   Stream<int?> get currentIndexStream => audioPlayer.currentIndexStream;
@@ -43,6 +44,11 @@ class _RecordingAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   Future<void> seekToTrack(int index) async {
     seekRequests.add(index);
+  }
+
+  @override
+  void captureUndoCheckpoint() {
+    captureUndoCheckpointCalls++;
   }
 
   @override
@@ -138,6 +144,7 @@ void main() {
       await tester.pump();
 
       expect(audioProvider.seekRequests, [2]);
+      expect(audioProvider.captureUndoCheckpointCalls, 1);
     },
   );
 }

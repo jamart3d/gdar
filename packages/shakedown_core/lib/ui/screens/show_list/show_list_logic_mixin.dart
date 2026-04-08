@@ -333,6 +333,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       showListProvider.expandShow(key);
       animationController.forward(from: 0.0);
     }
+    audioProvider.captureUndoCheckpoint();
     audioProvider.playSource(show, source);
     if (context.read<DeviceService>().isTv) {
       audioProvider.requestPlaybackFocus();
@@ -516,6 +517,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
     });
 
     final isTv = context.read<DeviceService>().isTv;
+    audioProvider.captureUndoCheckpoint();
     await audioProvider.playRandomShow(
       filterBySearch: true,
       delayPlayback: isTv,
@@ -528,6 +530,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
   }) async {
     setState(() => showPasteFeedback = true);
     final audioProvider = context.read<AudioProvider>();
+    audioProvider.captureUndoCheckpoint();
     final success = await audioProvider.playFromShareString(text);
 
     if (mounted) {
@@ -566,6 +569,7 @@ mixin ShowListLogicMixin<T extends StatefulWidget>
       final topShow = showListProvider.filteredShows.first;
       if (topShow.sources.isNotEmpty) {
         final topSource = topShow.sources.first;
+        audioProvider.captureUndoCheckpoint();
         audioProvider.playSource(topShow, topSource);
         handleRandomShowSelection((show: topShow, source: topSource));
         if (mounted && !context.read<DeviceService>().isTv) {

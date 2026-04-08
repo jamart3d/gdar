@@ -464,6 +464,7 @@ class _RatedShowListState extends State<_RatedShowList> {
           },
           onLongPress: () {
             unawaited(AppHaptics.mediumImpact(context.read<DeviceService>()));
+            audioProvider.captureUndoCheckpoint();
             unawaited(audioProvider.playSource(show, source));
           },
           child: Padding(

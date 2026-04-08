@@ -135,6 +135,7 @@ class _FruitTabHostScreenState extends State<FruitTabHostScreen> {
 
         // 3. TRIGGER SELECTION: Use delayPlayback for an instant UI jump
         debugPrint('Dice: Triggering playRandomShow...');
+        audioProvider.captureUndoCheckpoint();
         final picked = await audioProvider.playRandomShow(delayPlayback: true);
 
         if (picked != null) {

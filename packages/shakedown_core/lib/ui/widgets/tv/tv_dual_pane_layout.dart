@@ -195,7 +195,9 @@ class _TvDualPaneLayoutState extends State<TvDualPaneLayout> {
     // animationOnly: true means _currentShow is NOT set immediately.
     // The empty state stays visible until TvDualPaneLayout Stage 3
     // calls playPendingSelection() -- identical to the physical dice sequence.
-    context.read<AudioProvider>().playRandomShow(animationOnly: true);
+    final audioProvider = context.read<AudioProvider>();
+    audioProvider.captureUndoCheckpoint();
+    audioProvider.playRandomShow(animationOnly: true);
   }
 
   void _togglePane() {

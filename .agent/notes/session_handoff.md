@@ -1,82 +1,57 @@
-# Session Handoff - 2026-04-07 (Session 2)
+# Session Handoff - 2026-04-07 (Navigation Undo complete)
 
-## What Was Done
+## State at Handoff
 
-### Navigation Undo — Task 1 Complete
+Navigation Undo Tasks 1-3 are complete in the working tree and ready as part
+of the current commit.
 
-Task 1 of `docs/superpowers/plans/2026-04-07-navigation-undo.md` is fully
-implemented, reviewed (spec + code quality), and committed.
+- Spec compliance review: PASS
+- Code quality review: PASS
+- Focused verification:
+  `audio_provider_test.dart`, `track_list_view_test.dart`,
+  `usage_instructions_section_test.dart`, `settings_screen_test.dart`
+- Targeted analysis on the touched files: PASS
 
-Commits on `main`:
+## What Was Completed
 
-| SHA | Description |
-|---|---|
-| `05ed21b` | feat(audio): add navigation undo checkpoint scaffolding |
-| `9154f32` | refactor(audio): unify track index resolution through currentLocalTrackIndex |
+### Task 2 - Restore logic
 
-### What Task 1 Delivered
+Commit `0a85795` on `main`:
+- `seekToPrevious()` attempts checkpoint restore before delegating when the
+  current position is <= 5 seconds
+- `_restoreUndoCheckpointIfAvailable()` restores the saved show/source/index
+  and position without recapturing during the restore path
 
-- **New model:** `packages/shakedown_core/lib/models/undo_checkpoint.dart`
-  - Immutable, `const` constructor, 6 fields
-  - `isExpiredAt(DateTime now, {Duration maxAge})` — `> maxAge` boundary
-    (exactly 10 s = not expired; 11 s = expired)
-- **New test:** `packages/shakedown_core/test/models/undo_checkpoint_test.dart`
-  — 2 boundary tests, both passing
-- **`audio_provider.dart`:** added `WidgetsBindingObserver` to mixin chain,
-  `addObserver(this)` in constructor, `import undo_checkpoint.dart`
-- **`audio_provider_state.dart`:** added `_undoCheckpoint`,
-  `_undoCheckpointTimer`, `_isRestoringUndo`; added `captureUndoCheckpoint()`
-  (public), `_replaceUndoCheckpoint()`, `_clearUndoCheckpoint()` (private);
-  added `@visibleForTesting undoCheckpointForTest` getter; unified
-  `currentTrack` to delegate to `currentLocalTrackIndex` (removes legacy ID
-  string fallback)
-- **`audio_provider_lifecycle.dart`:** `didChangeAppLifecycleState` clears
-  checkpoint on pause/hidden/detached; `dispose()` calls `removeObserver(this)`
-  and cancels `_undoCheckpointTimer`
+### Task 3 - UI capture sites, help text, and review fixes
 
-Test suite: **361/361 passing**, no regressions.
+- Wired `captureUndoCheckpoint()` before all requested manual navigation entry
+  points:
+  show-list playback, random roll, clipboard/share playback, search-submit
+  playback, track-list header play, same-source track seeks, Fruit track
+  activation, rated-show long press, and TV random play
+- Updated `UsageInstructionsSection` help copy with the 5-second undo window
+  and 10-second expiry note
+- Fixed the TV header path so capture happens before `stopAndClear()` can null
+  the current playback state
+- Fixed failed random/share actions so they clear only the exact checkpoint
+  created for that attempt, including delayed failure paths
+- Added regression coverage for:
+  delayed random-play failure cleanup,
+  failed share-string cleanup,
+  representative track-list checkpoint capture,
+  and the new help text
 
-### Also Done This Session
+## Approved Deviations From The Plan Template
 
-- Configured `CLAUDE_CODE_USE_POWERSHELL_TOOL=1` in `~/.claude/settings.json`
-  under `env`.
+1. `usage_instructions_section_test.dart` includes `DeviceService`,
+   `SettingsProvider`, and `AudioProvider` in addition to `ThemeProvider`
+   because the widget depends on them transitively.
+2. The help-copy test uses `pump(Duration(seconds: 1))` instead of
+   `pumpAndSettle()` because `AnimatedDiceIcon` never settles.
+3. `track_list_view_test.dart` adds a concrete `captureUndoCheckpoint()`
+   override to its fake provider so the UI wiring can be asserted directly.
 
-## What Is NOT Done
+## Next Step
 
-- **Task 2:** `seekToPrevious()` restore logic — not started
-- **Task 3:** UI capture sites + usage instructions — not started
-
-## Execution Mode
-
-Subagent-Driven Development (same-session).
-Plan file: `docs/superpowers/plans/2026-04-07-navigation-undo.md`
-User instruction: **start Task 2 next, review after each task before
-proceeding, do not implement persistence/history UI/undo pill.**
-
-## Key Architecture Reminders
-
-- `_isRestoringUndo` is already wired in. Task 2 **must** set it to `true`
-  during restore and `false` after, to prevent `captureUndoCheckpoint()` from
-  overwriting the checkpoint while replaying old state.
-- `captureUndoCheckpoint()` guards on `_currentShow == null ||
-  _currentSource == null || _isRestoringUndo`. Do not change this guard in
-  Task 2.
-- `currentLocalTrackIndex` is now the single authoritative index resolver.
-  `currentTrack` delegates to it. Task 2 restore logic should also use
-  `currentLocalTrackIndex` (or its stored `trackIndex` from the checkpoint) —
-  do not re-introduce the old ID-string fallback.
-- `isSourceAllowed(...)` is the validity gate for checkpoint restore targets.
-  Task 2 must check it before restoring.
-- Public API surface must stay minimal — no new public methods beyond what
-  Task 2 spec requires. The `implements AudioProvider` fakes use
-  `noSuchMethod`, so they absorb additions automatically.
-
-## Recommended Next Step
-
-Open `docs/superpowers/plans/2026-04-07-navigation-undo.md`, read **Task 2**
-in full, then execute using `superpowers:subagent-driven-development`.
-
-**Task 2 files:**
-- Modify: `packages/shakedown_core/lib/providers/audio_provider_controls.dart`
-- Modify: `packages/shakedown_core/lib/providers/audio_provider_playback.dart`
-- Modify: `packages/shakedown_core/test/providers/audio_provider_test.dart`
+1. Optional: run broader monorepo verification before `/shipit` if this work is
+   being rolled into a larger release batch.

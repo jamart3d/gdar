@@ -121,6 +121,7 @@ class _TrackListScreenState extends State<TrackListScreen> {
   Future<void> _playShowFromHeader({int initialIndex = 0}) async {
     unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
     final ap = context.read<AudioProvider>();
+    ap.captureUndoCheckpoint();
     unawaited(
       ap.playSource(widget.show, widget.source, initialIndex: initialIndex),
     );

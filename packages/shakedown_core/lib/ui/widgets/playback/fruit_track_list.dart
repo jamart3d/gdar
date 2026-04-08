@@ -303,6 +303,7 @@ class _FruitTrackRowState extends State<_FruitTrackRow> {
 
     void activate() {
       AppHaptics.lightImpact(context.read<DeviceService>());
+      widget.audioProvider.captureUndoCheckpoint();
       widget.audioProvider.seekToTrack(widget.index);
     }
 

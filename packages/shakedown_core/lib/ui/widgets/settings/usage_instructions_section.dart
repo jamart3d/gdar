@@ -174,7 +174,7 @@ class UsageInstructionsSection extends StatelessWidget {
                   ),
                   TextSpan(
                     text:
-                        ' the mini-player to open the full playback\u00A0screen.\n',
+                        ' the mini-player to open the full playback screen.\n',
                   ),
                   TextSpan(
                     text: 'Long-press',
@@ -182,7 +182,23 @@ class UsageInstructionsSection extends StatelessWidget {
                   ),
                   TextSpan(
                     text:
-                        ' the mini-player to stop playback and clear\u00A0the\u00A0queue.',
+                        ' the mini-player to stop playback and clear the queue.\n',
+                  ),
+                  TextSpan(
+                    text: 'Press Previous',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text:
+                        ' within the first 5 seconds to undo an accidental track or show change and return to where you were.\n',
+                  ),
+                  TextSpan(
+                    text: 'Note',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text:
+                        ' This undo is temporary and expires after 10 seconds.',
                   ),
                 ],
               ),

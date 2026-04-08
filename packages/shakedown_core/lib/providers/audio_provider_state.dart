@@ -32,6 +32,7 @@ mixin _AudioProviderState {
   bool _hasMarkedAsPlayed = false;
 
   UndoCheckpoint? _undoCheckpoint;
+  UndoCheckpoint? _lastCapturedUndoCheckpoint;
   Timer? _undoCheckpointTimer;
   bool _isRestoringUndo = false;
 
@@ -139,19 +140,20 @@ mixin _AudioProviderState {
 
   void captureUndoCheckpoint() {
     if (_currentShow == null || _currentSource == null || _isRestoringUndo) {
+      _lastCapturedUndoCheckpoint = null;
       return;
     }
 
-    _replaceUndoCheckpoint(
-      UndoCheckpoint(
-        sourceId: _currentSource!.id,
-        showDate: _currentShow!.date,
-        trackIndex: currentLocalTrackIndex,
-        position: _audioPlayer.position,
-        title: _currentShow!.name,
-        createdAt: DateTime.now(),
-      ),
+    final checkpoint = UndoCheckpoint(
+      sourceId: _currentSource!.id,
+      showDate: _currentShow!.date,
+      trackIndex: currentLocalTrackIndex,
+      position: _audioPlayer.position,
+      title: _currentShow!.name,
+      createdAt: DateTime.now(),
     );
+    _replaceUndoCheckpoint(checkpoint);
+    _lastCapturedUndoCheckpoint = checkpoint;
   }
 
   void _replaceUndoCheckpoint(UndoCheckpoint checkpoint) {
@@ -167,6 +169,15 @@ mixin _AudioProviderState {
     _undoCheckpointTimer?.cancel();
     _undoCheckpointTimer = null;
     _undoCheckpoint = null;
+    _lastCapturedUndoCheckpoint = null;
+  }
+
+  void _clearUndoCheckpointIfCurrent(UndoCheckpoint? checkpoint) {
+    if (checkpoint == null || !identical(_undoCheckpoint, checkpoint)) {
+      return;
+    }
+
+    _clearUndoCheckpoint();
   }
 
   @visibleForTesting

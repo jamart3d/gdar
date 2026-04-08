@@ -207,6 +207,7 @@ class TrackListView extends StatelessWidget {
                             AppHaptics.lightImpact(
                               context.read<DeviceService>(),
                             );
+                            audioProvider.captureUndoCheckpoint();
                             audioProvider.seekToTrack(trackIndex);
                           }
                         },
@@ -228,6 +229,7 @@ class TrackListView extends StatelessWidget {
                     onTap: () {
                       if (!isPlaying) {
                         AppHaptics.lightImpact(context.read<DeviceService>());
+                        audioProvider.captureUndoCheckpoint();
                         audioProvider.seekToTrack(trackIndex);
                       }
                     },
@@ -297,6 +299,7 @@ class TrackListView extends StatelessWidget {
               }
             } else {
               AppHaptics.lightImpact(context.read<DeviceService>());
+              audioProvider.captureUndoCheckpoint();
               audioProvider.seekToTrack(trackIndex);
             }
           },

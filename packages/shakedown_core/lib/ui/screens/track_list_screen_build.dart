@@ -451,12 +451,8 @@ extension _TrackListScreenBuild on _TrackListScreenState {
               !settingsProvider.useTrueBlack;
 
           Future<void> executePlayAndNavigate() async {
-            unawaited(
-              context.read<AudioProvider>().playSource(
-                widget.show,
-                widget.source,
-              ),
-            );
+            final audioProvider = context.read<AudioProvider>();
+            unawaited(audioProvider.playSource(widget.show, widget.source));
 
             if (context.read<DeviceService>().isTv) {
               Navigator.of(context).pop();
@@ -545,6 +541,7 @@ extension _TrackListScreenBuild on _TrackListScreenState {
             return TvFocusWrapper(
               autofocus: true,
               onTap: () async {
+                audioProvider.captureUndoCheckpoint();
                 if (audioProvider.currentShow != null &&
                     audioProvider.currentShow!.name != widget.show.name) {
                   await audioProvider.stopAndClear();
@@ -709,6 +706,7 @@ extension _TrackListScreenBuild on _TrackListScreenState {
         return;
       }
       if (audioProvider.currentSource?.id == source.id) {
+        audioProvider.captureUndoCheckpoint();
         audioProvider.seekToTrack(index);
       } else {
         unawaited(_playShowFromHeader(initialIndex: index));
