@@ -86,25 +86,9 @@ mixin _AudioProviderState {
       return null;
     }
 
-    int? localIndex;
-    if (item.extras?.containsKey('track_index') ?? false) {
-      localIndex = item.extras!['track_index'] as int?;
-    }
-    if (localIndex == null) {
-      try {
-        final parts = item.id.split('_');
-        localIndex = int.tryParse(parts.last);
-      } catch (_) {}
-    }
-
-    if (localIndex != null &&
-        localIndex >= 0 &&
-        localIndex < _currentSource!.tracks.length) {
+    final localIndex = currentLocalTrackIndex;
+    if (localIndex >= 0 && localIndex < _currentSource!.tracks.length) {
       return _currentSource!.tracks[localIndex];
-    }
-
-    if (index < _currentSource!.tracks.length) {
-      return _currentSource!.tracks[index];
     }
 
     return null;
