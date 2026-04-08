@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
+import 'package:shakedown_core/models/dng_snapshot.dart';
+import 'package:shakedown_core/models/hud_snapshot.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
@@ -63,6 +65,8 @@ class _SlowAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   Track? get currentTrack => null;
   @override
+  int get currentLocalTrackIndex => 0;
+  @override
   bool get isPlaying => false;
   @override
   String? get error => null;
@@ -83,12 +87,22 @@ class _SlowAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   Stream<void> get playbackFocusRequestStream => const Stream.empty();
   @override
+  Stream<DngSnapshot> get diagnosticsStream => const Stream.empty();
+  @override
+  Stream<HudSnapshot> get hudSnapshotStream => const Stream.empty();
+  @override
   Stream<String> get notificationStream => const Stream.empty();
   @override
   Stream<({String message, VoidCallback? retryAction})>
   get bufferAgentNotificationStream => const Stream.empty();
   @override
   late final GaplessPlayer audioPlayer = GaplessPlayer();
+  @override
+  HudSnapshot get currentHudSnapshot => HudSnapshot.empty();
+  @override
+  void captureUndoCheckpoint() {}
+  @override
+  void clearLastIssue() {}
   @override
   void update(ShowListProvider slp, SettingsProvider sp, dynamic acs) {}
 

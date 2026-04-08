@@ -1,3 +1,30 @@
+What's new in v1.3.71+281
+- Replaced the broader "Live Playlist" direction with a narrower approved
+- Added the approved design spec:
+- Added the implementation plan:
+- Added session handoff notes for the next agent:
+- Added `UndoCheckpoint` model
+- Wired `WidgetsBindingObserver` into `AudioProvider` for lifecycle events
+- Added undo state and helpers to `_AudioProviderState`:
+- Checkpoint auto-expires via a 10-second `Timer` and clears on app background
+- Unified track index resolution: `currentTrack` now delegates to
+- `seekToPrevious()` now attempts checkpoint restore before normal player
+- Added `_restoreUndoCheckpointIfAvailable()` to `_AudioProviderControls`:
+- `_isRestoringUndo` guard prevents `captureUndoCheckpoint()` from overwriting
+- Added `captureUndoCheckpoint()` before every user-initiated navigation:
+- Added "Press Previous" plus the expiry note to the `Player Controls` section
+- Hardened failed random/share navigation so only the exact just-captured
+- Added `packages/shakedown_core/test/models/undo_checkpoint_test.dart`
+- Expanded the Navigation Undo group in
+- Added `packages/shakedown_core/test/ui/widgets/settings/usage_instructions_section_test.dart`
+- Updated `packages/shakedown_core/test/ui/widgets/playback/track_list_view_test.dart`
+- Focused verification passed:
+- Spec compliance review passed on the final Task 3 working tree.
+- Code quality review passed on the final Task 3 working tree.
+- Navigation Undo is now fully user-reachable because the UI capture sites are
+
+---
+
 What's new in v1.3.70+280
 - **TV Visualizer Stability**: Fixed a race between screensaver teardown and the TV settings preview panel that could throw `PlatformException(error, No active stream to cancel, null, null)` on `shakedown/visualizer_events` when exiting the screensaver.
 - **Visualizer Lifecycle**: Reworked `VisualizerAudioReactor` to manage the native visualizer event stream with explicit serialized `listen`/`cancel` handling instead of relying on `EventChannel.receiveBroadcastStream()` teardown behavior.

@@ -548,6 +548,7 @@ void main() {
       mockAudioProvider.hudSnapshotStream,
     ).thenAnswer((_) => const Stream.empty());
     when(mockAudioProvider.currentHudSnapshot).thenReturn(HudSnapshot.empty());
+    when(mockAudioProvider.captureUndoCheckpoint()).thenAnswer((_) {});
 
     // Also stub missing audioPlayer streams used by widgets
     when(
@@ -648,6 +649,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.tap(find.text(dummyTrack2.title));
 
+    verify(mockAudioProvider.captureUndoCheckpoint()).called(1);
     verify(mockAudioProvider.seekToTrack(1)).called(1);
   });
 

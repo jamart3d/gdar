@@ -5,7 +5,7 @@ import 'dart:ui' show VoidCallback;
 import 'package:flutter/foundation.dart'
     show ChangeNotifier, kIsWeb, visibleForTesting;
 import 'package:flutter/widgets.dart'
-    show AppLifecycleState, WidgetsBinding, WidgetsBindingObserver;
+    show AppLifecycleListener, AppLifecycleState;
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shakedown_core/models/dng_snapshot.dart';
@@ -35,7 +35,6 @@ part 'audio_provider_state.dart';
 
 class AudioProvider extends ChangeNotifier
     with
-        WidgetsBindingObserver,
         _AudioProviderState,
         _AudioProviderDiagnostics,
         _AudioProviderPlayback,
@@ -49,7 +48,9 @@ class AudioProvider extends ChangeNotifier
     bool useWebGaplessEngine = true,
     bool? isWeb,
   }) {
-    WidgetsBinding.instance.addObserver(this);
+    _appLifecycleListener = AppLifecycleListener(
+      onStateChange: didChangeAppLifecycleState,
+    );
     _isWeb = isWeb ?? kIsWeb;
     _catalogService = catalogService ?? CatalogService();
     _audioCacheService = audioCacheService ?? AudioCacheService();

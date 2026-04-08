@@ -48,6 +48,8 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   @override
   Track? get currentTrack => null;
   @override
+  int get currentLocalTrackIndex => 0;
+  @override
   Stream<PlayerState> get playerStateStream => const Stream.empty();
   @override
   Stream<int?> get currentIndexStream => const Stream.empty();
@@ -152,6 +154,10 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   @override
   void seekToTrack(int localIndex) {}
   @override
+  void captureUndoCheckpoint() {}
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {}
+  @override
   Stream<DngSnapshot> get diagnosticsStream => const Stream.empty();
   @override
   Stream<HudSnapshot> get hudSnapshotStream => const Stream.empty();
@@ -161,6 +167,8 @@ class MockAudioProvider extends ChangeNotifier implements ap.AudioProvider {
   void clearLastIssue() {}
   @override
   bool get hasListeners => super.hasListeners;
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class MockGaplessPlayer extends Mock implements GaplessPlayer {

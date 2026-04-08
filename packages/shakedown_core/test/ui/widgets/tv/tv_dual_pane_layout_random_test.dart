@@ -181,6 +181,8 @@ class FakeAudioProvider extends ChangeNotifier implements AudioProvider {
   get bufferAgentNotificationStream => const Stream.empty();
   @override
   late final GaplessPlayer audioPlayer = GaplessPlayer();
+  @override
+  void captureUndoCheckpoint() {}
 
   @override
   void update(

@@ -31,6 +31,7 @@ mixin _AudioProviderState {
 
   bool _hasMarkedAsPlayed = false;
 
+  AppLifecycleListener? _appLifecycleListener;
   UndoCheckpoint? _undoCheckpoint;
   UndoCheckpoint? _lastCapturedUndoCheckpoint;
   Timer? _undoCheckpointTimer;

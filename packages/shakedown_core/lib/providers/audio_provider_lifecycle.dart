@@ -3,7 +3,6 @@ part of 'audio_provider.dart';
 mixin _AudioProviderLifecycle
     on
         ChangeNotifier,
-        WidgetsBindingObserver,
         _AudioProviderState,
         _AudioProviderPlayback,
         _AudioProviderDiagnostics {
@@ -230,7 +229,6 @@ mixin _AudioProviderLifecycle
     );
   }
 
-  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden ||
@@ -241,7 +239,7 @@ mixin _AudioProviderLifecycle
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    _appLifecycleListener?.dispose();
     _audioCacheService.removeListener(notifyListeners);
     _processingStateSubscription?.cancel();
     _positionSubscription?.cancel();
