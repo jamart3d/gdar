@@ -3,6 +3,7 @@ part of 'audio_provider.dart';
 mixin _AudioProviderLifecycle
     on
         ChangeNotifier,
+        WidgetsBindingObserver,
         _AudioProviderState,
         _AudioProviderPlayback,
         _AudioProviderDiagnostics {
@@ -230,7 +231,17 @@ mixin _AudioProviderLifecycle
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached) {
+      _clearUndoCheckpoint();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _audioCacheService.removeListener(notifyListeners);
     _processingStateSubscription?.cancel();
     _positionSubscription?.cancel();
@@ -247,6 +258,7 @@ mixin _AudioProviderLifecycle
     _hudSnapshotController?.close();
     _notificationTimeoutTimer?.cancel();
     _issueTimeoutTimer?.cancel();
+    _undoCheckpointTimer?.cancel();
     _audioPlayer.dispose();
     _wakelockService.disable();
     super.dispose();

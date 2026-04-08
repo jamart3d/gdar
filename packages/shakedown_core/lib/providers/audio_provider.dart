@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui' show VoidCallback;
 
-import 'package:flutter/foundation.dart' show ChangeNotifier, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show ChangeNotifier, kIsWeb, visibleForTesting;
+import 'package:flutter/widgets.dart'
+    show AppLifecycleState, WidgetsBinding, WidgetsBindingObserver;
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shakedown_core/models/dng_snapshot.dart';
@@ -10,6 +13,7 @@ import 'package:shakedown_core/models/hud_snapshot.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
+import 'package:shakedown_core/models/undo_checkpoint.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/services/audio_cache_service.dart';
@@ -31,6 +35,7 @@ part 'audio_provider_state.dart';
 
 class AudioProvider extends ChangeNotifier
     with
+        WidgetsBindingObserver,
         _AudioProviderState,
         _AudioProviderDiagnostics,
         _AudioProviderPlayback,
@@ -44,6 +49,7 @@ class AudioProvider extends ChangeNotifier
     bool useWebGaplessEngine = true,
     bool? isWeb,
   }) {
+    WidgetsBinding.instance.addObserver(this);
     _isWeb = isWeb ?? kIsWeb;
     _catalogService = catalogService ?? CatalogService();
     _audioCacheService = audioCacheService ?? AudioCacheService();

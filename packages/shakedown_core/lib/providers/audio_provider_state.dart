@@ -31,6 +31,10 @@ mixin _AudioProviderState {
 
   bool _hasMarkedAsPlayed = false;
 
+  UndoCheckpoint? _undoCheckpoint;
+  Timer? _undoCheckpointTimer;
+  bool _isRestoringUndo = false;
+
   String? _lastAgentMessage;
   String? _lastNotificationMessage;
   String? _lastIssueMessage;
@@ -136,6 +140,53 @@ mixin _AudioProviderState {
   Stream<String> get notificationStream => _notificationController.stream;
   Stream<void> get playbackFocusRequestStream =>
       _playbackFocusRequestController.stream;
+
+  int get currentLocalTrackIndex {
+    final index = _audioPlayer.currentIndex;
+    if (index == null) return 0;
+    final sequence = _audioPlayer.sequence;
+    if (sequence.isEmpty || index >= sequence.length) return index;
+
+    final sourceItem = sequence[index];
+    if (sourceItem.tag is! MediaItem) return index;
+    final item = sourceItem.tag as MediaItem;
+    return item.extras?['track_index'] as int? ?? index;
+  }
+
+  void captureUndoCheckpoint() {
+    if (_currentShow == null || _currentSource == null || _isRestoringUndo) {
+      return;
+    }
+
+    _replaceUndoCheckpoint(
+      UndoCheckpoint(
+        sourceId: _currentSource!.id,
+        showDate: _currentShow!.date,
+        trackIndex: currentLocalTrackIndex,
+        position: _audioPlayer.position,
+        title: _currentShow!.name,
+        createdAt: DateTime.now(),
+      ),
+    );
+  }
+
+  void _replaceUndoCheckpoint(UndoCheckpoint checkpoint) {
+    _undoCheckpointTimer?.cancel();
+    _undoCheckpoint = checkpoint;
+    _undoCheckpointTimer = Timer(
+      const Duration(seconds: 10),
+      _clearUndoCheckpoint,
+    );
+  }
+
+  void _clearUndoCheckpoint() {
+    _undoCheckpointTimer?.cancel();
+    _undoCheckpointTimer = null;
+    _undoCheckpoint = null;
+  }
+
+  @visibleForTesting
+  UndoCheckpoint? get undoCheckpointForTest => _undoCheckpoint;
 
   int get cachedTrackCount => _audioCacheService.cachedTrackCount;
 }
