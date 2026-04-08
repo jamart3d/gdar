@@ -1177,7 +1177,9 @@ void main() {
       await tester.pumpWidget(
         MultiProvider(
           providers: [
-            ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
+            ChangeNotifierProvider<AudioProvider>.value(
+              value: mockAudioProvider,
+            ),
             ChangeNotifierProvider<SettingsProvider>.value(
               value: mockSettingsProvider,
             ),
@@ -1187,9 +1189,7 @@ void main() {
           ],
           child: MaterialApp(
             home: Scaffold(
-              body: PlaybackControls(
-                onWebStuckReset: () => resetCount++,
-              ),
+              body: PlaybackControls(onWebStuckReset: () => resetCount++),
             ),
           ),
         ),

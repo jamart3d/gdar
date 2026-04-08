@@ -13,36 +13,32 @@ void main() {
   // After the fix, there must be exactly two adds in the file:
   //   1. the error-handler path (_onJsError)
   //   2. the end of _onJsStateChange (after all fields are updated)
-  test(
-    '_processingStateController.add appears exactly twice in web engine '
-    '(error handler + single end-of-tick emission)',
-    () {
-      final repoRoot = _findRepoRoot();
-      final source = File(
-        p.join(
-          repoRoot,
-          'packages',
-          'shakedown_core',
-          'lib',
-          'services',
-          'gapless_player',
-          'gapless_player_web_engine.dart',
-        ),
-      ).readAsStringSync();
+  test('_processingStateController.add appears exactly twice in web engine '
+      '(error handler + single end-of-tick emission)', () {
+    final repoRoot = _findRepoRoot();
+    final source = File(
+      p.join(
+        repoRoot,
+        'packages',
+        'shakedown_core',
+        'lib',
+        'services',
+        'gapless_player',
+        'gapless_player_web_engine.dart',
+      ),
+    ).readAsStringSync();
 
-      final count =
-          '_processingStateController.add'.allMatches(source).length;
-      expect(
-        count,
-        2,
-        reason:
-            'Expected exactly 2 _processingStateController.add calls '
-            '(error path + end-of-tick). An extra early emission before '
-            '_playing is updated causes double-fire of '
-            '_listenForProcessingState on show completion.',
-      );
-    },
-  );
+    final count = '_processingStateController.add'.allMatches(source).length;
+    expect(
+      count,
+      2,
+      reason:
+          'Expected exactly 2 _processingStateController.add calls '
+          '(error path + end-of-tick). An extra early emission before '
+          '_playing is updated causes double-fire of '
+          '_listenForProcessingState on show completion.',
+    );
+  });
 
   test('all web audio engines expose onPlayBlocked callback registration', () {
     final repoRoot = _findRepoRoot();
