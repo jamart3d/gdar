@@ -93,7 +93,63 @@ mixin _AudioProviderControls on ChangeNotifier, _AudioProviderState {
 
   Future<void> seekToNext() => _audioPlayer.seekToNext();
 
-  Future<void> seekToPrevious() => _audioPlayer.seekToPrevious();
+  Future<bool> _restoreUndoCheckpointIfAvailable() async {
+    final checkpoint = _undoCheckpoint;
+    if (checkpoint == null || _showListProvider == null || _isRestoringUndo) {
+      return false;
+    }
+
+    if (checkpoint.isExpiredAt(DateTime.now())) {
+      _clearUndoCheckpoint();
+      return false;
+    }
+
+    Show? targetShow;
+    Source? targetSource;
+
+    for (final show in _showListProvider!.allShows) {
+      for (final source in show.sources) {
+        if (source.id == checkpoint.sourceId) {
+          targetShow = show;
+          targetSource = source;
+          break;
+        }
+      }
+      if (targetSource != null) break;
+    }
+
+    if (targetShow == null || targetSource == null) {
+      _clearUndoCheckpoint();
+      return false;
+    }
+
+    if (!_showListProvider!.isSourceAllowed(targetSource)) {
+      _clearUndoCheckpoint();
+      return false;
+    }
+
+    _isRestoringUndo = true;
+    try {
+      await playSource(
+        targetShow,
+        targetSource,
+        initialIndex: checkpoint.trackIndex,
+        initialPosition: checkpoint.position,
+      );
+      _clearUndoCheckpoint();
+      return true;
+    } finally {
+      _isRestoringUndo = false;
+    }
+  }
+
+  Future<void> seekToPrevious() async {
+    if (_audioPlayer.position <= const Duration(seconds: 5)) {
+      final restored = await _restoreUndoCheckpointIfAvailable();
+      if (restored) return;
+    }
+    await _audioPlayer.seekToPrevious();
+  }
 
   Future<void> seek(Duration position) => _audioPlayer.seek(position);
 

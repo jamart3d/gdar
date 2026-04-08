@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show AppLifecycleState;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shakedown_core/models/show.dart';
@@ -114,6 +115,7 @@ void main() {
       mockAudioPlayer.setAudioSources(
         any,
         initialIndex: anyNamed('initialIndex'),
+        initialPosition: anyNamed('initialPosition'),
         preload: anyNamed('preload'),
       ),
     ).thenAnswer((_) async => const Duration(seconds: 100));
@@ -797,6 +799,144 @@ void main() {
 
         // Verify addAudioSources WAS called (so we know we actually hit the error)
         verify(mockAudioPlayer.addAudioSources(any)).called(1);
+      });
+    });
+
+    group('Navigation Undo', () {
+      void primeSequence(Source source, {required int currentLocalIndex}) {
+        when(mockAudioPlayer.currentIndex).thenReturn(currentLocalIndex);
+        when(mockAudioPlayer.sequence).thenReturn(
+          source.tracks.asMap().entries.map((entry) {
+            return AudioSource.uri(
+              Uri.parse(entry.value.url),
+              tag: MediaItem(
+                id: '${source.id}_${entry.key}',
+                title: entry.value.title,
+                extras: {'source_id': source.id, 'track_index': entry.key},
+              ),
+            );
+          }).toList(),
+        );
+      }
+
+      testWidgets('captureUndoCheckpoint stores current track and position', (
+        WidgetTester tester,
+      ) async {
+        await tester.runAsync(() async {
+          final show = createDummyShow(1);
+          final source = show.sources.first;
+
+          await audioProvider.playSource(show, source);
+          primeSequence(source, currentLocalIndex: 1);
+          when(
+            mockAudioPlayer.position,
+          ).thenReturn(const Duration(seconds: 37));
+
+          audioProvider.captureUndoCheckpoint();
+
+          final checkpoint = audioProvider.undoCheckpointForTest;
+          expect(checkpoint, isNotNull);
+          expect(checkpoint!.sourceId, source.id);
+          expect(checkpoint.trackIndex, 1);
+          expect(checkpoint.position, const Duration(seconds: 37));
+        });
+      });
+
+      testWidgets(
+        'seekToPrevious restores checkpoint when pressed near track start',
+        (WidgetTester tester) async {
+          await tester.runAsync(() async {
+            final show = createDummyShow(1);
+            final source = show.sources.first;
+
+            await audioProvider.playSource(show, source);
+            primeSequence(source, currentLocalIndex: 0);
+            when(
+              mockAudioPlayer.position,
+            ).thenReturn(const Duration(seconds: 28));
+            audioProvider.captureUndoCheckpoint();
+
+            when(mockShowListProvider.allShows).thenReturn([show]);
+
+            when(
+              mockAudioPlayer.position,
+            ).thenReturn(const Duration(seconds: 3));
+
+            await audioProvider.seekToPrevious();
+
+            verify(
+              mockAudioPlayer.setAudioSources(
+                any,
+                initialIndex: 0,
+                initialPosition: const Duration(seconds: 28),
+                preload: false,
+              ),
+            ).called(1);
+            verifyNever(mockAudioPlayer.seekToPrevious());
+            expect(audioProvider.undoCheckpointForTest, isNull);
+          });
+        },
+      );
+
+      testWidgets(
+        'seekToPrevious delegates normally when current position is above threshold',
+        (WidgetTester tester) async {
+          await tester.runAsync(() async {
+            final show = createDummyShow(1);
+            final source = show.sources.first;
+
+            await audioProvider.playSource(show, source);
+            primeSequence(source, currentLocalIndex: 0);
+            when(
+              mockAudioPlayer.position,
+            ).thenReturn(const Duration(seconds: 28));
+            audioProvider.captureUndoCheckpoint();
+
+            when(
+              mockAudioPlayer.position,
+            ).thenReturn(const Duration(seconds: 8));
+
+            await audioProvider.seekToPrevious();
+
+            verify(mockAudioPlayer.seekToPrevious()).called(1);
+          });
+        },
+      );
+
+      testWidgets('checkpoint expires after 10 seconds', (
+        WidgetTester tester,
+      ) async {
+        final show = createDummyShow(1);
+        final source = show.sources.first;
+
+        await audioProvider.playSource(show, source);
+        primeSequence(source, currentLocalIndex: 0);
+        when(mockAudioPlayer.position).thenReturn(const Duration(seconds: 12));
+        audioProvider.captureUndoCheckpoint();
+
+        await tester.pump(const Duration(seconds: 11));
+
+        expect(audioProvider.undoCheckpointForTest, isNull);
+      });
+
+      testWidgets('paused lifecycle clears the checkpoint', (
+        WidgetTester tester,
+      ) async {
+        await tester.runAsync(() async {
+          final show = createDummyShow(1);
+          final source = show.sources.first;
+
+          await audioProvider.playSource(show, source);
+          primeSequence(source, currentLocalIndex: 0);
+          when(
+            mockAudioPlayer.position,
+          ).thenReturn(const Duration(seconds: 12));
+          audioProvider.captureUndoCheckpoint();
+
+          audioProvider.didChangeAppLifecycleState(AppLifecycleState.paused);
+
+          expect(audioProvider.undoCheckpointForTest, isNull);
+        });
       });
     });
 
