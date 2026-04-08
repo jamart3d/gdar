@@ -54,7 +54,7 @@ Play Store note prepending, and pending notes reset.
    (Runs after deploy — records deploy status and updates release metadata.)
 
 ## 7. Smoke Test
-- `curl -sI https://gdar.app | grep -E "HTTP/[0-9.]+ 200"` (or equivalent)
+- `curl -sI https://shakedown-pwa.web.app/ | grep -E "HTTP/[0-9.]+ 200"` (or equivalent)
 - If the live URL does not return 200, halt and report before wrapping up.
 
 ## 8. Wrap-Up

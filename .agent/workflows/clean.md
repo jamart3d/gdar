@@ -1,18 +1,20 @@
----
-description: Root-level monorepo cleanup audit and recursive hygiene checklist.
+description: Monorepo hygiene audit with root drift checks and selective recursive cleanup.
 ---
 
-# Clean Home Workflow (Monorepo)
+# Clean Workflow (Monorepo)
 
 **TRIGGERS:** clean, home, hygiene, scrub, doctor
 
-This workflow is for workspace-root hygiene in the GDAR monorepo. Treat it as
-an audit-first workflow. Do not delete or move files blindly on a dirty
+This workflow is for monorepo hygiene in the GDAR workspace. It starts with a
+root-level drift audit, then performs selective recursive cleanup in
+low-risk member areas such as `apps/`, `packages/`, and `scripts/`. Treat it
+as an audit-first workflow. Do not delete or move files blindly on a dirty
 worktree.
 
 ## 1. Root Directory Audit
 1. List all files and directories in the project root.
-2. Recursively search `apps/` and `packages/` for transient artifacts (*.log, *.tmp, test_out.txt, etc).
+2. Recursively search `apps/`, `packages/`, and `scripts/` for transient
+   artifacts (`*.log`, `*.tmp`, `test_out.txt`, etc).
 3. Compare root files against the approved root file list:
    - `pubspec.yaml`, `pubspec.lock`
    - `analysis_options.yaml`, `build.yaml`
@@ -41,8 +43,8 @@ worktree.
 - Legacy root-level `lib/` or `test/` directories
 - Report or scratch markdown files that do not belong in `docs/` or `.agent/`
 
-#### Recursive Member Target Cleanup (apps/ and packages/)
-- Transient artifacts scattered within member packages:
+#### Recursive Target Cleanup (`apps/`, `packages/`, and `scripts/`)
+- Transient artifacts scattered within member targets:
   - `*.log`, `*.tmp`, `*.bak`
   - `test_out.txt`, `test_output.txt`, `test_fail_lifecycle.log`
   - Misplaced `debug_*.png` or scratch JSON dumps.
@@ -58,6 +60,8 @@ worktree.
 4. Do not remove legacy platform directories without explicit user confirmation.
 5. If the worktree is dirty, report suspicious files before deleting anything
    beyond obvious temp artifacts.
+6. Do not recursively clean `docs/`, `.agent/`, or `data/` unless the user
+   explicitly targets them.
 
 ## 4. Report Back
 Summarize:

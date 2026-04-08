@@ -1,60 +1,64 @@
-# GDAR TV (Android TV Host)
+# GDAR TV
 
-This application target is the dedicated host for Google TV and Android TV devices. It utilizes the core `shakedown_core` package but is pre-configured for Leanback/D-Pad navigation and a dual-pane layout.
+`gdar_tv` is the dedicated Google TV / Android TV host for GDAR. It locks the
+app into TV mode, boots in landscape, and uses the shared TV-oriented logic in
+`packages/shakedown_core`.
 
-## 🚀 Quick Start (Development)
+## What This Target Does
 
-To run the TV interface on an emulator or connected TV device:
+- Runs the TV-first D-pad experience directly
+- Uses the Android theme stack with TV-specific behavior enabled
+- Provides a dedicated host for TV development and debugging
+- Does not produce a separate Play Store release artifact
 
-### VS Code
-1.  Open the **Run and Debug** sidebar:
-    *   Click the **Play with Bug** icon in the left-hand activity bar.
-    *   Or use the shortcut: `Ctrl + Shift + D` (Windows/Linux) or `Cmd + Shift + D` (macOS).
-2.  At the top of the sidebar, click the **Configuration Dropdown**.
-3.  Select **`GDAR TV`** (or `GDAR Mobile (TV Override)` for tablet testing).
-4.  Press **F5** or click the **Green Play** button.
+Important: TV is distributed through the same Android release AAB built from
+`apps/gdar_mobile`. This target exists for direct TV development and testing.
 
-*Note: The `GDAR TV` target defaults to `isTv = true` and skips mobile hardware detection.*
+## Run Locally
 
-### Command Line
+From the workspace root:
+
+```bash
+flutter run -t apps/gdar_tv/lib/main.dart -d <DEVICE_ID>
+```
+
+From this directory:
+
 ```bash
 flutter run -t lib/main.dart -d <DEVICE_ID>
 ```
 
----
+## TV Debugging
 
-## 📺 TV Simulation (Tablet Emulator)
+Useful deep links:
 
-If you are testing on a standard Android Tablet emulator, you can force the TV environment logic using ADB intents.
-
-### Force TV Mode ON
 ```powershell
-adb shell am start -W -a android.intent.action.VIEW -d "shakedown://settings?key=force_tv&value=true" com.jamart3d.shakedown/.MainActivity
+adb shell am start -W -a android.intent.action.VIEW -d "shakedown://settings?key=force_tv&value=true" com.jamart3d.shakedown
+adb shell am start -W -a android.intent.action.VIEW -d "shakedown://ui-scale?enabled=true" com.jamart3d.shakedown
 ```
 
-### Toggle UI Scaling (10-foot UI)
-```powershell
-adb shell am start -W -a android.intent.action.VIEW -d "shakedown://ui-scale?enabled=true" com.jamart3d.shakedown/.MainActivity
-```
+See:
 
----
+- `apps/gdar_tv/docs/TV_DEBUGGING.md`
+- root `README.md`
 
-## 🎨 Branding & Icons
+## Build Notes
 
-This app target does not maintain its own launcher icons. It is configured via `flutter_launcher_icons` to pull branded assets directly from `shakedown_core`:
-*   **Path**: `packages/shakedown_core/assets/images/gdar_icon.webp`
-*   **Foreground (Adaptive)**: `packages/shakedown_core/assets/images/gdar_icon_forground.webp`
+This target is useful for running and testing the TV shell directly, but the
+standard Android store release is still built from `apps/gdar_mobile`.
 
-To regenerate icons for this target:
+## Branding
+
+Launcher icon assets are sourced from `packages/shakedown_core/assets/images/`.
+Workspace-wide icon regeneration is handled with:
+
 ```bash
-flutter pub run flutter_launcher_icons
+melos run icons
 ```
-(Or use the workspace-wide `melos run icons`).
 
-## 🛠 Project Configuration
+## Notes
 
-*   **Application ID**: `com.jamart3d.shakedown` (Shared with Mobile for universal asset/deep link parity).
-*   **Theme**: Material Dark (OLED) with "Rock Salt" font overrides.
-*   **Architecture**: Optimized dual-pane layout for landscape navigation.
-
-For full technical details on TV debugging and intent parameters, see the [TV Debugging Guide](../../docs/TV_DEBUGGING.md).
+- The app starts with `isTv = true`
+- Orientation is locked to landscape
+- TV screensaver and D-pad flows are owned by shared core code, not duplicated
+  in this target
