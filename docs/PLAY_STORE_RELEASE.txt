@@ -1,3 +1,10 @@
+What's new in v1.3.70+280
+- **TV Visualizer Stability**: Fixed a race between screensaver teardown and the TV settings preview panel that could throw `PlatformException(error, No active stream to cancel, null, null)` on `shakedown/visualizer_events` when exiting the screensaver.
+- **Visualizer Lifecycle**: Reworked `VisualizerAudioReactor` to manage the native visualizer event stream with explicit serialized `listen`/`cancel` handling instead of relying on `EventChannel.receiveBroadcastStream()` teardown behavior.
+- **Testing**: Added a regression test for overlapping visualizer teardown/startup and updated screensaver/settings widget tests to cover the new async visualizer stream lifecycle.
+
+---
+
 What's new in v1.3.69+279
 - **Web playback: long-press clear/reset now works across styles and car mode**
   - Root cause: the hard reset path existed inconsistently across playback surfaces. Fruit car mode had a dedicated reset path, while standard web playback and Fruit non-car playback did not share a single stuck-state clear/back handler.

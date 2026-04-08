@@ -12,6 +12,7 @@ import 'package:shakedown_core/ui/screens/about_screen.dart';
 import 'package:shakedown_core/ui/widgets/settings/tv_screensaver_preview_panel.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
+import 'package:shakedown_core/visualizer/visualizer_audio_reactor.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:shakedown_core/models/rating.dart';
 import 'package:shakedown_core/models/show.dart';
@@ -75,6 +76,7 @@ void main() {
   late SharedPreferences prefs;
 
   setUp(() async {
+    VisualizerAudioReactor.debugResetEventChannelLifecycleQueue();
     await CatalogService().reset();
     final tempDir = await Directory.systemTemp.createTemp(
       'hive_test_tv_settings_',
@@ -244,6 +246,9 @@ void main() {
       var initializeCount = 0;
       var startCount = 0;
       const visualizerChannel = MethodChannel('shakedown/visualizer');
+      const visualizerEventsChannel = MethodChannel(
+        'shakedown/visualizer_events',
+      );
 
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(visualizerChannel, (call) async {
@@ -264,9 +269,20 @@ void main() {
             }
             return null;
           });
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(visualizerEventsChannel, (call) async {
+            switch (call.method) {
+              case 'listen':
+              case 'cancel':
+                return null;
+            }
+            return null;
+          });
       addTearDown(() {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(visualizerChannel, null);
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(visualizerEventsChannel, null);
       });
 
       await tester.pumpWidget(createTestableWidget(settingsProvider));
@@ -281,6 +297,10 @@ void main() {
       );
       await tester.tap(screensaverCategoryFinder);
       await tester.pump(const Duration(milliseconds: 500));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      });
+      await tester.pump();
 
       expect(find.byType(TvScreensaverPreviewPanel), findsOneWidget);
       expect(initializeCount, greaterThanOrEqualTo(1));
@@ -304,6 +324,10 @@ void main() {
       Navigator.of(panelContext).pop();
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      });
+      await tester.pump();
 
       expect(find.byType(TvScreensaverPreviewPanel), findsOneWidget);
       expect(initializeCount, greaterThanOrEqualTo(2));

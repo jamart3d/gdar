@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown_core/visualizer/audio_reactor.dart';
 import 'package:shakedown_core/utils/logger.dart';
@@ -9,13 +10,16 @@ import 'package:shakedown_core/utils/logger.dart';
 /// Tuning knobs (peakDecay, bassBoost, reactivityStrength, beatSensitivity)
 /// can be updated live via [updateConfig] without restarting the visualizer.
 class VisualizerAudioReactor implements AudioReactor {
+  static const String _eventChannelName = 'shakedown/visualizer_events';
+  static const StandardMethodCodec _eventCodec = StandardMethodCodec();
   static const MethodChannel _methodChannel = MethodChannel(
     'shakedown/visualizer',
   );
-  static const EventChannel _eventChannel = EventChannel(
-    'shakedown/visualizer_events',
+  static const MethodChannel _eventMethodChannel = MethodChannel(
+    _eventChannelName,
   );
   static const MethodChannel _stereoChannel = MethodChannel('shakedown/stereo');
+  static Future<void> _eventChannelLifecycleQueue = Future<void>.value();
 
   final StreamController<AudioEnergy> _energyController =
       StreamController<AudioEnergy>.broadcast();
@@ -23,7 +27,7 @@ class VisualizerAudioReactor implements AudioReactor {
   final int? audioSessionId;
   bool _isRunning = false;
   bool _isDisposed = false;
-  StreamSubscription<dynamic>? _eventSubscription;
+  bool _isListeningToPlatformStream = false;
 
   VisualizerAudioReactor({this.audioSessionId});
 
@@ -32,37 +36,73 @@ class VisualizerAudioReactor implements AudioReactor {
 
   @override
   Future<bool> start() async {
-    if (_isRunning || _isDisposed) return _isRunning;
+    return _serializeEventChannelLifecycle(() async {
+      if (_isRunning || _isDisposed) return _isRunning;
 
-    try {
-      logger.i(
-        'VisualizerAudioReactor: start() begin '
-        '(audioSessionId=${audioSessionId ?? 0})',
-      );
-      final result = await _methodChannel.invokeMethod('initialize', {
-        'audioSessionId': audioSessionId ?? 0,
-      });
-      logger.i('VisualizerAudioReactor: initialize returned $result');
-
-      if (result == true) {
-        _isRunning = true;
-
-        logger.i('VisualizerAudioReactor: subscribing to event channel');
-        _eventSubscription = _eventChannel.receiveBroadcastStream().listen(
-          _handleVisualizerData,
-          onError: _handleError,
+      try {
+        logger.i(
+          'VisualizerAudioReactor: start() begin '
+          '(audioSessionId=${audioSessionId ?? 0})',
         );
+        final result = await _methodChannel.invokeMethod('initialize', {
+          'audioSessionId': audioSessionId ?? 0,
+        });
+        logger.i('VisualizerAudioReactor: initialize returned $result');
 
-        logger.i('VisualizerAudioReactor: invoking native start()');
-        await _methodChannel.invokeMethod('start');
-        logger.i('VisualizerAudioReactor: native start() returned');
-        return true;
+        if (result == true) {
+          _isRunning = true;
+
+          logger.i('VisualizerAudioReactor: subscribing to event channel');
+          await _startPlatformStream();
+
+          logger.i('VisualizerAudioReactor: invoking native start()');
+          await _methodChannel.invokeMethod('start');
+          logger.i('VisualizerAudioReactor: native start() returned');
+          return true;
+        }
+      } catch (e) {
+        logger.w('VisualizerAudioReactor: start() threw $e');
+        _safeAdd(const AudioEnergy.zero());
+        await _stopPlatformStream();
       }
-    } catch (e) {
-      logger.w('VisualizerAudioReactor: start() threw $e');
-      _safeAdd(const AudioEnergy.zero());
+      return false;
+    });
+  }
+
+  Future<void> _startPlatformStream() async {
+    final messenger = ServicesBinding.instance.defaultBinaryMessenger;
+    messenger.setMessageHandler(_eventChannelName, (ByteData? reply) async {
+      if (reply == null) return null;
+      try {
+        _handleVisualizerData(_eventCodec.decodeEnvelope(reply));
+      } on PlatformException catch (error) {
+        _handleError(error);
+      }
+      return null;
+    });
+    try {
+      await _eventMethodChannel.invokeMethod<void>('listen');
+      _isListeningToPlatformStream = true;
+    } catch (_) {
+      messenger.setMessageHandler(_eventChannelName, null);
+      rethrow;
     }
-    return false;
+  }
+
+  Future<void> _stopPlatformStream() async {
+    ServicesBinding.instance.defaultBinaryMessenger.setMessageHandler(
+      _eventChannelName,
+      null,
+    );
+    if (!_isListeningToPlatformStream) {
+      return;
+    }
+    _isListeningToPlatformStream = false;
+    try {
+      await _eventMethodChannel.invokeMethod<void>('cancel');
+    } catch (_) {
+      // Ignore benign teardown races from the platform event channel.
+    }
   }
 
   /// Push updated tuning knobs to the native side in real time.
@@ -97,21 +137,17 @@ class VisualizerAudioReactor implements AudioReactor {
 
   @override
   Future<void> stop() async {
-    if (!_isRunning && _eventSubscription == null) return;
-    _isRunning = false;
-    final subscription = _eventSubscription;
-    _eventSubscription = null;
-    try {
-      await subscription?.cancel();
-    } catch (e) {
-      // Ignore stream cancellation errors during cleanup.
-    }
-    try {
-      await _methodChannel.invokeMethod('stop');
-      await _methodChannel.invokeMethod('release');
-    } catch (e) {
-      // Ignore errors during cleanup
-    }
+    await _serializeEventChannelLifecycle(() async {
+      if (!_isRunning && !_isListeningToPlatformStream) return;
+      _isRunning = false;
+      await _stopPlatformStream();
+      try {
+        await _methodChannel.invokeMethod('stop');
+        await _methodChannel.invokeMethod('release');
+      } catch (e) {
+        // Ignore errors during cleanup
+      }
+    });
   }
 
   @override
@@ -356,6 +392,27 @@ class VisualizerAudioReactor implements AudioReactor {
     } catch (e) {
       return false;
     }
+  }
+
+  static Future<T> _serializeEventChannelLifecycle<T>(
+    Future<T> Function() action,
+  ) {
+    final completer = Completer<T>();
+    _eventChannelLifecycleQueue = _eventChannelLifecycleQueue
+        .catchError((_) {})
+        .then((_) async {
+          try {
+            completer.complete(await action());
+          } catch (error, stackTrace) {
+            completer.completeError(error, stackTrace);
+          }
+        });
+    return completer.future;
+  }
+
+  @visibleForTesting
+  static void debugResetEventChannelLifecycleQueue() {
+    _eventChannelLifecycleQueue = Future<void>.value();
   }
 }
 

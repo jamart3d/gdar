@@ -13,6 +13,7 @@ import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/steal_screensaver/steal_visualizer.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
+import 'package:shakedown_core/visualizer/visualizer_audio_reactor.dart';
 import '../helpers/fake_settings_provider.dart';
 
 class FakeScreensaverSettingsProvider extends FakeSettingsProvider {
@@ -124,6 +125,7 @@ void main() {
   late FakeDeviceService deviceService;
   late FakeWakelockService wakelockService;
   const visualizerChannel = MethodChannel('shakedown/visualizer');
+  const visualizerEventsChannel = MethodChannel('shakedown/visualizer_events');
   const stereoChannel = MethodChannel('shakedown/stereo');
   const permissionChannel = MethodChannel(
     'flutter.baseflow.com/permissions/methods',
@@ -131,16 +133,28 @@ void main() {
 
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
+    VisualizerAudioReactor.debugResetEventChannelLifecycleQueue();
     settingsProvider = FakeScreensaverSettingsProvider()..isTv = true;
     settingsProvider.setOilBannerFont('Roboto');
     audioProvider = FakeAudioProvider();
     deviceService = FakeDeviceService();
     wakelockService = FakeWakelockService();
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(visualizerEventsChannel, (call) async {
+          switch (call.method) {
+            case 'listen':
+            case 'cancel':
+              return null;
+          }
+          return null;
+        });
   });
 
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(visualizerChannel, null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(visualizerEventsChannel, null);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(stereoChannel, null);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -336,11 +350,15 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
         await tester.pump(const Duration(milliseconds: 600));
+        await tester.runAsync(() async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        });
+        await tester.pump();
 
         expect(stereoRequestCount, 1);
 
         await tester.pumpWidget(const SizedBox.shrink());
-        await tester.pump();
+        await tester.pumpAndSettle();
 
         expect(stereoStopCount, 0);
       },
@@ -402,6 +420,10 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
       await tester.pump(const Duration(milliseconds: 600));
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      });
+      await tester.pump();
 
       // A failed attempt resets _hasAttemptedStereoCapture, so subsequent
       // builds re-request rather than being gated out permanently.
@@ -409,6 +431,9 @@ void main() {
       // _syncStereoCapture unawaited after each rebuild), so by the time
       // the initial pumps settle we already have more than one attempt.
       expect(stereoRequestCount, greaterThan(1));
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpAndSettle();
     });
 
     testWidgets(
@@ -471,11 +496,18 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 50));
         await tester.pump(const Duration(milliseconds: 600));
+        await tester.runAsync(() async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        });
+        await tester.pump();
 
         expect(find.byType(StealVisualizer), findsOneWidget);
         expect(permissionRequestCount, 0);
         expect(visualizerInitializeCount, greaterThanOrEqualTo(1));
         expect(stereoRequestCount, 1);
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpAndSettle();
       },
     );
 
@@ -536,6 +568,9 @@ void main() {
         expect(permissionRequestCount, 0);
         expect(stereoRequestCount, 0);
         expect(visualizerInitializeCount, 0);
+
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pumpAndSettle();
       },
     );
   });
