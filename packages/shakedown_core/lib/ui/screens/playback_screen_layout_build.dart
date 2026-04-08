@@ -377,6 +377,7 @@ extension _PlaybackScreenLayoutBuild on PlaybackScreenState {
               minHeight: minPanelHeight,
               bottomPadding: bottomPadding,
               panelPositionNotifier: _panelPositionNotifier,
+              onWebStuckReset: _buildWebStuckResetHandler(),
               onVenueTap: () {
                 _scrollToCurrentTrack(true, force: true);
                 if (_panelController.isAttached &&

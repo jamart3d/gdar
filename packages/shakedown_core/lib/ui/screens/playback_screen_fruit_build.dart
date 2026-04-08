@@ -419,6 +419,7 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
             scaleFactor: scaleFactor,
             topOffset: immersiveTopPadding,
             bottomOffset: trackListBottomOffset,
+            onWebStuckReset: _buildWebStuckResetHandler(),
           ),
           if (!settingsProvider.fruitStickyNowPlaying &&
               audioProvider.currentTrack != null)
@@ -434,6 +435,7 @@ extension _PlaybackScreenFruitBuild on PlaybackScreenState {
                   index: (audioProvider.audioPlayer.currentIndex ?? 0) + 1,
                   scaleFactor: scaleFactor,
                   showNext: false,
+                  onWebStuckReset: _buildWebStuckResetHandler(),
                 ),
               ),
             ),

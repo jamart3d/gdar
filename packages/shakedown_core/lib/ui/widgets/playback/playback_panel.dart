@@ -29,6 +29,7 @@ class PlaybackPanel extends StatelessWidget {
   final double bottomPadding;
   final ValueNotifier<double> panelPositionNotifier;
   final VoidCallback onVenueTap;
+  final VoidCallback? onWebStuckReset;
 
   const PlaybackPanel({
     super.key,
@@ -38,6 +39,7 @@ class PlaybackPanel extends StatelessWidget {
     required this.bottomPadding,
     required this.panelPositionNotifier,
     required this.onVenueTap,
+    this.onWebStuckReset,
   });
 
   @override
@@ -380,7 +382,10 @@ class PlaybackPanel extends StatelessWidget {
                           ValueListenableBuilder<double>(
                             valueListenable: panelPositionNotifier,
                             builder: (context, position, _) {
-                              return PlaybackControls(panelPosition: position);
+                              return PlaybackControls(
+                                panelPosition: position,
+                                onWebStuckReset: onWebStuckReset,
+                              );
                             },
                           ),
                           SizedBox(height: 8 * scaleFactor),

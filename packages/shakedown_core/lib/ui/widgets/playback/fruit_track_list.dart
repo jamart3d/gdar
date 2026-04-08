@@ -19,6 +19,7 @@ class FruitTrackList extends StatefulWidget {
   final double scaleFactor;
   final double topOffset;
   final double bottomOffset;
+  final VoidCallback? onWebStuckReset;
 
   const FruitTrackList({
     super.key,
@@ -26,6 +27,7 @@ class FruitTrackList extends StatefulWidget {
     required this.scaleFactor,
     this.topOffset = 0,
     this.bottomOffset = 0,
+    this.onWebStuckReset,
   });
 
   @override
@@ -134,6 +136,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
         index: index + 1,
         scaleFactor: widget.scaleFactor,
         showNext: false,
+        onWebStuckReset: widget.onWebStuckReset,
       );
     }
 
@@ -173,6 +176,7 @@ class _FruitTrackListState extends State<FruitTrackList> {
                     index: i + 1,
                     scaleFactor: widget.scaleFactor,
                     showNext: false,
+                    onWebStuckReset: widget.onWebStuckReset,
                   ),
                 ),
               );

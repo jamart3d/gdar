@@ -243,12 +243,14 @@ class _FruitCarModePlayButton extends StatelessWidget {
   final bool isBusy;
   final bool isPlaying;
   final VoidCallback onPressed;
+  final VoidCallback? onLongPress;
   final double scaleFactor;
 
   const _FruitCarModePlayButton({
     required this.isBusy,
     required this.isPlaying,
     required this.onPressed,
+    required this.onLongPress,
     required this.scaleFactor,
   });
 
@@ -326,10 +328,12 @@ class _FruitCarModePlayButton extends StatelessWidget {
     );
 
     return SizedBox(
+      key: const ValueKey('fruit_car_mode_play_button'),
       width: 152 * scaleFactor,
       height: 152 * scaleFactor,
       child: GestureDetector(
         onTap: onPressed,
+        onLongPress: onLongPress ?? () {},
         child: glassEnabled
             ? FruitSurface(
                 borderRadius: borderRadius,

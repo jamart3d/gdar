@@ -22,6 +22,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/ui/widgets/playback/playback_controls.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:hive_ce/hive.dart';
@@ -514,6 +515,7 @@ void main() {
     when(mockAudioProvider.currentTrack).thenReturn(null);
     when(mockAudioProvider.currentShow).thenReturn(null);
     when(mockAudioProvider.currentSource).thenReturn(null);
+    when(mockAudioProvider.nextTrackBuffered).thenReturn(null);
     when(
       mockAudioProvider.bufferAgentNotificationStream,
     ).thenAnswer((_) => const Stream.empty());
@@ -535,6 +537,7 @@ void main() {
     when(
       mockAudioProvider.engineStateStringStream,
     ).thenAnswer((_) => Stream.value('idle'));
+    when(mockAudioProvider.engineState).thenReturn('idle');
     when(
       mockAudioProvider.engineContextStateStream,
     ).thenAnswer((_) => Stream.value('idle'));
@@ -1115,6 +1118,129 @@ void main() {
       await tester.pump();
 
       expect(find.text('01:11'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'PlaybackScreen Fruit car mode long press clears loading playback and returns to show list',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+      when(mockAudioProvider.stopAndClear()).thenAnswer((_) async {});
+      when(mockAudioProvider.playerStateStream).thenAnswer(
+        (_) => Stream.value(PlayerState(false, ProcessingState.loading)),
+      );
+      when(
+        mockAudioPlayer.playerState,
+      ).thenReturn(PlayerState(false, ProcessingState.loading));
+
+      var backRequestCount = 0;
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: PlaybackScreen(
+            showFruitTabBar: false,
+            onBackRequested: () => backRequestCount++,
+          ),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+
+      await tester.longPress(
+        find.byKey(const ValueKey('fruit_car_mode_play_button')),
+      );
+      await tester.pump();
+
+      verify(mockAudioProvider.stopAndClear()).called(1);
+      expect(backRequestCount, 1);
+    },
+  );
+
+  testWidgets(
+    'PlaybackControls long press invokes web stuck reset callback while loading',
+    (WidgetTester tester) async {
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.playerStateStream).thenAnswer(
+        (_) => Stream.value(PlayerState(false, ProcessingState.loading)),
+      );
+      when(
+        mockAudioPlayer.playerState,
+      ).thenReturn(PlayerState(false, ProcessingState.loading));
+
+      var resetCount = 0;
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
+            ChangeNotifierProvider<SettingsProvider>.value(
+              value: mockSettingsProvider,
+            ),
+            ChangeNotifierProvider<DeviceService>.value(
+              value: mockDeviceService,
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: PlaybackControls(
+                onWebStuckReset: () => resetCount++,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.longPress(
+        find.byKey(const ValueKey('playback_primary_transport_button')),
+      );
+      await tester.pump();
+
+      expect(resetCount, 1);
+      verifyNever(mockAudioProvider.stopAndClear());
+    },
+  );
+
+  testWidgets(
+    'PlaybackScreen Fruit non-car long press clears loading playback and returns to show list',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+      when(mockAudioProvider.stopAndClear()).thenAnswer((_) async {});
+      when(mockAudioProvider.playerStateStream).thenAnswer(
+        (_) => Stream.value(PlayerState(false, ProcessingState.loading)),
+      );
+      when(
+        mockAudioPlayer.playerState,
+      ).thenReturn(PlayerState(false, ProcessingState.loading));
+
+      var backRequestCount = 0;
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: PlaybackScreen(
+            showFruitTabBar: false,
+            onBackRequested: () => backRequestCount++,
+          ),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+
+      await tester.longPress(
+        find.byKey(const ValueKey('fruit_now_playing_compact_play_button')),
+      );
+      await tester.pump();
+
+      verify(mockAudioProvider.stopAndClear()).called(1);
+      expect(backRequestCount, 1);
     },
   );
 }

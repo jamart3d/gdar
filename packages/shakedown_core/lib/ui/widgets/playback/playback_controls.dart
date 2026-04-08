@@ -9,8 +9,13 @@ import 'package:shakedown_core/services/device_service.dart';
 
 class PlaybackControls extends StatefulWidget {
   final double panelPosition;
+  final VoidCallback? onWebStuckReset;
 
-  const PlaybackControls({super.key, this.panelPosition = 0.0});
+  const PlaybackControls({
+    super.key,
+    this.panelPosition = 0.0,
+    this.onWebStuckReset,
+  });
 
   @override
   State<PlaybackControls> createState() => _PlaybackControlsState();
@@ -129,10 +134,15 @@ class _PlaybackControlsState extends State<PlaybackControls>
                     duration: const Duration(milliseconds: 100),
                     curve: Curves.easeOutCubic,
                     child: GestureDetector(
+                      key: const ValueKey('playback_primary_transport_button'),
                       onTapDown: (_) => setState(() => _isPlayPressed = true),
                       onTapUp: (_) => setState(() => _isPlayPressed = false),
                       onTapCancel: () => setState(() => _isPlayPressed = false),
                       onLongPress: () {
+                        if (widget.onWebStuckReset != null) {
+                          widget.onWebStuckReset!();
+                          return;
+                        }
                         AppHaptics.heavyImpact(context.read<DeviceService>());
                         audioProvider.stopAndClear();
                       },

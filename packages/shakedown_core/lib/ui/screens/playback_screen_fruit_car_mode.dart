@@ -726,6 +726,7 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
                       audioProvider.resume();
                     }
                   },
+                  onLongPress: _buildWebStuckResetHandler(),
                   scaleFactor: scaleFactor,
                 ),
                 SizedBox(width: 16 * scaleFactor),

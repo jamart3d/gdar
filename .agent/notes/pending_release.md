@@ -4,6 +4,11 @@
 ## [Unreleased]
 
 ### Fixed
+- **Web playback: long-press clear/reset now works across styles and car mode**
+  - Root cause: the hard reset path existed inconsistently across playback surfaces. Fruit car mode had a dedicated reset path, while standard web playback and Fruit non-car playback did not share a single stuck-state clear/back handler.
+  - Fix: added a shared playback-screen helper that exposes a web stuck-reset callback when the playback screen is hosted with `onBackRequested`, limits activation to `loading`/`buffering`, calls `stopAndClear()`, and returns to the show list. Wired it into standard playback controls, Fruit non-car now-playing controls, and Fruit car mode play/pause.
+  - Files: `packages/shakedown_core/lib/ui/screens/playback_screen_helpers.dart`, `packages/shakedown_core/lib/ui/screens/playback_screen_layout_build.dart`, `packages/shakedown_core/lib/ui/screens/playback_screen_fruit_build.dart`, `packages/shakedown_core/lib/ui/screens/playback_screen_fruit_car_mode.dart`, `packages/shakedown_core/lib/ui/widgets/playback/playback_panel.dart`, `packages/shakedown_core/lib/ui/widgets/playback/playback_controls.dart`, `packages/shakedown_core/lib/ui/widgets/playback/fruit_track_list.dart`, `packages/shakedown_core/lib/ui/widgets/playback/fruit_now_playing_card.dart`
+
 - **Hybrid engine: playback controls/HUD disappear on tab visibility restore after WA→HTML5 handoff**
   - Root cause: `appendTracks` in `hybrid_audio_engine.js` only updated the active engine. When WA was active (post-handoff) and `queueRandomShow()` appended the next show's tracks, HTML5 never received them. Any subsequent WA→HTML5 handoff (fence, OS suspension, seek) called `bgEngine.syncState(index)` with an out-of-range index. HTML5's `_queue.currentTrack` returned `undefined`, `_translateState(undefined)` returned `index: -1`, Dart mapped that to `_currentIndex = null`, and every widget guarding on `currentTrack == null` hid.
   - Fix: `appendTracks` now always calls both `_fgEngine.appendTracks` and `_bgEngine.appendTracks` so both sub-engines always have the complete playlist.
@@ -39,6 +44,7 @@
   - File: `apps/gdar_web/web/index.html`
 
 ### Tests Added
+- `packages/shakedown_core/test/screens/playback_screen_test.dart` — web playback reset coverage for Fruit car mode and Fruit non-car screen long-press clear/back behavior, plus standard playback control callback wiring during loading
 - `apps/gdar_web/web/tests/append_tracks_regression.js` — 4-case JS regression covering both-engine update for `appendTracks` in HTML5-active and WA-active scenarios, including the out-of-bounds index guard
 - `apps/gdar_web/web/tests/run_tests.js` — wired in new regression as a standalone run
 - `packages/shakedown_core/test/services/gapless_player_web_js_contract_test.dart` — static guard asserting exactly 2 `_processingStateController.add` calls in the web engine (error handler + single end-of-tick)

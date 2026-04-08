@@ -25,6 +25,7 @@ class FruitNowPlayingCard extends StatelessWidget {
   final int index;
   final double scaleFactor;
   final bool showNext;
+  final VoidCallback? onWebStuckReset;
 
   const FruitNowPlayingCard({
     super.key,
@@ -33,6 +34,7 @@ class FruitNowPlayingCard extends StatelessWidget {
     required this.index,
     required this.scaleFactor,
     this.showNext = true,
+    this.onWebStuckReset,
   });
 
   @override
@@ -357,8 +359,12 @@ class FruitNowPlayingCard extends StatelessWidget {
                             ),
                           },
                           child: GestureDetector(
+                            key: const ValueKey(
+                              'fruit_now_playing_compact_play_button',
+                            ),
                             behavior: HitTestBehavior.opaque,
                             onTap: activate,
+                            onLongPress: onWebStuckReset ?? () {},
                             child: Container(
                               width: 36 * scaleFactor,
                               height: 36 * scaleFactor,

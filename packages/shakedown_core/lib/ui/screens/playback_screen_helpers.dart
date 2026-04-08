@@ -1,6 +1,49 @@
 part of 'playback_screen.dart';
 
 extension _PlaybackScreenHelpers on PlaybackScreenState {
+  bool _shouldExposeWebStuckReset() {
+    return widget.onBackRequested != null &&
+        !context.read<DeviceService>().isTv;
+  }
+
+  bool _isWebStuckResetAllowed() {
+    if (!_shouldExposeWebStuckReset()) return false;
+
+    final processingState = context
+        .read<AudioProvider>()
+        .audioPlayer
+        .playerState
+        .processingState;
+    return processingState == ProcessingState.loading ||
+        processingState == ProcessingState.buffering;
+  }
+
+  VoidCallback? _buildWebStuckResetHandler() {
+    if (!_shouldExposeWebStuckReset()) return null;
+
+    return () {
+      if (!_isWebStuckResetAllowed()) return;
+      AppHaptics.heavyImpact(context.read<DeviceService>());
+      unawaited(_handleWebStuckReset());
+    };
+  }
+
+  Future<void> _handleWebStuckReset() async {
+    await context.read<AudioProvider>().stopAndClear();
+    if (!mounted) return;
+
+    final onBackRequested = widget.onBackRequested;
+    if (onBackRequested != null) {
+      onBackRequested();
+      return;
+    }
+
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      await navigator.maybePop();
+    }
+  }
+
   Future<void> _safeItemScrollTo({
     required int index,
     required double alignment,
