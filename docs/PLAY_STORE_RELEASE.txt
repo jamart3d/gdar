@@ -1,4 +1,15 @@
 <en-US>
+What's new in v1.3.73+283
+• Large-file refactor across `packages/shakedown_core` using parallel subagents with disjoint ownership.
+• Split Fruit playback screen into focused modules under `lib/ui/screens/playback_fruit_car_mode/` and kept `playback_screen_fruit_car_mode.dart` as orchestration entrypoint.
+• Split track list and Fruit show-card builders into focused modules under
+• `lib/ui/screens/track_list/`
+• `lib/ui/widgets/show_list/fruit_car_mode/`
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.72+282
 • PWA wake lock not released when "Keep Screen On" toggled off during playback
 • Show list card bottom text too small

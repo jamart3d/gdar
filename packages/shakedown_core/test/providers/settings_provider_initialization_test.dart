@@ -43,6 +43,10 @@ void main() {
         3,
       );
     });
+
+    test('web playback messages default is off', () {
+      expect(WebDefaults.showPlaybackMessages, isFalse);
+    });
   });
 
   group('settings migrations', () {

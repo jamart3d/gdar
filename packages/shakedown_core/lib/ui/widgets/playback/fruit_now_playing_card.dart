@@ -56,6 +56,9 @@ class FruitNowPlayingCard extends StatelessWidget {
     final showDevAudioHud = context.select<SettingsProvider, bool>(
       (settings) => settings.showDevAudioHud,
     );
+    final showPlaybackMessages = context.select<SettingsProvider, bool>(
+      (settings) => settings.showPlaybackMessages,
+    );
     final colorScheme = Theme.of(context).colorScheme;
 
     final hasGlass = enableLiquidGlass && !isSimple;
@@ -113,14 +116,6 @@ class FruitNowPlayingCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (!showCompactHud) ...[
-                              SizedBox(width: 8 * scaleFactor),
-                              const PlaybackMessages(
-                                textAlign: TextAlign.left,
-                                showDivider: false,
-                                showDevHudInline: false,
-                              ),
-                            ],
                           ],
                         ),
                       ),
@@ -198,7 +193,29 @@ class FruitNowPlayingCard extends StatelessWidget {
                                           durationMs: durationMs,
                                         ),
                                       );
-                                  if (!showCompactHud) return progressBar;
+                                  if (!showCompactHud) {
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        progressBar,
+                                        if (showPlaybackMessages) ...[
+                                          SizedBox(height: 4 * scaleFactor),
+                                          const SizedBox(
+                                            key: ValueKey(
+                                              'fruit_now_playing_message_below_progress',
+                                            ),
+                                            child: PlaybackMessages(
+                                              textAlign: TextAlign.left,
+                                              showDivider: false,
+                                              showDevHudInline: false,
+                                              fontScale: 0.74,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    );
+                                  }
 
                                   return Column(
                                     crossAxisAlignment:

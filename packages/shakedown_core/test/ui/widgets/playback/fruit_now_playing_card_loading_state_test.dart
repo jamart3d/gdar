@@ -129,14 +129,20 @@ class _TestSettingsProvider extends ChangeNotifier implements SettingsProvider {
   final bool _glassEnabled;
   final bool _performanceMode;
   final bool _highlightPlayingWithRgb;
+  final bool _showDevAudioHud;
+  final bool _showPlaybackMessages;
 
   _TestSettingsProvider({
     required bool glassEnabled,
     required bool performanceMode,
     required bool highlightPlayingWithRgb,
+    required bool showDevAudioHud,
+    required bool showPlaybackMessages,
   }) : _glassEnabled = glassEnabled,
        _performanceMode = performanceMode,
-       _highlightPlayingWithRgb = highlightPlayingWithRgb;
+       _highlightPlayingWithRgb = highlightPlayingWithRgb,
+       _showDevAudioHud = showDevAudioHud,
+       _showPlaybackMessages = showPlaybackMessages;
 
   @override
   bool get fruitEnableLiquidGlass => _glassEnabled;
@@ -145,7 +151,7 @@ class _TestSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get performanceMode => _performanceMode;
 
   @override
-  bool get showDevAudioHud => false;
+  bool get showDevAudioHud => _showDevAudioHud;
 
   @override
   bool get highlightPlayingWithRgb => _highlightPlayingWithRgb;
@@ -154,7 +160,7 @@ class _TestSettingsProvider extends ChangeNotifier implements SettingsProvider {
   double get rgbAnimationSpeed => 1.0;
 
   @override
-  bool get showPlaybackMessages => false;
+  bool get showPlaybackMessages => _showPlaybackMessages;
 
   @override
   bool get useTrueBlack => false;
@@ -221,6 +227,8 @@ void main() {
     required bool glassEnabled,
     required bool performanceMode,
     bool highlightPlayingWithRgb = false,
+    bool showDevAudioHud = false,
+    bool showPlaybackMessages = false,
     _TestAudioProvider? testAudioProvider,
   }) async {
     final audio = testAudioProvider ?? _TestAudioProvider(player);
@@ -233,6 +241,8 @@ void main() {
               glassEnabled: glassEnabled,
               performanceMode: performanceMode,
               highlightPlayingWithRgb: highlightPlayingWithRgb,
+              showDevAudioHud: showDevAudioHud,
+              showPlaybackMessages: showPlaybackMessages,
             ),
           ),
           ChangeNotifierProvider<ThemeProvider>.value(
@@ -572,4 +582,34 @@ void main() {
     expect(testAudioProvider.seekPrevCalls, 1);
     expect(testAudioProvider.seekNextCalls, 1);
   });
+
+  testWidgets(
+    'Fruit playback status line renders below progress when HUD is hidden',
+    (tester) async {
+      final player = _MockGaplessPlayer();
+      stubPlayerState(
+        player,
+        PlayerState(true, ProcessingState.ready),
+        position: const Duration(seconds: 24),
+        buffered: const Duration(seconds: 40),
+        duration: const Duration(minutes: 8),
+      );
+
+      await pumpCard(
+        tester,
+        player: player,
+        glassEnabled: true,
+        performanceMode: false,
+        showDevAudioHud: false,
+        showPlaybackMessages: true,
+      );
+      await tester.pump();
+
+      expect(
+        find.byKey(const ValueKey('fruit_now_playing_message_below_progress')),
+        findsOneWidget,
+      );
+      expect(find.text('Slipknot!'), findsOneWidget);
+    },
+  );
 }

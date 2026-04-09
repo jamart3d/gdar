@@ -214,6 +214,9 @@ class WebDefaults extends DefaultSettings {
 
   // Audio: auto (hybrid-first) is the default on web
   static const String audioEngineMode = 'auto';
+
+  // Keep track title uncluttered in Fruit by default.
+  static const bool showPlaybackMessages = false;
 }
 
 /// Defaults for the Google TV UI.

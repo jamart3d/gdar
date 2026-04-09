@@ -354,7 +354,7 @@ mixin _SettingsProviderInitializationExtension
     _showPlaybackMessages =
         _prefs.getBool(_showPlaybackMessagesKey) ??
         _dBool(
-          DefaultSettings.showPlaybackMessages,
+          WebDefaults.showPlaybackMessages,
           TvDefaults.showPlaybackMessages,
           DefaultSettings.showPlaybackMessages,
         );
