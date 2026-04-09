@@ -103,7 +103,6 @@ void main() {
           body: ShowListItemDetails(
             show: show,
             playingSourceId: null,
-            height: 200,
             onSourceTapped: (_) {},
             onSourceLongPress: (_) {},
           ),

@@ -14,11 +14,11 @@ extension _ShowListCardControls on _ShowListCardState {
 
     final String badgeText;
     if (settingsProvider.showSingleShnid && show.sources.length == 1) {
-      badgeText = '${show.sources.first.id}';
+      badgeText = show.sources.first.id;
     } else if (widget.isPlaying &&
         widget.playingSource != null &&
         settingsProvider.showSingleShnid) {
-      badgeText = '${widget.playingSource!.id}';
+      badgeText = widget.playingSource!.id;
     } else {
       badgeText = show.sources.length > 1
           ? '${show.sources.length} SOURCES'

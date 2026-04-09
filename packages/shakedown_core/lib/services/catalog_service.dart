@@ -201,7 +201,7 @@ class CatalogService {
           timestamp: DateTime.now(),
         );
       }
-      _webRatingsNotifier.notifyListeners();
+      _webRatingsNotifier.notifyChanged();
       return;
     }
 
@@ -229,7 +229,7 @@ class CatalogService {
     if (!_isInitialized) return;
     if (kIsWeb) {
       _webPlayCounts[sourceId] = (_webPlayCounts[sourceId] ?? 0) + 1;
-      _webPlayCountsNotifier.notifyListeners();
+      _webPlayCountsNotifier.notifyChanged();
       return;
     }
     int current = _playCountsBox!.get(sourceId) ?? 0;
@@ -261,7 +261,7 @@ class CatalogService {
     if (!_isInitialized) return;
     if (kIsWeb) {
       _webHistory[sourceId] = true;
-      _webHistoryNotifier.notifyListeners();
+      _webHistoryNotifier.notifyChanged();
       return;
     }
     if (!_historyBox!.containsKey(sourceId)) {
@@ -310,7 +310,7 @@ class CatalogService {
       } else {
         _webHistory[sourceId] = true;
       }
-      _webHistoryNotifier.notifyListeners();
+      _webHistoryNotifier.notifyChanged();
       return;
     }
     if (_historyBox!.containsKey(sourceId)) {
@@ -415,6 +415,8 @@ class _WebBoxNotifier<T> extends ChangeNotifier
     implements ValueListenable<Box<T>> {
   _WebBoxNotifier(Map<dynamic, T> data) : _box = _WebBox<T>(data);
   final _WebBox<T> _box;
+
+  void notifyChanged() => notifyListeners();
 
   @override
   Box<T> get value => _box;

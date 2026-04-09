@@ -145,7 +145,6 @@ void main() {
               return ShowListItemDetails(
                 show: currentShow,
                 playingSourceId: playingSourceId,
-                height: 300,
                 onSourceTapped: (_) {},
                 onSourceLongPress: (_) {},
               );
