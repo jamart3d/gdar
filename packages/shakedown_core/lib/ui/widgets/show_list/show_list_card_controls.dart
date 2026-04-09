@@ -155,6 +155,10 @@ extension _ShowListCardControls on _ShowListCardState {
                     deviceService.isPwa ||
                     deviceService.isMobile) &&
                 !isTv;
+            final bool suppressCurrentShowMeta =
+                !settings.filterHighestShnid &&
+                !widget.isExpanded &&
+                widget.isPlaying;
 
             final catalog = CatalogService();
             final bool usePremium =
@@ -176,7 +180,9 @@ extension _ShowListCardControls on _ShowListCardState {
 
             final String? badgeSrc = targetSource?.src;
             final bool shouldShowSrcBadge =
-                badgeSrc != null && !widget.isExpanded;
+                badgeSrc != null &&
+                !widget.isExpanded &&
+                !suppressCurrentShowMeta;
             final List<Widget> columnChildren = [];
             final List<Widget> badgeRowChildren = [];
 
@@ -283,7 +289,7 @@ extension _ShowListCardControls on _ShowListCardState {
             }
 
             Widget? ratingWidget;
-            if (showRating && ratingKey != null) {
+            if (showRating && ratingKey != null && !suppressCurrentShowMeta) {
               ratingWidget = RatingControl(
                 rating: rating,
                 isPlayed: isPlayed,
@@ -354,7 +360,9 @@ extension _ShowListCardControls on _ShowListCardState {
 
             return Padding(
               padding: EdgeInsets.only(
-                right: 8.0,
+                right: (kIsWeb && isFruit && !useMobileLayout && !isTv)
+                    ? 4.0
+                    : 8.0,
                 top: isTv ? 2.0 : 4.0,
                 bottom: isTv ? 2.0 : 4.0,
               ),
@@ -460,7 +468,9 @@ extension _ShowListCardControls on _ShowListCardState {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        if (showRating && ratingKey != null)
+                        if (showRating &&
+                            ratingKey != null &&
+                            !suppressCurrentShowMeta)
                           RatingControl(
                             rating: rating,
                             isPlayed: isPlayed,

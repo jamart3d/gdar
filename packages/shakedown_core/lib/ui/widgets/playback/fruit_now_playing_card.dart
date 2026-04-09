@@ -9,6 +9,7 @@ import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
+import 'package:shakedown_core/ui/widgets/theme/fruit_tooltip.dart';
 import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/utils/utils.dart';
@@ -58,6 +59,7 @@ class FruitNowPlayingCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     final hasGlass = enableLiquidGlass && !isSimple;
+    const bool showWebTrackStepControls = kIsWeb;
     final showCompactHud = kIsWeb && showDevAudioHud;
     final horizontalPadding = showCompactHud ? 12.0 : 16.0;
     final surface = FruitSurface(
@@ -128,7 +130,19 @@ class FruitNowPlayingCard extends StatelessWidget {
                         colorScheme,
                         isSimple: isSimple,
                       ),
-                      if (showCompactHud && showNext) ...[
+                      if (showWebTrackStepControls && !showCompactHud) ...[
+                        SizedBox(width: 8 * scaleFactor),
+                        _buildTrackStepControls(
+                          context,
+                          audioProvider,
+                          colorScheme,
+                          glassEnabled: enableLiquidGlass,
+                          compact: false,
+                        ),
+                      ],
+                      if (!showWebTrackStepControls &&
+                          showCompactHud &&
+                          showNext) ...[
                         SizedBox(width: 8 * scaleFactor),
                         _buildSkipNextButton(audioProvider, colorScheme),
                       ],
@@ -192,6 +206,15 @@ class FruitNowPlayingCard extends StatelessWidget {
                                     children: [
                                       Row(
                                         children: [
+                                          if (showWebTrackStepControls) ...[
+                                            _buildTrackStepControls(
+                                              context,
+                                              audioProvider,
+                                              colorScheme,
+                                              glassEnabled: enableLiquidGlass,
+                                              compact: true,
+                                            ),
+                                          ],
                                           _buildCompactPlayButton(
                                             context,
                                             audioProvider,
@@ -236,7 +259,7 @@ class FruitNowPlayingCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (!showCompactHud && showNext) ...[
+            if (!showWebTrackStepControls && !showCompactHud && showNext) ...[
               SizedBox(width: 12 * scaleFactor),
               _buildSkipNextButton(audioProvider, colorScheme),
             ],
@@ -284,6 +307,118 @@ class FruitNowPlayingCard extends StatelessWidget {
       size: 20 * scaleFactor,
       padding: 4 * scaleFactor,
       tooltip: 'Skip Next',
+    );
+  }
+
+  Widget _buildTrackStepButton(
+    BuildContext context,
+    AudioProvider audioProvider,
+    ColorScheme colorScheme, {
+    required bool glassEnabled,
+    required VoidCallback onPressed,
+    required String tooltip,
+    required IconData icon,
+    required Key buttonKey,
+    required bool enabled,
+  }) {
+    void onTap() {
+      if (!enabled) return;
+      AppHaptics.selectionClick(context.read<DeviceService>());
+      onPressed();
+    }
+
+    final child = Icon(
+      icon,
+      size: 15 * scaleFactor,
+      color: enabled
+          ? (glassEnabled
+                ? colorScheme.onSurface.withValues(alpha: 0.9)
+                : colorScheme.onSurfaceVariant.withValues(alpha: 0.9))
+          : colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+    );
+
+    return FruitTooltip(
+      message: tooltip,
+      child: GestureDetector(
+        key: buttonKey,
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: glassEnabled
+            ? FruitSurface(
+                borderRadius: BorderRadius.circular(999),
+                blur: 12,
+                opacity: enabled ? 0.30 : 0.18,
+                padding: EdgeInsets.all(5 * scaleFactor),
+                child: child,
+              )
+            : Container(
+                padding: EdgeInsets.all(5 * scaleFactor),
+                decoration: BoxDecoration(
+                  color: colorScheme.onSurface.withValues(
+                    alpha: enabled ? 0.08 : 0.04,
+                  ),
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: colorScheme.onSurface.withValues(
+                      alpha: enabled ? 0.12 : 0.06,
+                    ),
+                    width: 0.8,
+                  ),
+                ),
+                child: child,
+              ),
+      ),
+    );
+  }
+
+  Widget _buildTrackStepControls(
+    BuildContext context,
+    AudioProvider audioProvider,
+    ColorScheme colorScheme, {
+    required bool glassEnabled,
+    required bool compact,
+  }) {
+    return StreamBuilder<int?>(
+      stream: audioProvider.currentIndexStream,
+      initialData: audioProvider.audioPlayer.currentIndex,
+      builder: (context, indexSnapshot) {
+        final index = indexSnapshot.data ?? 0;
+        final sequenceLength = audioProvider.audioPlayer.sequence.length;
+        final isFirstTrack = index <= 0;
+        final isLastTrack = sequenceLength == 0
+            ? false
+            : index >= sequenceLength - 1;
+
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildTrackStepButton(
+              context,
+              audioProvider,
+              colorScheme,
+              glassEnabled: glassEnabled,
+              onPressed: () => audioProvider.seekToPrevious(),
+              tooltip: 'Previous Track',
+              icon: LucideIcons.skipBack,
+              buttonKey: const ValueKey('fruit_now_playing_prev_track_button'),
+              enabled: !isFirstTrack,
+            ),
+            SizedBox(width: compact ? 4 * scaleFactor : 6 * scaleFactor),
+            _buildTrackStepButton(
+              context,
+              audioProvider,
+              colorScheme,
+              glassEnabled: glassEnabled,
+              onPressed: () => audioProvider.seekToNext(),
+              tooltip: 'Next Track',
+              icon: LucideIcons.skipForward,
+              buttonKey: const ValueKey('fruit_now_playing_next_track_button'),
+              enabled: !isLastTrack,
+            ),
+            if (compact) SizedBox(width: 4 * scaleFactor),
+          ],
+        );
+      },
     );
   }
 

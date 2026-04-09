@@ -33,23 +33,43 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
     final bool shnidInColumn =
         settingsProvider.showSingleShnid && style.shouldShowBadge;
     final bool badgeInFooter = style.shouldShowBadge && !shnidInColumn;
-    // When dateFirst, only move controls to the location row if there is a
-    // visible badge (src or multi-source); plain rating stars stay on the
-    // primary (date) row to keep card height stable.
-    // When !dateFirst, all controls (stars + badge) align with location.
+    final bool compactIdleHeight = !isCurrentCard;
+    final bool forceBadgeIntoDateRowOnCompactIdle =
+        compactIdleHeight &&
+        !dateFirst &&
+        style.shouldShowBadge &&
+        !shouldShowSrcBadge;
+    // When dateFirst, stars sit inline on the date headline row; badges go on
+    // the location row. When !dateFirst, stars sit on the location row; badges
+    // go on the date row.
+    final bool starsOnPrimaryRow = dateFirst && ratingKey != null;
+    final bool badgeOnDateRow =
+        !dateFirst &&
+        (shouldShowSrcBadge ||
+            style.shouldShowBadge ||
+            forceBadgeIntoDateRowOnCompactIdle);
     final bool controlsOnLocationRow =
         locationText.isNotEmpty &&
-        ((badgeInFooter || shouldShowSrcBadge) ||
-            (!dateFirst && (ratingKey != null || shnidInColumn)));
+        (dateFirst ? (badgeInFooter || shouldShowSrcBadge) : ratingKey != null);
     final bool controlsOnPrimaryRow =
         !controlsOnLocationRow && dateFirst && badgeInFooter;
-    final bool badgeOnLocationRow = controlsOnLocationRow && badgeInFooter;
+    final bool badgeOnLocationRow =
+        controlsOnLocationRow && badgeInFooter && !badgeOnDateRow;
     final bool showFooterRow =
-        showTrackTitle ||
-        (badgeInFooter && !badgeOnLocationRow && !controlsOnPrimaryRow);
+        !compactIdleHeight &&
+        (showTrackTitle ||
+            (badgeInFooter &&
+                !badgeOnLocationRow &&
+                !controlsOnPrimaryRow &&
+                !badgeOnDateRow));
     final bool useCompactTextLayout = isCurrentCard && showFooterRow;
+    // Active dateFirst=ON: stars are on the date row rather than location row,
+    // so the location row is shorter and the Spacer above the track title was
+    // too large at 232. Use 220 to tighten that gap.
+    // Idle: badges moved to date/location rows — no separate footer row — so
+    // keep idle cards compact to avoid excess bottom dead space.
     final double cardHeight =
-        (widget.isPlaying ? 232.0 : (badgeInFooter ? 198.0 : 192.0)) *
+        (widget.isPlaying ? (dateFirst ? 222.0 : 232.0) : 146.0) *
         style.effectiveScale;
     final double horizontalPadding =
         (isCurrentCard ? 24.0 : 22.0) * style.effectiveScale;
@@ -58,7 +78,8 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
         : horizontalPadding;
     final double trailingPadding = horizontalPadding;
     final double verticalPadding =
-        (isCurrentCard ? 20.0 : 15.0) * style.effectiveScale;
+        (isCurrentCard ? 20.0 : (compactIdleHeight ? 6.0 : 11.0)) *
+        style.effectiveScale;
     final double headlineFontSize =
         (isCurrentCard ? 38.0 : 36.0) * style.effectiveScale;
     final double supportingFontSize =
@@ -77,11 +98,12 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
     final bool shouldAllowWrappedPrimaryHeadline = isCurrentCard && !dateFirst;
     final int primaryHeadlineMaxLines = shouldAllowWrappedPrimaryHeadline
         ? 2
-        : (useCompactTextLayout ? 1 : 2);
+        : ((useCompactTextLayout || compactIdleHeight) ? 1 : 2);
     final int secondaryVenueMaxLines = isCurrentCard && dateFirst
         ? 2
         : (useCompactTextLayout ? 1 : 2);
-    final double contentGap = 8.0 * style.effectiveScale;
+    final double contentGap =
+        (compactIdleHeight ? 5.0 : 8.0) * style.effectiveScale;
     final double metadataGap =
         (useCompactTextLayout ? 4.0 : 5.0) * style.effectiveScale;
     final double compactSupportingFontSize =
@@ -104,6 +126,32 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
             final double cardWidth = constraints.maxWidth.isFinite
                 ? constraints.maxWidth
                 : MediaQuery.sizeOf(context).width;
+            final bool constrainedIdleHeight =
+                compactIdleHeight ||
+                (!isCurrentCard &&
+                    constraints.maxHeight.isFinite &&
+                    constraints.maxHeight <= 124.5);
+            final double effectiveVerticalPadding = constrainedIdleHeight
+                ? (3.0 * style.effectiveScale)
+                : verticalPadding;
+            final double effectiveContentGap = constrainedIdleHeight
+                ? (2.0 * style.effectiveScale)
+                : contentGap;
+            final double effectiveMetadataGap = constrainedIdleHeight
+                ? (1.0 * style.effectiveScale)
+                : metadataGap;
+            final int effectivePrimaryHeadlineMaxLines = constrainedIdleHeight
+                ? 1
+                : primaryHeadlineMaxLines;
+            final int effectiveSecondaryVenueMaxLines = constrainedIdleHeight
+                ? 1
+                : secondaryVenueMaxLines;
+            final double effectiveSupportingFontSize = constrainedIdleHeight
+                ? (compactSupportingFontSize * 0.9)
+                : compactSupportingFontSize;
+            final double effectiveLocationFontSize = constrainedIdleHeight
+                ? (compactLocationFontSize * 0.9)
+                : compactLocationFontSize;
             final bool abbreviateWeekday =
                 settingsProvider.showDayOfWeek &&
                 !settingsProvider.abbreviateDayOfWeek &&
@@ -123,20 +171,21 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                 : style.formattedDate;
             final venueTextStyle = TextStyle(
               fontFamily: 'Inter',
-              fontSize: compactSupportingFontSize,
+              fontSize: effectiveSupportingFontSize,
               fontWeight: FontWeight.w800,
               height: 1.05,
               color: colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
             );
-            final double trailingMetaWidth =
-                controlsOnPrimaryRow || controlsOnLocationRow
+            final double trailingMetaWidth = starsOnPrimaryRow
+                ? (ratingSize + 12.0) * style.effectiveScale
+                : (controlsOnPrimaryRow || controlsOnLocationRow)
                 ? 0.0
                 : (ratingKey != null || shouldShowSrcBadge)
                 ? ((ratingSize + 16.0 + 72.0) * style.effectiveScale)
                 : 0.0;
             Widget buildTrailingControls({required bool inline}) {
               final List<Widget> children = [
-                if (ratingKey != null)
+                if (ratingKey != null && !starsOnPrimaryRow)
                   RatingControl(
                     rating: rating,
                     isPlayed: isPlayed,
@@ -173,11 +222,14 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                           }
                         : null,
                   ),
-                if (ratingKey != null && shouldShowSrcBadge)
+                if (ratingKey != null &&
+                    !starsOnPrimaryRow &&
+                    shouldShowSrcBadge &&
+                    !badgeOnDateRow)
                   inline
                       ? SizedBox(width: 8 * style.effectiveScale)
                       : SizedBox(height: 8 * style.effectiveScale),
-                if (shouldShowSrcBadge)
+                if (shouldShowSrcBadge && !badgeOnDateRow)
                   SrcBadge(
                     src: badgeSrc,
                     fontSize: 12.5,
@@ -188,7 +240,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                     ),
                     scaleFactor: style.effectiveScale,
                   ),
-                if (shnidInColumn) ...[
+                if (shnidInColumn && !badgeOnDateRow) ...[
                   inline
                       ? SizedBox(width: 6 * style.effectiveScale)
                       : SizedBox(height: 6 * style.effectiveScale),
@@ -199,7 +251,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                     false,
                   ),
                 ],
-                if (badgeInFooter && !shnidInColumn) ...[
+                if (badgeInFooter && !shnidInColumn && !badgeOnDateRow) ...[
                   inline
                       ? SizedBox(width: 8 * style.effectiveScale)
                       : SizedBox(height: 8 * style.effectiveScale),
@@ -241,7 +293,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                         leadingPadding -
                         trailingPadding -
                         trailingMetaWidth,
-                    maxLines: primaryHeadlineMaxLines,
+                    maxLines: effectivePrimaryHeadlineMaxLines,
                     scaleFactor: style.effectiveScale,
                   )
                 : 0.0;
@@ -250,18 +302,20 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                     text: widget.show.venue,
                     style: venueTextStyle,
                     maxWidth: cardWidth - leadingPadding - trailingPadding,
-                    maxLines: secondaryVenueMaxLines,
+                    maxLines: effectiveSecondaryVenueMaxLines,
                     scaleFactor: style.effectiveScale,
                   )
                 : 0.0;
-            final double resolvedCardHeight =
-                cardHeight +
-                primaryHeadlineWrapExtraHeight +
-                venueWrapExtraHeight;
+            final double resolvedCardHeight = isCurrentCard
+                ? cardHeight +
+                      primaryHeadlineWrapExtraHeight +
+                      venueWrapExtraHeight
+                : cardHeight;
 
             return Container(
               key: const ValueKey('fruit_show_list_car_mode_card'),
               height: resolvedCardHeight,
+              constraints: BoxConstraints(minHeight: cardHeight),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(borderRadius),
                 color: backgroundColor,
@@ -279,9 +333,9 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(
                       leadingPadding,
-                      verticalPadding,
+                      effectiveVerticalPadding,
                       trailingPadding,
-                      verticalPadding,
+                      effectiveVerticalPadding,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,7 +346,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                             Expanded(
                               child: Text(
                                 dateFirst ? displayDate : primaryHeadline,
-                                maxLines: primaryHeadlineMaxLines,
+                                maxLines: effectivePrimaryHeadlineMaxLines,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   fontFamily: 'Inter',
@@ -304,12 +358,58 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                                 ),
                               ),
                             ),
+                            if (starsOnPrimaryRow) ...[
+                              SizedBox(width: 12 * style.effectiveScale),
+                              RatingControl(
+                                rating: rating,
+                                isPlayed: isPlayed,
+                                size: ratingSize,
+                                compact: true,
+                                enforceMinTapTarget: true,
+                                onTap:
+                                    (widget.isPlaying ||
+                                        widget.alwaysShowRatingInteraction ||
+                                        widget.show.sources.length == 1)
+                                    ? () async {
+                                        await showDialog(
+                                          context: context,
+                                          builder: (context) => RatingDialog(
+                                            initialRating: rating,
+                                            sourceId: ratingKey,
+                                            sourceUrl: targetSource
+                                                ?.tracks
+                                                .firstOrNull
+                                                ?.url,
+                                            isPlayed: isPlayed,
+                                            onRatingChanged: (newRating) {
+                                              CatalogService().setRating(
+                                                ratingKey,
+                                                newRating,
+                                              );
+                                            },
+                                            onPlayedChanged: (newIsPlayed) {
+                                              if (newIsPlayed !=
+                                                  CatalogService().isPlayed(
+                                                    ratingKey,
+                                                  )) {
+                                                CatalogService().togglePlayed(
+                                                  ratingKey,
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        );
+                                      }
+                                    : null,
+                              ),
+                            ],
                             if (controlsOnPrimaryRow) ...[
                               SizedBox(width: 12 * style.effectiveScale),
                               buildTrailingControls(inline: true),
                             ],
                             if (!controlsOnLocationRow &&
                                 !controlsOnPrimaryRow &&
+                                !starsOnPrimaryRow &&
                                 (ratingKey != null ||
                                     shouldShowSrcBadge ||
                                     shnidInColumn)) ...[
@@ -318,15 +418,15 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                             ],
                           ],
                         ),
-                        SizedBox(height: contentGap),
+                        SizedBox(height: effectiveContentGap),
                         if (dateFirst) ...[
                           Text(
                             widget.show.venue,
-                            maxLines: secondaryVenueMaxLines,
+                            maxLines: effectiveSecondaryVenueMaxLines,
                             overflow: TextOverflow.ellipsis,
                             style: venueTextStyle,
                           ),
-                          SizedBox(height: metadataGap),
+                          SizedBox(height: effectiveMetadataGap),
                         ],
                         if (locationText.isNotEmpty) ...[
                           Row(
@@ -339,7 +439,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontFamily: 'Inter',
-                                    fontSize: compactLocationFontSize,
+                                    fontSize: effectiveLocationFontSize,
                                     fontWeight: FontWeight.w700,
                                     height: 1.1,
                                     color: colorScheme.onSurfaceVariant
@@ -353,22 +453,49 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                               ],
                             ],
                           ),
-                          SizedBox(height: metadataGap),
+                          SizedBox(height: effectiveMetadataGap),
                         ],
                         if (!dateFirst)
-                          Text(
-                            displayDate,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: compactSupportingFontSize,
-                              fontWeight: FontWeight.w800,
-                              height: 1.1,
-                              color: colorScheme.onSurfaceVariant.withValues(
-                                alpha: 0.74,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  displayDate,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: effectiveSupportingFontSize,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.1,
+                                    color: colorScheme.onSurfaceVariant
+                                        .withValues(alpha: 0.74),
+                                  ),
+                                ),
                               ),
-                            ),
+                              if (badgeOnDateRow) ...[
+                                SizedBox(width: 8 * style.effectiveScale),
+                                if (shouldShowSrcBadge)
+                                  SrcBadge(
+                                    src: badgeSrc,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w800,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 10 * style.effectiveScale,
+                                      vertical: 4 * style.effectiveScale,
+                                    ),
+                                    scaleFactor: style.effectiveScale,
+                                  )
+                                else
+                                  _buildBadge(
+                                    context,
+                                    widget.show,
+                                    style.effectiveScale * 1.1,
+                                    false,
+                                  ),
+                              ],
+                            ],
                           ),
                         if (showFooterRow) ...[
                           const Spacer(),

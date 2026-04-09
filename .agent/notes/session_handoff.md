@@ -1,5 +1,15 @@
 # Session Handoff - 2026-04-07 (Navigation Undo complete)
 
+## Environment Note - Flutter Commands In Codex
+
+- In Codex tool runs, Flutter SDK access may require elevated sandbox because
+  the SDK cache is outside the repo root (`C:\Users\jeff\dev\flutter\bin\cache`).
+- Use the approved elevated command pattern for Flutter:
+  `$env:FLUTTER_SUPPRESS_ANALYTICS='true'; $env:CI='true'; & 'C:\Users\jeff\dev\flutter\bin\flutter.bat' <args>`
+- Confirmed working in this environment by successfully running:
+  `flutter --version` and
+  `flutter test packages/shakedown_core/test/widgets/show_list_card_test.dart`.
+
 ## State at Handoff
 
 Navigation Undo Tasks 1-3 are complete in the working tree and ready as part

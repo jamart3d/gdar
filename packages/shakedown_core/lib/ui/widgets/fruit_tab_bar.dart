@@ -94,7 +94,12 @@ class FruitTabBar extends StatelessWidget {
                     if (audioProvider.currentShow != null) {
                       onTabSelected(0);
                     } else {
-                      showMessage(context, 'No track playing');
+                      showMessage(
+                        context,
+                        'No track playing',
+                        large: true,
+                        preferredAlignment: const Alignment(-0.72, 0.78),
+                      );
                     }
                   },
                 ),

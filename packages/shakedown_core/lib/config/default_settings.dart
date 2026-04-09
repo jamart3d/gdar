@@ -34,7 +34,7 @@ class DefaultSettings {
   static const bool nonRandom = false;
   static const bool preventSleep = false;
   static const bool showPlaybackMessages = true;
-  static const bool showDevAudioHud = true;
+  static const bool showDevAudioHud = false;
   static const String devHudMode = 'full';
 
   // Web Gapless Engine (web-only)

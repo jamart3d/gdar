@@ -66,6 +66,9 @@ historical audit items were intentionally removed.
   and `maxGapless` engine profiles.
 - [ ] Audit `apps/gdar_web/lib/ui/` for leftover duplicate or shadow widgets
   from the monorepo transition.
+- [ ] Implement true Web Advanced Cache support (service worker + Cache Storage
+  strategy, preload controls, and safe eviction policy) and then re-enable
+  the Usage Instructions copy from "planned" to "available."
 
 ## Testing
 

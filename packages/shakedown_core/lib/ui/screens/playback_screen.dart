@@ -178,6 +178,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
   bool _fruitFloatingNowPlayingMeasurementQueued = false;
   bool _fruitCarModeHudShowsMeta = false;
   HudSnapshot? _fruitCarModeFrozenHud;
+  double? _fruitCarModeLastMeasuredGapMs;
   final Map<int, FocusNode> _trackFocusNodes = {};
   final FocusNode _trackListFocusNode = FocusNode(canRequestFocus: false);
 
@@ -187,6 +188,10 @@ class PlaybackScreenState extends State<PlaybackScreen>
     final audioProvider = context.read<AudioProvider>();
     _lastTrackTitle = audioProvider.currentTrack?.title;
     _fruitCarModeFrozenHud = audioProvider.currentHudSnapshot;
+    final initialGap = _fruitCarModeFrozenHud?.lastGapMs;
+    if (initialGap != null && initialGap.isFinite && initialGap > 0) {
+      _fruitCarModeLastMeasuredGapMs = initialGap;
+    }
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),

@@ -1070,6 +1070,71 @@ void main() {
   });
 
   testWidgets(
+    'PlaybackScreen Fruit car mode LG chip keeps last measured non-zero gap while playing',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      final playerStateController = StreamController<PlayerState>.broadcast();
+      final hudController = StreamController<HudSnapshot>.broadcast();
+      addTearDown(playerStateController.close);
+      addTearDown(hudController.close);
+
+      final initialHud = HudSnapshot.empty().copyWith(
+        drift: '1.25s',
+        headroom: '+12s',
+        nextBuffered: '00:34',
+        lastGapMs: 47,
+      );
+      final droppedGapHud = HudSnapshot.empty().copyWith(
+        drift: '1.45s',
+        headroom: '+11s',
+        nextBuffered: '00:33',
+        lastGapMs: 0,
+      );
+
+      when(
+        mockAudioProvider.hudSnapshotStream,
+      ).thenAnswer((_) => hudController.stream);
+      when(mockAudioProvider.currentHudSnapshot).thenReturn(initialHud);
+      when(
+        mockAudioProvider.playerStateStream,
+      ).thenAnswer((_) => playerStateController.stream);
+      when(
+        mockAudioPlayer.playerState,
+      ).thenReturn(PlayerState(true, ProcessingState.ready));
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+
+      final initialGapValue = tester.widget<Text>(
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_text_LG')),
+      );
+      expect(initialGapValue.data, '47');
+
+      hudController.add(droppedGapHud);
+      await tester.pump();
+
+      final persistedGapValue = tester.widget<Text>(
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_text_LG')),
+      );
+      expect(persistedGapValue.data, '47');
+      expect(find.text('1.45'), findsOneWidget);
+      expect(find.text('+11'), findsOneWidget);
+      expect(find.text('00:33'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'PlaybackScreen Fruit car mode progress text refreshes after delayed stream resume',
     (WidgetTester tester) async {
       setLargeCarModeViewport(tester);

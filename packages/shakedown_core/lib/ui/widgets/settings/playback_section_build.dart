@@ -162,7 +162,7 @@ extension _PlaybackSectionBuild on PlaybackSection {
           value: settingsProvider.playRandomOnCompletion,
           onChanged: (value) {
             context.read<SettingsProvider>().togglePlayRandomOnCompletion();
-            if (value && !settingsProvider.offlineBuffering) {
+            if (!kIsWeb && value && !settingsProvider.offlineBuffering) {
               showMessage(context, 'Consider enabling Advanced Cache.');
             }
           },

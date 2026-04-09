@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 // Mocks - Reuse mocks from show_list_screen_swipe_test.dart
@@ -66,6 +67,32 @@ class MockAudioProvider extends Mock implements AudioProvider {
 
 class MockSettingsProvider extends SettingsProvider {
   MockSettingsProvider(super.prefs);
+  bool _carMode = false;
+  bool _fruitFloatingSpheres = false;
+  bool _performanceMode = false;
+
+  void setCarMode(bool value) {
+    _carMode = value;
+    notifyListeners();
+  }
+
+  void setFruitFloatingSpheres(bool value) {
+    _fruitFloatingSpheres = value;
+    notifyListeners();
+  }
+
+  @override
+  void setPerformanceMode(bool value) {
+    _performanceMode = value;
+    notifyListeners();
+  }
+
+  @override
+  bool get carMode => _carMode;
+
+  @override
+  bool get fruitFloatingSpheres => _fruitFloatingSpheres;
+
   @override
   bool get uiScale => false;
   @override
@@ -96,7 +123,7 @@ class MockSettingsProvider extends SettingsProvider {
   @override
   bool get useNeumorphism => false;
   @override
-  bool get performanceMode => false;
+  bool get performanceMode => _performanceMode;
   @override
   bool get fruitDenseList => false;
   @override
@@ -460,6 +487,41 @@ void main() {
         matching: find.byType(ScaleTransition),
       );
       expect(scaleTransitionFinder, findsNothing);
+    });
+  });
+
+  group('ShowListScreen Fruit car-mode floating spheres', () {
+    testWidgets('renders spheres when Fruit car mode and toggle are enabled', (
+      WidgetTester tester,
+    ) async {
+      mockThemeProvider.themeStyle = ThemeStyle.fruit;
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setFruitFloatingSpheres(true);
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+
+      expect(
+        find.byKey(const ValueKey('fruit_show_list_car_mode_floating_spheres')),
+        findsOneWidget,
+      );
+      expect(find.byType(FloatingSpheresBackground), findsOneWidget);
+    });
+
+    testWidgets('does not render spheres when toggle is disabled', (
+      WidgetTester tester,
+    ) async {
+      mockThemeProvider.themeStyle = ThemeStyle.fruit;
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setFruitFloatingSpheres(false);
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+
+      expect(
+        find.byKey(const ValueKey('fruit_show_list_car_mode_floating_spheres')),
+        findsNothing,
+      );
     });
   });
 }

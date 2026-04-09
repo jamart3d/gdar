@@ -45,12 +45,12 @@ class EmbeddedMiniPlayer extends StatelessWidget {
     final isFruit = context.read<ThemeProvider?>()?.isFruit ?? false;
     final horizontalPad = compact ? 4.0 : 10.0;
     final verticalPad = compact ? 0.0 : 8.0;
-    final buttonSize = (compact ? 72.0 : 32.0) * scaleFactor;
-    final iconSize = (compact ? 36.0 : 16.0) * scaleFactor;
-    final loaderSize = (compact ? 32.0 : 18.0) * scaleFactor;
-    final titleSize = (compact ? (isFruit ? 22.0 : 18.0) : 14.0) * scaleFactor;
+    final buttonSize = compact ? 72.0 : 32.0 * scaleFactor;
+    final iconSize = compact ? 36.0 : 16.0 * scaleFactor;
+    final loaderSize = compact ? 32.0 : 18.0 * scaleFactor;
+    final titleSize = compact ? (isFruit ? 22.0 : 18.0) : 14.0 * scaleFactor;
     final isTv = Provider.of<DeviceService>(context).isTv;
-    final timeSize = (compact ? 12.0 : 11.0) * scaleFactor;
+    final timeSize = compact ? 12.0 : 11.0 * scaleFactor;
     final contentRadius = isTv
         ? 12.0
         : 28.0; // Matching the card's 28px radius (semicircle look)
@@ -72,7 +72,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
               ),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: compact ? MainAxisSize.min : MainAxisSize.max,
         children: [
           // Play/Pause Button
           StreamBuilder<PlayerState>(
@@ -159,44 +159,60 @@ class EmbeddedMiniPlayer extends StatelessWidget {
           // Compact mode: no Expanded (intrinsic width from parent)
           // Non-compact mode: Expanded to fill available space
           if (compact)
-            Expanded(
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  Expanded(
-                    child: Text(
-                      currentTrack.title,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: titleSize,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
-                        height: 1.0,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Time + progress bar, right-aligned
-                  IntrinsicWidth(
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 260),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final titleStyle = TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: titleSize,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                    height: 1.0,
+                  );
+
+                  final maxContentWidth = constraints.hasBoundedWidth
+                      ? constraints.maxWidth
+                      : 260.0;
+
+                  final titlePainter = TextPainter(
+                    text: TextSpan(text: currentTrack.title, style: titleStyle),
+                    maxLines: 1,
+                    textDirection: TextDirection.ltr,
+                  )..layout(maxWidth: maxContentWidth);
+
+                  final contentWidth = titlePainter.width.clamp(
+                    80.0,
+                    maxContentWidth,
+                  );
+
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOutCubic,
+                    width: contentWidth,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildTimeText(
-                          audioProvider,
-                          colorScheme,
-                          timeSize,
-                          compact,
-                          showFullDuration,
+                        Text(
+                          currentTrack.title,
+                          style: titleStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 1),
-                        _buildProgressBar(audioProvider, colorScheme, compact),
+                        const SizedBox(height: 4),
+                        SizedBox(
+                          width: contentWidth,
+                          child: _buildProgressBar(
+                            audioProvider,
+                            colorScheme,
+                            true,
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
             )
           else
@@ -332,7 +348,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
             final double progress = dur.inMilliseconds > 0
                 ? (pos.inMilliseconds / dur.inMilliseconds).clamp(0.0, 1.0)
                 : 0.0;
-            final double progressBarHeight = compact ? 4 : 2;
+            final double progressBarHeight = compact ? 2 : 2;
 
             return LinearProgressIndicator(
               value: progress,

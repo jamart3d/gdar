@@ -1,3 +1,16 @@
+<en-US>
+What's new in v1.3.72+282
+• PWA wake lock not released when "Keep Screen On" toggled off during playback
+• Show list card bottom text too small
+• SHNID badge not stacked under src badge (Fruit web mobile)
+• SHNID badge not stacked under src badge (Fruit car mode)
+• Non-current show cards shorter (Fruit mobile/PWA)
+• SHNID count badge taps toggle card expansion (Fruit, multi-source, `showSingleShnid` off)
+• Expanded source sub-list gap now natural/consistent
+</en-US>
+
+---
+
 What's new in v1.3.71+281
 - Replaced the broader "Live Playlist" direction with a narrower approved
 - Added the approved design spec:

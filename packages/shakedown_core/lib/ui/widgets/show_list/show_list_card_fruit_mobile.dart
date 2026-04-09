@@ -95,7 +95,9 @@ extension _ShowListCardFruitMobileBuild on _ShowListCardState {
                                             initialRating: rating,
                                             sourceId: ratingKey,
                                             sourceUrl: targetSource
-                                                ?.tracks.firstOrNull?.url,
+                                                ?.tracks
+                                                .firstOrNull
+                                                ?.url,
                                             isPlayed: isPlayed,
                                             onRatingChanged: (r) =>
                                                 CatalogService().setRating(

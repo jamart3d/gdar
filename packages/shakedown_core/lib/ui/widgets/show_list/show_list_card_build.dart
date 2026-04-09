@@ -228,6 +228,8 @@ extension _ShowListCardBuild on _ShowListCardState {
         (screenWidth < 850 || deviceService.isPwa || deviceService.isMobile) &&
         !isTv;
     final bool usePremium = settingsProvider.useNeumorphism && isFruit;
+    final bool isDesktopUnstackedWide =
+        kIsWeb && !useMobileLayout && !isTv && !widget.isExpanded;
 
     if (isFruitCarMode && !isTv) {
       return _buildFruitCarModeCardContent(
@@ -296,11 +298,66 @@ extension _ShowListCardBuild on _ShowListCardState {
                   alignment: Alignment.centerLeft,
                   clipBehavior: Clip.none,
                   padding: EdgeInsets.symmetric(horizontal: isTv ? 6.0 : 12.0),
-                  child: Builder(
-                    builder: (context) {
+                  child: LayoutBuilder(
+                    builder: (context, textConstraints) {
                       final hPadding = isTv
                           ? 24.0
                           : (settingsProvider.performanceMode ? 8.0 : 16.0);
+                      final double textLaneWidth = textConstraints.maxWidth;
+                      final String inlineLocationText =
+                          (widget.playingSource?.location ??
+                                  widget.show.location)
+                              .trim();
+
+                      String locationForLaneWidth(String location) {
+                        if (location.isEmpty || !isDesktopUnstackedWide) {
+                          return '';
+                        }
+                        if (textLaneWidth >= 1060) return location;
+                        if (textLaneWidth >= 760) {
+                          final compact = location.split(',').first.trim();
+                          return compact.isEmpty ? '' : compact;
+                        }
+                        return '';
+                      }
+
+                      final String inlineLocationForWidth =
+                          locationForLaneWidth(inlineLocationText);
+                      final bool showInlineLocationAfterVenue =
+                          inlineLocationForWidth.isNotEmpty &&
+                          !widget.show.venue.toLowerCase().contains(
+                            inlineLocationForWidth.toLowerCase(),
+                          );
+                      final String venueDisplayText =
+                          showInlineLocationAfterVenue
+                          ? '${widget.show.venue} | $inlineLocationForWidth'
+                          : widget.show.venue;
+
+                      String dateForLaneWidth() {
+                        if (!isDesktopUnstackedWide) {
+                          return style.formattedDate;
+                        }
+                        if (textLaneWidth >= 980) {
+                          return style.formattedDate;
+                        }
+                        if (textLaneWidth >= 700) {
+                          return AppDateUtils.formatDate(
+                            widget.show.date,
+                            settings: settingsProvider,
+                            showDayOfWeek: settingsProvider.showDayOfWeek,
+                            abbreviateDayOfWeek: true,
+                          );
+                        }
+                        return AppDateUtils.formatDate(
+                          widget.show.date,
+                          settings: settingsProvider,
+                          showDayOfWeek: false,
+                          abbreviateDayOfWeek:
+                              settingsProvider.abbreviateDayOfWeek,
+                        );
+                      }
+
+                      final String responsiveDateText = dateForLaneWidth();
                       final Widget textArea = (!kIsWeb || useMobileLayout)
                           ? Column(
                               children: [
@@ -315,8 +372,8 @@ extension _ShowListCardBuild on _ShowListCardState {
                                       child: ConditionalMarquee(
                                         text:
                                             settingsProvider.dateFirstInShowCard
-                                            ? style.formattedDate
-                                            : widget.show.venue,
+                                            ? responsiveDateText
+                                            : venueDisplayText,
                                         style: style.topStyle.copyWith(
                                           height: 1.3,
                                         ),
@@ -337,8 +394,8 @@ extension _ShowListCardBuild on _ShowListCardState {
                                       alignment: Alignment.centerLeft,
                                       child: Text(
                                         settingsProvider.dateFirstInShowCard
-                                            ? widget.show.venue
-                                            : style.formattedDate,
+                                            ? venueDisplayText
+                                            : responsiveDateText,
                                         style: style.bottomStyle.copyWith(
                                           height: 1.3,
                                         ),
@@ -365,14 +422,14 @@ extension _ShowListCardBuild on _ShowListCardState {
                                         constraints: BoxConstraints(
                                           minWidth: isFruit
                                               ? (settingsProvider.fruitDenseList
-                                                        ? 240.0
-                                                        : 300.0) *
+                                                        ? 0.0
+                                                        : 0.0) *
                                                     style.effectiveScale
                                               : 254.0 * style.effectiveScale,
                                           maxWidth: isFruit
                                               ? (settingsProvider.fruitDenseList
-                                                        ? 310.0
-                                                        : 370.0) *
+                                                        ? 260.0
+                                                        : 320.0) *
                                                     style.effectiveScale
                                               : 310.0 * style.effectiveScale,
                                         ),
@@ -392,7 +449,7 @@ extension _ShowListCardBuild on _ShowListCardState {
                                                     ? 1.0
                                                     : 0.88),
                                             compact: true,
-                                            useRgb: style.useRgb,
+                                            useRgb: false,
                                             showFullDuration: true,
                                           ),
                                         ),
@@ -402,7 +459,7 @@ extension _ShowListCardBuild on _ShowListCardState {
                                   SizedBox(width: 5 * style.effectiveScale),
                                 ],
                                 Flexible(
-                                  flex: 3,
+                                  flex: isDesktopInlinePlaying ? 1 : 3,
                                   child: Container(
                                     alignment: Alignment.centerLeft,
                                     child: FittedBox(
@@ -410,21 +467,28 @@ extension _ShowListCardBuild on _ShowListCardState {
                                       alignment: Alignment.centerLeft,
                                       child: Text(
                                         settingsProvider.dateFirstInShowCard
-                                            ? style.formattedDate
-                                            : widget.show.venue,
+                                            ? responsiveDateText
+                                            : venueDisplayText,
                                         style: isFruit
                                             ? style.topStyle
                                             : style.bottomStyle,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.left,
                                       ),
                                     ),
                                   ),
                                 ),
-                                SizedBox(width: isFruit ? 24.0 : 0.0),
+                                SizedBox(
+                                  width: isDesktopInlinePlaying
+                                      ? 8.0
+                                      : ((isDesktopUnstackedWide && isFruit)
+                                            ? 4.0
+                                            : (isFruit ? 24.0 : 0.0)),
+                                ),
                                 if (!isFruit) const Spacer(),
                                 Flexible(
-                                  flex: 1,
+                                  flex: isDesktopInlinePlaying ? 0 : 1,
                                   child: Container(
                                     alignment: Alignment.centerRight,
                                     child: FittedBox(
@@ -432,8 +496,8 @@ extension _ShowListCardBuild on _ShowListCardState {
                                       alignment: Alignment.centerRight,
                                       child: Text(
                                         settingsProvider.dateFirstInShowCard
-                                            ? widget.show.venue
-                                            : style.formattedDate,
+                                            ? venueDisplayText
+                                            : responsiveDateText,
                                         style: isFruit
                                             ? style.bottomStyle
                                             : style.topStyle,
@@ -526,7 +590,11 @@ extension _ShowListCardBuild on _ShowListCardState {
               Positioned(
                 top: (isTv ? 4.0 : 6.0) * style.effectiveScale,
                 bottom: (isTv ? 6.0 : 4.0) * style.effectiveScale,
-                right: 12.0 * style.effectiveScale,
+                right:
+                    (kIsWeb && isFruit && !useMobileLayout && !isTv
+                        ? 8.0
+                        : 12.0) *
+                    style.effectiveScale,
                 child: _buildBalancedControls(
                   context,
                   widget.show,

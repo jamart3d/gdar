@@ -86,7 +86,13 @@ Future<void> launchArchivePage(
   }
 }
 
-void showMessage(BuildContext context, String message) {
+void showMessage(
+  BuildContext context,
+  String message, {
+  bool preferCenter = false,
+  bool large = false,
+  Alignment? preferredAlignment,
+}) {
   if (!context.mounted) return;
 
   final isTv = context.read<DeviceService>().isTv;
@@ -105,7 +111,13 @@ void showMessage(BuildContext context, String message) {
 
     final bool isFruit = _isFruitTheme(context);
     if (isFruit) {
-      _showFruitMessageOverlay(context, message);
+      _showFruitMessageOverlay(
+        context,
+        message,
+        preferCenter: preferCenter,
+        large: large,
+        preferredAlignment: preferredAlignment,
+      );
       return;
     }
 
@@ -260,11 +272,21 @@ void _showMaterialSnackBarWithAction(
 void _removeFruitMessageOverlay() {
   _fruitMessageTimer?.cancel();
   _fruitMessageTimer = null;
-  _fruitMessageOverlay?.remove();
+  try {
+    _fruitMessageOverlay?.remove();
+  } catch (_) {
+    // Overlay host may already be gone (common during widget test teardown).
+  }
   _fruitMessageOverlay = null;
 }
 
-void _showFruitMessageOverlay(BuildContext context, String message) {
+void _showFruitMessageOverlay(
+  BuildContext context,
+  String message, {
+  bool preferCenter = false,
+  bool large = false,
+  Alignment? preferredAlignment,
+}) {
   final overlay = Overlay.maybeOf(context, rootOverlay: true);
   if (overlay == null) {
     _showMaterialSnackBar(context, message);
@@ -281,30 +303,32 @@ void _showFruitMessageOverlay(BuildContext context, String message) {
       final media = MediaQuery.maybeOf(overlayContext);
       final bottomInset = media?.viewInsets.bottom ?? 0;
       final safeBottom = media?.padding.bottom ?? 0;
+      final Alignment overlayAlignment =
+          preferredAlignment ??
+          (preferCenter ? const Alignment(0, -0.12) : Alignment.bottomCenter);
+      final EdgeInsets overlayPadding = preferCenter
+          ? const EdgeInsets.symmetric(horizontal: 20, vertical: 20)
+          : EdgeInsets.fromLTRB(16, 16, 16, 94 + safeBottom + bottomInset);
       return Positioned.fill(
         child: IgnorePointer(
           child: SafeArea(
             child: Align(
-              alignment: Alignment.bottomCenter,
+              alignment: overlayAlignment,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  16,
-                  16,
-                  16,
-                  94 +
-                      safeBottom +
-                      bottomInset, // 20 + 74px to clear bottom tab bar
-                ),
+                padding: overlayPadding,
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 560),
+                  constraints: BoxConstraints(
+                    maxWidth: large ? 680 : 560,
+                    minWidth: large ? 280 : 0,
+                  ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(large ? 22 : 18),
                     child: Builder(
                       builder: (context) {
                         final messageContent = Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 14,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: large ? 26 : 18,
+                            vertical: large ? 18 : 14,
                           ),
                           child: Semantics(
                             liveRegion: true,
@@ -317,7 +341,7 @@ void _showFruitMessageOverlay(BuildContext context, String message) {
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w600,
-                                fontSize: 13,
+                                fontSize: large ? 24 : 14,
                                 letterSpacing: 0.1,
                                 color: isDark
                                     ? colorScheme.onSurface
@@ -338,7 +362,9 @@ void _showFruitMessageOverlay(BuildContext context, String message) {
                                     color: isDark
                                         ? Colors.black.withValues(alpha: 0.45)
                                         : Colors.white.withValues(alpha: 0.58),
-                                    borderRadius: BorderRadius.circular(18),
+                                    borderRadius: BorderRadius.circular(
+                                      large ? 22 : 18,
+                                    ),
                                     border: Border.all(
                                       color: isDark
                                           ? Colors.white.withValues(alpha: 0.18)
@@ -367,7 +393,9 @@ void _showFruitMessageOverlay(BuildContext context, String message) {
                                   color: isDark
                                       ? colorScheme.surfaceContainerHigh
                                       : colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.circular(
+                                    large ? 22 : 18,
+                                  ),
                                   border: Border.all(
                                     color: colorScheme.outlineVariant
                                         .withValues(alpha: isDark ? 0.7 : 0.9),
@@ -401,10 +429,15 @@ void _showFruitMessageOverlay(BuildContext context, String message) {
 
   final overlayEntry = _fruitMessageOverlay;
   if (overlayEntry != null) {
-    overlay.insert(overlayEntry);
-    _fruitMessageTimer = Timer(const Duration(seconds: 3), () {
-      _removeFruitMessageOverlay();
-    });
+    try {
+      overlay.insert(overlayEntry);
+      _fruitMessageTimer = Timer(const Duration(seconds: 3), () {
+        _removeFruitMessageOverlay();
+      });
+    } catch (_) {
+      _fruitMessageOverlay = null;
+      _showMaterialSnackBar(context, message);
+    }
   }
 }
 
@@ -608,11 +641,21 @@ void _showFruitIssueOverlay(
     },
   );
 
-  overlay.insert(_fruitMessageOverlay!);
-  _fruitMessageTimer?.cancel();
-  _fruitMessageTimer = Timer(const Duration(seconds: 8), () {
-    _removeFruitMessageOverlay();
-  });
+  try {
+    overlay.insert(_fruitMessageOverlay!);
+    _fruitMessageTimer?.cancel();
+    _fruitMessageTimer = Timer(const Duration(seconds: 8), () {
+      _removeFruitMessageOverlay();
+    });
+  } catch (_) {
+    _fruitMessageOverlay = null;
+    _showMaterialSnackBarWithAction(
+      context,
+      message,
+      actionLabel: actionLabel ?? 'Clear',
+      onAction: onAction ?? onClear,
+    );
+  }
 }
 
 bool _shouldUseFruitLiquidGlass(BuildContext context) {

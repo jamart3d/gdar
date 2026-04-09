@@ -1104,9 +1104,7 @@ void main() {
 
           // Playback starts and wake lock is active.
           when(mockAudioPlayer.playing).thenReturn(true);
-          when(
-            mockWakelockService.enabled,
-          ).thenAnswer((_) async => true);
+          when(mockWakelockService.enabled).thenAnswer((_) async => true);
 
           // User disables "Keep Screen On" while audio is playing.
           final settingsOff = MockSettingsProvider();

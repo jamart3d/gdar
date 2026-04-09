@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mockito/mockito.dart';
@@ -76,6 +77,8 @@ class _MockGaplessPlayer extends Mock implements GaplessPlayer {
 class _TestAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   final GaplessPlayer audioPlayer;
+  int seekPrevCalls = 0;
+  int seekNextCalls = 0;
 
   _TestAudioProvider(this.audioPlayer);
 
@@ -109,7 +112,14 @@ class _TestAudioProvider extends ChangeNotifier implements AudioProvider {
   Future<void> resume() async {}
 
   @override
-  Future<void> seekToNext() async {}
+  Future<void> seekToNext() async {
+    seekNextCalls++;
+  }
+
+  @override
+  Future<void> seekToPrevious() async {
+    seekPrevCalls++;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -211,13 +221,13 @@ void main() {
     required bool glassEnabled,
     required bool performanceMode,
     bool highlightPlayingWithRgb = false,
+    _TestAudioProvider? testAudioProvider,
   }) async {
+    final audio = testAudioProvider ?? _TestAudioProvider(player);
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider<AudioProvider>.value(
-            value: _TestAudioProvider(player),
-          ),
+          ChangeNotifierProvider<AudioProvider>.value(value: audio),
           ChangeNotifierProvider<SettingsProvider>.value(
             value: _TestSettingsProvider(
               glassEnabled: glassEnabled,
@@ -483,5 +493,83 @@ void main() {
       expect(beadRect.top, greaterThanOrEqualTo(overlayRect.top - 0.01));
       expect(beadRect.bottom, lessThanOrEqualTo(overlayRect.bottom + 0.01));
     }
+  });
+
+  testWidgets('Fruit track-step controls are web-only', (tester) async {
+    final player = _MockGaplessPlayer();
+    stubPlayerState(
+      player,
+      PlayerState(true, ProcessingState.ready),
+      position: const Duration(seconds: 24),
+      buffered: const Duration(seconds: 40),
+      duration: const Duration(minutes: 8),
+    );
+
+    await pumpCard(
+      tester,
+      player: player,
+      glassEnabled: true,
+      performanceMode: false,
+    );
+    await tester.pump();
+
+    if (kIsWeb) {
+      expect(
+        find.byKey(const ValueKey('fruit_now_playing_prev_track_button')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_now_playing_next_track_button')),
+        findsOneWidget,
+      );
+    } else {
+      expect(
+        find.byKey(const ValueKey('fruit_now_playing_prev_track_button')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_now_playing_next_track_button')),
+        findsNothing,
+      );
+    }
+  });
+
+  testWidgets('Fruit web track-step buttons trigger previous/next track', (
+    tester,
+  ) async {
+    if (!kIsWeb) return;
+
+    final player = _MockGaplessPlayer();
+    stubPlayerState(
+      player,
+      PlayerState(true, ProcessingState.ready),
+      position: const Duration(seconds: 24),
+      buffered: const Duration(seconds: 40),
+      duration: const Duration(minutes: 8),
+    );
+    when(player.currentIndex).thenReturn(1);
+
+    final testAudioProvider = _TestAudioProvider(player);
+
+    await pumpCard(
+      tester,
+      player: player,
+      glassEnabled: true,
+      performanceMode: false,
+      testAudioProvider: testAudioProvider,
+    );
+    await tester.pump();
+
+    await tester.tap(
+      find.byKey(const ValueKey('fruit_now_playing_prev_track_button')),
+    );
+    await tester.pump();
+    await tester.tap(
+      find.byKey(const ValueKey('fruit_now_playing_next_track_button')),
+    );
+    await tester.pump();
+
+    expect(testAudioProvider.seekPrevCalls, 1);
+    expect(testAudioProvider.seekNextCalls, 1);
   });
 }

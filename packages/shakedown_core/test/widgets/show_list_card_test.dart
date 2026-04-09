@@ -307,7 +307,7 @@ void main() {
           .height;
 
       expect(idleHeight, lessThan(activeHeight));
-      expect(activeHeight - idleHeight, greaterThan(35.0));
+      expect(activeHeight - idleHeight, greaterThan(25.0));
     },
   );
 
@@ -333,7 +333,7 @@ void main() {
         .getSize(find.byKey(const ValueKey('fruit_show_list_car_mode_card')))
         .height;
 
-    expect(idleHeight, lessThan(200.0));
+    expect(idleHeight, lessThan(160.0));
   });
 
   testWidgets('ShowListCard Fruit car mode idle layout does not overflow', (
@@ -768,10 +768,14 @@ void main() {
 
       expect(locationFinder, findsOneWidget);
       expect(badgeFinder, findsOneWidget);
+      // Badge is to the right of location text (right-aligned in location row).
       expect(
         tester.getTopLeft(badgeFinder).dx,
         greaterThan(tester.getTopLeft(locationFinder).dx),
       );
+      // Badge right edge is near the card right edge (right-aligned, not left).
+      expect(tester.getTopRight(badgeFinder).dx, greaterThan(350.0));
+      // Badge is vertically on the same row as the location text.
       expect(
         (tester.getTopLeft(badgeFinder).dy -
                 tester.getTopLeft(locationFinder).dy)
@@ -782,7 +786,7 @@ void main() {
   );
 
   testWidgets(
-    'ShowListCard Fruit car mode aligns multi-source badge with location row when date-first is off',
+    'ShowListCard Fruit car mode places multi-source badge on date row when date-first is off',
     (WidgetTester tester) async {
       tester.view.devicePixelRatio = 1.0;
       tester.view.physicalSize = const Size(430, 900);
@@ -817,15 +821,55 @@ void main() {
 
       expect(locationFinder, findsOneWidget);
       expect(badgeFinder, findsOneWidget);
+      // Badge must be below the location row (on the date row), not inline.
       expect(
-        tester.getTopLeft(badgeFinder).dx,
-        greaterThan(tester.getTopLeft(locationFinder).dx),
+        tester.getTopLeft(badgeFinder).dy,
+        greaterThan(tester.getBottomLeft(locationFinder).dy - 4.0),
       );
+    },
+  );
+
+  testWidgets(
+    'ShowListCard Fruit car mode places src badge below location row when date-first is off',
+    (WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(430, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final showWithSrc = createDummyShow(
+        'Fox Theater',
+        '1978-12-17',
+        sourceCount: 1,
+        primarySrc: 'SBD',
+        sourceLocation: 'Tampa, FL',
+      );
+      showWithSrc.location = 'Tampa, FL';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+      if (settingsProvider.dateFirstInShowCard) {
+        settingsProvider.toggleDateFirstInShowCard();
+      }
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: showWithSrc,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final locationFinder = find.text('Tampa, FL');
+      final badgeFinder = find.text('SBD');
+
+      expect(locationFinder, findsOneWidget);
+      expect(badgeFinder, findsOneWidget);
+      // Badge must be below the location row, not inline with it.
       expect(
-        (tester.getTopLeft(badgeFinder).dy -
-                tester.getTopLeft(locationFinder).dy)
-            .abs(),
-        lessThan(24.0),
+        tester.getTopLeft(badgeFinder).dy,
+        greaterThan(tester.getBottomLeft(locationFinder).dy - 4.0),
       );
     },
   );

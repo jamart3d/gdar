@@ -10,6 +10,7 @@ import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
+import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
 import 'package:shakedown_core/utils/web_runtime.dart';
 
 /// The layout shell for [ShowListScreen], including AppBar, SearchBar, and MiniPlayer.
@@ -81,6 +82,29 @@ class ShowListShell extends StatelessWidget {
     );
   }
 
+  Widget _buildFruitCarModeFloatingSpheres(
+    BuildContext context, {
+    required SettingsProvider settingsProvider,
+    required bool isFruitCarMode,
+  }) {
+    if (!isFruitCarMode || !settingsProvider.fruitFloatingSpheres) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: RepaintBoundary(
+          child: FloatingSpheresBackground(
+            key: const ValueKey('fruit_show_list_car_mode_floating_spheres'),
+            colorScheme: Theme.of(context).colorScheme,
+            animate: !settingsProvider.performanceMode,
+            sphereCount: SphereAmount.tiny,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final audioProvider = context.watch<AudioProvider>();
@@ -102,6 +126,11 @@ class ShowListShell extends StatelessWidget {
 
     final bodyContent = Stack(
       children: [
+        _buildFruitCarModeFloatingSpheres(
+          context,
+          settingsProvider: settingsProvider,
+          isFruitCarMode: isFruitCarMode,
+        ),
         Column(
           children: [
             if (!isFruit)

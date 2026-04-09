@@ -53,65 +53,11 @@ class MockAudioProvider extends Mock implements AudioProvider {
   }
 }
 
-class MockSettingsProvider extends Mock implements SettingsProvider {
-  @override
-  bool get uiScale => false;
+class TestSettingsProvider extends SettingsProvider {
+  TestSettingsProvider(super.prefs);
+
   @override
   bool get playRandomOnStartup => false;
-  @override
-  bool get showGlobalAlbumArt => false;
-  @override
-  bool get useSliverAppBar => false;
-  @override
-  bool get highlightCurrentShowCard => true;
-  @override
-  bool get useTrueBlack => false;
-  @override
-  String get appFont => 'Roboto';
-  @override
-  String get activeAppFont => 'Roboto';
-  @override
-  bool get enableShakedownTween => false;
-  @override
-  bool get showDayOfWeek => true;
-  @override
-  bool get showSingleShnid => false;
-  @override
-  bool get abbreviateDayOfWeek => true;
-  @override
-  bool get abbreviateMonth => true;
-  @override
-  bool get dateFirstInShowCard => false;
-  @override
-  int get glowMode => 0; // Off
-  @override
-  bool get highlightPlayingWithRgb => false;
-  @override
-  double get rgbAnimationSpeed => 1.0;
-  @override
-  bool get showDebugLayout => false;
-  @override
-  bool get marqueeEnabled => false;
-  @override
-  bool get showExpandIcon => true;
-  @override
-  bool get simpleRandomIcon => false;
-  @override
-  bool get nonRandom => false;
-  @override
-  bool get isTv => false;
-  @override
-  double get oilLogoTrailIntensity => 0.0;
-  @override
-  int get oilLogoTrailSlices => 6;
-  @override
-  double get oilLogoTrailLength => 0.5;
-  @override
-  bool get enableSwipeToBlock => false;
-  @override
-  bool get useNeumorphism => false;
-  @override
-  bool get performanceMode => false;
 }
 
 class MockShowListProvider extends Mock implements ShowListProvider {
@@ -198,15 +144,16 @@ class MockDeviceService extends ChangeNotifier implements DeviceService {
 
 void main() {
   late MockAudioProvider mockAudioProvider;
-  late MockSettingsProvider mockSettingsProvider;
+  late TestSettingsProvider mockSettingsProvider;
   late MockShowListProvider mockShowListProvider;
   late MockCatalogService mockCatalogService;
   late MockDeviceService mockDeviceService;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
     mockAudioProvider = MockAudioProvider();
-    mockSettingsProvider = MockSettingsProvider();
+    mockSettingsProvider = TestSettingsProvider(prefs);
     mockShowListProvider = MockShowListProvider();
     mockCatalogService = MockCatalogService();
     mockDeviceService = MockDeviceService();

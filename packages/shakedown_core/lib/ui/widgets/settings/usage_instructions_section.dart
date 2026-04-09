@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -484,44 +485,45 @@ class UsageInstructionsSection extends StatelessWidget {
             ),
           ),
         ),
-        wrapForTv(
-          ListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            leading: Icon(
-              isFruit
-                  ? LucideIcons.downloadCloud
-                  : Icons.download_for_offline_rounded,
-            ),
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Advanced Cache',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+        if (!kIsWeb)
+          wrapForTv(
+            ListTile(
+              dense: true,
+              visualDensity: VisualDensity.compact,
+              leading: Icon(
+                isFruit
+                    ? LucideIcons.downloadCloud
+                    : Icons.download_for_offline_rounded,
               ),
-            ),
-            subtitle: Text.rich(
-              TextSpan(
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(fontSize: 12.0 * scaleFactor),
-                children: const [
-                  TextSpan(
-                    text: 'Pre-caches',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Advanced Cache',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+                ),
+              ),
+              subtitle: Text.rich(
+                TextSpan(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 12.0 * scaleFactor,
                   ),
-                  TextSpan(
-                    text:
-                        ' entire shows to ensure uninterrupted playback during deep sleep or poor connectivity.',
-                  ),
-                ],
+                  children: const [
+                    TextSpan(
+                      text: 'Pre-caches',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    TextSpan(
+                      text:
+                          ' entire shows to ensure uninterrupted playback during deep sleep or poor connectivity.',
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }

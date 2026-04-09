@@ -39,6 +39,11 @@ If either fails, halt and report. Do not proceed to version bump with a broken c
 This script atomically handles version bump, changelog migration,
 Play Store note prepending, and pending notes reset.
 
+The Play Store block is **auto-distilled** from `pending_release.md`:
+test bullets, file-path lines, and technical implementation detail are
+filtered out automatically. Only user-facing features and fixes are
+included. The block is capped at 500 chars and wrapped in `<en-US>…</en-US>`.
+
 ## 4. Android Build
 - From `apps/gdar_mobile`: `flutter build appbundle --release`
 - Wait for completion before proceeding.
@@ -54,16 +59,20 @@ Play Store note prepending, and pending notes reset.
    (Runs after deploy — records deploy status and updates release metadata.)
 
 ## 7. Smoke Test
-- `curl -sI https://shakedown-pwa.web.app/ | grep -E "HTTP/[0-9.]+ 200"` (or equivalent)
+- Windows (PowerShell): `(Invoke-WebRequest -Method Head -Uri https://shakedown-pwa.web.app/).StatusCode -eq 200`
+- Linux/macOS: `curl -sI https://shakedown-pwa.web.app/ | rg "HTTP/[0-9.]+ 200"`
 - If the live URL does not return 200, halt and report before wrapping up.
 
 ## 8. Wrap-Up
 - Report build/deploy status.
 - Remind: upload `apps/gdar_mobile/build/app/outputs/bundle/release/app-release.aab` to Google Play Console.
-- Remind: use `docs/PLAY_STORE_RELEASE.txt` for the Play Console "Release Notes" section.
+- Remind: use the **top block** of `docs/PLAY_STORE_RELEASE.txt` for the Play Console
+  "Release Notes" section. The block is pre-formatted with `<en-US>…</en-US>` tags
+  ready to paste directly into the Play Console localized notes field.
 
 ## Hard Rules
 - Builds are strictly sequential. Never parallelize.
 - Dirty worktree is fine — changes are captured in the release commit.
 - Never write to `docs/RELEASE_NOTES.txt` (legacy, retired).
 - `gdar_tv` is not a separate build step. Both phone and TV targets are bundled into the single AAB built from `apps/gdar_mobile`. The Play Store routes the correct APK split to each device type.
+- Play Store release notes MUST be concise user-facing copy only — no test coverage mentions, no file paths, no root-cause jargon. The `_distillPlayStoreNotes` function in `scripts/finalize_release.dart` enforces this automatically.

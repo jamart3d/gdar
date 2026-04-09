@@ -827,9 +827,22 @@ extension _PlaybackScreenFruitCarModeBuild on PlaybackScreenState {
     required HudSnapshot liveHud,
     required bool isPlaying,
   }) {
-    return isPlaying
+    final baseHud = isPlaying
         ? (_fruitCarModeFrozenHud = liveHud)
         : (_fruitCarModeFrozenHud ?? liveHud);
+
+    final liveGap = baseHud.lastGapMs;
+    if (liveGap != null && liveGap.isFinite && liveGap > 0) {
+      _fruitCarModeLastMeasuredGapMs = liveGap;
+      return baseHud;
+    }
+
+    final cachedGap = _fruitCarModeLastMeasuredGapMs;
+    if (cachedGap != null && cachedGap.isFinite) {
+      return baseHud.copyWith(lastGapMs: cachedGap);
+    }
+
+    return baseHud;
   }
 
   void _seekFruitCarModeProgress({
