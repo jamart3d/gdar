@@ -5,19 +5,20 @@ extension _ShowListCardControls on _ShowListCardState {
     BuildContext context,
     Show show,
     double effectiveScale,
-    bool isTv,
-  ) {
+    bool isTv, {
+    bool tappable = false,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     final settingsProvider = context.read<SettingsProvider>();
     final bool isFruit = context.read<ThemeProvider>().isFruit;
 
     final String badgeText;
     if (settingsProvider.showSingleShnid && show.sources.length == 1) {
-      badgeText = '#${show.sources.first.id}';
+      badgeText = '${show.sources.first.id}';
     } else if (widget.isPlaying &&
         widget.playingSource != null &&
         settingsProvider.showSingleShnid) {
-      badgeText = '#${widget.playingSource!.id}';
+      badgeText = '${widget.playingSource!.id}';
     } else {
       badgeText = show.sources.length > 1
           ? '${show.sources.length} SOURCES'
@@ -53,7 +54,7 @@ extension _ShowListCardControls on _ShowListCardState {
           : 0.0,
     );
 
-    return Container(
+    Widget badge = Container(
       padding: isTv
           ? const EdgeInsets.symmetric(horizontal: 4, vertical: 0.0)
           : ((isTv || isFruit)
@@ -79,7 +80,11 @@ extension _ShowListCardControls on _ShowListCardState {
         ],
       ),
       child: isFruit
-          ? ShnidBadge(text: badgeText, scaleFactor: effectiveScale)
+          ? ShnidBadge(
+              text: badgeText,
+              scaleFactor: effectiveScale,
+              interactive: !tappable,
+            )
           : (isTv
                 ? FittedBox(
                     fit: BoxFit.scaleDown,
@@ -99,6 +104,21 @@ extension _ShowListCardControls on _ShowListCardState {
                     textAlign: TextAlign.center,
                   )),
     );
+
+    if (tappable) {
+      badge = GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          AppHaptics.selectionClick(context.read<DeviceService>());
+          widget.onTap();
+        },
+        child: kIsWeb
+            ? MouseRegion(cursor: SystemMouseCursors.click, child: badge)
+            : badge,
+      );
+    }
+
+    return badge;
   }
 
   Widget _buildBalancedControls(
@@ -142,6 +162,10 @@ extension _ShowListCardControls on _ShowListCardState {
                 isFruit &&
                 !settings.useTrueBlack &&
                 !isTv;
+            final bool isDense = settings.fruitDenseList;
+            final double fruitCompactRatingSize = settings.performanceMode
+                ? (isDense ? 18 : 20)
+                : (isDense ? 22 : 24);
             int rating = 0;
             bool isPlayed = false;
 
@@ -232,7 +256,17 @@ extension _ShowListCardControls on _ShowListCardState {
             }
 
             if (shouldShowBadge) {
-              Widget badge = _buildBadge(context, show, effectiveScale, isTv);
+              Widget badge = _buildBadge(
+                context,
+                show,
+                effectiveScale,
+                isTv,
+                tappable:
+                    isFruit &&
+                    !isTv &&
+                    show.sources.length > 1 &&
+                    !settings.showSingleShnid,
+              );
               badge = wrapItemForPremium(
                 badge,
                 isPressed: true,
@@ -254,9 +288,10 @@ extension _ShowListCardControls on _ShowListCardState {
                 rating: rating,
                 isPlayed: isPlayed,
                 size: isFruit
-                    ? (settings.performanceMode
-                          ? (useMobileLayout ? 22 : 26)
-                          : (useMobileLayout ? 26 : 30))
+                    ? (kIsWeb && useMobileLayout
+                          ? fruitCompactRatingSize
+                          : (settings.performanceMode ? 26 : 32) *
+                                effectiveScale)
                     : (isTv
                           ? 28
                           : (kIsWeb && useMobileLayout
@@ -294,13 +329,6 @@ extension _ShowListCardControls on _ShowListCardState {
                         );
                       }
                     : null,
-              );
-
-              ratingWidget = wrapItemForPremium(
-                ratingWidget,
-                isPressed: false,
-                paddingH: 6,
-                paddingV: 4,
               );
             }
 
@@ -378,27 +406,24 @@ extension _ShowListCardControls on _ShowListCardState {
                                 alignment: Alignment.centerRight,
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     ?ratingWidget,
                                     if (ratingWidget != null &&
                                         badges.isNotEmpty)
                                       SizedBox(height: usePremium ? 4 : 6),
                                     if (badges.isNotEmpty)
-                                      Row(
+                                      Column(
                                         mainAxisSize: MainAxisSize.min,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
                                         children: badges
                                             .asMap()
                                             .entries
                                             .map(
                                               (e) => Padding(
                                                 padding: EdgeInsets.only(
-                                                  right:
-                                                      e.key < badges.length - 1
-                                                      ? 4
-                                                      : 0,
+                                                  top: e.key > 0 ? 4 : 0,
                                                 ),
                                                 child: e.value,
                                               ),

@@ -143,11 +143,6 @@ class ShowListItem extends StatelessWidget {
               ? ShowListItemDetails(
                   show: show,
                   playingSourceId: playingSource?.id,
-                  height: _calculateExpandedHeight(
-                    context,
-                    show,
-                    settingsProvider,
-                  ),
                   onSourceTapped: onSourceTap,
                   onSourceLongPress: onSourceLongPress,
                 )
@@ -186,16 +181,4 @@ class ShowListItem extends StatelessWidget {
     return true;
   }
 
-  double _calculateExpandedHeight(
-    BuildContext context,
-    Show show,
-    SettingsProvider settingsProvider,
-  ) {
-    if (show.sources.length <= 1) return 0.0;
-    final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
-    const double baseSourceHeaderHeight = 59.0;
-    const double listVerticalPadding = 16.0;
-    final sourceHeaderHeight = baseSourceHeaderHeight * scaleFactor;
-    return (show.sources.length * sourceHeaderHeight) + listVerticalPadding;
-  }
 }

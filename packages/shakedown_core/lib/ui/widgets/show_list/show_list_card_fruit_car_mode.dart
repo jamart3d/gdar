@@ -30,10 +30,19 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
         : widget.show.venue;
     final bool isCurrentCard = widget.isPlaying;
     final bool showTrackTitle = isCurrentCard && currentTrackTitle.isNotEmpty;
-    final bool showFooterRow = showTrackTitle || style.shouldShowBadge;
+    final bool shnidInColumn =
+        settingsProvider.showSingleShnid && style.shouldShowBadge;
+    final bool badgeInFooter = style.shouldShowBadge && !shnidInColumn;
+    final bool controlsOnPrimaryRow = dateFirst && badgeInFooter;
+    final bool controlsOnLocationRow =
+        !dateFirst && locationText.isNotEmpty && badgeInFooter;
+    final bool badgeOnLocationRow = controlsOnLocationRow && badgeInFooter;
+    final bool showFooterRow =
+        showTrackTitle ||
+        (badgeInFooter && !badgeOnLocationRow && !controlsOnPrimaryRow);
     final bool useCompactTextLayout = isCurrentCard && showFooterRow;
     final double cardHeight =
-        (widget.isPlaying ? 232.0 : (style.shouldShowBadge ? 202.0 : 194.0)) *
+        (widget.isPlaying ? 232.0 : (badgeInFooter ? 198.0 : 192.0)) *
         style.effectiveScale;
     final double horizontalPadding =
         (isCurrentCard ? 24.0 : 22.0) * style.effectiveScale;
@@ -113,9 +122,102 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
               color: colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
             );
             final double trailingMetaWidth =
-                (ratingKey != null || shouldShowSrcBadge)
+                controlsOnPrimaryRow || controlsOnLocationRow
+                ? 0.0
+                : (ratingKey != null || shouldShowSrcBadge)
                 ? ((ratingSize + 16.0 + 72.0) * style.effectiveScale)
                 : 0.0;
+            Widget buildTrailingControls({required bool inline}) {
+              final List<Widget> children = [
+                if (ratingKey != null)
+                  RatingControl(
+                    rating: rating,
+                    isPlayed: isPlayed,
+                    size: ratingSize,
+                    compact: true,
+                    enforceMinTapTarget: true,
+                    onTap:
+                        (widget.isPlaying ||
+                            widget.alwaysShowRatingInteraction ||
+                            widget.show.sources.length == 1)
+                        ? () async {
+                            await showDialog(
+                              context: context,
+                              builder: (context) => RatingDialog(
+                                initialRating: rating,
+                                sourceId: ratingKey,
+                                sourceUrl:
+                                    targetSource?.tracks.firstOrNull?.url,
+                                isPlayed: isPlayed,
+                                onRatingChanged: (newRating) {
+                                  CatalogService().setRating(
+                                    ratingKey,
+                                    newRating,
+                                  );
+                                },
+                                onPlayedChanged: (newIsPlayed) {
+                                  if (newIsPlayed !=
+                                      CatalogService().isPlayed(ratingKey)) {
+                                    CatalogService().togglePlayed(ratingKey);
+                                  }
+                                },
+                              ),
+                            );
+                          }
+                        : null,
+                  ),
+                if (ratingKey != null && shouldShowSrcBadge)
+                  inline
+                      ? SizedBox(width: 8 * style.effectiveScale)
+                      : SizedBox(height: 8 * style.effectiveScale),
+                if (shouldShowSrcBadge)
+                  SrcBadge(
+                    src: badgeSrc,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10 * style.effectiveScale,
+                      vertical: 4 * style.effectiveScale,
+                    ),
+                    scaleFactor: style.effectiveScale,
+                  ),
+                if (shnidInColumn) ...[
+                  inline
+                      ? SizedBox(width: 6 * style.effectiveScale)
+                      : SizedBox(height: 6 * style.effectiveScale),
+                  _buildBadge(
+                    context,
+                    widget.show,
+                    style.effectiveScale * 1.1,
+                    false,
+                  ),
+                ],
+                if (badgeInFooter && !shnidInColumn) ...[
+                  inline
+                      ? SizedBox(width: 8 * style.effectiveScale)
+                      : SizedBox(height: 8 * style.effectiveScale),
+                  _buildBadge(
+                    context,
+                    widget.show,
+                    style.effectiveScale * 1.1,
+                    false,
+                  ),
+                ],
+              ];
+
+              return inline
+                  ? Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: children,
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: children,
+                    );
+            }
+
             final double primaryHeadlineWrapExtraHeight =
                 shouldAllowWrappedPrimaryHeadline
                 ? _measureWrappedTextExtraHeight(
@@ -195,77 +297,17 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                                 ),
                               ),
                             ),
-                            if (ratingKey != null || shouldShowSrcBadge) ...[
+                            if (controlsOnPrimaryRow) ...[
+                              SizedBox(width: 12 * style.effectiveScale),
+                              buildTrailingControls(inline: true),
+                            ],
+                            if (!controlsOnLocationRow &&
+                                !controlsOnPrimaryRow &&
+                                (ratingKey != null ||
+                                    shouldShowSrcBadge ||
+                                    shnidInColumn)) ...[
                               SizedBox(width: 16 * style.effectiveScale),
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  if (ratingKey != null)
-                                    RatingControl(
-                                      rating: rating,
-                                      isPlayed: isPlayed,
-                                      size: ratingSize,
-                                      compact: true,
-                                      enforceMinTapTarget: true,
-                                      onTap:
-                                          (widget.isPlaying ||
-                                              widget
-                                                  .alwaysShowRatingInteraction ||
-                                              widget.show.sources.length == 1)
-                                          ? () async {
-                                              await showDialog(
-                                                context: context,
-                                                builder: (context) =>
-                                                    RatingDialog(
-                                                      initialRating: rating,
-                                                      sourceId: ratingKey,
-                                                      sourceUrl: targetSource
-                                                          ?.tracks
-                                                          .firstOrNull
-                                                          ?.url,
-                                                      isPlayed: isPlayed,
-                                                      onRatingChanged:
-                                                          (newRating) {
-                                                            CatalogService()
-                                                                .setRating(
-                                                                  ratingKey,
-                                                                  newRating,
-                                                                );
-                                                          },
-                                                      onPlayedChanged:
-                                                          (newIsPlayed) {
-                                                            if (newIsPlayed !=
-                                                                CatalogService()
-                                                                    .isPlayed(
-                                                                      ratingKey,
-                                                                    )) {
-                                                              CatalogService()
-                                                                  .togglePlayed(
-                                                                    ratingKey,
-                                                                  );
-                                                            }
-                                                          },
-                                                    ),
-                                              );
-                                            }
-                                          : null,
-                                    ),
-                                  if (ratingKey != null && shouldShowSrcBadge)
-                                    SizedBox(height: 8 * style.effectiveScale),
-                                  if (shouldShowSrcBadge)
-                                    SrcBadge(
-                                      src: badgeSrc,
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.w800,
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 10 * style.effectiveScale,
-                                        vertical: 4 * style.effectiveScale,
-                                      ),
-                                      scaleFactor: style.effectiveScale,
-                                    ),
-                                ],
-                              ),
+                              buildTrailingControls(inline: false),
                             ],
                           ],
                         ),
@@ -280,19 +322,29 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                           SizedBox(height: metadataGap),
                         ],
                         if (locationText.isNotEmpty) ...[
-                          Text(
-                            locationText,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: compactLocationFontSize,
-                              fontWeight: FontWeight.w700,
-                              height: 1.1,
-                              color: colorScheme.onSurfaceVariant.withValues(
-                                alpha: 0.88,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  locationText,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: compactLocationFontSize,
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.1,
+                                    color: colorScheme.onSurfaceVariant
+                                        .withValues(alpha: 0.88),
+                                  ),
+                                ),
                               ),
-                            ),
+                              if (badgeOnLocationRow) ...[
+                                SizedBox(width: 12 * style.effectiveScale),
+                                buildTrailingControls(inline: true),
+                              ],
+                            ],
                           ),
                           SizedBox(height: metadataGap),
                         ],
@@ -316,7 +368,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              if (style.shouldShowBadge)
+                              if (badgeInFooter && !badgeOnLocationRow)
                                 _buildBadge(
                                   context,
                                   widget.show,
@@ -324,7 +376,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                                   false,
                                 ),
                               SizedBox(
-                                width: style.shouldShowBadge
+                                width: badgeInFooter
                                     ? 12 * style.effectiveScale
                                     : 0,
                               ),

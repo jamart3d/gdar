@@ -241,6 +241,9 @@ void main() {
 
       final settingsProvider = SettingsProvider(prefs);
       settingsProvider.toggleCarMode();
+      if (!settingsProvider.dateFirstInShowCard) {
+        settingsProvider.toggleDateFirstInShowCard();
+      }
 
       await tester.pumpWidget(
         createTestableWidget(
@@ -307,6 +310,31 @@ void main() {
       expect(activeHeight - idleHeight, greaterThan(35.0));
     },
   );
+
+  testWidgets('ShowListCard Fruit car mode idle cards stay compact', (
+    WidgetTester tester,
+  ) async {
+    final dummyShow = createDummyShow('Winterland Arena', '1974-10-20');
+    dummyShow.location = 'San Francisco, CA';
+
+    final settingsProvider = SettingsProvider(prefs);
+    settingsProvider.toggleCarMode();
+
+    await tester.pumpWidget(
+      createTestableWidget(
+        show: dummyShow,
+        settingsProvider: settingsProvider,
+        themeProvider: _FruitThemeProvider(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final idleHeight = tester
+        .getSize(find.byKey(const ValueKey('fruit_show_list_car_mode_card')))
+        .height;
+
+    expect(idleHeight, lessThan(200.0));
+  });
 
   testWidgets('ShowListCard Fruit car mode idle layout does not overflow', (
     WidgetTester tester,
@@ -703,6 +731,128 @@ void main() {
 
     expect(find.text('2 SOURCES'), findsOneWidget);
   });
+
+  testWidgets(
+    'ShowListCard Fruit car mode aligns multi-source badge with date row',
+    (WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(430, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final showWithMultipleSources = createDummyShow(
+        'Venue C on 2025-02-21',
+        '2025-02-21',
+        sourceCount: 3,
+        sourceLocation: 'Oakland, CA',
+      );
+      showWithMultipleSources.location = 'Oakland, CA';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+      if (!settingsProvider.dateFirstInShowCard) {
+        settingsProvider.toggleDateFirstInShowCard();
+      }
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: showWithMultipleSources,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final dateFinder = find.text('Feb 21, 2025');
+      final badgeFinder = find.text('3 SOURCES');
+
+      expect(dateFinder, findsOneWidget);
+      expect(badgeFinder, findsOneWidget);
+      expect(
+        tester.getTopLeft(badgeFinder).dx,
+        greaterThan(tester.getTopLeft(dateFinder).dx),
+      );
+      expect(
+        (tester.getTopLeft(badgeFinder).dy -
+                tester.getTopLeft(dateFinder).dy)
+            .abs(),
+        lessThan(24.0),
+      );
+    },
+  );
+
+  testWidgets(
+    'ShowListCard Fruit car mode aligns multi-source badge with location row when date-first is off',
+    (WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(430, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final showWithMultipleSources = createDummyShow(
+        'Venue C on 2025-02-21',
+        '2025-02-21',
+        sourceCount: 3,
+        sourceLocation: 'Oakland, CA',
+      );
+      showWithMultipleSources.location = 'Oakland, CA';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+      if (settingsProvider.dateFirstInShowCard) {
+        settingsProvider.toggleDateFirstInShowCard();
+      }
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: showWithMultipleSources,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final locationFinder = find.text('Oakland, CA');
+      final badgeFinder = find.text('3 SOURCES');
+
+      expect(locationFinder, findsOneWidget);
+      expect(badgeFinder, findsOneWidget);
+      expect(
+        tester.getTopLeft(badgeFinder).dx,
+        greaterThan(tester.getTopLeft(locationFinder).dx),
+      );
+      expect(
+        (tester.getTopLeft(badgeFinder).dy -
+                tester.getTopLeft(locationFinder).dy)
+            .abs(),
+        lessThan(24.0),
+      );
+    },
+  );
+
+  testWidgets(
+    'ShowListCard taps multi-source badge like the card expand action',
+    (WidgetTester tester) async {
+      final showWithMultipleSources = createDummyShow(
+        'Venue C on 2025-02-21',
+        '2025-02-21',
+        sourceCount: 2,
+      );
+      bool tapped = false;
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: showWithMultipleSources,
+          themeProvider: _FruitThemeProvider(),
+          onTap: () => tapped = true,
+        ),
+      );
+
+      await tester.tap(find.text('2 SOURCES'));
+
+      expect(tapped, isTrue);
+    },
+  );
 
   testWidgets('ShowListCard calls onTap when tapped', (
     WidgetTester tester,

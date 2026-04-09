@@ -1086,4 +1086,41 @@ void main() {
       });
     });
   });
+
+  group('Wake Lock', () {
+    testWidgets(
+      'releases wake lock when preventSleep toggled off during active playback',
+      (WidgetTester tester) async {
+        await tester.runAsync(() async {
+          // Establish initial state: preventSleep=true, player idle.
+          final settingsOn = MockSettingsProvider();
+          when(settingsOn.preventSleep).thenReturn(true);
+          audioProvider.update(
+            mockShowListProvider,
+            settingsOn,
+            mockAudioCacheService,
+          );
+          await Future.delayed(const Duration(milliseconds: 50));
+
+          // Playback starts and wake lock is active.
+          when(mockAudioPlayer.playing).thenReturn(true);
+          when(
+            mockWakelockService.enabled,
+          ).thenAnswer((_) async => true);
+
+          // User disables "Keep Screen On" while audio is playing.
+          final settingsOff = MockSettingsProvider();
+          when(settingsOff.preventSleep).thenReturn(false);
+          audioProvider.update(
+            mockShowListProvider,
+            settingsOff,
+            mockAudioCacheService,
+          );
+          await Future.delayed(const Duration(milliseconds: 50));
+
+          verify(mockWakelockService.disable()).called(1);
+        });
+      },
+    );
+  });
 }

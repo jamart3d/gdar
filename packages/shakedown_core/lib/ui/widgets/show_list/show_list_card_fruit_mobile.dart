@@ -65,47 +65,82 @@ extension _ShowListCardFruitMobileBuild on _ShowListCardState {
                 padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
                 child: Stack(
                   children: [
-                    if (ratingKey != null)
+                    if (ratingKey != null ||
+                        (settingsProvider.showSingleShnid &&
+                            style.shouldShowBadge))
                       Positioned(
                         top: 0,
                         right: 0,
-                        child: RatingControl(
-                          rating: rating,
-                          isPlayed: isPlayed,
-                          size: settingsProvider.performanceMode
-                              ? (isDense ? 18 : 20)
-                              : (isDense ? 22 : 24),
-                          compact: true,
-                          enforceMinTapTarget: true,
-                          onTap:
-                              (widget.isPlaying ||
-                                  widget.alwaysShowRatingInteraction ||
-                                  widget.show.sources.length == 1)
-                              ? () async {
-                                  await showDialog(
-                                    context: context,
-                                    builder: (ctx) => RatingDialog(
-                                      initialRating: rating,
-                                      sourceId: ratingKey,
-                                      sourceUrl:
-                                          targetSource?.tracks.firstOrNull?.url,
-                                      isPlayed: isPlayed,
-                                      onRatingChanged: (r) => CatalogService()
-                                          .setRating(ratingKey, r),
-                                      onPlayedChanged: (v) {
-                                        if (v !=
-                                            CatalogService().isPlayed(
-                                              ratingKey,
-                                            )) {
-                                          CatalogService().togglePlayed(
-                                            ratingKey,
-                                          );
-                                        }
-                                      },
-                                    ),
-                                  );
-                                }
-                              : null,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (ratingKey != null)
+                              RatingControl(
+                                rating: rating,
+                                isPlayed: isPlayed,
+                                size: settingsProvider.performanceMode
+                                    ? (isDense ? 18 : 20)
+                                    : (isDense ? 22 : 24),
+                                compact: true,
+                                enforceMinTapTarget: true,
+                                onTap:
+                                    (widget.isPlaying ||
+                                        widget.alwaysShowRatingInteraction ||
+                                        widget.show.sources.length == 1)
+                                    ? () async {
+                                        await showDialog(
+                                          context: context,
+                                          builder: (ctx) => RatingDialog(
+                                            initialRating: rating,
+                                            sourceId: ratingKey,
+                                            sourceUrl: targetSource
+                                                ?.tracks.firstOrNull?.url,
+                                            isPlayed: isPlayed,
+                                            onRatingChanged: (r) =>
+                                                CatalogService().setRating(
+                                                  ratingKey,
+                                                  r,
+                                                ),
+                                            onPlayedChanged: (v) {
+                                              if (v !=
+                                                  CatalogService().isPlayed(
+                                                    ratingKey,
+                                                  )) {
+                                                CatalogService().togglePlayed(
+                                                  ratingKey,
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        );
+                                      }
+                                    : null,
+                              ),
+                            if (settingsProvider.showSingleShnid &&
+                                style.shouldShowBadge) ...[
+                              if (hasSrcLabel) ...[
+                                const SizedBox(height: 4),
+                                SrcBadge(
+                                  src: srcLabel,
+                                  fontSize: 8.5 * style.effectiveScale,
+                                  matchShnidLook: true,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 5 * style.effectiveScale,
+                                    vertical: 1.0 * style.effectiveScale,
+                                  ),
+                                ),
+                              ] else
+                                const SizedBox(height: 4),
+                              const SizedBox(height: 3),
+                              _buildBadge(
+                                context,
+                                widget.show,
+                                style.effectiveScale,
+                                false,
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     Padding(
@@ -149,7 +184,9 @@ extension _ShowListCardFruitMobileBuild on _ShowListCardState {
                             ),
                           ),
                           SizedBox(height: isDense ? 6.0 : 8.0),
-                          if (hasSrcLabel || style.shouldShowBadge)
+                          if (hasSrcLabel ||
+                              (style.shouldShowBadge &&
+                                  !settingsProvider.showSingleShnid))
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -182,33 +219,38 @@ extension _ShowListCardFruitMobileBuild on _ShowListCardState {
                                     ),
                                   ),
                                 ],
-                                if (hasSrcLabel && style.shouldShowBadge)
+                                if (hasSrcLabel &&
+                                    style.shouldShowBadge &&
+                                    !settingsProvider.showSingleShnid)
                                   const SizedBox(width: 8),
-                                if (style.shouldShowBadge)
+                                if (style.shouldShowBadge &&
+                                    !settingsProvider.showSingleShnid)
                                   _buildBadge(
                                     context,
                                     widget.show,
                                     style.effectiveScale,
                                     false,
+                                    tappable: true,
                                   ),
                               ],
                             ),
-                          SizedBox(height: miniPlayerGap),
-                          SizedBox(
-                            height: miniPlayerSlotHeight,
-                            child: AnimatedOpacity(
-                              duration: const Duration(milliseconds: 120),
-                              curve: Curves.easeOutCubic,
-                              opacity: widget.isPlaying ? 1.0 : 0.0,
-                              child: IgnorePointer(
-                                ignoring: !widget.isPlaying,
-                                child: widget.isPlaying
-                                    ? EmbeddedMiniPlayer(
-                                        scaleFactor: style.effectiveScale,
-                                      )
-                                    : const SizedBox.shrink(),
-                              ),
-                            ),
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 120),
+                            curve: Curves.easeOutCubic,
+                            child: widget.isPlaying
+                                ? Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(height: miniPlayerGap),
+                                      SizedBox(
+                                        height: miniPlayerSlotHeight,
+                                        child: EmbeddedMiniPlayer(
+                                          scaleFactor: style.effectiveScale,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : const SizedBox.shrink(),
                           ),
                         ],
                       ),

@@ -20,7 +20,6 @@ import 'package:provider/provider.dart';
 class ShowListItemDetails extends StatefulWidget {
   final Show show;
   final String? playingSourceId;
-  final double height;
   final Function(Source) onSourceTapped;
   final Function(Source) onSourceLongPress;
 
@@ -28,7 +27,6 @@ class ShowListItemDetails extends StatefulWidget {
     super.key,
     required this.show,
     required this.playingSourceId,
-    required this.height,
     required this.onSourceTapped,
     required this.onSourceLongPress,
   });
@@ -45,10 +43,7 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
       return const SizedBox.shrink();
     }
 
-    return SizedBox(
-      height: widget.height,
-      child: _buildSourceSelection(context),
-    );
+    return _buildSourceSelection(context);
   }
 
   Widget _buildSourceSelection(BuildContext context) {
@@ -57,8 +52,9 @@ class _ShowListItemDetailsState extends State<ShowListItemDetails> {
     final double scaleFactor = settingsProvider.uiScale ? 1.25 : 1.0;
 
     return ListView.builder(
+      shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: widget.show.sources.length,
       itemBuilder: (context, index) {
         final source = widget.show.sources[index];

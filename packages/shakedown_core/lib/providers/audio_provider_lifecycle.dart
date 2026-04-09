@@ -129,13 +129,14 @@ mixin _AudioProviderLifecycle
       _lastTrackTransitionMode = settingsProvider.trackTransitionMode;
     }
 
+    _settingsProvider = settingsProvider;
+
     if (_lastPreventSleep == null ||
         settingsProvider.preventSleep != _lastPreventSleep) {
       _lastPreventSleep = settingsProvider.preventSleep;
       _updateWakeLockState();
     }
 
-    _settingsProvider = settingsProvider;
     _updateBufferAgent();
 
     if (_lastOfflineBuffering == null ||

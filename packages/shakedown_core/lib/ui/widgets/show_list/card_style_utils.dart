@@ -139,14 +139,14 @@ class CardStyle {
         : 15.0; // v134 standard Venue size
     double bottomSize = (themeProvider.themeStyle == ThemeStyle.fruit)
         ? 11.0
-        : 9.5; // v134 standard Date size
+        : 11.5; // bumped from 9.5 to better fill flex-43 zone
 
     if (!isFruit) {
       if (isRockSalt) {
         if (dateFirst) {
           topSize = 12.0;
         } else {
-          bottomSize = 7.0;
+          bottomSize = 10.0;
         }
       } else if (isCaveat) {
         if (settings.uiScale) {

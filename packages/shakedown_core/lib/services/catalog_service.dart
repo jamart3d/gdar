@@ -40,6 +40,14 @@ class CatalogService {
   final Map<String, int> _webPlayCounts = {};
   final Map<String, bool> _webHistory = {};
   final List<SessionEntry> _webSessionHistory = [];
+  late final _WebBoxNotifier<Rating> _webRatingsNotifier =
+      _WebBoxNotifier<Rating>(_webRatings);
+  late final _WebBoxNotifier<int> _webPlayCountsNotifier = _WebBoxNotifier<int>(
+    _webPlayCounts,
+  );
+  late final _WebBoxNotifier<bool> _webHistoryNotifier = _WebBoxNotifier<bool>(
+    _webHistory,
+  );
 
   // Stores played status (Source ID -> true)
   List<Show>? _showsCache;
@@ -193,6 +201,7 @@ class CatalogService {
           timestamp: DateTime.now(),
         );
       }
+      _webRatingsNotifier.notifyListeners();
       return;
     }
 
@@ -220,6 +229,7 @@ class CatalogService {
     if (!_isInitialized) return;
     if (kIsWeb) {
       _webPlayCounts[sourceId] = (_webPlayCounts[sourceId] ?? 0) + 1;
+      _webPlayCountsNotifier.notifyListeners();
       return;
     }
     int current = _playCountsBox!.get(sourceId) ?? 0;
@@ -236,7 +246,7 @@ class CatalogService {
     if (!_isInitialized) {
       throw Exception('CatalogService not initialized');
     }
-    if (kIsWeb) return _WebBoxNotifier<int>({});
+    if (kIsWeb) return _webPlayCountsNotifier;
     return _playCountsBox!.listenable();
   }
 
@@ -251,6 +261,7 @@ class CatalogService {
     if (!_isInitialized) return;
     if (kIsWeb) {
       _webHistory[sourceId] = true;
+      _webHistoryNotifier.notifyListeners();
       return;
     }
     if (!_historyBox!.containsKey(sourceId)) {
@@ -299,6 +310,7 @@ class CatalogService {
       } else {
         _webHistory[sourceId] = true;
       }
+      _webHistoryNotifier.notifyListeners();
       return;
     }
     if (_historyBox!.containsKey(sourceId)) {
@@ -315,13 +327,13 @@ class CatalogService {
 
   ValueListenable<Box<bool>> get historyListenable {
     if (!_isInitialized) throw Exception('CatalogService not initialized');
-    if (kIsWeb) return _WebBoxNotifier<bool>({});
+    if (kIsWeb) return _webHistoryNotifier;
     return _historyBox!.listenable();
   }
 
   ValueListenable<Box<Rating>> get ratingsListenable {
     if (!_isInitialized) throw Exception('CatalogService not initialized');
-    if (kIsWeb) return _WebBoxNotifier<Rating>({});
+    if (kIsWeb) return _webRatingsNotifier;
     return _ratingsBox!.listenable();
   }
 
@@ -391,6 +403,10 @@ class CatalogService {
     await close();
     _isInitialized = false;
     _showsCache = null;
+    _webRatings.clear();
+    _webPlayCounts.clear();
+    _webHistory.clear();
+    _webSessionHistory.clear();
   }
 }
 
