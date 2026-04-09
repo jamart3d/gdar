@@ -4,25 +4,16 @@ import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart' show Color, HSLColor;
 import 'package:flutter/services.dart';
+import 'package:shakedown_core/steal_screensaver/background/palette_utils.dart';
+import 'package:shakedown_core/steal_screensaver/background/shader_uniforms.dart';
+import 'package:shakedown_core/steal_screensaver/background/trail_buffer.dart';
+import 'package:shakedown_core/steal_screensaver/render/render_math.dart';
 import 'package:shakedown_core/steal_screensaver/steal_config.dart';
 import 'package:shakedown_core/steal_screensaver/steal_game.dart';
 import 'package:shakedown_core/utils/asset_constants.dart';
 
-class TrailSnapshot {
-  final ui.Offset pos;
-  final double size;
-  final ui.Color color;
-
-  const TrailSnapshot(this.pos, this.size, this.color);
-
-  static TrailSnapshot lerp(TrailSnapshot a, TrailSnapshot b, double t) {
-    return TrailSnapshot(
-      ui.Offset.lerp(a.pos, b.pos, t)!,
-      ui.lerpDouble(a.size, b.size, t) ?? a.size,
-      ui.Color.lerp(a.color, b.color, t)!,
-    );
-  }
-}
+export 'package:shakedown_core/steal_screensaver/background/trail_buffer.dart'
+    show TrailSnapshot;
 
 class StealBackground extends PositionComponent
     with HasGameReference<StealGame> {
@@ -195,14 +186,7 @@ class StealBackground extends PositionComponent
   /// Pads or trims a color list to exactly [_colorCount] entries.
   /// Shorter lists repeat their last color; longer lists are truncated.
   List<ui.Color> _expandColors(List<ui.Color> colors) {
-    if (colors.isEmpty) {
-      return List.filled(_colorCount, const ui.Color(0xFFFFFFFF));
-    }
-    final result = <ui.Color>[];
-    for (int i = 0; i < _colorCount; i++) {
-      result.add(colors[i < colors.length ? i : colors.length - 1]);
-    }
-    return result;
+    return expandPaletteColors(colors, colorCount: _colorCount);
   }
 
   ui.Offset _applyLogoSafeArea(ui.Offset rawPos) {
@@ -262,10 +246,10 @@ class StealBackground extends PositionComponent
     final t = _pathTime + _phaseOffset;
     final drift = config.orbitDrift.clamp(0.0, 2.0);
 
-    final argX1 = _normalizeAngle(t * _freqNudgeX1);
-    final argX2 = _normalizeAngle(t * _freqNudgeX2);
-    final argY1 = _normalizeAngle(t * _freqNudgeY1);
-    final argY2 = _normalizeAngle(t * _freqNudgeY2);
+    final argX1 = normalizeLoopAngle(t * _freqNudgeX1);
+    final argX2 = normalizeLoopAngle(t * _freqNudgeX2);
+    final argY1 = normalizeLoopAngle(t * _freqNudgeY1);
+    final argY2 = normalizeLoopAngle(t * _freqNudgeY2);
 
     final rawX =
         0.5 + 0.25 * drift * math.sin(argX1) + 0.1 * drift * math.sin(argX2);
@@ -410,61 +394,39 @@ class StealBackground extends PositionComponent
   // -- Trail rendering --------------------------------------------------------
 
   List<TrailSnapshot> _getTrailPositions(int count) {
-    final interval = (1 + (config.logoTrailLength * 14.5).round()).clamp(1, 30);
-    final frac = _trailFrameCount / interval.toDouble();
-
-    final clamped = count.clamp(0, _trailBufferCapacity - 1);
-    final result = <TrailSnapshot>[];
-
     final currentBaseColor = _currentColors.isNotEmpty
         ? _currentColors[0]
         : const ui.Color(0xFFFFFFFF);
     final currentSize = (config.logoScale + _sharedBeatPulseBoost) * 110.0;
-
-    result.add(TrailSnapshot(_renderedLogoPos, currentSize, currentBaseColor));
-
-    if (clamped <= 1) return result;
-
-    for (int i = 1; i < clamped; i++) {
-      final findK = i - frac;
-      final k = findK.floor();
-      final t = findK - k;
-
-      final idx1 =
-          ((_trailHead - k) % _trailBufferCapacity + _trailBufferCapacity) %
-          _trailBufferCapacity;
-      final idx2 =
-          ((_trailHead - (k + 1)) % _trailBufferCapacity +
-              _trailBufferCapacity) %
-          _trailBufferCapacity;
-
-      final p1 = _trailBuffer[idx1];
-      final p2 = _trailBuffer[idx2];
-
-      result.add(TrailSnapshot.lerp(p1, p2, t.clamp(0.0, 1.0)));
-    }
-    return result;
-  }
-
-  void _tickTrailBuffer() {
-    if (config.logoScale <= 0.0) return;
-    final interval = (1 + (config.logoTrailLength * 14.5).round()).clamp(1, 30);
-    _trailFrameCount++;
-    if (_trailFrameCount >= interval) {
-      _trailFrameCount = 0;
-      _trailHead = (_trailHead + 1) % _trailBufferCapacity;
-
-      final currentBaseColor = _currentColors.isNotEmpty
-          ? _currentColors[0]
-          : const ui.Color(0xFFFFFFFF);
-      final currentSize = (config.logoScale + _sharedBeatPulseBoost) * 110.0;
-
-      _trailBuffer[_trailHead] = TrailSnapshot(
+    return trailSnapshots(
+      buffer: _trailBuffer,
+      head: _trailHead,
+      frameCount: _trailFrameCount,
+      count: count.clamp(0, _trailBufferCapacity - 1),
+      trailLength: config.logoTrailLength,
+      currentSnapshot: TrailSnapshot(
         _renderedLogoPos,
         currentSize,
         currentBaseColor,
-      );
-    }
+      ),
+    );
+  }
+
+  void _tickTrailBuffer() {
+    final currentBaseColor = _currentColors.isNotEmpty
+        ? _currentColors[0]
+        : const ui.Color(0xFFFFFFFF);
+    final currentSize = (config.logoScale + _sharedBeatPulseBoost) * 110.0;
+    final tick = tickTrailBuffer(
+      buffer: _trailBuffer,
+      head: _trailHead,
+      frameCount: _trailFrameCount,
+      logoScale: config.logoScale,
+      trailLength: config.logoTrailLength,
+      snapshot: TrailSnapshot(_renderedLogoPos, currentSize, currentBaseColor),
+    );
+    _trailHead = tick.head;
+    _trailFrameCount = tick.frameCount;
   }
 
   void _renderTrail(ui.Canvas canvas) {
@@ -561,24 +523,6 @@ class StealBackground extends PositionComponent
 
     final energy = game.currentEnergy;
     final time = game.time;
-
-    int idx = 0;
-    final sw = size.x.clamp(1.0, 20000.0);
-    final sh = size.y.clamp(1.0, 20000.0);
-    _shader!.setFloat(idx++, sw);
-    _shader!.setFloat(idx++, sh);
-    _shader!.setFloat(idx++, time);
-
-    // Uniform index order must match steal.frag declarations exactly:
-    // flowSpeed(3) filmGrain(4) pulseIntensity(5) heatDrift(6)
-    // logoScale(7) blurAmount(8) flatColor(9) antiAlias(10) performanceLevel(11)
-    // logoPosX(12) logoPosY(13)
-    // bass(14) mid(15) treble(16) overall(17)
-    // color1(18-20) color2(21-23) color3(24-26) color4(27-29)
-    _shader!.setFloat(idx++, config.flowSpeed.clamp(0.0, 5.0));
-    _shader!.setFloat(idx++, 0.0); // filmGrain hardcoded off
-    _shader!.setFloat(idx++, config.pulseIntensity.clamp(0.0, 5.0));
-    _shader!.setFloat(idx++, config.heatDrift.clamp(0.0, 5.0));
     // Beat boost now respects Pulse Intensity so low-reactivity settings stay calm.
     final beatBoost = config.enableAudioReactivity
         ? _sharedBeatPulseBoost
@@ -586,16 +530,6 @@ class StealBackground extends PositionComponent
     final effectiveLogoScale = config.logoScale <= 0.0
         ? 0.0
         : (config.logoScale + beatBoost).clamp(0.05, 1.1);
-    _shader!.setFloat(idx++, effectiveLogoScale);
-    _shader!.setFloat(idx++, config.blurAmount.clamp(0.0, 1.0));
-    _shader!.setFloat(idx++, config.flatColor ? 1.0 : 0.0);
-    _shader!.setFloat(idx++, config.logoAntiAlias ? 1.0 : 0.0); // uAntiAlias
-    _shader!.setFloat(
-      idx++,
-      config.performanceLevel.toDouble(),
-    ); // uPerformanceLevel
-    _shader!.setFloat(idx++, _renderedLogoPos.dx); // uLogoPosX
-    _shader!.setFloat(idx++, _renderedLogoPos.dy); // uLogoPosY
 
     final isCornerOnly = config.audioGraphMode == 'corner_only';
 
@@ -620,13 +554,10 @@ class StealBackground extends PositionComponent
       sE += sine * config.scaleSineAmp;
     }
 
-    _shader!.setFloat(idx++, sE.clamp(0.0, 5.0));
-
     // Mid Energy (Slot 15, historically emid)
     final midEnergy = react && _useSecondaryLogoAudioMotion
         ? energy.mid.clamp(0.0, 5.0)
         : 0.0;
-    _shader!.setFloat(idx++, midEnergy);
 
     // Color Energy (Slot 16, historically etreble)
     double cE = 0.0;
@@ -638,36 +569,34 @@ class StealBackground extends PositionComponent
       };
       cE *= config.colorMultiplier;
     }
-    _shader!.setFloat(idx++, cE.clamp(0.0, 5.0));
 
     // Overall Energy (Slot 17)
     final overallEnergy = react && _useSecondaryLogoAudioMotion
         ? energy.overall.clamp(0.0, 5.0)
         : 0.0;
-    _shader!.setFloat(idx++, overallEnergy);
 
     // Always write exactly 4 colors - shader always expects uColor1-uColor4
     final colors = _currentColors.length == _colorCount
         ? _currentColors
         : _expandColors(_getPaletteColors(config.palette));
-
-    for (final color in colors) {
-      _shader!.setFloat(idx++, color.r);
-      _shader!.setFloat(idx++, color.g);
-      _shader!.setFloat(idx++, color.b);
-    }
-
-    _shader!.setImageSampler(0, _logoTexture!);
-  }
-
-  double _normalizeAngle(double angle) {
-    const tau = 2 * math.pi;
-    final mod = angle % tau;
-    return mod < 0 ? mod + tau : mod;
+    applyStealShaderUniforms(
+      shader: _shader!,
+      size: ui.Size(size.x, size.y),
+      time: time,
+      config: config,
+      effectiveLogoScale: effectiveLogoScale,
+      renderedLogoPos: _renderedLogoPos,
+      scaleEnergy: sE,
+      midEnergy: midEnergy,
+      colorEnergy: cE,
+      overallEnergy: overallEnergy,
+      colors: colors,
+      logoTexture: _logoTexture!,
+    );
   }
 
   List<ui.Color> _getPaletteColors(String name) {
-    return StealConfig.palettes[name] ?? StealConfig.palettes.values.first;
+    return paletteColorsForName(name, StealConfig.palettes);
   }
 
   void _renderFallback(ui.Canvas canvas) {

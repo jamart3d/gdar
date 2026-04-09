@@ -1,5 +1,29 @@
 import 'package:flutter/material.dart';
 
+double _readDouble(Map<String, dynamic> map, String key, double fallback) {
+  return (map[key] as num?)?.toDouble() ?? fallback;
+}
+
+int _readInt(Map<String, dynamic> map, String key, int fallback) {
+  return (map[key] as int?) ?? fallback;
+}
+
+bool _readBool(Map<String, dynamic> map, String key, bool fallback) {
+  return map[key] as bool? ?? fallback;
+}
+
+String _readString(Map<String, dynamic> map, String key, String fallback) {
+  return map[key] as String? ?? fallback;
+}
+
+int _performanceLevelFromMap(Map<String, dynamic> map) {
+  return _readInt(
+    map,
+    'performanceLevel',
+    (_readBool(map, 'performanceMode', false) ? 2 : 0),
+  );
+}
+
 /// Configuration for the Steal Your Face screensaver.
 class StealConfig {
   final double flowSpeed;
@@ -175,6 +199,10 @@ class StealConfig {
     ],
   };
 
+  static List<Color> paletteColorsForName(String name) {
+    return palettes[name] ?? palettes.values.first;
+  }
+
   const StealConfig({
     this.flowSpeed = 0.1,
     this.palette = 'psychedelic',
@@ -251,91 +279,89 @@ class StealConfig {
 
   factory StealConfig.fromMap(Map<String, dynamic> map) {
     return StealConfig(
-      flowSpeed: (map['flowSpeed'] as num?)?.toDouble() ?? 0.1,
-      palette: map['palette'] as String? ?? 'psychedelic',
-      filmGrain: (map['filmGrain'] as num?)?.toDouble() ?? 0.1,
-      pulseIntensity: (map['pulseIntensity'] as num?)?.toDouble() ?? 0.5,
-      heatDrift: (map['heatDrift'] as num?)?.toDouble() ?? 0.2,
-      logoScale: (map['logoScale'] as num?)?.toDouble() ?? 0.5,
-      translationSmoothing:
-          (map['translationSmoothing'] as num?)?.toDouble() ?? 0.7,
-      blurAmount: (map['blurAmount'] as num?)?.toDouble() ?? 0.0,
-      flatColor: map['flatColor'] as bool? ?? false,
-      bannerGlow: map['bannerGlow'] as bool? ?? false,
-      bannerFlicker: (map['bannerFlicker'] as num?)?.toDouble() ?? 0.0,
-      bannerGlowBlur: (map['bannerGlowBlur'] as num?)?.toDouble() ?? 0.5,
-      enableAudioReactivity: map['enableAudioReactivity'] as bool? ?? true,
-      logoTrailDynamic: map['logoTrailDynamic'] as bool? ?? true,
-      performanceLevel:
-          (map['performanceLevel'] as int?) ??
-          ((map['performanceMode'] as bool? ?? false) ? 2 : 0),
-      showInfoBanner: map['showInfoBanner'] as bool? ?? true,
-      bannerText: map['bannerText'] as String? ?? '',
-      venue: map['venue'] as String? ?? '',
-      date: map['date'] as String? ?? '',
-      trackHintId: map['trackHintId'] as String? ?? '',
-      trackHintTitle: map['trackHintTitle'] as String? ?? '',
-      trackHintVariant: map['trackHintVariant'] as String? ?? '',
-      trackHintSeedSource: map['trackHintSeedSource'] as String? ?? 'audio',
-      paletteCycle: map['paletteCycle'] as bool? ?? true,
-      paletteTransitionSpeed:
-          (map['paletteTransitionSpeed'] as num?)?.toDouble() ?? 5.0,
-      innerRingScale: (map['innerRingScale'] as num?)?.toDouble() ?? 1.0,
-      innerToMiddleGap: (map['innerToMiddleGap'] as num?)?.toDouble() ?? 0.3,
-      middleToOuterGap: (map['middleToOuterGap'] as num?)?.toDouble() ?? 0.3,
-      orbitDrift: (map['orbitDrift'] as num?)?.toDouble() ?? 1.0,
-      bannerDisplayMode: map['bannerDisplayMode'] as String? ?? 'ring',
-      bannerFont: map['bannerFont'] as String? ?? 'Rock Salt',
-      logoTrailIntensity:
-          (map['logoTrailIntensity'] as num?)?.toDouble() ?? 0.0,
-      logoTrailSlices: (map['logoTrailSlices'] as int?) ?? 6,
-      logoTrailLength: (map['logoTrailLength'] as num?)?.toDouble() ?? 0.5,
-      logoTrailScale: (map['logoTrailScale'] as num?)?.toDouble() ?? 0.1,
-      logoTrailInitialScale:
-          (map['logoTrailInitialScale'] as num?)?.toDouble() ?? 0.92,
-      flatTextProximity: (map['flatTextProximity'] as num?)?.toDouble() ?? 0.0,
-      flatTextPlacement: map['flatTextPlacement'] as String? ?? 'below',
-      bannerResolution: (map['bannerResolution'] as num?)?.toDouble() ?? 2.0,
-      bannerPixelSnap: map['bannerPixelSnap'] as bool? ?? true,
-      autoTextSpacing: map['autoTextSpacing'] as bool? ?? false,
-      autoRingSpacing: map['autoRingSpacing'] as bool? ?? true,
-      bannerLetterSpacing:
-          (map['bannerLetterSpacing'] as num?)?.toDouble() ?? 1.02,
-      bannerWordSpacing: (map['bannerWordSpacing'] as num?)?.toDouble() ?? 0.4,
-      trackLetterSpacing:
-          (map['trackLetterSpacing'] as num?)?.toDouble() ?? 1.02,
-      trackWordSpacing: (map['trackWordSpacing'] as num?)?.toDouble() ?? 0.4,
-      flatLineSpacing: (map['flatLineSpacing'] as num?)?.toDouble() ?? 1.0,
-      audioGraphMode: map['audioGraphMode'] as String? ?? 'off',
-      beatDetectorMode: map['beatDetectorMode'] as String? ?? 'auto',
-      autocorrBeatVariant: map['autocorrBeatVariant'] as String? ?? 'bpm',
-      autocorrLogoVariant: map['autocorrLogoVariant'] as String? ?? 'pulse',
-      ekgRadius: (map['ekgRadius'] as num?)?.toDouble() ?? 1.0,
-      ekgReplication: (map['ekgReplication'] as int?) ?? 1,
-      ekgSpread: (map['ekgSpread'] as num?)?.toDouble() ?? 4.0,
-      beatSensitivity: (map['beatSensitivity'] as num?)?.toDouble() ?? 0.5,
-      beatImpact: (map['beatImpact'] as num?)?.toDouble() ?? 0.4,
-      innerRingFontScale:
-          (map['innerRingFontScale'] as num?)?.toDouble() ?? 1.0,
-      middleRingFontScale:
-          (map['middleRingFontScale'] as num?)?.toDouble() ?? 1.0,
-      outerRingFontScale:
-          (map['outerRingFontScale'] as num?)?.toDouble() ?? 1.0,
-      innerRingSpacingMultiplier:
-          (map['innerRingSpacingMultiplier'] as num?)?.toDouble() ?? 1.0,
-      middleRingSpacingMultiplier:
-          (map['middleRingSpacingMultiplier'] as num?)?.toDouble() ?? 1.0,
-      outerRingSpacingMultiplier:
-          (map['outerRingSpacingMultiplier'] as num?)?.toDouble() ?? 1.0,
-      logoAntiAlias: map['logoAntiAlias'] as bool? ?? false,
-      scaleSource: map['scaleSource'] as int? ?? -1,
-      scaleMultiplier: (map['scaleMultiplier'] as num?)?.toDouble() ?? 1.0,
-      scaleSineEnabled: map['scaleSineEnabled'] as bool? ?? false,
-      scaleSineFreq: (map['scaleSineFreq'] as num?)?.toDouble() ?? 0.5,
-      scaleSineAmp: (map['scaleSineAmp'] as num?)?.toDouble() ?? 0.2,
-      colorSource: map['colorSource'] as int? ?? -1,
-      colorMultiplier: (map['colorMultiplier'] as num?)?.toDouble() ?? 1.0,
-      woodstockEveryHour: map['woodstockEveryHour'] as bool? ?? true,
+      flowSpeed: _readDouble(map, 'flowSpeed', 0.1),
+      palette: _readString(map, 'palette', 'psychedelic'),
+      filmGrain: _readDouble(map, 'filmGrain', 0.1),
+      pulseIntensity: _readDouble(map, 'pulseIntensity', 0.5),
+      heatDrift: _readDouble(map, 'heatDrift', 0.2),
+      logoScale: _readDouble(map, 'logoScale', 0.5),
+      translationSmoothing: _readDouble(map, 'translationSmoothing', 0.7),
+      blurAmount: _readDouble(map, 'blurAmount', 0.0),
+      flatColor: _readBool(map, 'flatColor', false),
+      bannerGlow: _readBool(map, 'bannerGlow', false),
+      bannerFlicker: _readDouble(map, 'bannerFlicker', 0.0),
+      bannerGlowBlur: _readDouble(map, 'bannerGlowBlur', 0.5),
+      enableAudioReactivity: _readBool(map, 'enableAudioReactivity', true),
+      logoTrailDynamic: _readBool(map, 'logoTrailDynamic', true),
+      performanceLevel: _performanceLevelFromMap(map),
+      showInfoBanner: _readBool(map, 'showInfoBanner', true),
+      bannerText: _readString(map, 'bannerText', ''),
+      venue: _readString(map, 'venue', ''),
+      date: _readString(map, 'date', ''),
+      trackHintId: _readString(map, 'trackHintId', ''),
+      trackHintTitle: _readString(map, 'trackHintTitle', ''),
+      trackHintVariant: _readString(map, 'trackHintVariant', ''),
+      trackHintSeedSource: _readString(map, 'trackHintSeedSource', 'audio'),
+      paletteCycle: _readBool(map, 'paletteCycle', true),
+      paletteTransitionSpeed: _readDouble(map, 'paletteTransitionSpeed', 5.0),
+      innerRingScale: _readDouble(map, 'innerRingScale', 1.0),
+      innerToMiddleGap: _readDouble(map, 'innerToMiddleGap', 0.3),
+      middleToOuterGap: _readDouble(map, 'middleToOuterGap', 0.3),
+      orbitDrift: _readDouble(map, 'orbitDrift', 1.0),
+      bannerDisplayMode: _readString(map, 'bannerDisplayMode', 'ring'),
+      bannerFont: _readString(map, 'bannerFont', 'Rock Salt'),
+      logoTrailIntensity: _readDouble(map, 'logoTrailIntensity', 0.0),
+      logoTrailSlices: _readInt(map, 'logoTrailSlices', 6),
+      logoTrailLength: _readDouble(map, 'logoTrailLength', 0.5),
+      logoTrailScale: _readDouble(map, 'logoTrailScale', 0.1),
+      logoTrailInitialScale: _readDouble(map, 'logoTrailInitialScale', 0.92),
+      flatTextProximity: _readDouble(map, 'flatTextProximity', 0.0),
+      flatTextPlacement: _readString(map, 'flatTextPlacement', 'below'),
+      bannerResolution: _readDouble(map, 'bannerResolution', 2.0),
+      bannerPixelSnap: _readBool(map, 'bannerPixelSnap', true),
+      autoTextSpacing: _readBool(map, 'autoTextSpacing', false),
+      autoRingSpacing: _readBool(map, 'autoRingSpacing', true),
+      bannerLetterSpacing: _readDouble(map, 'bannerLetterSpacing', 1.02),
+      bannerWordSpacing: _readDouble(map, 'bannerWordSpacing', 0.4),
+      trackLetterSpacing: _readDouble(map, 'trackLetterSpacing', 1.02),
+      trackWordSpacing: _readDouble(map, 'trackWordSpacing', 0.4),
+      flatLineSpacing: _readDouble(map, 'flatLineSpacing', 1.0),
+      audioGraphMode: _readString(map, 'audioGraphMode', 'off'),
+      beatDetectorMode: _readString(map, 'beatDetectorMode', 'auto'),
+      autocorrBeatVariant: _readString(map, 'autocorrBeatVariant', 'bpm'),
+      autocorrLogoVariant: _readString(map, 'autocorrLogoVariant', 'pulse'),
+      ekgRadius: _readDouble(map, 'ekgRadius', 1.0),
+      ekgReplication: _readInt(map, 'ekgReplication', 1),
+      ekgSpread: _readDouble(map, 'ekgSpread', 4.0),
+      beatSensitivity: _readDouble(map, 'beatSensitivity', 0.5),
+      beatImpact: _readDouble(map, 'beatImpact', 0.4),
+      innerRingFontScale: _readDouble(map, 'innerRingFontScale', 1.0),
+      middleRingFontScale: _readDouble(map, 'middleRingFontScale', 1.0),
+      outerRingFontScale: _readDouble(map, 'outerRingFontScale', 1.0),
+      innerRingSpacingMultiplier: _readDouble(
+        map,
+        'innerRingSpacingMultiplier',
+        1.0,
+      ),
+      middleRingSpacingMultiplier: _readDouble(
+        map,
+        'middleRingSpacingMultiplier',
+        1.0,
+      ),
+      outerRingSpacingMultiplier: _readDouble(
+        map,
+        'outerRingSpacingMultiplier',
+        1.0,
+      ),
+      logoAntiAlias: _readBool(map, 'logoAntiAlias', false),
+      scaleSource: _readInt(map, 'scaleSource', -1),
+      scaleMultiplier: _readDouble(map, 'scaleMultiplier', 1.0),
+      scaleSineEnabled: _readBool(map, 'scaleSineEnabled', false),
+      scaleSineFreq: _readDouble(map, 'scaleSineFreq', 0.5),
+      scaleSineAmp: _readDouble(map, 'scaleSineAmp', 0.2),
+      colorSource: _readInt(map, 'colorSource', -1),
+      colorMultiplier: _readDouble(map, 'colorMultiplier', 1.0),
+      woodstockEveryHour: _readBool(map, 'woodstockEveryHour', true),
     );
   }
 

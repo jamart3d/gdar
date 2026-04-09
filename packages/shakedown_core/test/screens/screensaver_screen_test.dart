@@ -12,6 +12,7 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/steal_screensaver/steal_visualizer.dart';
+import 'package:shakedown_core/ui/screens/screensaver/screensaver_banner_text.dart';
 import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/visualizer/visualizer_audio_reactor.dart';
 import '../helpers/fake_settings_provider.dart';
@@ -221,6 +222,21 @@ void main() {
   }
 
   group('ScreensaverScreen', () {
+    test('banner helpers hide text when banner is disabled', () {
+      expect(
+        composeScreensaverBannerText(showInfoBanner: false, title: 'Track'),
+        '',
+      );
+      expect(
+        composeScreensaverVenue(showInfoBanner: false, venue: 'Venue'),
+        '',
+      );
+      expect(
+        composeScreensaverDate(showInfoBanner: false, date: '2025-01-01'),
+        '',
+      );
+    });
+
     testWidgets('renders StealVisualizer', (WidgetTester tester) async {
       await tester.pumpWidget(
         createTestableWidget(child: const ScreensaverScreen()),

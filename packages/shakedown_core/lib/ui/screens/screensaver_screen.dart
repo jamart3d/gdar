@@ -5,19 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/song_structure_hints.dart';
-import 'package:shakedown_core/steal_screensaver/steal_config.dart';
-import 'package:shakedown_core/steal_screensaver/steal_visualizer.dart';
-import 'package:shakedown_core/ui/navigation/route_names.dart';
-import 'package:shakedown_core/visualizer/audio_reactor.dart';
-import 'package:shakedown_core/visualizer/audio_reactor_factory.dart';
-import 'package:shakedown_core/visualizer/visualizer_audio_reactor.dart';
-import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/song_structure_hint_service.dart';
 import 'package:shakedown_core/services/wakelock_service.dart';
-import 'package:shakedown_core/utils/logger.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:shakedown_core/steal_screensaver/steal_config.dart';
+import 'package:shakedown_core/steal_screensaver/steal_visualizer.dart';
+import 'package:shakedown_core/ui/navigation/route_names.dart';
+import 'package:shakedown_core/ui/screens/screensaver/audio_capture_controller.dart';
+import 'package:shakedown_core/ui/screens/screensaver/microphone_permission_flow.dart';
+import 'package:shakedown_core/ui/screens/screensaver/screensaver_banner_text.dart';
+import 'package:shakedown_core/visualizer/visualizer_audio_reactor.dart';
 
 /// Screensaver screen displaying the Steal Your Face visualizer.
 /// Note: This screensaver and its audio reactivity are explicitly for the TV UI.
@@ -63,19 +62,11 @@ class ScreensaverScreen extends StatefulWidget {
 }
 
 class _ScreensaverScreenState extends State<ScreensaverScreen> {
-  AudioReactor? _audioReactor;
-  int? _debugAudioSessionId;
-  bool _isInitializingAudioReactor = false;
-  bool _isPermissionFlowActive = false;
-  bool _isPermissionFlowCooldown = false;
-  Timer? _permissionFlowCooldownTimer;
-  Timer? _sessionRetryTimer;
-  int _sessionRetryCount = 0;
-  static const int _maxSessionRetries = 10;
+  final ScreensaverAudioCaptureController _audioCaptureController =
+      ScreensaverAudioCaptureController();
+  final MicrophonePermissionFlow _microphonePermissionFlow =
+      MicrophonePermissionFlow();
   WakelockService? _wakelockService;
-  bool _isStereoCapturePending = false;
-  bool _isStereoCaptureActive = false;
-  bool _hasAttemptedStereoCapture = false;
   final SongStructureHintService _songHintService =
       const SongStructureHintService();
   SongStructureHintCatalog? _songHintCatalog;
@@ -119,8 +110,11 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   }
 
   void _pushAudioConfig(SettingsProvider settings) {
-    if (_audioReactor is! VisualizerAudioReactor) return;
-    final reactor = _audioReactor as VisualizerAudioReactor;
+    if (_audioCaptureController.audioReactor is! VisualizerAudioReactor) {
+      return;
+    }
+    final reactor =
+        _audioCaptureController.audioReactor as VisualizerAudioReactor;
 
     final peakDecay = settings.oilAudioPeakDecay;
     final bassBoost = settings.oilAudioBassBoost;
@@ -166,167 +160,17 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _lastPushedAutocorrSecondPassHq = autocorrSecondPassHq;
   }
 
-  bool _wantsStereoCapture(SettingsProvider settings) {
-    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
-      return false;
-    }
-    if (!settings.oilEnableAudioReactivity) {
-      return false;
-    }
-    if (_audioReactor is! VisualizerAudioReactor) {
-      return false;
-    }
-    // Request MediaProjection only when the user explicitly selects the
-    // enhanced PCM detector mode. All other modes stay on the FFT path and
-    // avoid the system share-screen permission prompt.
-    return settings.oilBeatDetectorMode == 'pcm';
-  }
-
   Future<void> _syncStereoCapture(SettingsProvider settings) async {
-    final wantsStereoCapture = _wantsStereoCapture(settings);
-
-    logger.i(
-      'Screensaver: syncStereoCapture '
-      '(wants=$wantsStereoCapture, '
-      'allowPermissionPrompts=${widget.allowPermissionPrompts}, '
-      'audioReactivity=${settings.oilEnableAudioReactivity}, '
-      'beatDetectorMode=${settings.oilBeatDetectorMode}, '
-      'audioGraphMode=${settings.oilAudioGraphMode}, '
-      'isStereoCaptureActive=$_isStereoCaptureActive, '
-      'isStereoCapturePending=$_isStereoCapturePending, '
-      'hasAttemptedStereoCapture=$_hasAttemptedStereoCapture)',
+    await _audioCaptureController.syncStereoCapture(
+      settings,
+      allowPermissionPrompts: widget.allowPermissionPrompts,
+      runPermissionFlow: _microphonePermissionFlow.runPermissionFlow,
+      mounted: mounted,
     );
-
-    if (!wantsStereoCapture) {
-      logger.i('Screensaver: stereo capture not wanted, stopping/resetting');
-      await _stopStereoCapture(resetAttempt: true);
-      return;
-    }
-
-    if (_isStereoCaptureActive ||
-        _isStereoCapturePending ||
-        _hasAttemptedStereoCapture) {
-      logger.i(
-        'Screensaver: stereo capture request skipped '
-        '(active=$_isStereoCaptureActive, '
-        'pending=$_isStereoCapturePending, '
-        'attempted=$_hasAttemptedStereoCapture)',
-      );
-      return;
-    }
-
-    if (!widget.allowPermissionPrompts) {
-      logger.i(
-        'Screensaver: Skipping enhanced capture request during '
-        'non-interactive launch.',
-      );
-      return;
-    }
-
-    _isStereoCapturePending = true;
-    _hasAttemptedStereoCapture = true;
-    logger.i('Screensaver: requesting stereo capture permission');
-    final started = await _runPermissionFlow(
-      () => VisualizerAudioReactor.requestStereoCapture().timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          logger.w('Screensaver: stereo capture request timed out');
-          return false;
-        },
-      ),
-    );
-    _isStereoCapturePending = false;
-    logger.i(
-      'Screensaver: stereo capture request completed (started=$started)',
-    );
-
-    // Allow retry on failure so the user can try again without switching modes.
-    if (!started) {
-      _hasAttemptedStereoCapture = false;
-    }
-
-    if (!mounted) {
-      if (started) {
-        await VisualizerAudioReactor.stopStereoCapture();
-      }
-      return;
-    }
-
-    _isStereoCaptureActive = started;
   }
 
   Future<void> _stopStereoCapture({bool resetAttempt = false}) async {
-    if (!_isStereoCaptureActive && !_isStereoCapturePending) {
-      if (resetAttempt) {
-        _hasAttemptedStereoCapture = false;
-      }
-      return;
-    }
-    _isStereoCapturePending = false;
-    _isStereoCaptureActive = false;
-    if (resetAttempt) {
-      _hasAttemptedStereoCapture = false;
-    }
-    await VisualizerAudioReactor.stopStereoCapture();
-  }
-
-  bool _shouldDeferMicrophonePermission(
-    SettingsProvider settings,
-    DeviceService deviceService,
-  ) {
-    if (defaultTargetPlatform != TargetPlatform.android) {
-      return false;
-    }
-    return deviceService.isTv && settings.oilBeatDetectorMode == 'pcm';
-  }
-
-  Future<PermissionStatus?> _getMicrophonePermissionStatus() async {
-    try {
-      return await Permission.microphone.status;
-    } catch (error) {
-      debugPrint(
-        'Screensaver: Failed to read microphone permission status: $error',
-      );
-      return null;
-    }
-  }
-
-  Future<PermissionStatus?> _requestMicrophonePermission() async {
-    try {
-      return await _runPermissionFlow(Permission.microphone.request);
-    } catch (error) {
-      debugPrint(
-        'Screensaver: Failed to request microphone permission: $error',
-      );
-      return null;
-    }
-  }
-
-  Future<AudioReactor?> _createStartedAudioReactor({
-    required int? audioSessionId,
-    required bool isTv,
-  }) async {
-    logger.i(
-      'Screensaver: creating audio reactor '
-      '(audioSessionId=$audioSessionId, isTv=$isTv)',
-    );
-    final reactor = await AudioReactorFactory.create(
-      audioSessionId: audioSessionId,
-      isTv: isTv,
-    );
-    if (reactor == null) {
-      logger.w('Screensaver: audio reactor factory returned null');
-      return null;
-    }
-    logger.i('Screensaver: audio reactor created (${reactor.runtimeType})');
-    final started = await reactor.start();
-    if (!started) {
-      logger.w('Screensaver: audio reactor failed to start');
-      reactor.dispose();
-      return null;
-    }
-    logger.i('Screensaver: audio reactor started (${reactor.runtimeType})');
-    return reactor;
+    await _audioCaptureController.stopStereoCapture(resetAttempt: resetAttempt);
   }
 
   Future<void> _loadSongHintCatalog() async {
@@ -380,7 +224,8 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   }
 
   bool _handleGlobalKeyEvent(KeyEvent event) {
-    if (_isPermissionFlowActive || _isPermissionFlowCooldown) {
+    if (_microphonePermissionFlow.isPermissionFlowActive ||
+        _microphonePermissionFlow.isPermissionFlowCooldown) {
       return false;
     }
     if (event is KeyDownEvent) {
@@ -395,161 +240,28 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
   }
 
   Future<void> _initAudioReactor({bool isRetry = false}) async {
-    if (_isInitializingAudioReactor) return;
-    if (_audioReactor != null && !isRetry) return;
-    _isInitializingAudioReactor = true;
+    final settings = Provider.of<SettingsProvider>(context, listen: false);
+    final deviceService = Provider.of<DeviceService>(context, listen: false);
+    final audioProvider = Provider.of<AudioProvider>(context, listen: false);
 
-    try {
-      final settings = Provider.of<SettingsProvider>(context, listen: false);
-      final deviceService = Provider.of<DeviceService>(context, listen: false);
-
-      // Web never has the real visualizer, and if reactivity is off skip entirely.
-      if (kIsWeb || !settings.oilEnableAudioReactivity) return;
-
-      PermissionStatus? microphoneStatus;
-      final deferMicrophonePermission = _shouldDeferMicrophonePermission(
-        settings,
-        deviceService,
-      );
-
-      // Most Android visualizer paths still need RECORD_AUDIO. For explicit
-      // TV Enhanced/PCM mode, try to start first and only prompt if we
-      // actually need the runtime grant.
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        microphoneStatus = await _getMicrophonePermissionStatus();
-        if (microphoneStatus == null) {
-          debugPrint(
-            'Screensaver: Microphone permission state unavailable. '
-            'Reactivity disabled for this session.',
-          );
-          return;
+    await _audioCaptureController.initAudioReactor(
+      settings: settings,
+      audioProvider: audioProvider,
+      isTv: deviceService.isTv,
+      allowPermissionPrompts: widget.allowPermissionPrompts,
+      mounted: mounted,
+      permissionFlow: _microphonePermissionFlow,
+      clearPushedAudioConfig: _clearPushedAudioConfig,
+      pushAudioConfig: _pushAudioConfig,
+      retryInitAudioReactor: ({bool isRetry = false}) =>
+          _initAudioReactor(isRetry: isRetry),
+      onAudioReactorChanged: () {
+        if (mounted) {
+          setState(() {});
         }
-        if (!deferMicrophonePermission && !microphoneStatus.isGranted) {
-          if (!widget.allowPermissionPrompts) {
-            debugPrint(
-              'Screensaver: Skipping microphone permission request during '
-              'non-interactive launch. Reactivity disabled for this session.',
-            );
-            return;
-          }
-          microphoneStatus = await _requestMicrophonePermission();
-          if (microphoneStatus?.isGranted != true) {
-            debugPrint(
-              'Screensaver: Audio permission denied. Reactivity disabled.',
-            );
-            return;
-          }
-        } else if (deferMicrophonePermission &&
-            !widget.allowPermissionPrompts &&
-            !microphoneStatus.isGranted) {
-          debugPrint(
-            'Screensaver: Skipping deferred microphone permission request '
-            'during non-interactive launch. Enhanced reactivity disabled '
-            'for this session.',
-          );
-          return;
-        }
-      }
-
-      // Get the app's audio session ID on Android so we tap the right output.
-      if (!mounted) return;
-      int? sessionId;
-      if (defaultTargetPlatform == TargetPlatform.android) {
-        final audioProvider = Provider.of<AudioProvider>(
-          context,
-          listen: false,
-        );
-        sessionId = audioProvider.audioPlayer.androidAudioSessionId;
-        _debugAudioSessionId = sessionId;
-      }
-
-      // If session ID is null or 0, schedule a retry — audio may not have
-      // started yet. Retry up to 10 times with 2s intervals.
-      if ((sessionId == null || sessionId == 0) &&
-          _sessionRetryCount < _maxSessionRetries) {
-        _sessionRetryCount++;
-        debugPrint(
-          'Screensaver: Session ID is $sessionId, scheduling retry '
-          '$_sessionRetryCount/$_maxSessionRetries',
-        );
-        _sessionRetryTimer?.cancel();
-        _sessionRetryTimer = Timer(const Duration(seconds: 2), () {
-          if (mounted) _initAudioReactor(isRetry: true);
-        });
-        // Still initialize with 0 on first attempt so we get *something*
-        if (_audioReactor != null) return;
-      }
-
-      // Dispose previous reactor if reinitializing with a better session ID.
-      // Keep Enhanced capture running across session-id retries so Android
-      // doesn't need to prompt again within the same app session.
-      if (isRetry && _audioReactor != null) {
-        _audioReactor?.dispose();
-        _audioReactor = null;
-        _clearPushedAudioConfig();
-      }
-
-      // Factory only returns a real reactor when isTv == true AND on Android.
-      AudioReactor? reactor = await _createStartedAudioReactor(
-        audioSessionId: sessionId,
-        isTv: deviceService.isTv,
-      );
-      logger.i(
-        'Screensaver: createStartedAudioReactor returned '
-        '${reactor?.runtimeType ?? 'null'}',
-      );
-
-      if (reactor == null &&
-          defaultTargetPlatform == TargetPlatform.android &&
-          deferMicrophonePermission &&
-          microphoneStatus != null &&
-          !microphoneStatus.isGranted) {
-        if (!widget.allowPermissionPrompts) {
-          debugPrint(
-            'Screensaver: Skipping deferred microphone permission request '
-            'during non-interactive launch. Enhanced reactivity disabled '
-            'for this session.',
-          );
-          return;
-        }
-        microphoneStatus = await _requestMicrophonePermission();
-        if (microphoneStatus?.isGranted != true) {
-          debugPrint(
-            'Screensaver: Audio permission denied. Reactivity disabled.',
-          );
-          return;
-        }
-        reactor = await _createStartedAudioReactor(
-          audioSessionId: sessionId,
-          isTv: deviceService.isTv,
-        );
-      }
-
-      if (!mounted) {
-        reactor?.dispose();
-        return;
-      }
-
-      if (reactor == null) {
-        debugPrint(
-          'Screensaver: Audio reactor unavailable. Reactivity disabled '
-          'for this session.',
-        );
-        return;
-      }
-
-      logger.i('Screensaver: storing audio reactor (${reactor.runtimeType})');
-      setState(() => _audioReactor = reactor);
-      if (reactor is VisualizerAudioReactor) {
-        logger.i('Screensaver: pushing audio config to VisualizerAudioReactor');
-        _pushAudioConfig(settings);
-        logger.i('Screensaver: calling _syncStereoCapture');
-        await _syncStereoCapture(settings);
-        logger.i('Screensaver: _syncStereoCapture completed');
-      }
-    } finally {
-      _isInitializingAudioReactor = false;
-    }
+      },
+      isRetry: isRetry,
+    );
   }
 
   void _clearPushedAudioConfig() {
@@ -564,69 +276,56 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
     _lastPushedAutocorrSecondPassHq = null;
   }
 
-  Future<T> _runPermissionFlow<T>(Future<T> Function() action) async {
-    _isPermissionFlowActive = true;
-    try {
-      return await action();
-    } finally {
-      _isPermissionFlowActive = false;
-      // Brief cooldown: the TV remote's OK press that confirmed the Android
-      // permission dialog can fire a KeyDownEvent in Flutter right after the
-      // native dialog dismisses. Without this guard, _handleGlobalKeyEvent
-      // would immediately pop the screensaver.
-      _isPermissionFlowCooldown = true;
-      _permissionFlowCooldownTimer?.cancel();
-      _permissionFlowCooldownTimer = Timer(
-        const Duration(milliseconds: 600),
-        () => _isPermissionFlowCooldown = false,
-      );
-    }
-  }
-
   void _ensureAudioReactorState(SettingsProvider settings) {
     if (kIsWeb || !settings.oilEnableAudioReactivity) {
-      if (_audioReactor != null) {
+      if (_audioCaptureController.audioReactor != null) {
         unawaited(_stopStereoCapture(resetAttempt: true));
-        _audioReactor?.dispose();
-        _audioReactor = null;
+        _audioCaptureController.audioReactor?.dispose();
+        _audioCaptureController.audioReactor = null;
         _clearPushedAudioConfig();
       }
       return;
     }
 
-    if (_audioReactor == null && !_isInitializingAudioReactor) {
+    if (_audioCaptureController.audioReactor == null &&
+        !_audioCaptureController.isInitializingAudioReactor) {
       _initAudioReactor();
     }
   }
 
   String _composeBannerText(SettingsProvider settings, AudioProvider audio) {
-    if (!settings.oilShowInfoBanner) return '';
-    return audio.currentTrack?.title ?? '';
+    return composeScreensaverBannerText(
+      showInfoBanner: settings.oilShowInfoBanner,
+      title: audio.currentTrack?.title,
+    );
   }
 
   String _composeVenue(SettingsProvider settings, AudioProvider audio) {
-    if (!settings.oilShowInfoBanner) return '';
-    return audio.currentShow?.venue ?? '';
+    return composeScreensaverVenue(
+      showInfoBanner: settings.oilShowInfoBanner,
+      venue: audio.currentShow?.venue,
+    );
   }
 
   String _composeDate(SettingsProvider settings, AudioProvider audio) {
-    if (!settings.oilShowInfoBanner) return '';
-    return audio.currentShow?.date ?? '';
+    return composeScreensaverDate(
+      showInfoBanner: settings.oilShowInfoBanner,
+      date: audio.currentShow?.date,
+    );
   }
 
   @override
   void dispose() {
-    _sessionRetryTimer?.cancel();
-    _permissionFlowCooldownTimer?.cancel();
+    _microphonePermissionFlow.dispose();
     HardwareKeyboard.instance.removeHandler(_handleGlobalKeyEvent);
     _wakelockService?.disable();
     // Preserve Enhanced capture across screensaver launches for the life of
     // the app session. It is still torn down when audio reactivity is
     // disabled, the detector switches away from Enhanced, or the activity
     // itself is destroyed.
-    _audioReactor?.dispose();
-    _audioReactor = null;
-    _clearPushedAudioConfig();
+    _audioCaptureController.dispose(
+      clearPushedAudioConfig: _clearPushedAudioConfig,
+    );
     super.dispose();
   }
 
@@ -640,18 +339,19 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
     // Re-check session ID: if we initialized with null/0 but now have a real
     // one, reinitialize the reactor to tap the correct audio output.
-    if (_audioReactor != null &&
+    if (_audioCaptureController.audioReactor != null &&
         defaultTargetPlatform == TargetPlatform.android) {
       final freshId = audioProvider.audioPlayer.androidAudioSessionId;
       if (freshId != null &&
           freshId > 0 &&
-          (_debugAudioSessionId == null || _debugAudioSessionId == 0)) {
-        _debugAudioSessionId = freshId;
+          (_audioCaptureController.debugAudioSessionId == null ||
+              _audioCaptureController.debugAudioSessionId == 0)) {
+        _audioCaptureController.debugAudioSessionId = freshId;
         _initAudioReactor(isRetry: true);
       }
     }
 
-    if (_audioReactor != null) {
+    if (_audioCaptureController.audioReactor != null) {
       _pushAudioConfig(settings);
       unawaited(_syncStereoCapture(settings));
     }
@@ -730,9 +430,9 @@ class _ScreensaverScreenState extends State<ScreensaverScreen> {
 
     Widget visualizer = StealVisualizer(
       config: config,
-      audioReactor: _audioReactor,
+      audioReactor: _audioCaptureController.audioReactor,
       onExit: () => Navigator.of(context).pop(),
-      debugAudioSessionId: _debugAudioSessionId,
+      debugAudioSessionId: _audioCaptureController.debugAudioSessionId,
     );
 
     if (limit4k) {

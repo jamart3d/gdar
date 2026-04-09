@@ -13,6 +13,10 @@ import 'package:flutter/material.dart'
         TextStyle;
 import 'package:shakedown_core/steal_screensaver/steal_config.dart';
 import 'package:shakedown_core/steal_screensaver/steal_game.dart';
+import 'package:shakedown_core/steal_screensaver/render/corner_hud_renderer.dart';
+import 'package:shakedown_core/steal_screensaver/render/corner_led_renderer.dart';
+import 'package:shakedown_core/steal_screensaver/render/corner_vu_renderer.dart';
+import 'package:shakedown_core/steal_screensaver/render/render_math.dart';
 import 'package:shakedown_core/utils/web_runtime.dart';
 import 'package:shakedown_core/visualizer/audio_reactor.dart';
 

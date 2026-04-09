@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/show.dart';
@@ -19,19 +18,19 @@ import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/ui/screens/playback_screen.dart';
 import 'package:shakedown_core/ui/navigation/route_names.dart';
 import 'package:shakedown_core/ui/screens/settings_screen.dart';
-import 'package:shakedown_core/ui/styles/app_typography.dart';
 import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown_core/ui/widgets/rating_control.dart';
 import 'package:shakedown_core/ui/widgets/shnid_badge.dart';
 import 'package:shakedown_core/ui/widgets/src_badge.dart';
 import 'package:shakedown_core/ui/widgets/playback/track_list_items.dart';
+import 'package:shakedown_core/ui/screens/track_list/track_list_actions.dart';
+import 'package:shakedown_core/ui/screens/track_list/track_list_header_section.dart';
+import 'package:shakedown_core/ui/screens/track_list/track_list_item_tile.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_tooltip.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 import 'package:shakedown_core/ui/widgets/theme/liquid_glass_wrapper.dart';
 import 'package:shakedown_core/ui/widgets/theme/neumorphic_wrapper.dart';
-import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown_core/utils/app_date_utils.dart';
-import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:shakedown_core/ui/widgets/rating_dialog.dart';
@@ -119,13 +118,29 @@ class _TrackListScreenState extends State<TrackListScreen> {
   }
 
   Future<void> _playShowFromHeader({int initialIndex = 0}) async {
-    unawaited(AppHaptics.selectionClick(context.read<DeviceService>()));
     final ap = context.read<AudioProvider>();
     ap.captureUndoCheckpoint();
-    unawaited(
-      ap.playSource(widget.show, widget.source, initialIndex: initialIndex),
+    await executePlayAndNavigate(
+      context: context,
+      show: widget.show,
+      source: widget.source,
+      isFruit: context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit,
+      isMounted: () => mounted,
+      stopAnimationController: () {
+        try {
+          context.read<AnimationController>().stop();
+        } catch (_) {}
+      },
+      repeatAnimationController: () {
+        if (!context.mounted) return;
+        try {
+          final controller = context.read<AnimationController>();
+          if (!controller.isAnimating) {
+            unawaited(controller.repeat());
+          }
+        } catch (_) {}
+      },
     );
-    await _openPlaybackScreen();
   }
 
   @override

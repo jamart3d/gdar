@@ -97,12 +97,6 @@ mixin _SettingsProviderInitializationExtension
     return phoneVal;
   }
 
-  int _dInt(int webVal, int tvVal, int phoneVal) {
-    if (isTv) return tvVal;
-    if (kIsWeb) return webVal;
-    return phoneVal;
-  }
-
   void _setupUiScaleChannel() {
     _uiScaleChannel.setMethodCallHandler((call) async {
       if (call.method != 'setUiScale') return;
@@ -259,32 +253,15 @@ mixin _SettingsProviderInitializationExtension
   }
 
   void _loadLegacyCoreMigrations() {
-    final defaultScreensaver = _dBool(
-      WebDefaults.useOilScreensaver,
-      DefaultSettings.useOilScreensaver,
-      DefaultSettings.useOilScreensaver,
+    final migration = migrateLegacyCorePreferences(
+      _prefs,
+      isTv: isTv,
+      isWeb: kIsWeb,
+      useOilScreensaverKey: _useOilScreensaverKey,
+      appFontKey: _appFontKey,
     );
-
-    if (_prefs.containsKey('use_screensaver')) {
-      final oldEnabled = _prefs.getBool('use_screensaver') ?? true;
-      _useOilScreensaver = defaultScreensaver ? oldEnabled : false;
-      if (oldEnabled) {
-        _prefs.setBool(_useOilScreensaverKey, _useOilScreensaver);
-      }
-      _prefs.remove('use_screensaver');
-    } else {
-      _useOilScreensaver =
-          _prefs.getBool(_useOilScreensaverKey) ?? defaultScreensaver;
-    }
-
-    if (_prefs.containsKey('use_handwriting_font')) {
-      final oldHandwriting = _prefs.getBool('use_handwriting_font') ?? false;
-      _appFont = oldHandwriting ? 'caveat' : 'default';
-      if (oldHandwriting) {
-        _prefs.setString(_appFontKey, 'caveat');
-      }
-      _prefs.remove('use_handwriting_font');
-    }
+    _useOilScreensaver = migration.useOilScreensaver;
+    _appFont = migration.appFont;
   }
 
   void _loadAppearancePreferences() {
@@ -413,21 +390,12 @@ mixin _SettingsProviderInitializationExtension
   }
 
   bool _loadPreventSleepPreference() {
-    if (_prefs.containsKey('prevent_screensaver') &&
-        !_prefs.containsKey(_preventSleepKey)) {
-      final migrated =
-          _prefs.getBool('prevent_screensaver') ?? DefaultSettings.preventSleep;
-      _prefs.setBool(_preventSleepKey, migrated);
-      _prefs.remove('prevent_screensaver');
-      return migrated;
-    }
-
-    return _prefs.getBool(_preventSleepKey) ??
-        _dBool(
-          DefaultSettings.preventSleep,
-          TvDefaults.preventSleep,
-          PhoneDefaults.preventSleep,
-        );
+    return loadPreventSleepPreference(
+      _prefs,
+      preventSleepKey: _preventSleepKey,
+      isTv: isTv,
+      isWeb: kIsWeb,
+    );
   }
 
   bool _loadPerformanceModePreference() {
@@ -647,28 +615,19 @@ mixin _SettingsProviderInitializationExtension
   }
 
   int _loadOilPerformanceLevel() {
-    if (!_prefs.containsKey(_oilPerformanceLevelKey) &&
-        !_prefs.containsKey('oil_performance_mode')) {
-      return _dInt(
-        DefaultSettings.oilPerformanceLevel,
-        TvDefaults.oilPerformanceLevel,
-        DefaultSettings.oilPerformanceLevel,
-      );
-    }
-
-    return _prefs.getInt(_oilPerformanceLevelKey) ??
-        (_prefs.getBool('oil_performance_mode') == true ? 2 : 0);
+    return loadOilPerformanceLevelPreference(
+      _prefs,
+      oilPerformanceLevelKey: _oilPerformanceLevelKey,
+      isTv: isTv,
+      isWeb: kIsWeb,
+    );
   }
 
   String _loadOilBannerFont() {
-    final storedFont =
-        _prefs.getString(_oilBannerFontKey) ?? DefaultSettings.oilBannerFont;
-    if (storedFont != 'rock_salt') {
-      return storedFont;
-    }
-
-    _prefs.setString(_oilBannerFontKey, 'RockSalt');
-    return 'RockSalt';
+    return loadOilBannerFontPreference(
+      _prefs,
+      oilBannerFontKey: _oilBannerFontKey,
+    );
   }
 
   void _loadScreensaverTrailPreferences() {

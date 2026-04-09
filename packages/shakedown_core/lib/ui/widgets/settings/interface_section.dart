@@ -1,43 +1,24 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:gdar_design/widgets/fruit_settings_group_header.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
-import 'package:shakedown_core/services/device_service.dart';
-import 'package:shakedown_core/utils/app_haptics.dart';
-import 'package:shakedown_core/ui/widgets/section_card.dart';
-import 'package:shakedown_core/ui/widgets/tv/tv_switch_list_tile.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
+import 'package:shakedown_core/services/device_service.dart';
+import 'package:shakedown_core/ui/widgets/section_card.dart';
+import 'package:shakedown_core/ui/widgets/settings/interface/interface_group_header.dart';
+import 'package:shakedown_core/ui/widgets/settings/interface/interface_tiles.dart';
+import 'package:shakedown_core/utils/app_haptics.dart';
 
 class InterfaceSection extends StatelessWidget {
-  final double scaleFactor;
-  final bool initiallyExpanded;
-
   const InterfaceSection({
     super.key,
     required this.scaleFactor,
     required this.initiallyExpanded,
   });
 
-  List<Widget> _buildGroupHeader({
-    required String label,
-    required bool isFruit,
-    bool addTopSpacing = true,
-  }) {
-    if (!isFruit) {
-      if (!addTopSpacing) {
-        return const [];
-      }
-
-      return const [SizedBox(height: 8), Divider(), SizedBox(height: 8)];
-    }
-
-    return [
-      FruitSettingsGroupHeader(label: label, addTopSpacing: addTopSpacing),
-    ];
-  }
+  final double scaleFactor;
+  final bool initiallyExpanded;
 
   @override
   Widget build(BuildContext context) {
@@ -54,347 +35,153 @@ class InterfaceSection extends StatelessWidget {
       lucideIcon: LucideIcons.layout,
       initiallyExpanded: initiallyExpanded,
       children: [
-        ..._buildGroupHeader(
+        ...buildInterfaceGroupHeader(
           label: 'General',
           isFruit: isFruit,
           addTopSpacing: false,
         ),
         if (isTv) ...[
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Hide TV Scrollbars',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Removes visible scrollbars for a cleaner look',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-            ),
+          buildInterfaceSwitchTile(
+            context: context,
+            scaleFactor: scaleFactor,
+            title: 'Hide TV Scrollbars',
+            subtitle: 'Removes visible scrollbars for a cleaner look',
             value: settingsProvider.hideTvScrollbars,
-            onChanged: (value) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context.read<SettingsProvider>().toggleHideTvScrollbars();
-            },
-            secondary: Icon(
-              isFruit ? LucideIcons.eyeOff : Icons.visibility_off_rounded,
+            onChanged: (_) => triggerInterfaceToggle(
+              context,
+              context.read<SettingsProvider>().toggleHideTvScrollbars,
+            ),
+            secondary: interfaceIcon(
+              isFruit: isFruit,
+              fruitIcon: LucideIcons.eyeOff,
+              materialIcon: Icons.visibility_off_rounded,
             ),
           ),
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'TV Highlight',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Animated gradient and glow on focused items',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-            ),
+          buildInterfaceSwitchTile(
+            context: context,
+            scaleFactor: scaleFactor,
+            title: 'TV Highlight',
+            subtitle: 'Animated gradient and glow on focused items',
             value: settingsProvider.oilTvPremiumHighlight,
-            onChanged: (value) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context.read<SettingsProvider>().toggleOilTvPremiumHighlight();
-            },
-            secondary: Icon(
-              isFruit ? LucideIcons.sparkles : Icons.auto_awesome_rounded,
+            onChanged: (_) => triggerInterfaceToggle(
+              context,
+              context.read<SettingsProvider>().toggleOilTvPremiumHighlight,
+            ),
+            secondary: interfaceIcon(
+              isFruit: isFruit,
+              fruitIcon: LucideIcons.sparkles,
+              materialIcon: Icons.auto_awesome_rounded,
             ),
           ),
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Background Spheres',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Floating ambient spheres behind the home layout',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-            ),
+          buildInterfaceSwitchTile(
+            context: context,
+            scaleFactor: scaleFactor,
+            title: 'Background Spheres',
+            subtitle: 'Floating ambient spheres behind the home layout',
             value: settingsProvider.enableTvBackgroundSpheres,
-            onChanged: (value) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context
-                  .read<SettingsProvider>()
-                  .toggleEnableTvBackgroundSpheres();
-            },
+            onChanged: (_) => triggerInterfaceToggle(
+              context,
+              context.read<SettingsProvider>().toggleEnableTvBackgroundSpheres,
+            ),
             secondary: const Icon(Icons.bubble_chart_rounded),
           ),
           if (settingsProvider.enableTvBackgroundSpheres)
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 16 * scaleFactor,
-                vertical: 4 * scaleFactor,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Sphere Amount',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 12 * scaleFactor,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  SizedBox(height: 6 * scaleFactor),
-                  SegmentedButton<SphereAmount>(
-                    segments: const [
-                      ButtonSegment(
-                        value: SphereAmount.small,
-                        label: Text('Small'),
-                        icon: Icon(Icons.circle_outlined),
-                      ),
-                      ButtonSegment(
-                        value: SphereAmount.medium,
-                        label: Text('Medium'),
-                        icon: Icon(Icons.circle),
-                      ),
-                      ButtonSegment(
-                        value: SphereAmount.more,
-                        label: Text('More'),
-                        icon: Icon(Icons.bubble_chart_rounded),
-                      ),
-                    ],
-                    selected: {settingsProvider.tvBackgroundSphereAmount},
-                    onSelectionChanged: (selected) {
-                      if (selected.isNotEmpty) {
-                        AppHaptics.lightImpact(context.read<DeviceService>());
-                        context
-                            .read<SettingsProvider>()
-                            .setTvBackgroundSphereAmount(selected.first);
-                      }
-                    },
-                  ),
-                ],
-              ),
+            buildSphereAmountSelector(
+              context: context,
+              scaleFactor: scaleFactor,
+              settingsProvider: settingsProvider,
             ),
         ],
         if (!settingsProvider.carMode)
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'UI Scale',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Increase text size across the app',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-            ),
+          buildInterfaceSwitchTile(
+            context: context,
+            scaleFactor: scaleFactor,
+            title: 'UI Scale',
+            subtitle: 'Increase text size across the app',
             value: settingsProvider.uiScale,
-            onChanged: (value) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context.read<SettingsProvider>().toggleUiScale();
-            },
-            secondary: Icon(
-              isFruit ? LucideIcons.type : Icons.text_fields_rounded,
+            onChanged: (_) => triggerInterfaceToggle(
+              context,
+              context.read<SettingsProvider>().toggleUiScale,
+            ),
+            secondary: interfaceIcon(
+              isFruit: isFruit,
+              fruitIcon: LucideIcons.type,
+              materialIcon: Icons.text_fields_rounded,
             ),
           ),
         if (isFruit && !isTv)
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Car Mode',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Use the driving-friendly playback layout',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-            ),
+          buildInterfaceSwitchTile(
+            context: context,
+            scaleFactor: scaleFactor,
+            title: 'Car Mode',
+            subtitle: 'Use the driving-friendly playback layout',
             value: settingsProvider.carMode,
-            onChanged: (value) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context.read<SettingsProvider>().toggleCarMode();
-            },
-            secondary: Icon(
-              isFruit ? LucideIcons.rocket : Icons.directions_car_rounded,
+            onChanged: (_) => triggerInterfaceToggle(
+              context,
+              context.read<SettingsProvider>().toggleCarMode,
+            ),
+            secondary: interfaceIcon(
+              isFruit: isFruit,
+              fruitIcon: LucideIcons.rocket,
+              materialIcon: Icons.directions_car_rounded,
             ),
           ),
         if (isFruit && !isTv)
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Floating Spheres',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Animated background for car mode playback',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-            ),
+          buildInterfaceSwitchTile(
+            context: context,
+            scaleFactor: scaleFactor,
+            title: 'Floating Spheres',
+            subtitle: 'Animated background for car mode playback',
             value: settingsProvider.fruitFloatingSpheres,
-            onChanged: (value) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context.read<SettingsProvider>().toggleFruitFloatingSpheres();
-            },
-            secondary: Icon(
-              isFruit ? LucideIcons.circle : Icons.bubble_chart_rounded,
+            onChanged: (_) => triggerInterfaceToggle(
+              context,
+              context.read<SettingsProvider>().toggleFruitFloatingSpheres,
+            ),
+            secondary: interfaceIcon(
+              isFruit: isFruit,
+              fruitIcon: LucideIcons.circle,
+              materialIcon: Icons.bubble_chart_rounded,
             ),
           ),
         if (isFruit && !isTv && kIsWeb)
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Keep Screen On',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Prevents the device from sleeping during playback.',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-            ),
+          buildInterfaceSwitchTile(
+            context: context,
+            scaleFactor: scaleFactor,
+            title: 'Keep Screen On',
+            subtitle: 'Prevents the device from sleeping during playback.',
             value: settingsProvider.preventSleep,
-            onChanged: (_) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context.read<SettingsProvider>().togglePreventSleep();
-            },
-            secondary: Icon(
-              isFruit ? LucideIcons.monitor : Icons.sensor_window_rounded,
+            onChanged: (_) => triggerInterfaceToggle(
+              context,
+              context.read<SettingsProvider>().togglePreventSleep,
+            ),
+            secondary: interfaceIcon(
+              isFruit: isFruit,
+              fruitIcon: LucideIcons.monitor,
+              materialIcon: Icons.sensor_window_rounded,
             ),
           ),
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Show Splash Screen',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-            ),
-          ),
-          subtitle: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Show a loading screen on startup',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-            ),
-          ),
+        buildInterfaceSwitchTile(
+          context: context,
+          scaleFactor: scaleFactor,
+          title: 'Show Splash Screen',
+          subtitle: 'Show a loading screen on startup',
           value: settingsProvider.showSplashScreen,
-          onChanged: (value) {
-            AppHaptics.lightImpact(context.read<DeviceService>());
-            context.read<SettingsProvider>().toggleShowSplashScreen();
-          },
-          secondary: Icon(
-            isFruit ? LucideIcons.rocket : Icons.rocket_launch_rounded,
+          onChanged: (_) => triggerInterfaceToggle(
+            context,
+            context.read<SettingsProvider>().toggleShowSplashScreen,
+          ),
+          secondary: interfaceIcon(
+            isFruit: isFruit,
+            fruitIcon: LucideIcons.rocket,
+            materialIcon: Icons.rocket_launch_rounded,
           ),
         ),
-        if (!context.read<DeviceService>().isTv)
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Haptic Feedback',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Vibrate on interactions (PWA/Mobile)',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-            ),
+        if (!isTv)
+          buildInterfaceSwitchTile(
+            context: context,
+            scaleFactor: scaleFactor,
+            title: 'Haptic Feedback',
+            subtitle: 'Vibrate on interactions (PWA/Mobile)',
             value: settingsProvider.enableHaptics,
             onChanged: (value) {
               context.read<SettingsProvider>().toggleEnableHaptics();
@@ -403,366 +190,184 @@ class InterfaceSection extends StatelessWidget {
                 enabled: value,
               );
             },
-            secondary: Icon(isFruit ? LucideIcons.vibrate : Icons.vibration),
-          ),
-
-        ..._buildGroupHeader(label: 'Date & Time', isFruit: isFruit),
-
-        // 2. Date & Time Group
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Show date first in show cards',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
+            secondary: interfaceIcon(
+              isFruit: isFruit,
+              fruitIcon: LucideIcons.vibrate,
+              materialIcon: Icons.vibration,
             ),
           ),
-          subtitle: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Display the date before the venue',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-            ),
-          ),
+        ...buildInterfaceGroupHeader(label: 'Date & Time', isFruit: isFruit),
+        buildInterfaceSwitchTile(
+          context: context,
+          scaleFactor: scaleFactor,
+          title: 'Show date first in show cards',
+          subtitle: 'Display the date before the venue',
           value: settingsProvider.dateFirstInShowCard,
-          onChanged: (value) {
-            AppHaptics.lightImpact(context.read<DeviceService>());
-            context.read<SettingsProvider>().toggleDateFirstInShowCard();
-          },
-          secondary: Icon(
-            isFruit ? LucideIcons.calendar : Icons.date_range_rounded,
+          onChanged: (_) => triggerInterfaceToggle(
+            context,
+            context.read<SettingsProvider>().toggleDateFirstInShowCard,
+          ),
+          secondary: interfaceIcon(
+            isFruit: isFruit,
+            fruitIcon: LucideIcons.calendar,
+            materialIcon: Icons.date_range_rounded,
           ),
         ),
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Show Day of Week',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-            ),
-          ),
-          subtitle: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Includes the day name in dates',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-            ),
-          ),
+        buildInterfaceSwitchTile(
+          context: context,
+          scaleFactor: scaleFactor,
+          title: 'Show Day of Week',
+          subtitle: 'Includes the day name in dates',
           value: settingsProvider.showDayOfWeek,
-          onChanged: (value) {
-            AppHaptics.lightImpact(context.read<DeviceService>());
-            context.read<SettingsProvider>().toggleShowDayOfWeek();
-          },
-          secondary: Icon(
-            isFruit ? LucideIcons.calendarDays : Icons.today_rounded,
+          onChanged: (_) => triggerInterfaceToggle(
+            context,
+            context.read<SettingsProvider>().toggleShowDayOfWeek,
+          ),
+          secondary: interfaceIcon(
+            isFruit: isFruit,
+            fruitIcon: LucideIcons.calendarDays,
+            materialIcon: Icons.today_rounded,
           ),
         ),
         if (settingsProvider.showDayOfWeek)
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Abbreviate Day of Week',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Use short day names (e.g., Sat)',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-            ),
+          buildInterfaceSwitchTile(
+            context: context,
+            scaleFactor: scaleFactor,
+            title: 'Abbreviate Day of Week',
+            subtitle: 'Use short day names (e.g., Sat)',
             value: settingsProvider.abbreviateDayOfWeek,
-            onChanged: (value) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context.read<SettingsProvider>().toggleAbbreviateDayOfWeek();
-            },
-            secondary: Icon(
-              isFruit ? LucideIcons.text : Icons.short_text_rounded,
+            onChanged: (_) => triggerInterfaceToggle(
+              context,
+              context.read<SettingsProvider>().toggleAbbreviateDayOfWeek,
+            ),
+            secondary: interfaceIcon(
+              isFruit: isFruit,
+              fruitIcon: LucideIcons.text,
+              materialIcon: Icons.short_text_rounded,
             ),
           ),
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Abbreviate Month',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-            ),
-          ),
-          subtitle: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Use short month names (e.g., Aug)',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-            ),
-          ),
+        buildInterfaceSwitchTile(
+          context: context,
+          scaleFactor: scaleFactor,
+          title: 'Abbreviate Month',
+          subtitle: 'Use short month names (e.g., Aug)',
           value: settingsProvider.abbreviateMonth,
-          onChanged: (value) {
-            AppHaptics.lightImpact(context.read<DeviceService>());
-            context.read<SettingsProvider>().toggleAbbreviateMonth();
-          },
-          secondary: Icon(
-            isFruit
-                ? LucideIcons.calendarRange
-                : Icons.calendar_view_month_rounded,
+          onChanged: (_) => triggerInterfaceToggle(
+            context,
+            context.read<SettingsProvider>().toggleAbbreviateMonth,
+          ),
+          secondary: interfaceIcon(
+            isFruit: isFruit,
+            fruitIcon: LucideIcons.calendarRange,
+            materialIcon: Icons.calendar_view_month_rounded,
           ),
         ),
-        ..._buildGroupHeader(label: 'Library Cards', isFruit: isFruit),
-
-        // 3. List Sorting & Badges
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Sort Oldest First',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-            ),
-          ),
-          subtitle: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Show earliest shows at the top',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-            ),
-          ),
+        ...buildInterfaceGroupHeader(label: 'Library Cards', isFruit: isFruit),
+        buildInterfaceSwitchTile(
+          context: context,
+          scaleFactor: scaleFactor,
+          title: 'Sort Oldest First',
+          subtitle: 'Show earliest shows at the top',
           value: settingsProvider.sortOldestFirst,
-          onChanged: (value) {
-            AppHaptics.lightImpact(context.read<DeviceService>());
-            context.read<SettingsProvider>().toggleSortOldestFirst();
-          },
-          secondary: Icon(isFruit ? LucideIcons.list : Icons.sort_rounded),
+          onChanged: (_) => triggerInterfaceToggle(
+            context,
+            context.read<SettingsProvider>().toggleSortOldestFirst,
+          ),
+          secondary: interfaceIcon(
+            isFruit: isFruit,
+            fruitIcon: LucideIcons.list,
+            materialIcon: Icons.sort_rounded,
+          ),
         ),
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Show SHNID Badge (Single Source)',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-            ),
-          ),
-          subtitle: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Display SHNID number on card if only one source',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-            ),
-          ),
+        buildInterfaceSwitchTile(
+          context: context,
+          scaleFactor: scaleFactor,
+          title: 'Show SHNID Badge (Single Source)',
+          subtitle: 'Display SHNID number on card if only one source',
           value: settingsProvider.showSingleShnid,
-          onChanged: (value) {
-            AppHaptics.lightImpact(context.read<DeviceService>());
-            context.read<SettingsProvider>().toggleShowSingleShnid();
-          },
-          secondary: Icon(isFruit ? LucideIcons.hash : Icons.looks_one_rounded),
+          onChanged: (_) => triggerInterfaceToggle(
+            context,
+            context.read<SettingsProvider>().toggleShowSingleShnid,
+          ),
+          secondary: interfaceIcon(
+            isFruit: isFruit,
+            fruitIcon: LucideIcons.hash,
+            materialIcon: Icons.looks_one_rounded,
+          ),
         ),
-        ..._buildGroupHeader(label: 'Track List', isFruit: isFruit),
-
-        // 4. Track List Options
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Show Track Numbers',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-            ),
-          ),
-          subtitle: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Display track numbers in lists',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-            ),
-          ),
+        ...buildInterfaceGroupHeader(label: 'Track List', isFruit: isFruit),
+        buildInterfaceSwitchTile(
+          context: context,
+          scaleFactor: scaleFactor,
+          title: 'Show Track Numbers',
+          subtitle: 'Display track numbers in lists',
           value: settingsProvider.showTrackNumbers,
-          onChanged: (value) {
-            AppHaptics.lightImpact(context.read<DeviceService>());
-            context.read<SettingsProvider>().toggleShowTrackNumbers();
-          },
-          secondary: Icon(
-            isFruit ? LucideIcons.listOrdered : Icons.pin_rounded,
+          onChanged: (_) => triggerInterfaceToggle(
+            context,
+            context.read<SettingsProvider>().toggleShowTrackNumbers,
+          ),
+          secondary: interfaceIcon(
+            isFruit: isFruit,
+            fruitIcon: LucideIcons.listOrdered,
+            materialIcon: Icons.pin_rounded,
           ),
         ),
-        TvSwitchListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Hide Track Duration',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-            ),
-          ),
-          subtitle: FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Hide duration and center track titles',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-            ),
-          ),
+        buildInterfaceSwitchTile(
+          context: context,
+          scaleFactor: scaleFactor,
+          title: 'Hide Track Duration',
+          subtitle: 'Hide duration and center track titles',
           value: settingsProvider.hideTrackDuration,
-          onChanged: (value) {
-            AppHaptics.lightImpact(context.read<DeviceService>());
-            context.read<SettingsProvider>().toggleHideTrackDuration();
-          },
-          secondary: Icon(
-            isFruit ? LucideIcons.timerOff : Icons.timer_off_rounded,
+          onChanged: (_) => triggerInterfaceToggle(
+            context,
+            context.read<SettingsProvider>().toggleHideTrackDuration,
+          ),
+          secondary: interfaceIcon(
+            isFruit: isFruit,
+            fruitIcon: LucideIcons.timerOff,
+            materialIcon: Icons.timer_off_rounded,
           ),
         ),
-        ..._buildGroupHeader(label: 'Navigation', isFruit: isFruit),
-
+        ...buildInterfaceGroupHeader(label: 'Navigation', isFruit: isFruit),
         if (!isTv)
-          if (isFruit)
-            TvSwitchListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
-              title: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Enable Swipe to Block',
-                  style: Theme.of(
+          isFruit
+              ? buildInterfaceSwitchTile(
+                  context: context,
+                  scaleFactor: scaleFactor,
+                  title: 'Enable Swipe to Block',
+                  subtitle: 'Allows swiping list items to block them',
+                  value: settingsProvider.enableSwipeToBlock,
+                  onChanged: (_) => triggerInterfaceToggle(
                     context,
-                  ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-                ),
-              ),
-              subtitle: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Allows swiping list items to block them',
-                  style: Theme.of(
+                    context.read<SettingsProvider>().toggleEnableSwipeToBlock,
+                  ),
+                  secondary: swipeToBlockFruitIcon,
+                )
+              : buildMaterialInterfaceSwitchTile(
+                  context: context,
+                  scaleFactor: scaleFactor,
+                  title: 'Enable Swipe to Block',
+                  subtitle: 'Allows swiping list items to block them',
+                  value: settingsProvider.enableSwipeToBlock,
+                  onChanged: (_) => triggerInterfaceToggle(
                     context,
-                  ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                    context.read<SettingsProvider>().toggleEnableSwipeToBlock,
+                  ),
+                  secondary: swipeToBlockMaterialIcon,
                 ),
-              ),
-              value: settingsProvider.enableSwipeToBlock,
-              onChanged: (value) {
-                AppHaptics.lightImpact(context.read<DeviceService>());
-                context.read<SettingsProvider>().toggleEnableSwipeToBlock();
-              },
-              secondary: const Icon(LucideIcons.moveHorizontal),
-            )
-          else
-            SwitchListTile(
-              dense: true,
-              visualDensity: VisualDensity.compact,
-              title: Text(
-                'Enable Swipe to Block',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-              subtitle: Text(
-                'Allows swiping list items to block them',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-              value: settingsProvider.enableSwipeToBlock,
-              onChanged: (value) {
-                AppHaptics.lightImpact(context.read<DeviceService>());
-                context.read<SettingsProvider>().toggleEnableSwipeToBlock();
-              },
-              secondary: const Icon(Icons.swipe_rounded),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 4,
-              ),
-            ),
-        if (isFruit) ...[
-          TvSwitchListTile(
-            dense: true,
-            visualDensity: VisualDensity.compact,
-            title: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Hide Tab Text',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 16 * scaleFactor),
-              ),
-            ),
-            subtitle: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Hide labels under tab bar icons',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
-              ),
-            ),
+        if (isFruit)
+          buildInterfaceSwitchTile(
+            context: context,
+            scaleFactor: scaleFactor,
+            title: 'Hide Tab Text',
+            subtitle: 'Hide labels under tab bar icons',
             value: settingsProvider.hideTabText,
-            onChanged: (value) {
-              AppHaptics.lightImpact(context.read<DeviceService>());
-              context.read<SettingsProvider>().toggleHideTabText();
-            },
+            onChanged: (_) => triggerInterfaceToggle(
+              context,
+              context.read<SettingsProvider>().toggleHideTabText,
+            ),
             secondary: const Icon(LucideIcons.eyeOff),
           ),
-        ],
       ],
     );
   }

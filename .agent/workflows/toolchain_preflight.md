@@ -28,6 +28,9 @@ The script handles:
 - Fast receipt refresh for `/checkup` via `--record-pass`, which writes a fresh
   `PASS` receipt without rerunning the full preflight or melos suite.
 
+For `--preflight-only` or `--help`, follow unsandboxed-first execution policy in:
+`.agent/rules/sandbox_preflight_fallback.md`.
+
 ## Output
 
 | Output | Meaning |

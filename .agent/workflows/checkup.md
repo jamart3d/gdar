@@ -17,6 +17,8 @@ description: Rapid health check with automated fixes for linting, formatting, an
 - If output contains `CHROMEBOOK:STOP` → notify user and **stop**.
   Checkup does not run design scans or commit on Chromebook.
 - If output contains `WINDOWS_10:VERIFIED`, `LINUX:VERIFIED`, or `MACOS:VERIFIED` → proceed to Step 2.
+- For preflight-only sandbox reliability, apply
+  `.agent/rules/sandbox_preflight_fallback.md`.
 
 The script handles platform detection, toolchain checks, and process hygiene.
 In checkup mode it does **not** run melos or write `verification_status.json`.

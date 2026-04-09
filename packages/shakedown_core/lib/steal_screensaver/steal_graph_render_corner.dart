@@ -269,13 +269,16 @@ extension _StealGraphCornerRender on StealGraph {
   }
 
   void _renderCornerHudPanel(Canvas canvas, double startX, double startY) {
-    const width =
-        (_cornerBarCount * _barWidth) + ((_cornerBarCount - 1) * _barGap) + 18;
-    const height = _maxBarHeight + 40;
-    final panelRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(startX - 10, startY - _maxBarHeight - 14, width, height),
-      const Radius.circular(10),
+    final panelGeometry = buildCornerHudPanelGeometry(
+      startX: startX,
+      startY: startY,
+      cornerBarCount: _cornerBarCount,
+      barWidth: _barWidth,
+      barGap: _barGap,
+      maxBarHeight: _maxBarHeight,
     );
+    final panelRect = panelGeometry.panelRect;
+    final width = panelRect.width;
 
     _drawPanelChrome(
       canvas,
@@ -287,9 +290,7 @@ extension _StealGraphCornerRender on StealGraph {
     final linePaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.08)
       ..strokeWidth = 1.0;
-    final top = startY - _maxBarHeight;
-    for (int i = 1; i <= 3; i++) {
-      final y = top + (_maxBarHeight / 4.0) * i;
+    for (final y in panelGeometry.gridLineYs) {
       canvas.drawLine(
         Offset(startX - 7, y),
         Offset(startX - 7 + width - 6, y),
@@ -300,7 +301,7 @@ extension _StealGraphCornerRender on StealGraph {
     _paintMonoText(
       canvas,
       text: 'FFT 8B',
-      offset: Offset(startX - 2, startY + 16),
+      offset: panelGeometry.labelOffset,
       style: _monoTextStyle(
         color: Colors.white.withValues(alpha: 0.45),
         fontSize: 8,
@@ -328,7 +329,6 @@ extension _StealGraphCornerRender on StealGraph {
         h - _bottomPadding + drift.dy - (isPanelMode ? scopeHeight / 2 : 0.0);
 
     const phosphorColor = Color(0xFF33FF66);
-    double softClip(double v) => atan(v * 50.0) / (pi / 2);
 
     if (isPanelMode && !_isFast) {
       const panelPad = 10.0;
@@ -404,7 +404,7 @@ extension _StealGraphCornerRender on StealGraph {
           availableWidth: availableWidth,
           centerY: upperCenterY,
           laneHeight: laneHeight,
-          normalize: softClip,
+          normalize: (value) => softClip(value),
         ),
         traceColor: leftColor,
         glowAlpha: 0.18 + _beatFlash * 0.18,
@@ -420,7 +420,7 @@ extension _StealGraphCornerRender on StealGraph {
           availableWidth: availableWidth,
           centerY: lowerCenterY,
           laneHeight: laneHeight,
-          normalize: softClip,
+          normalize: (value) => softClip(value),
         ),
         traceColor: rightColor,
         glowAlpha: 0.18 + _beatFlash * 0.18,
@@ -491,7 +491,7 @@ extension _StealGraphCornerRender on StealGraph {
           availableWidth: availableWidth,
           centerY: centerY,
           laneHeight: scopeHeight,
-          normalize: softClip,
+          normalize: (value) => softClip(value),
         ),
         traceColor: traceColor,
         glowAlpha: 0.22 + _beatFlash * 0.28,
@@ -530,30 +530,21 @@ extension _StealGraphCornerRender on StealGraph {
       final hasSignal = bands.length >= 8 && energy.overall > 0.008;
 
       if (hasSignal) {
-        const freqs = [0.2, 0.4, 0.7, 1.1, 1.6, 2.25, 3.0, 4.0];
-        const windowSecs = 4.0;
-        const numPoints = 128;
-
-        final t = game.time;
-        final amps = List<double>.generate(
-          8,
-          (b) => b < bands.length ? softClip(bands[b] * 3.0) : 0.0,
+        final points = synthOscilloscopePoints(
+          bands: bands,
+          time: game.time,
+          startX: startX,
+          availableWidth: availableWidth,
+          centerY: centerY,
+          scopeHeight: scopeHeight,
+          numPoints: 128,
+          windowSeconds: 4.0,
         );
-
         final path = Path();
-        for (int i = 0; i < numPoints; i++) {
-          final x = startX + (i / (numPoints - 1)) * availableWidth;
-          final tx = t - windowSecs + (i / (numPoints - 1)) * windowSecs;
-          var val = 0.0;
-          for (int b = 0; b < 8; b++) {
-            val += amps[b] * sin(2 * pi * freqs[b] * tx);
-          }
-          val = (val / 4.0).clamp(-1.0, 1.0);
-          final y = centerY - val * (scopeHeight / 2);
-          if (i == 0) {
-            path.moveTo(x, y);
-          } else {
-            path.lineTo(x, y);
+        if (points.isNotEmpty) {
+          path.moveTo(points.first.dx, points.first.dy);
+          for (final point in points.skip(1)) {
+            path.lineTo(point.dx, point.dy);
           }
         }
         _drawTrace(
@@ -704,20 +695,13 @@ extension _StealGraphCornerRender on StealGraph {
       ),
     );
 
-    const markFracs = [0.0, 0.2, 0.4, 0.58, 0.72, 0.84, 1.0];
-    const markLabels = ['-20', '-10', '-7', '-3', '0', '+1', '+3'];
-    const showLabel = [true, false, false, false, true, false, true];
-
-    for (int m = 0; m < markFracs.length; m++) {
-      final frac = markFracs[m];
-      final angle = -pi / 2 + (-_vuSweepHalf + frac * totalSweep);
-      final mx1 = pivotX + cos(angle) * arcRadius;
-      final my1 = pivotY + sin(angle) * arcRadius;
-      final mx2 =
-          pivotX + cos(angle) * (arcRadius + (frac == 0.72 ? 9.0 : 6.0));
-      final my2 =
-          pivotY + sin(angle) * (arcRadius + (frac == 0.72 ? 9.0 : 6.0));
-
+    final markGeometry = buildVuScaleMarks(
+      pivot: Offset(pivotX, pivotY),
+      sweepHalf: _vuSweepHalf,
+      arcRadius: arcRadius,
+    );
+    for (final mark in markGeometry) {
+      final frac = mark.fraction;
       final tickColor = frac < 0.65
           ? const Color(0xFF4AF3C6)
           : frac < 0.82
@@ -725,18 +709,18 @@ extension _StealGraphCornerRender on StealGraph {
           : const Color(0xFFFF5555);
 
       canvas.drawLine(
-        Offset(mx1, my1),
-        Offset(mx2, my2),
+        mark.inner,
+        mark.outer,
         _strokePaint(
           color: tickColor.withValues(alpha: 0.65),
           width: frac == 0.72 ? 1.5 : 0.8,
         ),
       );
 
-      if (showLabel[m]) {
+      if (mark.showLabel) {
         _textPainter
           ..text = TextSpan(
-            text: markLabels[m],
+            text: mark.label,
             style: _monoTextStyle(
               color: tickColor.withValues(alpha: 0.55),
               fontSize: 7,
@@ -745,21 +729,26 @@ extension _StealGraphCornerRender on StealGraph {
             ),
           )
           ..layout();
+        final labelAngle = -pi / 2 + (-_vuSweepHalf + frac * totalSweep);
         final lx =
-            pivotX + cos(angle) * (arcRadius + 15) - _textPainter.width / 2;
+            pivotX +
+            cos(labelAngle) * (arcRadius + 15) -
+            _textPainter.width / 2;
         final ly =
-            pivotY + sin(angle) * (arcRadius + 15) - _textPainter.height / 2;
+            pivotY +
+            sin(labelAngle) * (arcRadius + 15) -
+            _textPainter.height / 2;
         _textPainter.paint(canvas, Offset(lx, ly));
       }
     }
 
     final needleLevel = level.clamp(0.0, 1.0);
-    final needleAngle = -pi / 2 + (-_vuSweepHalf + needleLevel * totalSweep);
-    final tipX = pivotX + cos(needleAngle) * _vuNeedleLength;
-    final tipY = pivotY + sin(needleAngle) * _vuNeedleLength;
-    const spindleRadius = 4.5;
-    final needleStartX = pivotX + cos(needleAngle) * spindleRadius;
-    final needleStartY = pivotY + sin(needleAngle) * spindleRadius;
+    final needleGeometry = buildVuNeedleGeometry(
+      pivot: Offset(pivotX, pivotY),
+      level: needleLevel,
+      sweepHalf: _vuSweepHalf,
+      needleLength: _vuNeedleLength,
+    );
 
     final needleColor = needleLevel < 0.65
         ? const Color(0xFFDDDDDD)
@@ -769,8 +758,8 @@ extension _StealGraphCornerRender on StealGraph {
 
     if (_glowSigma > 0.0 && needleLevel > 0.05) {
       canvas.drawLine(
-        Offset(needleStartX, needleStartY),
-        Offset(tipX, tipY),
+        needleGeometry.start,
+        needleGeometry.tip,
         _glowStrokePaint(
           color: needleColor.withValues(alpha: 0.18),
           width: 3.0,
@@ -779,8 +768,8 @@ extension _StealGraphCornerRender on StealGraph {
       );
     }
     canvas.drawLine(
-      Offset(needleStartX, needleStartY),
-      Offset(tipX, tipY),
+      needleGeometry.start,
+      needleGeometry.tip,
       _strokePaint(color: needleColor.withValues(alpha: 0.95), width: 1.4),
     );
 
@@ -862,9 +851,6 @@ extension _StealGraphCornerRender on StealGraph {
   void _drawLedStrip(Canvas canvas, double cx, double baseY) {
     final stripLeft = cx - _ledStripWidth / 2;
     const stripHeight = _vuHeight;
-    const usableHeight = stripHeight - _ledLabelReserve;
-    const segH =
-        (usableHeight - (_ledSegmentCount - 1) * _ledSegGap) / _ledSegmentCount;
     const colW = (_ledStripWidth - _ledHPad * 2 - _ledColGap) / 2;
 
     if (!_isFast) {
@@ -885,18 +871,41 @@ extension _StealGraphCornerRender on StealGraph {
       );
     }
 
-    final leftActive = (_vuLeft.clamp(0.0, 1.0) * (_ledSegmentCount - 1))
-        .round();
-    final rightActive = (_vuRight.clamp(0.0, 1.0) * (_ledSegmentCount - 1))
-        .round();
-    final leftPeakIdx = _vuPeakLeft > 0.02
-        ? (_vuPeakLeft.clamp(0.0, 1.0) * (_ledSegmentCount - 1)).round()
-        : -1;
-    final rightPeakIdx = _vuPeakRight > 0.02
-        ? (_vuPeakRight.clamp(0.0, 1.0) * (_ledSegmentCount - 1)).round()
-        : -1;
+    final leftActive = activeLedSegmentIndex(
+      level: _vuLeft,
+      segmentCount: _ledSegmentCount,
+    );
+    final rightActive = activeLedSegmentIndex(
+      level: _vuRight,
+      segmentCount: _ledSegmentCount,
+    );
+    final leftPeakIdx = peakLedSegmentIndex(
+      peakLevel: _vuPeakLeft,
+      segmentCount: _ledSegmentCount,
+    );
+    final rightPeakIdx = peakLedSegmentIndex(
+      peakLevel: _vuPeakRight,
+      segmentCount: _ledSegmentCount,
+    );
 
-    for (int seg = 0; seg < _ledSegmentCount; seg++) {
+    final stripGeometry = buildLedStripGeometry(
+      stripLeft: stripLeft,
+      baseY: baseY,
+      stripWidth: _ledStripWidth,
+      stripHeight: stripHeight,
+      labelReserve: _ledLabelReserve,
+      segmentCount: _ledSegmentCount,
+      horizontalPadding: _ledHPad,
+      columnGap: _ledColGap,
+      segmentGap: _ledSegGap,
+      leftActive: leftActive,
+      rightActive: rightActive,
+      leftPeak: leftPeakIdx,
+      rightPeak: rightPeakIdx,
+    );
+
+    for (int seg = 0; seg < stripGeometry.length; seg++) {
+      final segment = stripGeometry[seg];
       final Color zoneColor;
       if (seg >= 13) {
         zoneColor = const Color(0xFFFF4444);
@@ -906,25 +915,20 @@ extension _StealGraphCornerRender on StealGraph {
         zoneColor = const Color(0xFF4AF3C6);
       }
 
-      final segBottom = baseY - _ledLabelReserve - seg * (segH + _ledSegGap);
-      final segTop = segBottom - segH;
-
-      final lColLeft = stripLeft + _ledHPad;
       _drawLedSegment(
         canvas,
-        Rect.fromLTRB(lColLeft, segTop, lColLeft + colW, segBottom),
+        segment.leftRect,
         zoneColor,
-        seg <= leftActive,
-        seg == leftPeakIdx,
+        segment.leftActive,
+        segment.leftPeak,
       );
 
-      final rColLeft = stripLeft + _ledHPad + colW + _ledColGap;
       _drawLedSegment(
         canvas,
-        Rect.fromLTRB(rColLeft, segTop, rColLeft + colW, segBottom),
+        segment.rightRect,
         zoneColor,
-        seg <= rightActive,
-        seg == rightPeakIdx,
+        segment.rightActive,
+        segment.rightPeak,
       );
     }
 
