@@ -59,8 +59,8 @@ included. The block is capped at 500 chars and wrapped in `<en-US>…</en-US>`.
    (Runs after deploy — records deploy status and updates release metadata.)
 
 ## 7. Smoke Test
-- Windows (PowerShell): `(Invoke-WebRequest -Method Head -Uri https://shakedown-pwa.web.app/).StatusCode -eq 200`
-- Linux/macOS: `curl -sI https://shakedown-pwa.web.app/ | rg "HTTP/[0-9.]+ 200"`
+- Windows (PowerShell): `curl.exe -Is https://shakedown-pwa.web.app/ | Select-String "HTTP/[0-9.]+ 200"`
+- Linux/macOS: `curl -sI https://shakedown-pwa.web.app/ | grep "HTTP/[0-9.]+ 200"`
 - If the live URL does not return 200, halt and report before wrapping up.
 
 ## 8. Wrap-Up
