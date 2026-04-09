@@ -733,7 +733,7 @@ void main() {
   });
 
   testWidgets(
-    'ShowListCard Fruit car mode aligns multi-source badge with date row',
+    'ShowListCard Fruit car mode aligns multi-source badge with location row when date-first is on',
     (WidgetTester tester) async {
       tester.view.devicePixelRatio = 1.0;
       tester.view.physicalSize = const Size(430, 900);
@@ -763,18 +763,18 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final dateFinder = find.text('Feb 21, 2025');
+      final locationFinder = find.text('Oakland, CA');
       final badgeFinder = find.text('3 SOURCES');
 
-      expect(dateFinder, findsOneWidget);
+      expect(locationFinder, findsOneWidget);
       expect(badgeFinder, findsOneWidget);
       expect(
         tester.getTopLeft(badgeFinder).dx,
-        greaterThan(tester.getTopLeft(dateFinder).dx),
+        greaterThan(tester.getTopLeft(locationFinder).dx),
       );
       expect(
         (tester.getTopLeft(badgeFinder).dy -
-                tester.getTopLeft(dateFinder).dy)
+                tester.getTopLeft(locationFinder).dy)
             .abs(),
         lessThan(24.0),
       );

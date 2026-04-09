@@ -33,9 +33,16 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
     final bool shnidInColumn =
         settingsProvider.showSingleShnid && style.shouldShowBadge;
     final bool badgeInFooter = style.shouldShowBadge && !shnidInColumn;
-    final bool controlsOnPrimaryRow = dateFirst && badgeInFooter;
+    // When dateFirst, only move controls to the location row if there is a
+    // visible badge (src or multi-source); plain rating stars stay on the
+    // primary (date) row to keep card height stable.
+    // When !dateFirst, all controls (stars + badge) align with location.
     final bool controlsOnLocationRow =
-        !dateFirst && locationText.isNotEmpty && badgeInFooter;
+        locationText.isNotEmpty &&
+        ((badgeInFooter || shouldShowSrcBadge) ||
+            (!dateFirst && (ratingKey != null || shnidInColumn)));
+    final bool controlsOnPrimaryRow =
+        !controlsOnLocationRow && dateFirst && badgeInFooter;
     final bool badgeOnLocationRow = controlsOnLocationRow && badgeInFooter;
     final bool showFooterRow =
         showTrackTitle ||
@@ -340,7 +347,7 @@ extension _ShowListCardFruitCarModeBuild on _ShowListCardState {
                                   ),
                                 ),
                               ),
-                              if (badgeOnLocationRow) ...[
+                              if (controlsOnLocationRow) ...[
                                 SizedBox(width: 12 * style.effectiveScale),
                                 buildTrailingControls(inline: true),
                               ],
