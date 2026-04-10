@@ -1,4 +1,18 @@
 <en-US>
+What's new in v1.3.75+285
+• Dependency maintenance session completed.
+• Ran `flutter pub outdated` (required sandbox escalation) and confirmed
+• `16` locked dependencies were upgradable within current constraints.
+• `9` dependencies required major-version constraint changes for latest versions.
+• Ran `flutter pub upgrade` (required sandbox escalation).
+• Resolver updated `22` dependencies.
+• Remaining `20` newer packages are still constraint-limited.
+• Verified workspace health after upgrade
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.74+284
 • Web Fruit car mode resilience: added a one-shot playback state resync when
 • Added `AudioProvider.resyncWebEngine({reason})` and `GaplessPlayer.resync({reason})`
