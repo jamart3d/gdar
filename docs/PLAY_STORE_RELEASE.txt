@@ -1,4 +1,18 @@
 <en-US>
+What's new in v1.3.80+290
+• Added MCP-oriented `code_hygiene` workflow and report-saving guidance
+• `.agent/workflows/code_hygiene.md`
+• dated report format in `reports/CODE_HYGIENE_REPORT_YYYY-MM-DD.md`
+• Updated zero-friction workflow trigger allowlist
+• `.agent/rules/agent_autonomy.md` now includes `/code_hygiene`, `/dead_code`, `/duplicate_code`.
+• Added and refined code hygiene scanner
+• `scripts/code_hygiene_audit.dart`
+• duplicate detection now ignores generated `*.g.dart`
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.79+289
 • Resolved Android notification icon "white square" issue by migrating to non-adaptive drawable resources (`ic_stat_shakedown`).
 • Fixed notification icon silhouetting on devices targeting Android 12+ (SDK 31+) and consistent with `targetSdk 35` requirements.

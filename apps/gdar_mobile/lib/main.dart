@@ -20,6 +20,7 @@ import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/asset_constants.dart';
+import 'package:shakedown_core/utils/screensaver_active_state_mixin.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -106,25 +107,14 @@ class GdarMobileApp extends StatefulWidget {
   State<GdarMobileApp> createState() => _GdarMobileAppState();
 }
 
-class _GdarMobileAppState extends State<GdarMobileApp> {
+class _GdarMobileAppState extends State<GdarMobileApp>
+    with ScreensaverActiveStateMixin<GdarMobileApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
   InactivityService? _inactivityService;
   DeepLinkService? _deepLinkService;
   StreamSubscription? _linkSubscription;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
-  bool _isScreensaverActive = false;
-
-  void _setScreensaverActive(bool active) {
-    if (!mounted) {
-      _isScreensaverActive = active;
-      return;
-    }
-    setState(() {
-      _isScreensaverActive = active;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -170,7 +160,7 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
 
     logger.i('Launching screensaver from mobile/$source');
     _inactivityService?.stop();
-    _setScreensaverActive(true);
+    setScreensaverActive(true);
     try {
       await navigator.push(
         ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
@@ -180,7 +170,7 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
     } catch (e) {
       logger.e('Screensaver launch failed', error: e);
     } finally {
-      _setScreensaverActive(false);
+      setScreensaverActive(false);
       _inactivityService?.onUserActivity('screensaver_exit:mobile_$source');
       if (widget.isTv && _settingsProvider.useOilScreensaver) {
         _inactivityService?.start();
@@ -202,7 +192,7 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
       Duration(minutes: settingsProvider.oilScreensaverInactivityMinutes),
     );
 
-    if (settingsProvider.useOilScreensaver && !_isScreensaverActive) {
+    if (settingsProvider.useOilScreensaver && !isScreensaverActive) {
       inactivityService.start();
     } else {
       inactivityService.stop();
@@ -375,7 +365,7 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
 
                 return InactivityDetector(
                   inactivityService: _inactivityService,
-                  isScreensaverActive: _isScreensaverActive,
+                  isScreensaverActive: isScreensaverActive,
                   child: ColoredBox(
                     color: Theme.of(context).scaffoldBackgroundColor,
                     child: child ?? const SizedBox.shrink(),

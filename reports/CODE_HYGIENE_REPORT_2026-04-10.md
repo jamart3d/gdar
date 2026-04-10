@@ -10,8 +10,8 @@ Date: 2026-04-10
 
 ## Duplicate-Risk Candidates
 - Scanner summary:
-  - Duplicate block groups: 30
-  - Duplicate block instances: 61
+  - Duplicate block groups: 29
+  - Duplicate block instances: 58
   - Dead private candidates: 42
 - Top groups:
   - `apps/gdar_web/lib/ui/screens/about_screen.dart:166-177`
@@ -26,8 +26,10 @@ Date: 2026-04-10
 
 ## Suggested Cuts
 - delete: generated duplicate registrations in `hive_registrar.g.dart` should be ignored by audit scope.
-- merge: extract shared helpers between `show_list_screen.dart` and `tv_show_list_screen.dart`.
-- extract: unify repeated audio-engine logic in `hybrid_audio_engine_web.dart` and `passive_audio_engine.dart`.
+- merge (Tier 1 done): web about screen now reuses core about screen export; shared list-scroll utils added for playback + tv playback helpers.
+- merge (Tier 1 done): mobile/tv screensaver active-state duplication removed via shared mixin.
+- extract (Tier 2 intentional): `hybrid_audio_engine_web.dart` and `passive_audio_engine.dart` variants are intentionally split for HTML behavior differences (`html5` vs `html5_hybrid`).
+- TODO (Tier 3): defer major `show_list_screen.dart` + `tv_show_list_screen.dart` consolidation.
 
 ## Notes / False Positives
 - This run used full shell-based scanner execution outside sandbox (not MCP-only).
@@ -37,3 +39,6 @@ Date: 2026-04-10
   - current run: 42 candidates
 - Duplicate scan now excludes generated `*.g.dart` files to reduce noisy matches.
 - Remaining dead-private findings should be reviewed manually before deletion.
+- Tier 2 decision (user-requested): keep audio-engine split as-is due to prior
+  HTML compatibility issues.
+- Tier 3 decision (user-requested): leave as TODO, no refactor in this pass.
