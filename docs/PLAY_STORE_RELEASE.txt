@@ -1,4 +1,21 @@
 <en-US>
+What's new in v1.3.76+286
+• Post-shipit dependency maintenance session completed.
+• Ran `flutter pub outdated` as a fresh baseline
+• `9` dependencies remained constrained below resolvable versions.
+• Ran `flutter pub upgrade --major-versions`
+• Updated constraints in
+• `pubspec.yaml` (`melos`)
+• `packages/shakedown_core/pubspec.yaml`
+• `apps/gdar_mobile/pubspec.yaml`
+• `apps/gdar_tv/pubspec.yaml`
+• `apps/gdar_web/pubspec.yaml`
+• Upgraded major dependencies including
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.75+285
 • Dependency maintenance session completed.
 • Ran `flutter pub outdated` (required sandbox escalation) and confirmed
