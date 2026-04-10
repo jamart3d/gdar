@@ -1,4 +1,23 @@
 <en-US>
+What's new in v1.3.78+288
+• Dependency maintenance completed
+• Ran `flutter pub outdated` to baseline constraints.
+• Ran `flutter pub upgrade`.
+• Ran `flutter pub upgrade --major-versions`.
+• Updated dependency constraints in
+• `pubspec.yaml`
+• `packages/shakedown_core/pubspec.yaml`
+• `apps/gdar_mobile/pubspec.yaml`
+• `apps/gdar_tv/pubspec.yaml`
+• `apps/gdar_web/pubspec.yaml`
+• Toolchain upgraded to latest stable
+• Flutter `3.41.2 -> 3.41.6`
+• Dart `3.11.0 -> 3.11.4`
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.77+287
 • Flutter SDK upgraded to latest stable.
 • Flutter: `3.41.6` (from `3.41.2`)

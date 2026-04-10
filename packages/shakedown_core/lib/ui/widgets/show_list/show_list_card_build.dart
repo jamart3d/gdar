@@ -262,8 +262,15 @@ extension _ShowListCardBuild on _ShowListCardState {
         ? (settingsProvider.fruitDenseList ? 54.0 : 72.0)
         : 58.0;
     final double cardHeight = baseHeight * style.effectiveScale;
+    // Temporary web workaround: hide inline now-playing strip in Fruit show list.
+    final bool hideFruitInlinePlayer = kIsWeb && isFruit;
     final bool isDesktopInlinePlaying =
-        kIsWeb && isFruit && !useMobileLayout && !isTv && widget.isPlaying;
+        kIsWeb &&
+        isFruit &&
+        !hideFruitInlinePlayer &&
+        !useMobileLayout &&
+        !isTv &&
+        widget.isPlaying;
     final bool hasSingleSourceShnidBadge =
         kIsWeb &&
         isFruit &&

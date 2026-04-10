@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/models/show.dart';
@@ -52,7 +53,9 @@ Widget buildFruitCarModeCardContent({
   final bool dateFirst = settingsProvider.dateFirstInShowCard;
   final String primaryHeadline = dateFirst ? style.formattedDate : show.venue;
   final bool isCurrentCard = isPlaying;
-  final bool showTrackTitle = isCurrentCard && currentTrackTitle.isNotEmpty;
+  // Temporary web workaround: hide inline now-playing block in Fruit show list.
+  final bool showTrackTitle =
+      isCurrentCard && currentTrackTitle.isNotEmpty && !kIsWeb;
   final bool shnidInColumn =
       settingsProvider.showSingleShnid && style.shouldShowBadge;
   final bool badgeInFooter = style.shouldShowBadge && !shnidInColumn;
