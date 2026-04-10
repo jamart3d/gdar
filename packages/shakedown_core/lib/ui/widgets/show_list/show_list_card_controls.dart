@@ -360,6 +360,12 @@ extension _ShowListCardControls on _ShowListCardState {
 
             return Padding(
               padding: EdgeInsets.only(
+                left: (kIsWeb && isFruit && !useMobileLayout && !isTv)
+                    ? ((!settings.fruitEnableLiquidGlass &&
+                              settings.showSingleShnid)
+                          ? 32.0
+                          : 16.0)
+                    : 0.0,
                 right: (kIsWeb && isFruit && !useMobileLayout && !isTv)
                     ? 4.0
                     : 8.0,

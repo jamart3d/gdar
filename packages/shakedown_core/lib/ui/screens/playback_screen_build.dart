@@ -92,6 +92,7 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
 
     if (isFruit) {
       if (settingsProvider.carMode && !widget.isPane) {
+        _maybeResyncFruitCarModeEntry(audioProvider: audioProvider);
         return _buildFruitCarModeScaffold(
           context: context,
           audioProvider: audioProvider,
@@ -102,6 +103,7 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
           settingsProvider: settingsProvider,
         );
       }
+      _fruitCarModeEntryResyncTriggered = false;
 
       return _buildFruitPlaybackScaffold(
         context: context,
@@ -191,6 +193,19 @@ extension _PlaybackScreenBuild on PlaybackScreenState {
         maxVisibleY: isPanelOpen ? 0.4 : 1.0,
         syncFocus: !listHasFocus,
       );
+    });
+  }
+
+  void _maybeResyncFruitCarModeEntry({required AudioProvider audioProvider}) {
+    if (_fruitCarModeEntryResyncTriggered) {
+      return;
+    }
+    _fruitCarModeEntryResyncTriggered = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      audioProvider.resyncWebEngine(reason: 'fruit_car_mode_enter');
     });
   }
 }

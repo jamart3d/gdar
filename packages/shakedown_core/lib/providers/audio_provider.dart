@@ -108,4 +108,8 @@ class AudioProvider extends ChangeNotifier
     await service.clearAudioCache();
     service.dispose();
   }
+
+  void resyncWebEngine({String reason = 'manual'}) {
+    _audioPlayer.resync(reason: reason);
+  }
 }

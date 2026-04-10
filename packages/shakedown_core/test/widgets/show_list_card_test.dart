@@ -146,6 +146,39 @@ void main() {
     );
   }
 
+  test(
+    'resolveInlineShowLocation prefers canonical show location over playing source location',
+    () {
+      final show = createDummyShow('Shoreline Amphitheatre', '1994-10-01');
+      show.location = 'Mountain View, CA';
+      final source = Source(
+        id: 's1',
+        tracks: const [],
+        location: 'Bloomington, MN',
+      );
+
+      expect(
+        resolveInlineShowLocation(show: show, playingSource: source),
+        'Mountain View, CA',
+      );
+    },
+  );
+
+  test('resolveInlineShowLocation falls back to playing source location', () {
+    final show = createDummyShow('Shoreline Amphitheatre', '1994-10-01');
+    show.location = '';
+    final source = Source(
+      id: 's1',
+      tracks: const [],
+      location: 'Mountain View, CA',
+    );
+
+    expect(
+      resolveInlineShowLocation(show: show, playingSource: source),
+      'Mountain View, CA',
+    );
+  });
+
   Widget createTestableWidget({
     required Show show,
     bool isExpanded = false,
@@ -654,6 +687,47 @@ void main() {
     },
   );
 
+  testWidgets(
+    'ShowListCard Fruit car mode idle cards wrap venue when date-first is off',
+    (WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(430, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final dummyShow = createDummyShow(
+        'Oakland-Alameda County Coliseum Arena and Exhibition Hall',
+        '1989-12-28',
+        primarySrc: 'matrix',
+        sourceLocation: 'Oakland, CA',
+      );
+      dummyShow.location = 'Oakland, CA';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+      settingsProvider.toggleDateFirstInShowCard();
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: dummyShow,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
+      final cardFinder = find.byKey(
+        const ValueKey('fruit_show_list_car_mode_card'),
+      );
+      final venueFinder = find.text(dummyShow.venue);
+
+      expect(venueFinder, findsOneWidget);
+      expect(tester.getSize(cardFinder).height, greaterThan(146.0));
+      expect(tester.widget<Text>(venueFinder).maxLines, equals(2));
+    },
+  );
+
   testWidgets('ShowListCard border color changes when isPlaying is true', (
     WidgetTester tester,
   ) async {
@@ -869,6 +943,59 @@ void main() {
       // Badge must be below the location row, not inline with it.
       expect(
         tester.getTopLeft(badgeFinder).dy,
+        greaterThan(tester.getBottomLeft(locationFinder).dy - 4.0),
+      );
+    },
+  );
+
+  testWidgets(
+    'ShowListCard Fruit car mode shows src and shnid badges when single-source shnid is enabled',
+    (WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(430, 900);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.view.resetPhysicalSize);
+
+      final showWithSrc = createDummyShow(
+        'Springfield Civic Center Arena',
+        '1973-03-28',
+        sourceCount: 1,
+        primarySrc: 'SBD',
+        sourceLocation: 'Springfield, MA',
+      );
+      showWithSrc.location = 'Springfield, MA';
+
+      final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.toggleCarMode();
+      if (settingsProvider.dateFirstInShowCard) {
+        settingsProvider.toggleDateFirstInShowCard();
+      }
+      if (!settingsProvider.showSingleShnid) {
+        settingsProvider.toggleShowSingleShnid();
+      }
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          show: showWithSrc,
+          settingsProvider: settingsProvider,
+          themeProvider: _FruitThemeProvider(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final locationFinder = find.text('Springfield, MA');
+      final srcBadgeFinder = find.text('SBD');
+      final shnidBadgeFinder = find.text('source0');
+
+      expect(locationFinder, findsOneWidget);
+      expect(srcBadgeFinder, findsOneWidget);
+      expect(shnidBadgeFinder, findsOneWidget);
+      expect(
+        tester.getTopLeft(srcBadgeFinder).dy,
+        greaterThan(tester.getBottomLeft(locationFinder).dy - 4.0),
+      );
+      expect(
+        tester.getTopLeft(shnidBadgeFinder).dy,
         greaterThan(tester.getBottomLeft(locationFinder).dy - 4.0),
       );
     },

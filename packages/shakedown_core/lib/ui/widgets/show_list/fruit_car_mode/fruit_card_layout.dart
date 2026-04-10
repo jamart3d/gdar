@@ -92,7 +92,9 @@ Widget buildFruitCarModeCardContent({
       : horizontalPadding;
   final double trailingPadding = horizontalPadding;
   final double verticalPadding =
-      (isCurrentCard ? 20.0 : (compactIdleHeight ? 6.0 : 11.0)) *
+      (isCurrentCard
+          ? 20.0
+          : (compactIdleHeight ? (dateFirst ? 6.0 : 8.0) : 11.0)) *
       style.effectiveScale;
   final double headlineFontSize =
       (isCurrentCard ? 38.0 : 36.0) * style.effectiveScale;
@@ -109,7 +111,7 @@ Widget buildFruitCarModeCardContent({
       (isCurrentCard ? 27.0 : 25.0) * style.effectiveScale;
   final double trackBlockGap =
       (showTrackTitle ? 6.0 : 8.0) * style.effectiveScale;
-  final bool shouldAllowWrappedPrimaryHeadline = isCurrentCard && !dateFirst;
+  final bool shouldAllowWrappedPrimaryHeadline = !dateFirst;
   final int primaryHeadlineMaxLines = shouldAllowWrappedPrimaryHeadline
       ? 2
       : ((useCompactTextLayout || compactIdleHeight) ? 1 : 2);
@@ -141,13 +143,23 @@ Widget buildFruitCarModeCardContent({
               ? constraints.maxWidth
               : MediaQuery.sizeOf(context).width;
           final bool constrainedIdleHeight =
-              compactIdleHeight ||
-              (!isCurrentCard &&
-                  constraints.maxHeight.isFinite &&
-                  constraints.maxHeight <= 124.5);
+              !isCurrentCard &&
+              constraints.maxHeight.isFinite &&
+              constraints.maxHeight <= 124.5;
           final double effectiveVerticalPadding = constrainedIdleHeight
               ? (3.0 * style.effectiveScale)
               : verticalPadding;
+          final bool shiftIdleVenueFirstDown =
+              !constrainedIdleHeight && !isCurrentCard && !dateFirst;
+          final double effectiveTopPadding =
+              effectiveVerticalPadding +
+              (shiftIdleVenueFirstDown ? 3.0 * style.effectiveScale : 0.0);
+          final double effectiveBottomPadding =
+              (effectiveVerticalPadding -
+                      (shiftIdleVenueFirstDown
+                          ? 2.0 * style.effectiveScale
+                          : 0.0))
+                  .clamp(0.0, double.infinity);
           final double effectiveContentGap = constrainedIdleHeight
               ? (2.0 * style.effectiveScale)
               : contentGap;
@@ -309,11 +321,10 @@ Widget buildFruitCarModeCardContent({
                   scaleFactor: style.effectiveScale,
                 )
               : 0.0;
-          final double resolvedCardHeight = isCurrentCard
-              ? cardHeight +
-                    primaryHeadlineWrapExtraHeight +
-                    venueWrapExtraHeight
-              : cardHeight;
+          final double resolvedCardHeight =
+              cardHeight +
+              (constrainedIdleHeight ? 0.0 : primaryHeadlineWrapExtraHeight) +
+              (isCurrentCard ? venueWrapExtraHeight : 0.0);
 
           return Container(
             key: const ValueKey('fruit_show_list_car_mode_card'),
@@ -336,9 +347,9 @@ Widget buildFruitCarModeCardContent({
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(
                     leadingPadding,
-                    effectiveVerticalPadding,
+                    effectiveTopPadding,
                     trailingPadding,
-                    effectiveVerticalPadding,
+                    effectiveBottomPadding,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,13 +501,24 @@ Widget buildFruitCarModeCardContent({
                                   ),
                                   scaleFactor: style.effectiveScale,
                                 )
-                              else
+                              else if (style.shouldShowBadge)
                                 buildBadge(
                                   context,
                                   show,
                                   style.effectiveScale * 1.1,
                                   false,
                                 ),
+                              if (shouldShowSrcBadge &&
+                                  shnidInColumn &&
+                                  style.shouldShowBadge) ...[
+                                SizedBox(width: 8 * style.effectiveScale),
+                                buildBadge(
+                                  context,
+                                  show,
+                                  style.effectiveScale * 1.1,
+                                  false,
+                                ),
+                              ],
                             ],
                           ],
                         ),

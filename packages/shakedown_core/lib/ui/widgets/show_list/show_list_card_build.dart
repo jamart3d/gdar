@@ -300,14 +300,12 @@ extension _ShowListCardBuild on _ShowListCardState {
                   padding: EdgeInsets.symmetric(horizontal: isTv ? 6.0 : 12.0),
                   child: LayoutBuilder(
                     builder: (context, textConstraints) {
-                      final hPadding = isTv
-                          ? 24.0
-                          : (settingsProvider.performanceMode ? 8.0 : 16.0);
                       final double textLaneWidth = textConstraints.maxWidth;
                       final String inlineLocationText =
-                          (widget.playingSource?.location ??
-                                  widget.show.location)
-                              .trim();
+                          resolveInlineShowLocation(
+                            show: widget.show,
+                            playingSource: widget.playingSource,
+                          );
 
                       String locationForLaneWidth(String location) {
                         if (location.isEmpty || !isDesktopUnstackedWide) {
@@ -358,6 +356,10 @@ extension _ShowListCardBuild on _ShowListCardState {
                       }
 
                       final String responsiveDateText = dateForLaneWidth();
+                      final double desktopFruitDateTrailingGap =
+                          (isDesktopUnstackedWide && isFruit)
+                          ? (settingsProvider.showSingleShnid ? 30.0 : 18.0)
+                          : 0.0;
                       final Widget textArea = (!kIsWeb || useMobileLayout)
                           ? Column(
                               children: [
@@ -408,77 +410,92 @@ extension _ShowListCardBuild on _ShowListCardState {
                               ],
                             )
                           : Row(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                if (isDesktopInlinePlaying) ...[
-                                  Flexible(
-                                    flex: 0,
-                                    child: Transform.translate(
-                                      offset: Offset(
-                                        isTv ? -4.0 : (-hPadding + 10.0),
-                                        0,
-                                      ),
-                                      child: ConstrainedBox(
-                                        constraints: BoxConstraints(
-                                          minWidth: isFruit
-                                              ? (settingsProvider.fruitDenseList
-                                                        ? 0.0
-                                                        : 0.0) *
-                                                    style.effectiveScale
-                                              : 254.0 * style.effectiveScale,
-                                          maxWidth: isFruit
-                                              ? (settingsProvider.fruitDenseList
-                                                        ? 260.0
-                                                        : 320.0) *
-                                                    style.effectiveScale
-                                              : 310.0 * style.effectiveScale,
-                                        ),
-                                        child: AnimatedSize(
-                                          clipBehavior: Clip.none,
-                                          duration: const Duration(
-                                            milliseconds: 300,
-                                          ),
-                                          curve: Curves.easeInOut,
-                                          alignment: Alignment.centerLeft,
-                                          child: EmbeddedMiniPlayer(
-                                            scaleFactor:
-                                                style.effectiveScale *
-                                                (isFruit &&
-                                                        !settingsProvider
-                                                            .fruitDenseList
-                                                    ? 1.0
-                                                    : 0.88),
-                                            compact: true,
-                                            useRgb: false,
-                                            showFullDuration: true,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 5 * style.effectiveScale),
-                                ],
                                 Flexible(
-                                  flex: isDesktopInlinePlaying ? 1 : 3,
+                                  flex: isDesktopInlinePlaying ? 4 : 3,
                                   child: Container(
                                     alignment: Alignment.centerLeft,
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
+                                    child: isDesktopInlinePlaying
+                                        ? ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                              maxWidth: textLaneWidth * 0.62,
+                                            ),
+                                            child: Text(
+                                              settingsProvider
+                                                      .dateFirstInShowCard
+                                                  ? responsiveDateText
+                                                  : venueDisplayText,
+                                              style: isFruit
+                                                  ? style.topStyle
+                                                  : style.bottomStyle,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.left,
+                                            ),
+                                          )
+                                        : FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              settingsProvider
+                                                      .dateFirstInShowCard
+                                                  ? responsiveDateText
+                                                  : venueDisplayText,
+                                              style: isFruit
+                                                  ? style.topStyle
+                                                  : style.bottomStyle,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.left,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                                if (isDesktopInlinePlaying) ...[
+                                  SizedBox(width: 4 * style.effectiveScale),
+                                  Flexible(
+                                    flex: 3,
+                                    child: Align(
                                       alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        settingsProvider.dateFirstInShowCard
-                                            ? responsiveDateText
-                                            : venueDisplayText,
-                                        style: isFruit
-                                            ? style.topStyle
-                                            : style.bottomStyle,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.left,
+                                      child: Transform.translate(
+                                        offset: Offset(isTv ? -4.0 : 0.0, 0),
+                                        child: ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                            minWidth: isFruit
+                                                ? 140.0 * style.effectiveScale
+                                                : 254.0 * style.effectiveScale,
+                                            maxWidth: isFruit
+                                                ? textLaneWidth * 0.4
+                                                : 310.0 * style.effectiveScale,
+                                          ),
+                                          child: AnimatedSize(
+                                            clipBehavior: Clip.none,
+                                            duration: const Duration(
+                                              milliseconds: 300,
+                                            ),
+                                            curve: Curves.easeInOut,
+                                            alignment: Alignment.centerLeft,
+                                            child: EmbeddedMiniPlayer(
+                                              scaleFactor:
+                                                  style.effectiveScale *
+                                                  (isFruit &&
+                                                          !settingsProvider
+                                                              .fruitDenseList
+                                                      ? 1.0
+                                                      : 0.88),
+                                              compact: true,
+                                              useRgb: false,
+                                              showFullDuration: true,
+                                              compactMaxWidth:
+                                                  textLaneWidth * 0.4,
+                                            ),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                ],
                                 SizedBox(
                                   width: isDesktopInlinePlaying
                                       ? 8.0
@@ -486,11 +503,15 @@ extension _ShowListCardBuild on _ShowListCardState {
                                             ? 4.0
                                             : (isFruit ? 24.0 : 0.0)),
                                 ),
-                                if (!isFruit) const Spacer(),
+                                if (!isFruit || isDesktopInlinePlaying)
+                                  const Spacer(),
                                 Flexible(
                                   flex: isDesktopInlinePlaying ? 0 : 1,
                                   child: Container(
                                     alignment: Alignment.centerRight,
+                                    padding: EdgeInsets.only(
+                                      right: desktopFruitDateTrailingGap,
+                                    ),
                                     child: FittedBox(
                                       fit: BoxFit.scaleDown,
                                       alignment: Alignment.centerRight,

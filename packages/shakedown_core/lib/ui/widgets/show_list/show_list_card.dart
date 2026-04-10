@@ -27,6 +27,15 @@ part 'show_list_card_controls.dart';
 part 'show_list_card_fruit_car_mode.dart';
 part 'show_list_card_fruit_mobile.dart';
 
+String resolveInlineShowLocation({required Show show, Source? playingSource}) {
+  final String showLocation = show.location.trim();
+  if (showLocation.isNotEmpty) {
+    return showLocation;
+  }
+
+  return (playingSource?.location ?? '').trim();
+}
+
 /// A card displaying summary information for a [Show].
 class ShowListCard extends StatefulWidget {
   final Show show;

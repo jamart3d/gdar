@@ -1,6 +1,13 @@
 part of 'gapless_player_web.dart';
 
 mixin _GaplessPlayerWebApi on _GaplessPlayerBase, _GaplessPlayerWebEngine {
+  void resync({String reason = 'manual'}) {
+    if (!_useJsEngine) {
+      return;
+    }
+    _resyncFromJsState(reason: reason);
+  }
+
   _JsTrack _sourceToJsTrack(AudioSource source) {
     if (source is UriAudioSource) {
       final tag = source.tag;

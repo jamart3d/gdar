@@ -56,6 +56,9 @@ class GaplessPlayer {
   /// No-op on native.
   void reload() {}
 
+  /// Forces a state resync on web engines. No-op on native.
+  void resync({String reason = 'manual'}) {}
+
   /// Returns the buffered duration of the next track.
   /// Only applicable to web gapless engine; returns null natively.
   Duration? get nextTrackBuffered => null;

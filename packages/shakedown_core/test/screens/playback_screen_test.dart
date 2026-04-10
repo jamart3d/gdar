@@ -549,6 +549,9 @@ void main() {
     ).thenAnswer((_) => const Stream.empty());
     when(mockAudioProvider.currentHudSnapshot).thenReturn(HudSnapshot.empty());
     when(mockAudioProvider.captureUndoCheckpoint()).thenAnswer((_) {});
+    when(
+      mockAudioProvider.resyncWebEngine(reason: 'fruit_car_mode_enter'),
+    ).thenAnswer((_) {});
 
     // Also stub missing audioPlayer streams used by widgets
     when(
@@ -711,6 +714,32 @@ void main() {
     expect(find.text('Venue'), findsNothing);
     expect(find.text('Source'), findsNothing);
   });
+
+  testWidgets(
+    'PlaybackScreen triggers one-shot engine resync on Fruit car mode entry',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      when(mockAudioProvider.currentShow).thenReturn(dummyShow);
+      when(mockAudioProvider.currentSource).thenReturn(dummySource);
+      when(mockAudioProvider.currentTrack).thenReturn(dummyTrack1);
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump();
+
+      verify(
+        mockAudioProvider.resyncWebEngine(reason: 'fruit_car_mode_enter'),
+      ).called(1);
+    },
+  );
 
   testWidgets(
     'PlaybackScreen Fruit car mode shows all remaining upcoming tracks',

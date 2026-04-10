@@ -121,19 +121,7 @@ extension _ShowListCardFruitMobileBuild on _ShowListCardState {
                               ),
                             if (settingsProvider.showSingleShnid &&
                                 style.shouldShowBadge) ...[
-                              if (hasSrcLabel) ...[
-                                const SizedBox(height: 4),
-                                SrcBadge(
-                                  src: srcLabel,
-                                  fontSize: 8.5 * style.effectiveScale,
-                                  matchShnidLook: true,
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 5 * style.effectiveScale,
-                                    vertical: 1.0 * style.effectiveScale,
-                                  ),
-                                ),
-                              ] else
-                                const SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               const SizedBox(height: 3),
                               _buildBadge(
                                 context,

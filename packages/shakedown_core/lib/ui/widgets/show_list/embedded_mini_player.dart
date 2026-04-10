@@ -14,6 +14,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
   final bool compact;
   final bool useRgb;
   final bool showFullDuration;
+  final double compactMaxWidth;
 
   const EmbeddedMiniPlayer({
     super.key,
@@ -21,6 +22,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
     this.compact = false,
     this.useRgb = false,
     this.showFullDuration = false,
+    this.compactMaxWidth = 260.0,
   });
 
   String _formatDuration(Duration duration) {
@@ -160,7 +162,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
           // Non-compact mode: Expanded to fill available space
           if (compact)
             ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 260),
+              constraints: BoxConstraints(maxWidth: compactMaxWidth),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final titleStyle = TextStyle(
@@ -173,7 +175,7 @@ class EmbeddedMiniPlayer extends StatelessWidget {
 
                   final maxContentWidth = constraints.hasBoundedWidth
                       ? constraints.maxWidth
-                      : 260.0;
+                      : compactMaxWidth;
 
                   final titlePainter = TextPainter(
                     text: TextSpan(text: currentTrack.title, style: titleStyle),

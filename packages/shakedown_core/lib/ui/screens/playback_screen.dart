@@ -182,6 +182,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
   double _fruitFloatingNowPlayingHeight = 0.0;
   bool _fruitFloatingNowPlayingMeasurementQueued = false;
   bool _fruitCarModeHudShowsMeta = false;
+  bool _fruitCarModeEntryResyncTriggered = false;
   HudSnapshot? _fruitCarModeFrozenHud;
   double? _fruitCarModeLastMeasuredGapMs;
   final Map<int, FocusNode> _trackFocusNodes = {};
