@@ -23,7 +23,7 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   @override
   Track? get currentTrack => Track(
     trackNumber: 1,
-    title: 'Test Track Title',
+    title: 'Test Track Title That Is Intentionally Very Long To Stress Layout',
     duration: 300,
     url: 'http://example.com/song.mp3',
     setName: 'Set 1',
@@ -67,12 +67,45 @@ class MockGaplessPlayer extends Fake implements GaplessPlayer {
 }
 
 void main() {
-  testWidgets('EmbeddedMiniPlayer compact renders without overflow', (
-    WidgetTester tester,
-  ) async {
+  Future<void> pumpCompactMiniPlayer(
+    WidgetTester tester, {
+    required double width,
+  }) async {
     final mockAudioProvider = MockAudioProvider();
     final mockDeviceService = MockDeviceService();
 
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
+          ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
+          ChangeNotifierProvider<SettingsProvider>.value(
+            value: MockSettingsProvider(),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: Row(
+              children: [
+                SizedBox(
+                  width: width,
+                  child: const EmbeddedMiniPlayer(
+                    compact: true,
+                    scaleFactor: 1.0,
+                  ),
+                ),
+                const Expanded(child: SizedBox()),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  testWidgets('EmbeddedMiniPlayer compact renders without overflow', (
+    WidgetTester tester,
+  ) async {
     // Track overflow errors specifically
     final overflowErrors = <FlutterErrorDetails>[];
     final oldHandler = FlutterError.onError;
@@ -85,30 +118,11 @@ void main() {
       // (_needsLayout during scheduler callback)
     };
 
-    await tester.pumpWidget(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<AudioProvider>.value(value: mockAudioProvider),
-          ChangeNotifierProvider<DeviceService>.value(value: mockDeviceService),
-          ChangeNotifierProvider<SettingsProvider>.value(
-            value: MockSettingsProvider(),
-          ),
-        ],
-        child: const MaterialApp(
-          home: Scaffold(
-            body: Row(
-              children: [
-                SizedBox(
-                  width: 350,
-                  child: EmbeddedMiniPlayer(compact: true, scaleFactor: 1.0),
-                ),
-                Expanded(child: SizedBox()),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+    await pumpCompactMiniPlayer(tester, width: 350);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    await pumpCompactMiniPlayer(tester, width: 267.2);
 
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
@@ -123,7 +137,10 @@ void main() {
     );
 
     // Verify the player rendered
-    expect(find.text('Test Track Title'), findsOneWidget);
+    expect(
+      find.textContaining('Test Track Title That Is Intentionally'),
+      findsOneWidget,
+    );
   });
 }
 

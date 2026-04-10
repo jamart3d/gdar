@@ -264,9 +264,20 @@ extension _ShowListCardBuild on _ShowListCardState {
     final double cardHeight = baseHeight * style.effectiveScale;
     final bool isDesktopInlinePlaying =
         kIsWeb && isFruit && !useMobileLayout && !isTv && widget.isPlaying;
+    final bool hasSingleSourceShnidBadge =
+        kIsWeb &&
+        isFruit &&
+        !useMobileLayout &&
+        !isTv &&
+        settingsProvider.showSingleShnid &&
+        widget.show.sources.length == 1;
     final double controlZoneWidth = (kIsWeb)
         ? ((isFruit || !useMobileLayout)
-                  ? (useMobileLayout ? 84.0 : (isFruit ? 180.0 : 140.0))
+                  ? (useMobileLayout
+                        ? 84.0
+                        : (isFruit
+                              ? (hasSingleSourceShnidBadge ? 222.0 : 180.0)
+                              : 140.0))
                   : style.config.baseControlZoneWidth) *
               style.effectiveScale
         : (style.config.baseControlZoneWidth * style.effectiveScale);
@@ -334,6 +345,31 @@ extension _ShowListCardBuild on _ShowListCardState {
                       String dateForLaneWidth() {
                         if (!isDesktopUnstackedWide) {
                           return style.formattedDate;
+                        }
+                        if (isDesktopInlinePlaying) {
+                          // Inline mini-player mode has less room for the lead
+                          // lane. Preserve year visibility by compacting date
+                          // text sooner.
+                          if (textLaneWidth < 980) {
+                            return AppDateUtils.formatDate(
+                              widget.show.date,
+                              settings: settingsProvider,
+                              showDayOfWeek: false,
+                              abbreviateDayOfWeek:
+                                  settingsProvider.abbreviateDayOfWeek,
+                              abbreviateMonth: true,
+                            );
+                          }
+                          if (settingsProvider.showDayOfWeek &&
+                              textLaneWidth < 1100) {
+                            return AppDateUtils.formatDate(
+                              widget.show.date,
+                              settings: settingsProvider,
+                              showDayOfWeek: true,
+                              abbreviateDayOfWeek: true,
+                              abbreviateMonth: true,
+                            );
+                          }
                         }
                         if (textLaneWidth >= 980) {
                           return style.formattedDate;
@@ -417,22 +453,16 @@ extension _ShowListCardBuild on _ShowListCardState {
                                   child: Container(
                                     alignment: Alignment.centerLeft,
                                     child: isDesktopInlinePlaying
-                                        ? ConstrainedBox(
-                                            constraints: BoxConstraints(
-                                              maxWidth: textLaneWidth * 0.62,
-                                            ),
-                                            child: Text(
-                                              settingsProvider
-                                                      .dateFirstInShowCard
-                                                  ? responsiveDateText
-                                                  : venueDisplayText,
-                                              style: isFruit
-                                                  ? style.topStyle
-                                                  : style.bottomStyle,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              textAlign: TextAlign.left,
-                                            ),
+                                        ? Text(
+                                            settingsProvider.dateFirstInShowCard
+                                                ? responsiveDateText
+                                                : venueDisplayText,
+                                            style: isFruit
+                                                ? style.topStyle
+                                                : style.bottomStyle,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.left,
                                           )
                                         : FittedBox(
                                             fit: BoxFit.scaleDown,
@@ -453,7 +483,7 @@ extension _ShowListCardBuild on _ShowListCardState {
                                   ),
                                 ),
                                 if (isDesktopInlinePlaying) ...[
-                                  SizedBox(width: 4 * style.effectiveScale),
+                                  SizedBox(width: 2 * style.effectiveScale),
                                   Flexible(
                                     flex: 3,
                                     child: Align(

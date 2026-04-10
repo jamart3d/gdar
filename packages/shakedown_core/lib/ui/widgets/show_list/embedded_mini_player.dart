@@ -161,60 +161,69 @@ class EmbeddedMiniPlayer extends StatelessWidget {
           // Compact mode: no Expanded (intrinsic width from parent)
           // Non-compact mode: Expanded to fill available space
           if (compact)
-            ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: compactMaxWidth),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final titleStyle = TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: titleSize,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                    height: 1.0,
-                  );
+            Flexible(
+              fit: FlexFit.loose,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: compactMaxWidth),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final titleStyle = TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: titleSize,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                      height: 1.0,
+                    );
 
-                  final maxContentWidth = constraints.hasBoundedWidth
-                      ? constraints.maxWidth
-                      : compactMaxWidth;
+                    final maxContentWidth = constraints.hasBoundedWidth
+                        ? constraints.maxWidth
+                        : compactMaxWidth;
 
-                  final titlePainter = TextPainter(
-                    text: TextSpan(text: currentTrack.title, style: titleStyle),
-                    maxLines: 1,
-                    textDirection: TextDirection.ltr,
-                  )..layout(maxWidth: maxContentWidth);
+                    final titlePainter = TextPainter(
+                      text: TextSpan(
+                        text: currentTrack.title,
+                        style: titleStyle,
+                      ),
+                      maxLines: 1,
+                      textDirection: TextDirection.ltr,
+                    )..layout(maxWidth: maxContentWidth);
 
-                  final contentWidth = titlePainter.width.clamp(
-                    80.0,
-                    maxContentWidth,
-                  );
+                    final minContentWidth = maxContentWidth < 80.0
+                        ? maxContentWidth
+                        : 80.0;
+                    final contentWidth = titlePainter.width.clamp(
+                      minContentWidth,
+                      maxContentWidth,
+                    );
 
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    width: contentWidth,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          currentTrack.title,
-                          style: titleStyle,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        SizedBox(
-                          width: contentWidth,
-                          child: _buildProgressBar(
-                            audioProvider,
-                            colorScheme,
-                            true,
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      width: contentWidth,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            currentTrack.title,
+                            style: titleStyle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                          const SizedBox(height: 4),
+                          SizedBox(
+                            width: contentWidth,
+                            child: _buildProgressBar(
+                              audioProvider,
+                              colorScheme,
+                              true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             )
           else

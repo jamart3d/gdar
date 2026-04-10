@@ -1,4 +1,16 @@
 <en-US>
+What's new in v1.3.74+284
+• Web Fruit car mode resilience: added a one-shot playback state resync when
+• Added `AudioProvider.resyncWebEngine({reason})` and `GaplessPlayer.resync({reason})`
+• Preserved existing watchdog/visibility recovery and added an entry-trigger guard
+• Added widget regression coverage
+• Verified in-session
+• `flutter test packages/shakedown_core/test/screens/playback_screen_test.dart --plain-name "one-shot engine resync"`
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.73+283
 • Large-file refactor across `packages/shakedown_core` using parallel subagents with disjoint ownership.
 • Split Fruit playback screen into focused modules under `lib/ui/screens/playback_fruit_car_mode/` and kept `playback_screen_fruit_car_mode.dart` as orchestration entrypoint.
