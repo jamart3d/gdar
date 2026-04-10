@@ -1,4 +1,18 @@
 <en-US>
+What's new in v1.3.81+291
+• Rolled back Tier 1 code dedupe refactors to restore pre-refactor runtime
+• Restored files
+• `apps/gdar_web/lib/ui/screens/about_screen.dart`
+• `packages/shakedown_core/lib/ui/screens/playback_screen.dart`
+• `packages/shakedown_core/lib/ui/screens/tv_playback_screen.dart`
+• `packages/shakedown_core/lib/ui/screens/playback_screen_helpers.dart`
+• `packages/shakedown_core/lib/ui/screens/tv_playback_screen_helpers.dart`
+• `apps/gdar_mobile/lib/main.dart`
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.80+290
 • Added MCP-oriented `code_hygiene` workflow and report-saving guidance
 • `.agent/workflows/code_hygiene.md`

@@ -22,7 +22,6 @@ import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/asset_constants.dart';
-import 'package:shakedown_core/utils/screensaver_active_state_mixin.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,8 +87,7 @@ class GdarTvApp extends StatefulWidget {
   State<GdarTvApp> createState() => _GdarTvAppState();
 }
 
-class _GdarTvAppState extends State<GdarTvApp>
-    with ScreensaverActiveStateMixin<GdarTvApp> {
+class _GdarTvAppState extends State<GdarTvApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
   late final InactivityService _inactivityService;
@@ -97,7 +95,18 @@ class _GdarTvAppState extends State<GdarTvApp>
   StreamSubscription? _linkSubscription;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   late final _TvNavigationObserver _navigationObserver;
+  bool _isScreensaverActive = false;
   String? _currentRouteName;
+
+  void _setScreensaverActive(bool active) {
+    if (!mounted) {
+      _isScreensaverActive = active;
+      return;
+    }
+    setState(() {
+      _isScreensaverActive = active;
+    });
+  }
 
   void _handleRouteChanged(Route<dynamic>? route) {
     final name = route?.settings.name;
@@ -156,7 +165,7 @@ class _GdarTvAppState extends State<GdarTvApp>
     }
 
     // Guard: don't double-launch if screensaver is already active.
-    if (isScreensaverActive) {
+    if (_isScreensaverActive) {
       return;
     }
 
@@ -179,12 +188,12 @@ class _GdarTvAppState extends State<GdarTvApp>
       'useOilScreensaver=${settings.useOilScreensaver})',
     );
     _inactivityService.stop();
-    setScreensaverActive(true);
+    _setScreensaverActive(true);
     try {
       // Yield to the event loop before pushing so we don't hit the navigator
       // lock assertion when the inactivity timer fires during a route animation.
       await Future.delayed(Duration.zero);
-      if (!mounted || !isScreensaverActive) return;
+      if (!mounted || !_isScreensaverActive) return;
       await navigator.push(
         ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
       );
@@ -193,7 +202,7 @@ class _GdarTvAppState extends State<GdarTvApp>
     } catch (e) {
       logger.e('Screensaver launch failed', error: e);
     } finally {
-      setScreensaverActive(false);
+      _setScreensaverActive(false);
       // Restart monitoring after screensaver exits.
       if (_settingsProvider.useOilScreensaver) {
         _inactivityService.start();
@@ -214,7 +223,7 @@ class _GdarTvAppState extends State<GdarTvApp>
         _currentRouteName == ShakedownRouteNames.tvSettings;
 
     if (settingsProvider.useOilScreensaver &&
-        !isScreensaverActive &&
+        !_isScreensaverActive &&
         !isOnBlockedRoute) {
       _inactivityService.start();
     } else {
@@ -366,7 +375,7 @@ class _GdarTvAppState extends State<GdarTvApp>
               themeMode: ThemeMode.dark,
               builder: (context, child) => InactivityDetector(
                 inactivityService: _inactivityService,
-                isScreensaverActive: isScreensaverActive,
+                isScreensaverActive: _isScreensaverActive,
                 child: ColoredBox(
                   color: theme.scaffoldBackgroundColor,
                   child: child ?? const SizedBox.shrink(),
