@@ -1,4 +1,13 @@
 <en-US>
+What's new in v1.3.79+289
+• Resolved Android notification icon "white square" issue by migrating to non-adaptive drawable resources (`ic_stat_shakedown`).
+• Fixed notification icon silhouetting on devices targeting Android 12+ (SDK 31+) and consistent with `targetSdk 35` requirements.
+• Unified Android notification icon configuration across `gdar_mobile` and `gdar_tv` via `shakedown_core`.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.78+288
 • Dependency maintenance completed
 • Ran `flutter pub outdated` to baseline constraints.
