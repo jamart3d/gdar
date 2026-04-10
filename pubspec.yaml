@@ -14,7 +14,7 @@ workspace:
   - apps/gdar_web
 
 dev_dependencies:
-  melos: 7.5.0
+  melos: ^7.5.1
   shakedown_core:
     path: ./packages/shakedown_core
   flutter_test:

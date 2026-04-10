@@ -23,14 +23,14 @@ dependencies:
   just_audio: ^0.10.5
   just_audio_background: ^0.0.1-beta.17
   logger: ^2.4.0
-  connectivity_plus: ^6.1.1
+  connectivity_plus: ^7.1.0
   in_app_update: ^4.2.1
-  permission_handler: ^11.3.0
+  permission_handler: ^12.0.1
   marquee: ^2.2.3
   flutter_rating_bar: ^4.0.1
   flutter_colorpicker: ^1.1.0
-  device_info_plus: ^11.2.2
-  package_info_plus: ^8.3.1
+  device_info_plus: ^12.4.0
+  package_info_plus: ^9.0.1
   shared_preferences: ^2.3.2
   wakelock_plus: ^1.2.8
   scrollable_positioned_list: ^0.3.8
@@ -45,7 +45,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flame_test: ^1.16.0
+  flame_test: ^2.2.3
   flutter_lints: ^6.0.0
   build_runner: ^2.4.8
   mockito: ^5.4.4
