@@ -1,4 +1,12 @@
 <en-US>
+What's new in v1.3.85+295
+• Reverted notification icon from `drawable/ic_launcher` to `mipmap/ic_launcher`.
+• Re-tested with `mipmap` reference to ensure compatibility.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.84+294
 • Ran live Sabrina validation via ADB
 • launched app
