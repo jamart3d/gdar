@@ -1,6 +1,6 @@
 name: gdar_tv
 publish_to: none
-version: 1.3.83+293
+version: 1.3.84+294
 environment:
   sdk: '^3.11.0'
 resolution: workspace

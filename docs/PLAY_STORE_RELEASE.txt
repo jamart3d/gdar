@@ -1,4 +1,19 @@
 <en-US>
+What's new in v1.3.84+294
+• Ran live Sabrina validation via ADB
+• launched app
+• triggered random show via deep link (`shakedown://automate?steps=dice`)
+• captured crash/fatal logs
+• Result: no crash reproduced in this run path; process remained alive.
+• Notification icon updates
+• `packages/shakedown_core/lib/utils/asset_constants.dart`
+• `defaultAndroidNotificationIcon` set to `drawable/ic_launcher`
+• ensured drawable exists in both hosts
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.83+293
 • Reproduced hardware crash on Sabrina and captured logs via `adb logcat`.
 • Confirmed fatal exception on current build
