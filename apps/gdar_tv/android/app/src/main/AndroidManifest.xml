@@ -25,6 +25,9 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:banner="@drawable/tv_banner">
+        <meta-data
+            android:name="com.jamart3d.shakedown.notification_icon_keep"
+            android:resource="@mipmap/ic_stat_shakedown" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
