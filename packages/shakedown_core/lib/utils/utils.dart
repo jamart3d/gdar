@@ -54,6 +54,18 @@ Future<void> launchArchiveDetails(
   );
 }
 
+Future<void> launchExternalUrl(String url, [BuildContext? context]) async {
+  await openExternalUrl(
+    url,
+    onError: (error) {
+      logger.e('Error launching URL ($url): $error');
+      if (context != null && context.mounted) {
+        showMessage(context, 'Could not open browser: $error');
+      }
+    },
+  );
+}
+
 void showMessage(
   BuildContext context,
   String message, {

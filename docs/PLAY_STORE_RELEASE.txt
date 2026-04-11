@@ -1,4 +1,18 @@
 <en-US>
+What's new in v1.3.89+299
+• Code hygiene execution completed for selected quick wins
+• Implemented item 1 (scanner hardening) in `scripts/code_hygiene_audit.dart`
+• Implemented item 2 outcome: after hardening, no safe dead executable
+• Implemented item 3 dedupe: unified external URL launch handling via
+• Implemented item 6 dedupe: reused shared
+• Hygiene metrics (post-rerun via `dart run scripts/code_hygiene_audit.dart`)
+• Duplicate groups: `30 -> 28`
+• Duplicate instances: `60 -> 56`
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.88+298
 • Restored optimized notification icon resource and added resource-keeping metadata to prevent shrinking/stripping.
 </en-US>

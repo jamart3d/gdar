@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shakedown_core/ui/screens/about_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_focus_wrapper.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -53,7 +52,7 @@ class SupportSection extends StatelessWidget {
     final isFruit =
         context.read<ThemeProvider>().themeStyle == ThemeStyle.fruit;
     return TvFocusWrapper(
-      onTap: () => _launchUrl(context, url),
+      onTap: () => launchExternalUrl(url, context),
       borderRadius: BorderRadius.circular(12),
       focusDecoration: BoxDecoration(
         color: Colors.black,
@@ -101,19 +100,6 @@ class SupportSection extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<void> _launchUrl(BuildContext context, String url) async {
-    final uri = Uri.parse(url);
-    try {
-      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        throw Exception('Could not launch $url');
-      }
-    } catch (e) {
-      if (context.mounted) {
-        showMessage(context, 'Could not open browser: $e');
-      }
-    }
   }
 }
 

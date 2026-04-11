@@ -26,6 +26,7 @@ import 'package:shakedown_core/ui/screens/playback_list_scroll_utils.dart';
 import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/ui/widgets/fruit_tab_bar.dart';
 import 'package:shakedown_core/ui/widgets/playback/fruit_now_playing_card.dart';
+import 'package:shakedown_core/ui/widgets/playback/fruit_now_playing_pending_overlay.dart';
 import 'package:shakedown_core/ui/widgets/playback/fruit_track_list.dart';
 import 'package:shakedown_core/ui/widgets/playback/playback_app_bar.dart';
 import 'package:shakedown_core/ui/widgets/playback/playback_panel.dart';

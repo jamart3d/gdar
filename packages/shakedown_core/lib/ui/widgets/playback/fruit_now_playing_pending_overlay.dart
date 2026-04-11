@@ -5,6 +5,26 @@ class FruitNowPlayingPendingOverlay extends StatefulWidget {
   final double scaleFactor;
   final bool glassEnabled;
   final bool isLoading;
+  final double barHeightBase;
+  final double borderRadiusBase;
+  final double sweepWidthGlassBase;
+  final double sweepWidthSolidBase;
+  final double sweepOverflowFactor;
+  final double beadWidthGlassBase;
+  final double beadWidthSolidBase;
+  final double baseAlphaGlass;
+  final double baseAlphaSolid;
+  final double sweepAlphaGlass;
+  final double sweepAlphaSolid;
+  final double coreAlphaGlass;
+  final double coreAlphaSolid;
+  final double haloAlphaGlass;
+  final double haloAlphaSolid;
+  final double beadBlurGlass;
+  final double beadBlurSolid;
+  final double beadSpreadGlass;
+  final double beadSpreadSolid;
+  final Key beadKey;
 
   const FruitNowPlayingPendingOverlay({
     super.key,
@@ -12,6 +32,26 @@ class FruitNowPlayingPendingOverlay extends StatefulWidget {
     required this.scaleFactor,
     required this.glassEnabled,
     required this.isLoading,
+    this.barHeightBase = 3.0,
+    this.borderRadiusBase = 4.0,
+    this.sweepWidthGlassBase = 84.0,
+    this.sweepWidthSolidBase = 66.0,
+    this.sweepOverflowFactor = 0.22,
+    this.beadWidthGlassBase = 18.0,
+    this.beadWidthSolidBase = 14.0,
+    this.baseAlphaGlass = 0.18,
+    this.baseAlphaSolid = 0.24,
+    this.sweepAlphaGlass = 0.76,
+    this.sweepAlphaSolid = 0.92,
+    this.coreAlphaGlass = 0.44,
+    this.coreAlphaSolid = 0.60,
+    this.haloAlphaGlass = 0.32,
+    this.haloAlphaSolid = 0.26,
+    this.beadBlurGlass = 10.0,
+    this.beadBlurSolid = 7.0,
+    this.beadSpreadGlass = 0.7,
+    this.beadSpreadSolid = 0.45,
+    this.beadKey = const Key('fruit_pending_progress_bead'),
   });
 
   @override
@@ -41,9 +81,9 @@ class _FruitNowPlayingPendingOverlayState
 
   @override
   Widget build(BuildContext context) {
-    final double barHeight = 3.0 * widget.scaleFactor;
+    final double barHeight = widget.barHeightBase * widget.scaleFactor;
     final BorderRadius borderRadius = BorderRadius.circular(
-      4 * widget.scaleFactor,
+      widget.borderRadiusBase * widget.scaleFactor,
     );
     final Color sweepColor = widget.isLoading
         ? widget.colorScheme.primary
@@ -61,15 +101,22 @@ class _FruitNowPlayingPendingOverlayState
                 final double travel = _controller.value;
                 final double pulse = 1.0 - ((travel - 0.5).abs() * 2.0);
                 final double sweepWidth =
-                    (widget.glassEnabled ? 84.0 : 66.0) * widget.scaleFactor;
-                final double sweepOverflow = sweepWidth * 0.22;
+                    (widget.glassEnabled
+                        ? widget.sweepWidthGlassBase
+                        : widget.sweepWidthSolidBase) *
+                    widget.scaleFactor;
+                final double sweepOverflow =
+                    sweepWidth * widget.sweepOverflowFactor;
                 final double sweepTravelWidth =
                     (constraints.maxWidth + (sweepOverflow * 2.0) - sweepWidth)
                         .clamp(0.0, double.infinity);
                 final double sweepLeft =
                     -sweepOverflow + (sweepTravelWidth * travel);
                 final double beadWidth =
-                    (widget.glassEnabled ? 18.0 : 14.0) * widget.scaleFactor;
+                    (widget.glassEnabled
+                        ? widget.beadWidthGlassBase
+                        : widget.beadWidthSolidBase) *
+                    widget.scaleFactor;
                 final double beadHeight = barHeight;
                 final double beadTravelWidth =
                     (constraints.maxWidth - beadWidth).clamp(
@@ -77,10 +124,18 @@ class _FruitNowPlayingPendingOverlayState
                       double.infinity,
                     );
                 final double beadLeft = beadTravelWidth * travel;
-                final double baseAlpha = widget.glassEnabled ? 0.18 : 0.24;
-                final double sweepAlpha = widget.glassEnabled ? 0.76 : 0.92;
-                final double coreAlpha = widget.glassEnabled ? 0.44 : 0.60;
-                final double haloAlpha = widget.glassEnabled ? 0.32 : 0.26;
+                final double baseAlpha = widget.glassEnabled
+                    ? widget.baseAlphaGlass
+                    : widget.baseAlphaSolid;
+                final double sweepAlpha = widget.glassEnabled
+                    ? widget.sweepAlphaGlass
+                    : widget.sweepAlphaSolid;
+                final double coreAlpha = widget.glassEnabled
+                    ? widget.coreAlphaGlass
+                    : widget.coreAlphaSolid;
+                final double haloAlpha = widget.glassEnabled
+                    ? widget.haloAlphaGlass
+                    : widget.haloAlphaSolid;
 
                 return ClipRRect(
                   borderRadius: borderRadius,
@@ -140,7 +195,7 @@ class _FruitNowPlayingPendingOverlayState
                         left: beadLeft,
                         top: 0,
                         child: Container(
-                          key: const Key('fruit_pending_progress_bead'),
+                          key: widget.beadKey,
                           width: beadWidth,
                           height: beadHeight,
                           decoration: BoxDecoration(
@@ -160,9 +215,14 @@ class _FruitNowPlayingPendingOverlayState
                             boxShadow: [
                               BoxShadow(
                                 color: sweepColor.withValues(alpha: haloAlpha),
-                                blurRadius: widget.glassEnabled ? 10 : 7,
+                                blurRadius: widget.glassEnabled
+                                    ? widget.beadBlurGlass
+                                    : widget.beadBlurSolid,
                                 spreadRadius:
-                                    (widget.glassEnabled ? 0.7 : 0.45) * pulse,
+                                    (widget.glassEnabled
+                                        ? widget.beadSpreadGlass
+                                        : widget.beadSpreadSolid) *
+                                    pulse,
                               ),
                             ],
                           ),

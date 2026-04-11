@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:gdar_design/typography/font_config.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_list_tile.dart';
 import 'package:shakedown_core/services/device_service.dart';
@@ -170,19 +169,6 @@ class AboutBody extends StatelessWidget {
     );
   }
 
-  Future<void> _launchUrl(BuildContext context, String url) async {
-    final uri = Uri.parse(url);
-    try {
-      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        throw Exception('Could not launch $url');
-      }
-    } catch (e) {
-      if (context.mounted) {
-        showMessage(context, 'Could not open browser: $e');
-      }
-    }
-  }
-
   Widget _buildClickableLink(
     BuildContext context,
     String text,
@@ -202,7 +188,7 @@ class AboutBody extends StatelessWidget {
           decoration: TextDecoration.underline,
         ),
       ),
-      onTap: () => _launchUrl(context, url),
+      onTap: () => launchExternalUrl(url, context),
     );
   }
 }

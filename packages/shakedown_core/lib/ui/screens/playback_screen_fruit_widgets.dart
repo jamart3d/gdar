@@ -348,7 +348,7 @@ class _FruitCarModePlayButton extends StatelessWidget {
   }
 }
 
-class _FruitCarModePendingProgressOverlay extends StatefulWidget {
+class _FruitCarModePendingProgressOverlay extends StatelessWidget {
   final ColorScheme colorScheme;
   final double scaleFactor;
   final bool isLoading;
@@ -361,159 +361,33 @@ class _FruitCarModePendingProgressOverlay extends StatefulWidget {
   });
 
   @override
-  State<_FruitCarModePendingProgressOverlay> createState() =>
-      _FruitCarModePendingProgressOverlayState();
-}
-
-class _FruitCarModePendingProgressOverlayState
-    extends State<_FruitCarModePendingProgressOverlay>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1450),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final double barHeight = 16.0 * widget.scaleFactor;
-    final BorderRadius borderRadius = BorderRadius.circular(
-      999 * widget.scaleFactor,
-    );
-    final Color sweepColor = widget.isLoading
-        ? widget.colorScheme.primary
-        : widget.colorScheme.tertiary;
-
-    return RepaintBoundary(
-      child: SizedBox(
-        height: barHeight,
-        width: double.infinity,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) {
-                final double travel = _controller.value;
-                final double pulse = 1.0 - ((travel - 0.5).abs() * 2.0);
-                final double sweepWidth = 88.0 * widget.scaleFactor;
-                final double sweepOverflow = sweepWidth * 0.18;
-                final double sweepTravelWidth =
-                    (constraints.maxWidth + (sweepOverflow * 2.0) - sweepWidth)
-                        .clamp(0.0, double.infinity);
-                final double sweepLeft =
-                    -sweepOverflow + (sweepTravelWidth * travel);
-                final double beadWidth = 18.0 * widget.scaleFactor;
-                final double beadTravelWidth =
-                    (constraints.maxWidth - beadWidth).clamp(
-                      0.0,
-                      double.infinity,
-                    );
-                final double beadLeft = beadTravelWidth * travel;
-
-                return ClipRRect(
-                  borderRadius: borderRadius,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                widget.colorScheme.primary.withValues(
-                                  alpha: 0.14,
-                                ),
-                                widget.colorScheme.tertiary.withValues(
-                                  alpha: 0.14,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 0,
-                        bottom: 0,
-                        left: sweepLeft,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Colors.transparent,
-                                sweepColor.withValues(alpha: 0.0),
-                                Colors.white.withValues(alpha: 0.2),
-                                sweepColor.withValues(alpha: 0.6),
-                                Colors.white.withValues(alpha: 0.2),
-                                sweepColor.withValues(alpha: 0.0),
-                                Colors.transparent,
-                              ],
-                              stops: const [
-                                0.0,
-                                0.12,
-                                0.28,
-                                0.5,
-                                0.72,
-                                0.88,
-                                1.0,
-                              ],
-                            ),
-                          ),
-                          child: SizedBox(width: sweepWidth, height: barHeight),
-                        ),
-                      ),
-                      Positioned(
-                        left: beadLeft,
-                        top: 0,
-                        child: Container(
-                          key: const Key(
-                            'fruit_car_mode_pending_progress_bead',
-                          ),
-                          width: beadWidth,
-                          height: barHeight,
-                          decoration: BoxDecoration(
-                            borderRadius: borderRadius,
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                Colors.white.withValues(
-                                  alpha: 0.8 + (pulse * 0.08),
-                                ),
-                                sweepColor.withValues(alpha: 0.9),
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: sweepColor.withValues(alpha: 0.26),
-                                blurRadius: 8,
-                                spreadRadius: 0.4 * pulse,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-        ),
-      ),
+    return FruitNowPlayingPendingOverlay(
+      key: key,
+      colorScheme: colorScheme,
+      scaleFactor: scaleFactor,
+      glassEnabled: true,
+      isLoading: isLoading,
+      barHeightBase: 16.0,
+      borderRadiusBase: 999.0,
+      sweepWidthGlassBase: 88.0,
+      sweepWidthSolidBase: 88.0,
+      sweepOverflowFactor: 0.18,
+      beadWidthGlassBase: 18.0,
+      beadWidthSolidBase: 18.0,
+      baseAlphaGlass: 0.14,
+      baseAlphaSolid: 0.14,
+      sweepAlphaGlass: 0.6,
+      sweepAlphaSolid: 0.6,
+      coreAlphaGlass: 0.2,
+      coreAlphaSolid: 0.2,
+      haloAlphaGlass: 0.26,
+      haloAlphaSolid: 0.26,
+      beadBlurGlass: 8.0,
+      beadBlurSolid: 8.0,
+      beadSpreadGlass: 0.4,
+      beadSpreadSolid: 0.4,
+      beadKey: const Key('fruit_car_mode_pending_progress_bead'),
     );
   }
 }

@@ -31,6 +31,20 @@ Future<void> openArchivePage(
   }
 }
 
+Future<void> openExternalUrl(
+  String url, {
+  ArchiveLaunchErrorHandler? onError,
+}) async {
+  try {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw Exception('Could not launch $url');
+    }
+  } catch (error) {
+    onError?.call(error);
+  }
+}
+
 Future<void> openArchiveDetails(
   String identifier, {
   ArchiveLaunchErrorHandler? onError,
