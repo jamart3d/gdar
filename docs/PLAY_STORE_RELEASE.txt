@@ -1,4 +1,17 @@
 <en-US>
+What's new in v1.3.82+292
+• Identified Sabrina crash root cause from crash buffer
+• `IllegalArgumentException: Invalid notification (no valid small icon)`
+• Process: `com.jamart3d.shakedown`
+• Added missing Android notification small icon resources
+• `apps/gdar_mobile/android/app/src/main/res/drawable/ic_stat_shakedown.xml`
+• `apps/gdar_tv/android/app/src/main/res/drawable/ic_stat_shakedown.xml`
+• Re-applied safe Phase 1 duplicate cleanup subset
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.81+291
 • Rolled back Tier 1 code dedupe refactors to restore pre-refactor runtime
 • Restored files

@@ -50,26 +50,23 @@ extension _PlaybackScreenHelpers on PlaybackScreenState {
     required Duration duration,
     required Curve curve,
   }) async {
-    if (!mounted || !_itemScrollController.isAttached) return;
-    try {
-      await _itemScrollController.scrollTo(
-        index: index,
-        duration: duration,
-        curve: curve,
-        alignment: alignment,
-      );
-    } catch (_) {
-      // The list can detach between scheduling and execution on web.
-    }
+    await safeTrackListScrollTo(
+      mounted: mounted,
+      controller: _itemScrollController,
+      index: index,
+      alignment: alignment,
+      duration: duration,
+      curve: curve,
+    );
   }
 
   void _safeItemJumpTo({required int index, required double alignment}) {
-    if (!mounted || !_itemScrollController.isAttached) return;
-    try {
-      _itemScrollController.jumpTo(index: index, alignment: alignment);
-    } catch (_) {
-      // Ignore detach races during route/layout transitions.
-    }
+    safeTrackListJumpTo(
+      mounted: mounted,
+      controller: _itemScrollController,
+      index: index,
+      alignment: alignment,
+    );
   }
 
   void _scrollToCurrentTrack(
@@ -210,16 +207,7 @@ extension _PlaybackScreenHelpers on PlaybackScreenState {
   }
 
   int _calculateTotalItems(Source source) {
-    final Map<String, List<Track>> tracksBySet = {};
-    for (final track in source.tracks) {
-      tracksBySet.putIfAbsent(track.setName, () => <Track>[]).add(track);
-    }
-    int count = 0;
-    tracksBySet.forEach((_, value) {
-      count++;
-      count += value.length;
-    });
-    return count;
+    return calculateTrackListItems(source);
   }
 
   void _focusTrack(int index, {bool shouldScroll = true}) {
