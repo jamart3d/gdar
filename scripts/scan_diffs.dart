@@ -87,8 +87,6 @@ Future<void> main() async {
     exit(1);
   }
 
-  _info(
-    'Micro-Scanner passed. No styling violations found in pending files.',
-  );
+  _info('Micro-Scanner passed. No styling violations found in pending files.');
   exit(0);
 }

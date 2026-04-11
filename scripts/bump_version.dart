@@ -74,9 +74,7 @@ void main(List<String> args) {
 
 String _calculateNext(String current, String type) {
   // Pattern: major.minor.patch+build
-  final match = RegExp(
-    r'^(\d+)\.(\d+)\.(\d+)\+(\d+)$',
-  ).firstMatch(current);
+  final match = RegExp(r'^(\d+)\.(\d+)\.(\d+)\+(\d+)$').firstMatch(current);
   if (match == null) {
     stderr.writeln(
       'Error: Could not parse version "$current". '

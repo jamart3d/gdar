@@ -1,4 +1,11 @@
 <en-US>
+What's new in v1.3.87+297
+• Fixed Android notification icon by defaulting to `ic_launcher` to resolve display issues on some devices.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.86+296
 • Reproduced and triaged Sabrina startup/playback crash via `adb logcat`.
 • Root cause confirmed from crash logs

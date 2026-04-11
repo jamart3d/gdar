@@ -206,10 +206,7 @@ Future<void> _updateVerificationStatus() async {
   final headResult = await Process.run('git', ['rev-parse', 'HEAD']);
   final sha = headResult.stdout.toString().trim();
 
-  final data = buildPassVerificationStatus(
-    sha: sha,
-    timestamp: DateTime.now(),
-  );
+  final data = buildPassVerificationStatus(sha: sha, timestamp: DateTime.now());
 
   final file = File('.agent/notes/verification_status.json');
   file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(data));

@@ -20,11 +20,9 @@ void main(List<String> args) async {
   _info('--- Starting Final Release Sync ---');
 
   // 1. Get Version
-  final versionProcess = await Process.run(
-    'dart',
-    ['scripts/get_current_version.dart'],
-    runInShell: true,
-  );
+  final versionProcess = await Process.run('dart', [
+    'scripts/get_current_version.dart',
+  ], runInShell: true);
   final version = versionProcess.stdout.toString().trim();
   if (versionProcess.exitCode != 0 || version.isEmpty) {
     _err(
@@ -41,8 +39,7 @@ void main(List<String> args) async {
   await _run('git', ['add', '.']);
 
   _info('Step 2: Committing release...');
-  final commitRes =
-      await _run('git', ['commit', '-m', message]);
+  final commitRes = await _run('git', ['commit', '-m', message]);
   if (commitRes.exitCode != 0) {
     _warn(
       'Commit returned ${commitRes.exitCode} — '
@@ -70,15 +67,8 @@ void main(List<String> args) async {
   _info('--- Release Sync Complete ---');
 }
 
-Future<ProcessResult> _run(
-  String cmd,
-  List<String> args,
-) async {
-  final res = await Process.run(
-    cmd,
-    args,
-    runInShell: true,
-  );
+Future<ProcessResult> _run(String cmd, List<String> args) async {
+  final res = await Process.run(cmd, args, runInShell: true);
   if (res.stdout.toString().isNotEmpty) {
     _debug(res.stdout.toString());
   }

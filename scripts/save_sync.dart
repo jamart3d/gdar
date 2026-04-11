@@ -27,8 +27,7 @@ void main(List<String> args) async {
   // 1. Git Sequence
   _info('Step 1: Git Sync...');
   await _run('git', ['add', '.']);
-  final commitRes =
-      await _run('git', ['commit', '-m', message]);
+  final commitRes = await _run('git', ['commit', '-m', message]);
   if (commitRes.exitCode == 0) {
     await _markSavedVerificationStatus();
     await _run('git', ['push']);
@@ -40,14 +39,12 @@ void main(List<String> args) async {
   _info('Step 2: Pruning empty notes...');
   final notesDir = Directory('.agent/notes');
   if (notesDir.existsSync()) {
-    for (final file
-        in notesDir.listSync().whereType<File>()) {
+    for (final file in notesDir.listSync().whereType<File>()) {
       if (file.path.endsWith('.md')) {
         final content = file.readAsStringSync().trim();
         // Check if it's effectively empty (header only)
         if (content.isEmpty ||
-            (content.split('\n').length <= 2 &&
-                content.startsWith('#'))) {
+            (content.split('\n').length <= 2 && content.startsWith('#'))) {
           _info('Deleting empty note: ${file.path}');
           file.deleteSync();
         }
@@ -58,10 +55,7 @@ void main(List<String> args) async {
   _info('--- Save & Sync Complete ---');
 }
 
-Future<ProcessResult> _run(
-  String cmd,
-  List<String> args,
-) async {
+Future<ProcessResult> _run(String cmd, List<String> args) async {
   final res = await Process.run(cmd, args);
   if (res.stdout.toString().isNotEmpty) {
     _debug(res.stdout.toString());

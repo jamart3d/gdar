@@ -17,17 +17,15 @@ void _err(String msg) => _log('❌', _red, msg);
 /// 4. Clears pending_release.md.
 void main(List<String> args) async {
   final type = args.isNotEmpty ? args[0] : 'patch';
-  final date =
-      DateTime.now().toIso8601String().split('T')[0];
+  final date = DateTime.now().toIso8601String().split('T')[0];
 
   _info('--- Starting Release Housekeeping ($type) ---');
 
   // 1. Run bump_version.dart
-  final bumpProcess = await Process.run(
-    'dart',
-    ['scripts/bump_version.dart', type],
-    runInShell: true,
-  );
+  final bumpProcess = await Process.run('dart', [
+    'scripts/bump_version.dart',
+    type,
+  ], runInShell: true);
   if (bumpProcess.exitCode != 0) {
     _err(
       'Error bumping version: '
@@ -37,15 +35,11 @@ void main(List<String> args) async {
   }
 
   // 2. Get the new version
-  final versionProcess = await Process.run(
-    'dart',
-    ['scripts/get_current_version.dart'],
-    runInShell: true,
-  );
-  final newVersion =
-      versionProcess.stdout.toString().trim();
-  if (versionProcess.exitCode != 0 ||
-      newVersion.isEmpty) {
+  final versionProcess = await Process.run('dart', [
+    'scripts/get_current_version.dart',
+  ], runInShell: true);
+  final newVersion = versionProcess.stdout.toString().trim();
+  if (versionProcess.exitCode != 0 || newVersion.isEmpty) {
     _err(
       'Error: Version retrieval failed '
       '(exit ${versionProcess.exitCode}). '
@@ -56,8 +50,7 @@ void main(List<String> args) async {
   _info('New Version: $newVersion');
 
   // 3. Read pending notes
-  final pendingFile =
-      File('.agent/notes/pending_release.md');
+  final pendingFile = File('.agent/notes/pending_release.md');
   String pendingContent = '';
   if (pendingFile.existsSync()) {
     final lines = pendingFile.readAsLinesSync();
@@ -85,8 +78,7 @@ void main(List<String> args) async {
   final changelogFile = File('CHANGELOG.md');
   if (changelogFile.existsSync()) {
     String changelog = changelogFile.readAsStringSync();
-    final newBlock =
-        '## [$newVersion] - $date\n\n$pendingContent\n\n';
+    final newBlock = '## [$newVersion] - $date\n\n$pendingContent\n\n';
     // Insert after ## [Unreleased]
     changelog = changelog.replaceFirst(
       '## [Unreleased]',
@@ -97,17 +89,11 @@ void main(List<String> args) async {
   }
 
   // 5. Update docs/PLAY_STORE_RELEASE.txt
-  final playStoreFile =
-      File('docs/PLAY_STORE_RELEASE.txt');
+  final playStoreFile = File('docs/PLAY_STORE_RELEASE.txt');
   if (playStoreFile.existsSync()) {
-    final oldPlayStore =
-        playStoreFile.readAsStringSync();
-    final userNotes = _distillPlayStoreNotes(
-      pendingContent,
-      newVersion,
-    );
-    final newPlayEntry =
-        '$userNotes\n\n---\n\n$oldPlayStore';
+    final oldPlayStore = playStoreFile.readAsStringSync();
+    final userNotes = _distillPlayStoreNotes(pendingContent, newVersion);
+    final newPlayEntry = '$userNotes\n\n---\n\n$oldPlayStore';
     playStoreFile.writeAsStringSync(newPlayEntry);
     _info('Updated docs/PLAY_STORE_RELEASE.txt');
   }
@@ -139,10 +125,7 @@ void main(List<String> args) async {
 ///   5. Markdown bold (`**…**`) is stripped so the text reads naturally.
 ///   6. The combined text is hard-capped at 500 chars (Play Store limit).
 ///   7. The block is wrapped in `<en-US>…</en-US>` XML tags.
-String _distillPlayStoreNotes(
-  String pendingContent,
-  String newVersion,
-) {
+String _distillPlayStoreNotes(String pendingContent, String newVersion) {
   final lines = pendingContent.split('\n');
   bool inTestsSection = false;
   final bullets = <String>[];
@@ -163,8 +146,7 @@ String _distillPlayStoreNotes(
     if (inTestsSection) continue;
 
     // ── Skip bullets whose label is test-related ──────────────────
-    final labelMatch =
-        RegExp(r'^\-\s+\*\*([^*]+)\*\*').firstMatch(trimmed);
+    final labelMatch = RegExp(r'^\-\s+\*\*([^*]+)\*\*').firstMatch(trimmed);
     if (labelMatch != null &&
         labelMatch.group(1)!.toLowerCase().startsWith('test')) {
       continue;
@@ -184,7 +166,14 @@ String _distillPlayStoreNotes(
     // Remove the leading "- ".
     text = text.replaceFirst(RegExp(r'^-\s+'), '');
     // Truncate at technical detail separators.
-    for (final sep in [' — ', ' – ', ' - Fix:', 'Root cause:', '. File', '.\n']) {
+    for (final sep in [
+      ' — ',
+      ' – ',
+      ' - Fix:',
+      'Root cause:',
+      '. File',
+      '.\n',
+    ]) {
       final idx = text.indexOf(sep);
       if (idx > 0) {
         text = text.substring(0, idx);
