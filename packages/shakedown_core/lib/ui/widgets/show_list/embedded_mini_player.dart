@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown_core/ui/widgets/conditional_marquee.dart';
 
 class EmbeddedMiniPlayer extends StatelessWidget {
   final double scaleFactor;
@@ -44,6 +46,9 @@ class EmbeddedMiniPlayer extends StatelessWidget {
 
     if (currentTrack == null) return const SizedBox.shrink();
 
+    final marqueeEnabled = context.select<SettingsProvider, bool>(
+      (settings) => settings.marqueeEnabled,
+    );
     final isFruit = context.read<ThemeProvider?>()?.isFruit ?? false;
     final horizontalPad = compact ? 4.0 : 10.0;
     final verticalPad = compact ? 0.0 : 8.0;
@@ -204,11 +209,15 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            currentTrack.title,
+                          ConditionalMarquee(
+                            text: currentTrack.title,
                             style: titleStyle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                            velocity: 36.0,
+                            blankSpace: 40.0,
+                            pauseAfterRound: const Duration(milliseconds: 900),
+                            fadingEdgeStartFraction: 0.02,
+                            fadingEdgeEndFraction: 0.08,
+                            enableAnimation: marqueeEnabled,
                           ),
                           const SizedBox(height: 4),
                           SizedBox(
@@ -235,17 +244,24 @@ class EmbeddedMiniPlayer extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          currentTrack.title,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: titleSize,
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
-                            height: 1.0,
+                        child: SizedBox(
+                          height: titleSize * 1.2,
+                          child: ConditionalMarquee(
+                            text: currentTrack.title,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: titleSize,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                              height: 1.0,
+                            ),
+                            velocity: 36.0,
+                            blankSpace: 40.0,
+                            pauseAfterRound: const Duration(milliseconds: 900),
+                            fadingEdgeStartFraction: 0.02,
+                            fadingEdgeEndFraction: 0.08,
+                            enableAnimation: marqueeEnabled,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       SizedBox(width: compact ? 6 : 8),

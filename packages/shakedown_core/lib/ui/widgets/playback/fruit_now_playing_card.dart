@@ -11,6 +11,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_ui.dart';
 import 'package:shakedown_core/ui/widgets/theme/fruit_tooltip.dart';
 import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
+import 'package:shakedown_core/ui/widgets/conditional_marquee.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:shakedown_core/services/device_service.dart';
@@ -59,11 +60,16 @@ class FruitNowPlayingCard extends StatelessWidget {
     final showPlaybackMessages = context.select<SettingsProvider, bool>(
       (settings) => settings.showPlaybackMessages,
     );
+    final marqueeEnabled = context.select<SettingsProvider, bool>(
+      (settings) => settings.marqueeEnabled,
+    );
     final colorScheme = Theme.of(context).colorScheme;
 
     final hasGlass = enableLiquidGlass && !isSimple;
     const bool showWebTrackStepControls = kIsWeb;
     final showCompactHud = kIsWeb && showDevAudioHud;
+    final bool showInlineTransportCluster =
+        showWebTrackStepControls && !showCompactHud;
     final horizontalPadding = showCompactHud ? 12.0 : 16.0;
     final surface = FruitSurface(
       borderRadius: BorderRadius.circular(16.0 * scaleFactor),
@@ -84,13 +90,21 @@ class FruitNowPlayingCard extends StatelessWidget {
         child: Row(
           children: [
             if (!showCompactHud) ...[
-              _buildCompactPlayButton(
-                context,
-                audioProvider,
-                colorScheme,
-                enableLiquidGlass,
-              ),
-              SizedBox(width: 16 * scaleFactor),
+              if (showInlineTransportCluster)
+                _buildInlineTransportCluster(
+                  context,
+                  audioProvider,
+                  colorScheme,
+                  glassEnabled: enableLiquidGlass,
+                )
+              else
+                _buildCompactPlayButton(
+                  context,
+                  audioProvider,
+                  colorScheme,
+                  enableLiquidGlass,
+                ),
+              SizedBox(width: 14 * scaleFactor),
             ],
             // Info & Progress
             Expanded(
@@ -101,40 +115,34 @@ class FruitNowPlayingCard extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                track?.title ?? 'Picking show...',
-                                style: TextStyle(
-                                  fontFamily: FontConfig.resolve('Inter'),
-                                  fontSize: 15 * scaleFactor,
-                                  fontWeight: FontWeight.w700,
-                                  color: colorScheme.onSurface,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                        child: SizedBox(
+                          height: 20 * scaleFactor,
+                          child: ConditionalMarquee(
+                            text: track?.title ?? 'Picking show...',
+                            style: TextStyle(
+                              fontFamily: FontConfig.resolve('Inter'),
+                              fontSize: 15 * scaleFactor,
+                              fontWeight: FontWeight.w700,
+                              color: colorScheme.onSurface,
                             ),
-                          ],
+                            velocity: 36.0,
+                            blankSpace: 48.0,
+                            pauseAfterRound: const Duration(milliseconds: 900),
+                            fadingEdgeStartFraction: 0.02,
+                            fadingEdgeEndFraction: 0.08,
+                            enableAnimation: marqueeEnabled,
+                          ),
                         ),
                       ),
                       SizedBox(width: 8 * scaleFactor),
-                      _buildDurationInfo(
-                        audioProvider,
-                        colorScheme,
-                        isSimple: isSimple,
-                      ),
-                      if (showWebTrackStepControls && !showCompactHud) ...[
-                        SizedBox(width: 8 * scaleFactor),
-                        _buildTrackStepControls(
-                          context,
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: _buildDurationInfo(
                           audioProvider,
                           colorScheme,
-                          glassEnabled: enableLiquidGlass,
-                          compact: false,
+                          isSimple: isSimple,
                         ),
-                      ],
+                      ),
                       if (!showWebTrackStepControls &&
                           showCompactHud &&
                           showNext) ...[
@@ -224,20 +232,20 @@ class FruitNowPlayingCard extends StatelessWidget {
                                       Row(
                                         children: [
                                           if (showWebTrackStepControls) ...[
-                                            _buildTrackStepControls(
+                                            _buildInlineTransportCluster(
                                               context,
                                               audioProvider,
                                               colorScheme,
                                               glassEnabled: enableLiquidGlass,
-                                              compact: true,
+                                            ),
+                                          ] else ...[
+                                            _buildCompactPlayButton(
+                                              context,
+                                              audioProvider,
+                                              colorScheme,
+                                              enableLiquidGlass,
                                             ),
                                           ],
-                                          _buildCompactPlayButton(
-                                            context,
-                                            audioProvider,
-                                            colorScheme,
-                                            enableLiquidGlass,
-                                          ),
                                           SizedBox(width: 6 * scaleFactor),
                                           Expanded(child: progressBar),
                                         ],
@@ -245,7 +253,11 @@ class FruitNowPlayingCard extends StatelessWidget {
                                       SizedBox(height: 4 * scaleFactor),
                                       Padding(
                                         padding: EdgeInsets.only(
-                                          left: (36 + 18) * scaleFactor,
+                                          left:
+                                              (showWebTrackStepControls
+                                                  ? 108
+                                                  : (36 + 18)) *
+                                              scaleFactor,
                                         ),
                                         child: const PlaybackMessages(
                                           textAlign: TextAlign.left,
@@ -388,12 +400,11 @@ class FruitNowPlayingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTrackStepControls(
+  Widget _buildInlineTransportCluster(
     BuildContext context,
     AudioProvider audioProvider,
     ColorScheme colorScheme, {
     required bool glassEnabled,
-    required bool compact,
   }) {
     return StreamBuilder<int?>(
       stream: audioProvider.currentIndexStream,
@@ -420,7 +431,14 @@ class FruitNowPlayingCard extends StatelessWidget {
               buttonKey: const ValueKey('fruit_now_playing_prev_track_button'),
               enabled: !isFirstTrack,
             ),
-            SizedBox(width: compact ? 4 * scaleFactor : 6 * scaleFactor),
+            SizedBox(width: 6 * scaleFactor),
+            _buildCompactPlayButton(
+              context,
+              audioProvider,
+              colorScheme,
+              glassEnabled,
+            ),
+            SizedBox(width: 6 * scaleFactor),
             _buildTrackStepButton(
               context,
               audioProvider,
@@ -432,7 +450,6 @@ class FruitNowPlayingCard extends StatelessWidget {
               buttonKey: const ValueKey('fruit_now_playing_next_track_button'),
               enabled: !isLastTrack,
             ),
-            if (compact) SizedBox(width: 4 * scaleFactor),
           ],
         );
       },

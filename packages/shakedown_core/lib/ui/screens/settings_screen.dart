@@ -57,10 +57,6 @@ class _SettingsScreenState extends State<SettingsScreen>
 
     settingsProvider.toggleCarMode();
 
-    if (settingsProvider.preventSleep != enabling) {
-      settingsProvider.togglePreventSleep();
-    }
-
     if (enabling && !settingsProvider.fruitFloatingSpheres) {
       settingsProvider.toggleFruitFloatingSpheres();
     }
@@ -417,6 +413,17 @@ class _SettingsScreenState extends State<SettingsScreen>
                   ),
                 ),
               ),
+            ),
+            _buildFruitHeaderButton(
+              context,
+              icon: LucideIcons.monitor,
+              color: settingsProvider.preventSleep
+                  ? Theme.of(context).colorScheme.primary
+                  : null,
+              semanticLabel: settingsProvider.preventSleep
+                  ? 'Disable Keep Screen On'
+                  : 'Enable Keep Screen On',
+              onPressed: settingsProvider.togglePreventSleep,
             ),
             _buildFruitHeaderButton(
               context,

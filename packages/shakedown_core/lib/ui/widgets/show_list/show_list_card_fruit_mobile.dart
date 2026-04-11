@@ -29,6 +29,7 @@ extension _ShowListCardFruitMobileBuild on _ShowListCardState {
             : null);
     final String? ratingKey = targetSource?.id;
     final bool dateFirst = settingsProvider.dateFirstInShowCard;
+    final double contentRightInset = widget.isPlaying ? 32.0 : 72.0;
     final String primaryText = dateFirst
         ? style.formattedDate
         : widget.show.venue;
@@ -134,7 +135,7 @@ extension _ShowListCardFruitMobileBuild on _ShowListCardState {
                         ),
                       ),
                     Padding(
-                      padding: const EdgeInsets.only(right: 72.0),
+                      padding: EdgeInsets.only(right: contentRightInset),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,6 +234,7 @@ extension _ShowListCardFruitMobileBuild on _ShowListCardState {
                                     children: [
                                       SizedBox(height: miniPlayerGap),
                                       SizedBox(
+                                        width: double.infinity,
                                         height: miniPlayerSlotHeight,
                                         child: EmbeddedMiniPlayer(
                                           scaleFactor: style.effectiveScale,

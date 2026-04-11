@@ -86,8 +86,11 @@ Widget buildFruitCarModeCardContent({
               !controlsOnPrimaryRow &&
               !badgeOnDateRow));
   final bool useCompactTextLayout = isCurrentCard && showFooterRow;
+  final double currentCardBaseHeight = showFooterRow
+      ? (dateFirst ? 222.0 : 232.0)
+      : (dateFirst ? 168.0 : 178.0);
   final double cardHeight =
-      (isPlaying ? (dateFirst ? 222.0 : 232.0) : 146.0) * style.effectiveScale;
+      (isPlaying ? currentCardBaseHeight : 146.0) * style.effectiveScale;
   final double horizontalPadding =
       (isCurrentCard ? 24.0 : 22.0) * style.effectiveScale;
   final double leadingPadding = isCurrentCard && dateFirst
@@ -96,7 +99,7 @@ Widget buildFruitCarModeCardContent({
   final double trailingPadding = horizontalPadding;
   final double verticalPadding =
       (isCurrentCard
-          ? 20.0
+          ? (showFooterRow ? 20.0 : 14.0)
           : (compactIdleHeight ? (dateFirst ? 6.0 : 8.0) : 11.0)) *
       style.effectiveScale;
   final double headlineFontSize =
