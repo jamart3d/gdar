@@ -7,6 +7,5 @@ class AssetConstants {
       'packages/shakedown_core/assets/data/output.optimized_src.json';
   static const String gratefulDeadSongStructureHintsJson =
       'packages/shakedown_core/assets/data/audio/grateful_dead_song_structure_hints.json';
-  static const String defaultAndroidNotificationIcon =
-      'drawable/ic_stat_shakedown';
+  static const String defaultAndroidNotificationIcon = 'mipmap/ic_launcher';
 }

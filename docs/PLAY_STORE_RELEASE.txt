@@ -1,4 +1,17 @@
 <en-US>
+What's new in v1.3.83+293
+• Reproduced hardware crash on Sabrina and captured logs via `adb logcat`.
+• Confirmed fatal exception on current build
+• `java.lang.IllegalArgumentException: Invalid notification (no valid small icon)`
+• process `com.jamart3d.shakedown`
+• Added notification icon resources earlier in this session
+• `apps/gdar_mobile/android/app/src/main/res/drawable/ic_stat_shakedown.xml`
+• `apps/gdar_tv/android/app/src/main/res/drawable/ic_stat_shakedown.xml`
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.82+292
 • Identified Sabrina crash root cause from crash buffer
 • `IllegalArgumentException: Invalid notification (no valid small icon)`
