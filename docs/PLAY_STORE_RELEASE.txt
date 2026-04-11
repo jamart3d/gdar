@@ -1,4 +1,18 @@
 <en-US>
+What's new in v1.3.86+296
+• Reproduced and triaged Sabrina startup/playback crash via `adb logcat`.
+• Root cause confirmed from crash logs
+• `IllegalArgumentException: Invalid notification (no valid small icon)`
+• Tested multiple icon references during triage and validated behavior.
+• Final release-safe decision
+• `packages/shakedown_core/lib/utils/asset_constants.dart`
+• `defaultAndroidNotificationIcon = 'mipmap/ic_launcher'`
+• This maps to the launcher mipmap icon set (including
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.85+295
 • Reverted notification icon from `drawable/ic_launcher` to `mipmap/ic_launcher`.
 • Re-tested with `mipmap` reference to ensure compatibility.
