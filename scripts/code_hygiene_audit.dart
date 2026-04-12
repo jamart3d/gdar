@@ -288,6 +288,7 @@ String sanitizeForIdentifierScan(String content) {
 bool isPrivateTypeDeclaration(String line, String symbol) {
   final escaped = RegExp.escape(symbol);
   return RegExp(
+        // ignore: prefer_interpolation_to_compose_strings
         r'^\s*(?:abstract\s+)?(?:base\s+|sealed\s+|final\s+)?'
                 r'(?:class|enum|mixin|typedef)\s+' +
             escaped +

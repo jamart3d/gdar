@@ -91,8 +91,7 @@ Widget buildFruitCarModeCardContent({
       : (dateFirst ? 168.0 : 178.0);
   final double cardHeight =
       (isPlaying ? currentCardBaseHeight : 146.0) * style.effectiveScale;
-  final double horizontalPadding =
-      (isCurrentCard ? 24.0 : 22.0) * style.effectiveScale;
+  final double horizontalPadding = 22.0 * style.effectiveScale;
   final double leadingPadding = isCurrentCard && dateFirst
       ? 12.0 * style.effectiveScale
       : horizontalPadding;
@@ -102,8 +101,7 @@ Widget buildFruitCarModeCardContent({
           ? (showFooterRow ? 20.0 : 14.0)
           : (compactIdleHeight ? (dateFirst ? 6.0 : 8.0) : 11.0)) *
       style.effectiveScale;
-  final double headlineFontSize =
-      (isCurrentCard ? 38.0 : 36.0) * style.effectiveScale;
+  final double headlineFontSize = 36.0 * style.effectiveScale;
   final double supportingFontSize =
       (isCurrentCard ? 28.0 : 26.0) * style.effectiveScale;
   final double locationFontSize =
@@ -359,6 +357,9 @@ Widget buildFruitCarModeCardContent({
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: showFooterRow
+                        ? MainAxisAlignment.start
+                        : MainAxisAlignment.center,
                     children: [
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,

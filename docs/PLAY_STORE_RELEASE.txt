@@ -1,4 +1,13 @@
 <en-US>
+What's new in v1.3.91+301
+• Web / PWA: Hardened notification reliability for mobile PWA installations.
+• Web / Hybrid: Added `seekBackward` and `seekForward` support to the MediaSession handler in `hybrid_audio_engine.js`.
+• Web / Audio: Optimized heartbeat behavior by reducing volume to absolute zero (0.01 -> 0) to prevent audible clicks on some mobile browsers while maintaining the audio-keep-alive lock.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.90+300
 • Web PWA notification reliability hardening landed (merged to `main` via
 • `hybrid_audio_engine.js`: added MediaSession `seekBackward` /
