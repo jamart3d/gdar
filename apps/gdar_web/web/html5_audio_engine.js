@@ -120,11 +120,19 @@
                 return;
             }
             if (this.loadedHEAD) return cb();
-            fetch(this.trackUrl, { method: 'HEAD' }).then((res) => {
-                if (res.redirected) this.trackUrl = res.url;
-                this.loadedHEAD = true;
-                cb();
-            }).catch(() => cb());
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+            fetch(this.trackUrl, { method: 'HEAD', signal: controller.signal })
+                .then((res) => {
+                    clearTimeout(timeoutId);
+                    if (res.ok && res.redirected) this.trackUrl = res.url;
+                    this.loadedHEAD = true;
+                    cb();
+                })
+                .catch(() => {
+                    clearTimeout(timeoutId);
+                    cb();
+                });
         }
 
         loadBuffer(cb) {
