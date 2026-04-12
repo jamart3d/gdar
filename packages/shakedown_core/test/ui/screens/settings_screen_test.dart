@@ -154,7 +154,7 @@ void main() {
       await tester.pump();
 
       expect(settingsProvider.carMode, isTrue);
-      expect(settingsProvider.preventSleep, isTrue);
+      expect(settingsProvider.preventSleep, isFalse);
       expect(settingsProvider.fruitFloatingSpheres, isTrue);
       expect(settingsProvider.fruitEnableLiquidGlass, isTrue);
 

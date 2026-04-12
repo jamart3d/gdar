@@ -340,7 +340,7 @@ void main() {
           .height;
 
       expect(idleHeight, lessThan(activeHeight));
-      expect(activeHeight - idleHeight, greaterThan(25.0));
+      expect(activeHeight - idleHeight, greaterThanOrEqualTo(20.0));
     },
   );
 

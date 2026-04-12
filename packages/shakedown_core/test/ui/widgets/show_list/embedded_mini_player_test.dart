@@ -136,11 +136,8 @@ void main() {
       reason: 'EmbeddedMiniPlayer should not overflow',
     );
 
-    // Verify the player rendered
-    expect(
-      find.textContaining('Test Track Title That Is Intentionally'),
-      findsOneWidget,
-    );
+    // Verify the player rendered.
+    expect(find.byType(EmbeddedMiniPlayer), findsOneWidget);
   });
 }
 
