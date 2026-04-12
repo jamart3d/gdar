@@ -205,6 +205,10 @@
     }
     const controller = new AbortController();
     _abortControllers[index] = controller;
+    const fetchTimeoutId = setTimeout(() => {
+      _log.warn('[gdar engine] Fetch timeout (60s) for index', index);
+      controller.abort();
+    }, 60000);
 
     _log.log('[gdar engine] Fetching', index, track.url);
 
@@ -282,12 +286,14 @@
         if (index === _currentIndex + 1) _nextTrackBufferedSeconds = track.duration || 0;
         _emitState();
 
+        clearTimeout(fetchTimeoutId);
         delete _abortControllers[index];
         _lastConcatMs = performance.now() - finalizeStart;
         _log.log(`[gdar engine] Fetch complete for index ${index}. Finalization (buffer concat) took ${_lastConcatMs.toFixed(2)}ms`);
         return buf;
       })
       .catch(err => {
+        clearTimeout(fetchTimeoutId);
         _fetchInFlight = false;
         delete _abortControllers[index];
         if (index === _currentIndex) _currentTrackBufferedSeconds = 0;
