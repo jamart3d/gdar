@@ -250,6 +250,12 @@
 
         // Apply background color to body to prevent flashes
         document.body.style.backgroundColor = bgColor;
+
+        // Keep the --splash-bg CSS var in sync so flt-glass-pane (which reads
+        // it with !important) tracks runtime dark/light toggles, not just the
+        // boot-time value. Affects anything transparent in the Flutter canvas,
+        // including the region below the FruitTabBar's blurred glass.
+        document.documentElement.style.setProperty('--splash-bg', bgColor);
       };
     })();
   </script>
