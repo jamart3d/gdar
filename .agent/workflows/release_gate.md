@@ -1,10 +1,10 @@
 ---
-description: Final release-readiness gate before /shipit (no builds or deploy).
+description: Final release-readiness gate before /publish (no builds or deploy).
 ---
-# Pre-Shipit Workflow (Monorepo)
+# Release Gate Workflow (Monorepo)
 // turbo-all
 
-**TRIGGERS:** pre_shipit, pre-shipit, preflight-release, release-gate
+**TRIGGERS:** release_gate, release-gate, pre_shipit, pre-shipit, preflight-release
 
 > [!IMPORTANT]
 > Execute immediately upon trigger. No plans, no confirmation prompts.
@@ -38,7 +38,22 @@ when successful.
 
 If either command fails, halt and report the failing command and first error.
 
-## 4. Notes & Artifacts Check
+## 4. Release Config Gate
+// turbo
+- Confirm app versions match across:
+  - `apps/gdar_mobile/pubspec.yaml`
+  - `apps/gdar_tv/pubspec.yaml`
+  - `apps/gdar_web/pubspec.yaml`
+- Confirm
+  `apps/gdar_mobile/android/app/src/main/AndroidManifest.xml` keeps
+  `usesCleartextTraffic="false"` for release.
+- Confirm `apps/gdar_web/pubspec.yaml` launcher icon paths resolve to real
+  assets.
+
+If any static release-config check fails, halt and report the exact mismatch or
+missing path.
+
+## 5. Notes & Artifacts Check
 // turbo
 - Validate `.agent/notes/pending_release.md` has current-session bullets when
   user-facing behavior changed.
@@ -46,15 +61,15 @@ If either command fails, halt and report the failing command and first error.
 
 If either check fails, halt and report exactly what is missing.
 
-## 5. Hand-Off to Shipit
+## 6. Hand-Off to Publish
 1. If all checks pass, print:
-   **"Pre-shipit gate passed. Safe to run /shipit."**
+   **"Release gate passed. Safe to run /publish."**
 2. Recommend:
-   - `/shipit` for patch release.
-   - `/shipit minor` for minor release.
+   - `/publish` for patch release.
+   - `/publish minor` for minor release.
 
 ## Hard Rules
 - Do not run builds in this workflow.
 - Do not deploy in this workflow.
 - Do not bump versions in this workflow.
-- Keep this workflow as a gate between `/checkup` and `/shipit`.
+- Keep this workflow as a gate between `/validate` and `/publish`.

@@ -8,9 +8,9 @@ This policy defines the authority boundaries, efficiency guardrails, and executi
 ## 1. Zero-Friction Workflows & Mandatory Preview
 You are strictly forbidden from executing file modifications, writing code, or running terminal commands without user approval **EXCEPT** under the Zero-Friction Mandate:
 
-* **Zero-Friction Mandate**: For read-only commands and authorized workflows (`/pre_shipit`, `/pre-shipit`, `/shipit`, `/release`, `/deploy`, `/prod`, `/checkup`, `/health`, `/lint-fix`, `/audit`, `/clean`, `/glass`, `/liquid_glass`, `/verify`, `/audit_size`, `/size_guard`, `/code_hygiene`, `/dead_code`, `/duplicate_code`, `/save`, `/commit`), the agent MUST bypass all plans, previews, and manual confirmation prompts. Triggering the workflow counts as final approval; execution must be immediate and autonomous.
+* **Zero-Friction Mandate**: For read-only commands and authorized workflows (`/release_gate`, `/release-gate`, `/pre_shipit`, `/pre-shipit`, `/publish`, `/shipit`, `/release`, `/deploy`, `/prod`, `/validate`, `/checkup`, `/health`, `/lint-fix`, `/audit`, `/clean`, `/glass`, `/liquid_glass`, `/verify`, `/audit_size`, `/size_guard`, `/code_hygiene`, `/dead_code`, `/duplicate_code`, `/save`, `/commit`), the agent MUST bypass all plans, previews, and manual confirmation prompts. Triggering the workflow counts as final approval; execution must be immediate and autonomous.
 * **Ghost Execution**: When any workflow in the list above is triggered, the agent is STRICTLY FORBIDDEN from generating ANY preamble text or "plans". Workflow execution must begin immediately with the first concrete tool step.
-* **Subworkflow Inheritance**: Any internal rule, preflight, or subworkflow invoked by an authorized Zero-Friction workflow inherits that approval automatically. The agent MUST NOT ask for a second confirmation just because the parent workflow reads or runs `.agent/workflows/toolchain_preflight.md`, `.agent/rules/platform_detection.md`, or similar workflow infrastructure.
+* **Subworkflow Inheritance**: Any internal rule, preflight, or subworkflow invoked by an authorized Zero-Friction workflow inherits that approval automatically. The agent MUST NOT ask for a second confirmation just because the parent workflow reads or runs `.agent/rules/toolchain_preflight.md`, `.agent/rules/platform_detection.md`, or similar workflow infrastructure.
 * **Save vs. Ship Boundary**: Any request containing "save" must ONLY trigger the `/save` workflow. You are strictly forbidden from jumping to a release pipeline unless the user explicitly confirms a production deployment intent.
 
 ## 2. Auto-Run Command Lists
@@ -35,7 +35,7 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 - Search (Windows): `Select-String`, `findstr`. (PowerShell only).
 - Search (Cross-Platform): Use `grep_search` or `list_dir` tools where possible to avoid shell-specific syntax.
 - **Git (Diagnostic)**: `git status`, `git log`, `git diff`, `git branch`, `git remote`, `git rev-parse HEAD`.
-- **Git (Mutating - Authorized Context ONLY)**: `git add`, `git commit`, `git push`, `git tag`. (Must be part of `/shipit`, `/save`, `/commit`, or `/release` flows).
+- **Git (Mutating - Authorized Context ONLY)**: `git add`, `git commit`, `git push`, `git tag`. (Must be part of `/publish`, `/shipit`, `/save`, `/commit`, or `/release` flows).
 - **Flutter/Dart**: `flutter analyze`, `dart analyze`, `flutter doctor`, `dart pub deps`, `dart run scripts/*.dart`, `flutter pub outdated`, `flutter clean`, `flutter pub get`, `flutter build appbundle --release`, `flutter build appbundle --debug`, `flutter build apk --analyze-size`, `flutter build web --release`.
 - **Formatting & Health**: `melos run format`, `melos run analyze`, `melos run test`, `melos run fix`, `melos help`, `melos exec`, `melos bootstrap`, `dart fix --apply`, `flutter format .`, `flutter test`, `jules`.
 - **PowerShell Diagnostics**: `Get-ChildItem`, `Measure-Object`, `Get-Content`, `Get-Item`, `Get-Process`, `$env:MELOS_CAN_HANDLE`.
@@ -52,12 +52,12 @@ Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`
 ## 4. Prohibited Actions (Always Prompt)
 - `rm`, `Remove-Item`, `del` (Filesystem deletion of project source/config files outside of authorized cleanup/release workflows).
 - `git restore`, `git reset --hard` (Destructive worktree modification).
-- Multi-step destructive mutations outside of the `/shipit`, `/checkup`, `/clean`, `/save`, or `/commit` scope.
+- Multi-step destructive mutations outside of the `/publish`, `/shipit`, `/validate`, `/checkup`, `/clean`, `/save`, or `/commit` scope.
 
 ## 5. Scope Containment & Efficiency
 To conserve context window and compute quota:
 - Do not perform broad searches, index the entire `lib/` directory, or read files not strictly necessary.
-- **Workspace Exceptions:** Maintenance/health workflows (`/checkup`, `/audit`, `/clean`, `/verify`, `/size_guard`, `/code_hygiene`, `/dead_code`, `/duplicate_code`, `/image_to_code`) are explicitly authorized to perform broad searches and root-level indexing.
+- **Workspace Exceptions:** Maintenance/health workflows (`/validate`, `/checkup`, `/audit`, `/clean`, `/verify`, `/size_guard`, `/code_hygiene`, `/dead_code`, `/duplicate_code`, `/image_to_code`) are explicitly authorized to perform broad searches and root-level indexing.
 - **Discovery Firewall (Hard Constraint):** Even during Workspace Exceptions, any directory named `archive`, `temp`, or `backups` MUST be skipped by discovery tools (`grep`, `dir /s`, etc.) unless the user has explicitly requested access to a file within them.
 - **Optimization:** Always call `view_file_outline` before reading a file. Use specific line ranges (`StartLine`/`EndLine`).
 - **Surgical Edits:** When proposing a code change, only output the specific function or widget being modified.

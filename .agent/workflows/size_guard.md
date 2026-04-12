@@ -44,7 +44,7 @@ cd apps/gdar_tv; flutter build apk --release --analyze-size --target-platform an
 ```
 
 > [!NOTE]
-> `--analyze-size` requires a single `--target-platform`. It cannot be used with `flutter build appbundle` (multi-ABI). Use APK builds here for size diagnostics only — the release AAB is built separately by `/shipit`.
+> `--analyze-size` requires a single `--target-platform`. It cannot be used with `flutter build appbundle` (multi-ABI). Use APK builds here for size diagnostics only - the release AAB is built separately by `/publish`.
 
 ### 3. Evaluate Budgets
 Use these working thresholds as a quick review guide:

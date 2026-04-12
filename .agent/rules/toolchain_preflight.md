@@ -1,7 +1,7 @@
 ---
 description: Minimal zero-friction host and command preflight for GDAR workflows.
 ---
-# Toolchain Preflight
+# Toolchain Preflight Rule
 
 Use this at the start of any workflow that depends on Flutter, Dart, Git, or Firebase.
 
@@ -13,10 +13,10 @@ inherits the parent workflow's approval automatically.
 Run the unified preflight script:
 
 ``` 
-dart scripts/preflight_check.dart --preflight-only # checkup
+dart scripts/preflight_check.dart --preflight-only # validate
 dart scripts/preflight_check.dart          # verify
-dart scripts/preflight_check.dart --release # shipit, deploy (adds firebase check)
-dart scripts/preflight_check.dart --record-pass # refresh receipt after /checkup
+dart scripts/preflight_check.dart --release # publish, deploy (adds firebase check)
+dart scripts/preflight_check.dart --record-pass # refresh receipt after /validate
 ```
 
 The script handles:
@@ -25,7 +25,7 @@ The script handles:
 - Process hygiene (hung flutter/dart detection).
 - Smart-skip melos verification (SHA comparison + suite run if stale) unless `--preflight-only` is used.
 - `verification_status.json` update on success unless `--preflight-only` is used.
-- Fast receipt refresh for `/checkup` via `--record-pass`, which writes a fresh
+- Fast receipt refresh for `/validate` via `--record-pass`, which writes a fresh
   `PASS` receipt without rerunning the full preflight or melos suite.
 
 For `--preflight-only` or `--help`, follow unsandboxed-first execution policy in:
@@ -43,4 +43,4 @@ For `--preflight-only` or `--help`, follow unsandboxed-first execution policy in
 ## Scope Limit
 
 This preflight does NOT run `melos run fix`, design scans, or builds.
-Those belong in the parent workflow (`/checkup`, `/shipit`).
+Those belong in the parent workflow (`/validate`, `/publish`).

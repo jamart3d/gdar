@@ -1,6 +1,6 @@
 ---
 name: gdar-monorepo-hygiene-enforcer
-description: Use when running or editing GDAR operational workflows such as verify, checkup, save, shipit, deploy, and script automation where preflight, host gating, shell compatibility, path hygiene, and sequential build safety must be enforced.
+description: Use when running or editing GDAR operational workflows such as verify, validate, save, publish, deploy, and script automation where preflight, host gating, shell compatibility, path hygiene, and sequential build safety must be enforced.
 ---
 
 # GDAR Monorepo Hygiene Enforcer
@@ -9,8 +9,8 @@ Apply hygiene and execution constraints before running workflow commands.
 
 ## Preflight Discipline
 1. Start with unified preflight:
-   - `dart scripts/preflight_check.dart --preflight-only` for checkup-like tasks.
-   - `dart scripts/preflight_check.dart --release` for ship/deploy tasks.
+   - `dart scripts/preflight_check.dart --preflight-only` for validate-like tasks.
+   - `dart scripts/preflight_check.dart --release` for publish/deploy tasks.
 2. Respect host gate outputs:
    - `CHROMEBOOK:STOP` means stop release/build flow.
    - Verified host output means continue.

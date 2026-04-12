@@ -13,7 +13,7 @@ The agent MUST output a Context Pulse block at the following lifecycle events:
 
 ### **Fixed Intervals**
 - **Turn Cadence**: Every 3 turns of active conversation.
-- **Workflow Exit**: Immediately upon the successful (or failed) completion of any slash command (e.g., `/checkup`, `/shipit`, `/audit`).
+- **Workflow Exit**: Immediately upon the successful (or failed) completion of any slash command (e.g., `/validate`, `/publish`, `/audit`).
 
 ### **High-Load Triggers**
 - **Bulk Discovery**: After using `ls -R` or `find` to map the workspace at the start of a session.

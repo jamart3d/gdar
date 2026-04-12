@@ -2,14 +2,14 @@
 description: Production release workflow for GDAR (monorepo).
 ---
 
-# Shipit Workflow (Monorepo)
+# Publish Workflow (Monorepo)
 // turbo-all
 
-**TRIGGERS:** shipit, release, prod, deploy
+**TRIGGERS:** publish, shipit, release, prod, deploy, push-prod, ship-it-now
 
 > [!IMPORTANT]
 > Execute immediately upon trigger. No plans, no confirmation prompts.
-> Every step inherits the original `/shipit` approval.
+> Every step inherits the original `/publish` approval.
 > Follow `.agent/skills/zero_friction_execution/SKILL.md` for
 > long-running command polling.
 

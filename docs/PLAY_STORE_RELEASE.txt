@@ -1,4 +1,17 @@
 <en-US>
+What's new in v1.3.92+302
+• Ran code hygiene audit
+• Deleted 3 orphaned web widget files (~833 lines of dead code)
+• `apps/gdar_web/lib/ui/screens/onboarding_screen.dart` (web doesn't use onboarding)
+• `apps/gdar_web/lib/ui/widgets/show_list_item_details.dart` (unused fork of core)
+• `apps/gdar_web/lib/ui/widgets/source_list_item.dart` (unused fork of core)
+• Added `reports/CODE_HYGIENE_REPORT_2026-04-11.md`
+• Added `.agent/workflows/network_hygiene.md`
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.91+301
 • Web / PWA: Hardened notification reliability for mobile PWA installations.
 • Web / Hybrid: Added `seekBackward` and `seekForward` support to the MediaSession handler in `hybrid_audio_engine.js`.

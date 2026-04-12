@@ -1,12 +1,12 @@
 ---
 description: Append current-session work to pending release notes.
 ---
-# Upit Workflow
+# Stage Release Notes Workflow
 
-**TRIGGERS:** upit, pending release, release note, note it
+**TRIGGERS:** stage_release_notes, release_notes, pending_release, pending release, release note, note it, upit
 
 **When to use:** After a focused change is complete and verified, but before
-`/shipit`, to capture the user-visible impact in
+`/publish`, to capture the user-visible impact in
 `.agent/notes/pending_release.md`.
 
 ## 1. Review Session Scope

@@ -33,6 +33,6 @@ same change set.
 - Never claim fix complete without fresh test evidence from this session.
 
 ## Ship/Release Gate
-For `/shipit`, `/deploy`, and `/checkup`, unresolved stale expectations are
+For `/publish`, `/deploy`, and `/validate`, unresolved stale expectations are
 release blockers until triaged and either fixed or explicitly documented by the
 user.

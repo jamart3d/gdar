@@ -87,3 +87,30 @@ historical audit items were intentionally removed.
   does not seek/play into an in-flight reload.
 - [ ] Guard processing-state completion paths during source switching so random
   show logic cannot fire while a new source load is still in progress.
+
+## App Health Hardening
+
+- [ ] Add release manifest hardening for Android and ensure cleartext traffic is
+  disabled for release builds.
+- [ ] Add native smoke-build verification for `apps/gdar_mobile` and
+  `apps/gdar_tv`, not just web CI coverage.
+- [ ] Capture and track performance budgets for cold start, first frame,
+  catalog parse time, memory after playback start, and web audio handoff
+  latency.
+- [ ] Add resilience coverage for bad prefs, Hive recovery, asset parse
+  failures, startup with no network, and archive.org reachability failure.
+- [ ] Add lifecycle smoke coverage for deep links, background/foreground
+  resume, notification tap routing, and playback state restoration.
+- [ ] Add platform contract checks that protect Fruit from Material regressions
+  and keep TV focus/badge/scrollbar behavior stable.
+- [ ] Add explicit bundle/asset size budgets for web builds, native outputs,
+  large assets, and audio cache growth.
+- [ ] Run a dependency/plugin risk pass focused on background playback,
+  notifications, permissions, and release stability.
+- [ ] Continue the highest-value dedupe targets from the hygiene report:
+  onboarding, mobile/TV lifecycle setup, provider setup, and web/core widget
+  forks.
+- [ ] Re-enable, replace, or remove stale skipped tests so the test surface
+  reflects current risk instead of historical weight.
+- [ ] Fix the `apps/gdar_web/pubspec.yaml` launcher icon path drift before the
+  next icon regeneration pass.

@@ -49,6 +49,18 @@ void main() {
     test('performanceMode defaults to false on TV', () {
       expect(provider.performanceMode, false);
     });
+
+    test('oilTvPremiumHighlight defaults to false on TV', () {
+      expect(provider.oilTvPremiumHighlight, false);
+    });
+
+    test('fruitDenseList defaults to false on TV', () {
+      expect(provider.fruitDenseList, false);
+    });
+
+    test('showDevAudioHud defaults to false on TV', () {
+      expect(provider.showDevAudioHud, false);
+    });
   });
 
   group('SettingsProvider platform defaults — phone', () {
@@ -82,6 +94,22 @@ void main() {
 
     test('oilScreensaverMode defaults to standard on phone', () {
       expect(provider.oilScreensaverMode, 'standard');
+    });
+
+    test('fruitDenseList defaults to false on phone', () {
+      expect(provider.fruitDenseList, false);
+    });
+
+    test('fruitEnableLiquidGlass defaults to false on phone', () {
+      expect(provider.fruitEnableLiquidGlass, false);
+    });
+
+    test('showDevAudioHud defaults to false on phone', () {
+      expect(provider.showDevAudioHud, false);
+    });
+
+    test('oilTvPremiumHighlight defaults to false on phone', () {
+      expect(provider.oilTvPremiumHighlight, false);
     });
   });
 

@@ -3,17 +3,19 @@ description: Comprehensive code quality, design, TV flow, and spec conformance a
 ---
 # Unified Audit Workflow (Monorepo)
 
-**TRIGGERS:** audit, glass, liquid glass, tv audit, spec audit, quality, lint
+**TRIGGERS:** audit, fruit_audit, fruit audit, glass, liquid glass, tv audit, spec audit, quality, lint
 
 > [!IMPORTANT]
 > **AUTONOMY**: Proceed autonomously end-to-end - read specs, scan code, run analysis, and generate reports without pausing for intermediate permission. **MONOREPO**: Analysis and formatting run from the workspace root. Build commands must target specific apps under `apps/`.
 
-Run the sections relevant to the user's request. If the user just says "audit", run all sections.
+Run the sections relevant to the user's request. If the user just says "audit",
+run all sections. If the user specifically says `fruit_audit`, run Section 2
+only unless they ask for broader coverage.
 
 ---
 
 ## Section 1: General Health Check
-1. **Preflight**: Run `dart scripts/preflight_check.dart` or `/checkup` first rather than running manual checks.
+1. **Preflight**: Run `dart scripts/preflight_check.dart` or `/validate` first rather than running manual checks.
 4. **Debug Clean**: Scan for `print(` and `logger.` statements across `apps/` and `packages/`.
 5. **Dependencies**: `flutter pub outdated` (from workspace root).
 
@@ -28,6 +30,8 @@ Run the sections relevant to the user's request. If the user just says "audit", 
    - **Fruit Mode**: No breathing ripples or morphing. Use bounce/scale physics.
    - **Material Mode**: Clean M3 defaults.
    - **Universal**: Flag hardcoded non-semantic colors.
+4. If this audit was triggered via `fruit_audit`, save findings to
+   `reports/FRUIT_AUDIT_REPORT_YYYY-MM-DD.md`.
 
 ## Section 3: TV Flow & Navigation Audit
 // turbo
@@ -59,7 +63,8 @@ Run the sections relevant to the user's request. If the user just says "audit", 
 1. **Large Files**: Identify Dart files over 800 lines.
 2. **Complex Providers**: Identify Providers or Services that are "God Classes" (too many responsibilities).
 3. **Deep Build Metrics**: Identify widgets with overly complex build methods or deep nesting.
-4. **Mock Parity**: Run the `check_mock_parity` workflow to ensure test mocks match the real providers.
+4. **Mock Parity**: Use the `mock_regen` workflow guidance to ensure test
+   mocks and fake providers match the real providers.
 
 ## Output
 1. Generate or update a single `AUDIT_REPORT.md`.

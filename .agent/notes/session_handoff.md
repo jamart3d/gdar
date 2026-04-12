@@ -63,5 +63,5 @@ Commit `0a85795` on `main`:
 
 ## Next Step
 
-1. Optional: run broader monorepo verification before `/shipit` if this work is
+1. Optional: run broader monorepo verification before `/publish` if this work is
    being rolled into a larger release batch.

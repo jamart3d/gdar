@@ -183,7 +183,7 @@ flutter build web --release
 For the current release process and notes, see:
 
 - `docs/PLAY_STORE_RELEASE.txt`
-- `.agent/workflows/shipit.md`
+- `.agent/workflows/publish.md`
 
 ## Useful Docs
 

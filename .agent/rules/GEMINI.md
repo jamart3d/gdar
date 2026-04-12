@@ -4,8 +4,8 @@ trigger: always_on
 
 # Project Rules: GDAR Audio Player
 
-* **Action:** When a workflow is triggered (e.g., /checkup), strictly follow every step as defined in its `.md` file, including `// turbo` auto-approval logic.
-* **Action:** Before any workflow that depends on CLI orchestration tools (`/checkup`, `/verify`, `/shipit`, `/deploy`), run `.agent/workflows/toolchain_preflight.md` first and fail fast if required commands are missing.
+* **Action:** When a workflow is triggered (e.g., /validate), strictly follow every step as defined in its `.md` file, including `// turbo` auto-approval logic.
+* **Action:** Before any workflow that depends on CLI orchestration tools (`/validate`, `/verify`, `/publish`, `/deploy`), run `.agent/rules/toolchain_preflight.md` first and fail fast if required commands are missing.
 
 ### 1. CODING STANDARDS & ARCHITECTURE
 * **Stack:** Latest Stable Flutter / Dart SDK. Strictly follow modern syntax
@@ -32,8 +32,8 @@ trigger: always_on
 * **Action:** Write all release history to root `CHANGELOG.md` using
   Keep a Changelog format.
 * **Action:** Stage pending notes in `.agent/notes/pending_release.md`
-  before running shipit.
-* **Action:** In the `/shipit` workflow, ALWAYS perform a fresh version bump and rebuild; never assume the current changelog or artifact state represents the final release.
+  before running publish.
+* **Action:** In the `/publish` workflow, ALWAYS perform a fresh version bump and rebuild; never assume the current changelog or artifact state represents the final release.
 * **Constraint:** Never write to `docs/RELEASE_NOTES.txt`. That file is
   legacy and retired.
 * **Action:** When updating `docs/PLAY_STORE_RELEASE.txt`, ALWAYS prepend the new release block to the top of the file. NEVER overwrite or replace the existing contents.
@@ -42,5 +42,5 @@ trigger: always_on
 * **Task Artifacts:** When completing a significant feature or fix, provide
   a brief Task List, Implementation Plan, Testing suggestions (unit/widget),
   and a Walkthrough of the results.
-* **Smart Receipts:** When `melos run analyze`, `melos run test`, or `melos run format` pass successfully, the agent MUST update `.agent/notes/verification_status.json` with the current `git rev-parse HEAD` and results. This allows the `/shipit` workflow to skip redundant runs on an identical worktree state.
+* **Smart Receipts:** When `melos run analyze`, `melos run test`, or `melos run format` pass successfully, the agent MUST update `.agent/notes/verification_status.json` with the current `git rev-parse HEAD` and results. This allows the `/publish` workflow to skip redundant runs on an identical worktree state.
 * **Context Pulse:** At the end of every 3 conversation turns or upon completion of any Slash Command, the agent MUST report the current context usage percentage and status as defined in `.agent/rules/context_protocol.md`.

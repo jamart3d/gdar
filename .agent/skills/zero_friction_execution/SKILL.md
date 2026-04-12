@@ -1,11 +1,11 @@
 ---
 name: zero_friction_execution
-description: Core mechanics for executing asynchronous long-running workflows (checkup, shipit, deploy) without timing out or violating the "No Black Box" rule.
+description: Core mechanics for executing asynchronous long-running workflows (validate, publish, deploy) without timing out or violating the "No Black Box" rule.
 ---
 
 # Zero-Friction Execution Skill
 
-When you are triggered to execute a Zero-Friction workflow (e.g., `/shipit`, `/deploy`, `/checkup`, `/hammer`), you are expected to operate completely autonomously. However, you MUST follow these mechanical constraints for interacting with the local terminal tools to prevent LLM timeouts, prevent UI lockups, and ensure hardware constraints are met.
+When you are triggered to execute a Zero-Friction workflow (e.g., `/publish`, `/deploy`, `/validate`), you are expected to operate completely autonomously. However, you MUST follow these mechanical constraints for interacting with the local terminal tools to prevent LLM timeouts, prevent UI lockups, and ensure hardware constraints are met.
 
 ## 1. Asynchronous Execution (Anti-Timeout Protocol)
 Commands like `flutter build appbundle`, `melos run test`, and `firebase deploy` can take several minutes to complete. You must NEVER attempt to wait for them synchronously.
@@ -25,4 +25,4 @@ Once a long-running command is in flight, you must respect the **Sequential Exec
 If the command exits with a non-zero result:
 1. Instantly **ABORT** the current workflow sequence. (Do not move to the Web build if the Android build failed).
 2. Report the error using the final lines of the stderr/stdout.
-3. Await human instruction. Do not automatically rewrite their code unless explicitly instructed via the `/checkup` automatic fixes (`melos run fix`).
+3. Await human instruction. Do not automatically rewrite their code unless explicitly instructed via the `/validate` automatic fixes (`melos run fix`).

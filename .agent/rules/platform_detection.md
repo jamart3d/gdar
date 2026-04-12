@@ -7,7 +7,7 @@ description: How to detect the current dev machine (Windows 10 vs Chromebook) an
 
 Use this rule at the start of any workflow that runs builds, tests, or deployments.
 
-When this rule is invoked by an authorized Zero-Friction workflow such as `/checkup`, `/shipit`, or `/deploy`, host detection and concurrency resolution inherit the parent workflow's approval automatically and must not trigger any separate confirmation prompt.
+When this rule is invoked by an authorized Zero-Friction workflow such as `/validate`, `/publish`, or `/deploy`, host detection and concurrency resolution inherit the parent workflow's approval automatically and must not trigger any separate confirmation prompt.
 
 ## 1. Detect the Host
 
