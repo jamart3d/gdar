@@ -142,8 +142,16 @@
             }
             if (this.webAudioLoadingState !== GaplessPlaybackLoadingState.NONE) return;
             this.webAudioLoadingState = GaplessPlaybackLoadingState.LOADING;
-            fetch(this.trackUrl)
-                .then((res) => res.arrayBuffer())
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+            fetch(this.trackUrl, { signal: controller.signal })
+                .then((res) => {
+                    clearTimeout(timeoutId);
+                    if (!res.ok) {
+                        throw new Error('HTTP ' + res.status + ' fetching ' + this.trackUrl);
+                    }
+                    return res.arrayBuffer();
+                })
                 .then((res) =>
                     this.audioContext.decodeAudioData(
                         res,
@@ -166,6 +174,7 @@
                     )
                 )
                 .catch((e) => {
+                    clearTimeout(timeoutId);
                     _log.warn('[html5] Fetch error for track', this.idx, e && e.message);
                     this.webAudioLoadingState = GaplessPlaybackLoadingState.NONE;
                     this.queue.onError();
