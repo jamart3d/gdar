@@ -70,6 +70,7 @@
     let _stallTimer = null;
     let _fenceTimer = null; // Bounds the desktop fence so hidden WA doesn't run indefinitely
     let _heartbeatEscalateTimer = null; // Escalates heartbeat → video after 60s on mobile
+    let _hiddenPulseTimer = null;
     let _instantHandoffPending = false;
     let _instantHandoffIndex = -1;
     let _handoffInProgress = false;
@@ -507,6 +508,7 @@
             _syncHiddenAllowance();
             _log.log(`[hybrid] Tab hidden. backgroundMode: ${_backgroundMode}`);
             _applyHiddenSurvivalStrategy();
+            _startHiddenPulse();
 
             if (_activeEngine === _fgEngine && _playing && !_allowHiddenWebAudio) {
                 const allowHandoff = _handoffMode !== 'none';
@@ -533,6 +535,7 @@
             }
         } else {
             _log.log('[hybrid] Tab visible. Ensuring survival tricks are off.');
+            _stopHiddenPulse();
             _fenceHandoffPending = false;
             if (_fenceTimer) { clearTimeout(_fenceTimer); _fenceTimer = null; }
             if (_heartbeatEscalateTimer) { clearTimeout(_heartbeatEscalateTimer); _heartbeatEscalateTimer = null; }
@@ -826,7 +829,25 @@
                 onPause: () => api.pause(),
                 onNext: () => api.seekToIndex(_currentIndex + 1),
                 onPrevious: () => api.seekToIndex(_currentIndex - 1),
-                onSeekTo: (e) => api.seek(e.seekTime)
+                onSeekTo: (e) => {
+                    const t = Number(e && e.seekTime);
+                    if (!Number.isFinite(t) || t < 0) return;
+                    api.seek(t);
+                },
+                onSeekBackward: (e) => {
+                    const s = _activeEngine.getState();
+                    const pos = Number(s && s.position) || 0;
+                    const offset = Number(e && e.seekOffset) || 10;
+                    api.seek(Math.max(0, pos - offset));
+                },
+                onSeekForward: (e) => {
+                    const s = _activeEngine.getState();
+                    const pos = Number(s && s.position) || 0;
+                    const dur = Number(s && s.duration);
+                    const offset = Number(e && e.seekOffset) || 10;
+                    const target = pos + offset;
+                    api.seek(Number.isFinite(dur) && dur > 0 ? Math.min(target, dur) : target);
+                },
             });
         }
     }
@@ -836,9 +857,37 @@
         if (!window._gdarMediaSession) return;
         window._gdarMediaSession.forceSync();
         _setupMediaSession();
+        const track = _playlist[_currentIndex];
+        if (track) {
+            window._gdarMediaSession.updateMetadata({
+                title: track.title || '',
+                artist: track.artist || '',
+                album: track.album || '',
+            });
+        }
         const state = _activeEngine.getState();
         window._gdarMediaSession.updatePlaybackState(_playing);
         window._gdarMediaSession.updatePositionState(state);
+    }
+
+    /** Starts a 15s repeating MediaSession pulse while tab is hidden and playing. */
+    function _startHiddenPulse() {
+        if (_hiddenPulseTimer) return;
+        if (!_playing) return;
+        _hiddenPulseTimer = setInterval(function () {
+            if (document.visibilityState !== 'hidden' || !_playing) {
+                _stopHiddenPulse();
+                return;
+            }
+            _syncMediaSession();
+        }, 15000);
+    }
+
+    function _stopHiddenPulse() {
+        if (_hiddenPulseTimer) {
+            clearInterval(_hiddenPulseTimer);
+            _hiddenPulseTimer = null;
+        }
     }
 
     // --- Public API -----------------------------------------------------------
@@ -855,6 +904,9 @@
             }
             if (window._gdarScheduler) window._gdarScheduler.start();
             _setupMediaSession();
+            if (document.visibilityState === 'hidden') {
+                _startHiddenPulse();
+            }
         },
 
         syncState: function (index, position, shouldPlay) {
@@ -981,10 +1033,15 @@
                     _attemptHandoff(_currentIndex, true);
                 }
             }
+
+            if (document.visibilityState === 'hidden') {
+                _startHiddenPulse();
+            }
         },
 
         pause: function () {
             _playing = false;
+            _stopHiddenPulse();
             if (_stallTimer) { clearTimeout(_stallTimer); _stallTimer = null; }
             // Cancel any pending restoration loop immediately
             _handoffRunId++;
@@ -996,6 +1053,7 @@
 
         stop: function () {
             _playing = false;
+            _stopHiddenPulse();
             if (_stallTimer) { clearTimeout(_stallTimer); _stallTimer = null; }
             // Increment ID to cancel any pending handoff loop or buffer-check intervals
             _handoffRunId++;

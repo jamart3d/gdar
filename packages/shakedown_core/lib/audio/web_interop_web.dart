@@ -1,19 +1,83 @@
 import 'dart:async';
 import 'dart:js_interop';
+
 import 'package:web/web.dart' as web;
 
-@JS('window._gdarMediaSession.updatePlaybackState')
-external void _jsUpdatePlaybackState(bool playing);
+@JS('_gdarMediaSession')
+external _GdarMediaSession? get _mediaSession;
+
+@JS()
+@anonymous
+extension type _GdarMediaSession(JSObject _) {
+  external void updatePlaybackState(bool playing);
+  external void updateMetadata(_MediaMetadataArg metadata);
+  external void updatePositionState(_PositionStateArg state);
+  external void forceSync();
+}
+
+@JS()
+@anonymous
+extension type _MediaMetadataArg._(JSObject _) implements JSObject {
+  external factory _MediaMetadataArg({
+    required String title,
+    required String artist,
+    required String album,
+  });
+}
+
+@JS()
+@anonymous
+extension type _PositionStateArg._(JSObject _) implements JSObject {
+  external factory _PositionStateArg({
+    required double duration,
+    required double position,
+    required bool playing,
+  });
+}
 
 /// Utility class for JS Interop and Web-specific background stability.
 class WebInterop {
-  /// Syncs playback state through the centralised JS MediaSession
-  /// anchor so there is a single writer with consistent state tracking.
+  /// Syncs playback state through the centralised JS MediaSession anchor.
   static void syncMediaSession(bool isPlaying) {
     try {
-      _jsUpdatePlaybackState(isPlaying);
-    } catch (e) {
-      // Anchor or MediaSession might not be available
+      _mediaSession?.updatePlaybackState(isPlaying);
+    } catch (_) {
+      // Anchor not available
+    }
+  }
+
+  /// Pushes track metadata to the OS notification via the JS MediaSession
+  /// anchor.
+  static void updateMetadata({
+    required String title,
+    required String artist,
+    required String album,
+  }) {
+    try {
+      _mediaSession?.updateMetadata(
+        _MediaMetadataArg(title: title, artist: artist, album: album),
+      );
+    } catch (_) {
+      // Anchor not available
+    }
+  }
+
+  /// Pushes scrubber position state to the OS notification.
+  static void updatePositionState({
+    required double duration,
+    required double position,
+    bool playing = true,
+  }) {
+    try {
+      _mediaSession?.updatePositionState(
+        _PositionStateArg(
+          duration: duration,
+          position: position,
+          playing: playing,
+        ),
+      );
+    } catch (_) {
+      // Anchor not available
     }
   }
 
