@@ -1,4 +1,16 @@
 <en-US>
+What's new in v1.3.90+300
+• Web PWA notification reliability hardening landed (merged to `main` via
+• `hybrid_audio_engine.js`: added MediaSession `seekBackward` /
+• `audio_heartbeat.js`: changed heartbeat audio volume from `0.01` to `0`,
+• `web_interop_web.dart` + `web_interop_stub.dart`: migrated to extension-type
+• Verification in-session: JS syntax checks passed; Dart format/analyze for
+• Post-merge cleanup complete: local worktree/branch removed and remote branch
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.89+299
 • Code hygiene execution completed for selected quick wins
 • Implemented item 1 (scanner hardening) in `scripts/code_hygiene_audit.dart`

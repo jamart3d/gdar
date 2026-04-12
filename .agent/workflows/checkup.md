@@ -65,6 +65,7 @@ If any step fails, halt and report the failing command.
    - print **"All green — ready to ship (Score: X/100)"**
    - summarize the fixes applied (if any)
    - recommend `/save` if the user wants to commit the repair pass
-   - recommend `/shipit` if the user is moving straight into release work
+   - recommend `/pre_shipit` as the final gate before release
+   - recommend `/shipit` after `/pre_shipit` passes
 3. List all automated fixes applied.
 4. If tests failed, offer to trigger `/issue_report`.

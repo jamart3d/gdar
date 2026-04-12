@@ -163,6 +163,9 @@ class _TestSettingsProvider extends ChangeNotifier implements SettingsProvider {
   bool get showPlaybackMessages => _showPlaybackMessages;
 
   @override
+  bool get marqueeEnabled => false;
+
+  @override
   bool get useTrueBlack => false;
 
   @override
