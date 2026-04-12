@@ -14,6 +14,8 @@
     // Safe Logger Utility
     const _log = (window._gdarLogger || console);
 
+    let _heartbeatBlockedCount = 0;
+
     // A tiny 0.1s silent WAV file encoded to base64
     const SILENT_WAV_BASE64 = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
 
@@ -23,12 +25,29 @@
     let _heartbeatAudio = null;
     let _heartbeatVideo = null;
 
+    function _dispatchBlocked(type, reason) {
+        _heartbeatBlockedCount++;
+        _log.warn('[gdar heartbeat] ' + type + ' heartbeat blocked:', reason || '(no reason)');
+        try {
+            window.dispatchEvent(new CustomEvent('gdar-heartbeat-blocked', {
+                detail: {
+                    type: type,
+                    reason: reason || '',
+                    timestampMs: Date.now(),
+                    count: _heartbeatBlockedCount,
+                },
+            }));
+        } catch (_) {
+            // CustomEvent may be unavailable in some environments.
+        }
+    }
+
     function _initAudio() {
         if (!_heartbeatAudio) {
             _heartbeatAudio = new Audio();
             _heartbeatAudio.src = SILENT_WAV_BASE64;
             _heartbeatAudio.loop = true;
-            _heartbeatAudio.volume = 0.01;
+            _heartbeatAudio.volume = 0;
             _heartbeatAudio.setAttribute('playsinline', '');
             _heartbeatAudio.setAttribute('preload', 'auto');
         }
@@ -57,7 +76,7 @@
             _initAudio();
             if (_heartbeatAudio.paused) {
                 _heartbeatAudio.play().catch(err => {
-                    _log.log('[gdar heartbeat] Audio prime failed (handled):', err.message);
+                    _dispatchBlocked('audio', err && err.message);
                 });
             }
         },
@@ -68,7 +87,7 @@
                 _heartbeatVideo.play().then(() => {
                     _log.log('[gdar heartbeat] Video survival heartbeat started.');
                 }).catch(err => {
-                    _log.log('[gdar heartbeat] Video prime failed (handled):', err.message);
+                    _dispatchBlocked('video', err && err.message);
                 });
             }
         },
@@ -98,6 +117,10 @@
 
         isActive: function () {
             return !!(this.isAudioActive() || this.isVideoActive());
+        },
+
+        blockedCount: function () {
+            return _heartbeatBlockedCount;
         }
     };
 
