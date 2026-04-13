@@ -356,7 +356,11 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
   }
 
   void _emitInterpolatedPosition() {
-    if (!_playing || _lastTickAt == null) {
+    if (!_playing || _lastTickAt == null || _durationSec <= 0) {
+      return;
+    }
+    if (_processingState == ProcessingState.buffering ||
+        _processingState == ProcessingState.loading) {
       return;
     }
     final now = DateTime.now();

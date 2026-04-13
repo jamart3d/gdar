@@ -4,7 +4,12 @@
 
 **Goal:** Add a Dart-side position interpolation timer to `GaplessPlayer` that emits synthetic position ticks between JS engine state callbacks, keeping the progress bar and current-time display smooth when JS ticks are throttled or slow (PWA backgrounding, Android Chrome, audio context stalls).
 
-**Architecture:** A `Timer.periodic(250ms)` runs inside `_GaplessPlayerWebEngine` while playing. On each tick it computes an interpolated position from `_positionSec + elapsed_since_last_tick`, clamps to `[0, _durationSec]`, and adds to `_positionController` — but only when the elapsed time since the last real JS tick is above a minimum gap (250ms) to avoid double-emitting while the JS engine is active. The guard logic lives in `WebTickStallPolicy` (already the home of stall-related decisions). The timer starts/stops with playing state, not on construction.
+**Architecture:** A `Timer.periodic(250ms)` runs inside `_GaplessPlayerWebEngine` while playing. On each tick it computes an interpolated position from `_positionSec + elapsed_since_last_tick`, clamps to `[0, _durationSec]`, and adds to `_positionController` — but only when the elapsed time since the last real JS tick is above a minimum gap (250ms) to avoid double-emitting while the JS engine is active. Interpolation is also suppressed during `buffering` and `loading` processingStates (position is unstable during hybrid engine handoffs). The guard logic lives in `WebTickStallPolicy` (already the home of stall-related decisions). The timer starts/stops with playing state, not on construction.
+
+**Engine strategy notes:**
+- `webAudio`: ticks driven by `requestAnimationFrame` (foreground) or worker timer (background) — interpolation fills background stalls.
+- `html5`: ticks from HTML5 `timeupdate` at ~250ms; `html5_audio_engine.js` has its own 250ms emit throttle — `_interpolationMinGap = 250ms` is load-bearing, do not lower it or double-emits will occur on this strategy.
+- `hybrid`: starts on HTML5 bgEngine (Instant Start), hands off to WebAudio fgEngine; `_forwardState` guards ensure only the active engine drives state. During handoff `processingState` is `buffering` so the interpolation guard suppresses emission. Background position stalls the same way as html5.
 
 **Tech Stack:** Dart `dart:async` Timer, existing `_GaplessPlayerBase`/`_GaplessPlayerWebEngine` mixin pattern, `web_tick_stall_policy.dart` (pure Dart, testable without JS).
 
@@ -234,6 +239,13 @@ At the bottom of `gapless_player_web_engine.dart`, before the closing `}` of the
     if (!_playing || _lastTickAt == null || _durationSec <= 0) {
       return;
     }
+    // Don't interpolate during buffering/loading — position is unstable.
+    // This also suppresses emission during hybrid engine handoffs, where
+    // processingState briefly transitions through buffering.
+    if (_processingState == ProcessingState.buffering ||
+        _processingState == ProcessingState.loading) {
+      return;
+    }
     if (!WebTickStallPolicy.shouldInterpolate(
       playing: _playing,
       lastTickAt: _lastTickAt,
@@ -399,7 +411,9 @@ git commit -m "chore: no-op — manual smoke test only, no code changes"
 
 ## Self-Review Checklist
 
-- [x] **Spec coverage:** interpolation fills gap between JS ticks ✓, clamps to duration ✓, guard prevents double-emit ✓, timer starts/stops with playing state ✓, dispose cancels timer ✓
+- [x] **Spec coverage:** interpolation fills gap between JS ticks ✓, clamps to duration ✓, guard prevents double-emit ✓, buffering/loading suppression for hybrid handoff ✓, timer starts/stops with playing state ✓, dispose cancels timer ✓
 - [x] **No placeholders:** all code blocks are complete
 - [x] **Type consistency:** `_GaplessPlayerBase._interpolationMinGap` and `_GaplessPlayerBase._interpolationInterval` defined in Task 2, referenced in Task 3 ✓; `_stopInterpolationTimer()` defined in Task 3, referenced in Task 4 ✓
 - [x] **`WebTickStallPolicy.shouldInterpolate` parameters** match between Task 1 definition and Task 3 call site ✓
+- [x] **html5 double-emit risk addressed:** `_interpolationMinGap = 250ms` matches html5_audio_engine's own 250ms emit throttle — correctly documented as load-bearing ✓
+- [x] **hybrid handoff risk addressed:** `processingState == buffering` guard suppresses interpolation during engine swap ✓

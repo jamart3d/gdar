@@ -28,6 +28,68 @@ void main() {
           'onPlayBlocked(cb).',
     );
   });
+
+  test('web interpolation suppresses buffering/loading handoffs', () {
+    final repoRoot = _findRepoRoot();
+    final script = File(
+      p.join(
+        repoRoot,
+        'packages',
+        'shakedown_core',
+        'lib',
+        'services',
+        'gapless_player',
+        'gapless_player_web_engine.dart',
+      ),
+    ).readAsStringSync();
+
+    expect(
+      script,
+      contains('ProcessingState.buffering'),
+      reason:
+          'Interpolation must stay disabled while the web engine is handing '
+          'off state through buffering.',
+    );
+    expect(
+      script,
+      contains('ProcessingState.loading'),
+      reason:
+          'Interpolation must stay disabled while the web engine is loading.',
+    );
+  });
+
+  test('web pause and stop paths cancel the interpolation timer', () {
+    final repoRoot = _findRepoRoot();
+    final script = File(
+      p.join(
+        repoRoot,
+        'packages',
+        'shakedown_core',
+        'lib',
+        'services',
+        'gapless_player',
+        'gapless_player_web_api.dart',
+      ),
+    ).readAsStringSync();
+
+    expect(
+      script,
+      contains('Future<void> pause() async'),
+      reason: 'Pause should remain the local stop point for interpolation.',
+    );
+    expect(
+      script,
+      contains('Future<void> stop() async'),
+      reason: 'Stop should remain the local stop point for interpolation.',
+    );
+    expect(
+      script,
+      contains('_stopInterpolationTimer();'),
+      reason:
+          'Pause and stop need to cancel the Dart interpolation timer before '
+          'JS callbacks catch up.',
+    );
+  });
 }
 
 String _findRepoRoot() {

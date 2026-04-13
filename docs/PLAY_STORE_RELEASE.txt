@@ -1,4 +1,12 @@
 <en-US>
+What's new in v1.3.95+305
+• Web: tightened the Dart-side position interpolation guard in `GaplessPlayer`
+• Tests: added web interpolation guard coverage in
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.94+304
 • Added Dart-side interpolation guard `WebTickStallPolicy.shouldInterpolate(...)` for web tick-gap handling.
 • Added `shouldInterpolate` unit coverage in `packages/shakedown_core/test/services/web_tick_stall_policy_test.dart`

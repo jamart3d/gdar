@@ -80,6 +80,7 @@ mixin _GaplessPlayerWebApi on _GaplessPlayerBase, _GaplessPlayerWebEngine {
   }
 
   Future<void> pause() async {
+    _stopInterpolationTimer();
     if (!_useJsEngine) {
       await _fallbackPlayer?.pause();
     } else {
@@ -88,6 +89,7 @@ mixin _GaplessPlayerWebApi on _GaplessPlayerBase, _GaplessPlayerWebEngine {
   }
 
   Future<void> stop() async {
+    _stopInterpolationTimer();
     if (!_useJsEngine) {
       await _fallbackPlayer?.stop();
     } else {
