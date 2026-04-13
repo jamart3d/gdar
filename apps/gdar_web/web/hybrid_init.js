@@ -168,6 +168,55 @@
         if (strategy !== 'passive' && strategy !== 'standard') {
             if (window._gdarScheduler) window._gdarScheduler.start();
         }
+
+        // MediaSession action handlers — install once for non-hybrid strategies.
+        // The hybrid orchestrator installs its own handlers inside _setupMediaSession();
+        // all other engines expose play/pause/seek/seekToIndex but not next()/previous(),
+        // so we derive navigation from getState().index + seekToIndex().
+        if (strategy !== 'hybrid' && window._gdarMediaSession && selectedEngine) {
+            window._gdarMediaSession.setActionHandlers({
+                onPlay: () => {
+                    selectedEngine.play && selectedEngine.play();
+                },
+                onPause: () => {
+                    selectedEngine.pause && selectedEngine.pause();
+                },
+                onNext: () => {
+                    const s = selectedEngine.getState?.() || {};
+                    const nextIdx = (typeof s.index === 'number' ? s.index : -1) + 1;
+                    if (nextIdx >= 0 && nextIdx < (s.playlistLength || 0)) {
+                        selectedEngine.seekToIndex && selectedEngine.seekToIndex(nextIdx);
+                    }
+                },
+                onPrevious: () => {
+                    const s = selectedEngine.getState?.() || {};
+                    const curIdx = typeof s.index === 'number' ? s.index : 0;
+                    selectedEngine.seekToIndex && selectedEngine.seekToIndex(Math.max(0, curIdx - 1));
+                },
+                onSeekTo: (e) => {
+                    const t = Number(e && e.seekTime);
+                    if (!Number.isFinite(t) || t < 0) return;
+                    selectedEngine.seek && selectedEngine.seek(t);
+                },
+                onSeekBackward: (e) => {
+                    const s = selectedEngine.getState?.() || {};
+                    const pos = Number(s.position) || 0;
+                    const offset = Number(e && e.seekOffset) || 10;
+                    selectedEngine.seek && selectedEngine.seek(Math.max(0, pos - offset));
+                },
+                onSeekForward: (e) => {
+                    const s = selectedEngine.getState?.() || {};
+                    const pos = Number(s.position) || 0;
+                    const dur = Number(s.duration);
+                    const offset = Number(e && e.seekOffset) || 10;
+                    const target = pos + offset;
+                    selectedEngine.seek && selectedEngine.seek(
+                        Number.isFinite(dur) && dur > 0 ? Math.min(target, dur) : target
+                    );
+                },
+            });
+            _log.log(`[Shakedown] MediaSession action handlers installed for strategy: ${strategy}`);
+        }
     } else {
         _log.error(`[Shakedown] FATAL: No audio engine scripts loaded successfully or strict selection failed. Strategy: ${strategy}, Override: ${override}`);
     }
