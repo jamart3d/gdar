@@ -1,4 +1,14 @@
 <en-US>
+What's new in v1.3.93+303
+• Web/PWA
+• Web/PWA MediaSession action handlers
+• Investigated Android TV playback failure using `adb logcat` while reproducing the issue on `com.jamart3d.shakedown`.
+• Root cause confirmed from ExoPlayer logs: `Cleartext HTTP traffic not permitted` for `http://127.0.0.1`.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.92+302
 • Ran code hygiene audit
 • Deleted 3 orphaned web widget files (~833 lines of dead code)
