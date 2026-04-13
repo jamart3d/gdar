@@ -63,4 +63,69 @@ void main() {
       );
     },
   );
+
+  group('shouldInterpolate', () {
+    final now = DateTime(2026, 4, 13, 10);
+    const minGap = Duration(milliseconds: 250);
+
+    test('returns true when playing and tick overdue', () {
+      expect(
+        WebTickStallPolicy.shouldInterpolate(
+          playing: true,
+          lastTickAt: now.subtract(const Duration(milliseconds: 300)),
+          minGapBeforeInterpolate: minGap,
+          now: now,
+        ),
+        isTrue,
+      );
+    });
+
+    test('returns false when not playing', () {
+      expect(
+        WebTickStallPolicy.shouldInterpolate(
+          playing: false,
+          lastTickAt: now.subtract(const Duration(milliseconds: 300)),
+          minGapBeforeInterpolate: minGap,
+          now: now,
+        ),
+        isFalse,
+      );
+    });
+
+    test('returns false when lastTickAt is null', () {
+      expect(
+        WebTickStallPolicy.shouldInterpolate(
+          playing: true,
+          lastTickAt: null,
+          minGapBeforeInterpolate: minGap,
+          now: now,
+        ),
+        isFalse,
+      );
+    });
+
+    test('returns false when tick was recent (under minGap)', () {
+      expect(
+        WebTickStallPolicy.shouldInterpolate(
+          playing: true,
+          lastTickAt: now.subtract(const Duration(milliseconds: 100)),
+          minGapBeforeInterpolate: minGap,
+          now: now,
+        ),
+        isFalse,
+      );
+    });
+
+    test('returns true exactly at min gap boundary', () {
+      expect(
+        WebTickStallPolicy.shouldInterpolate(
+          playing: true,
+          lastTickAt: now.subtract(minGap),
+          minGapBeforeInterpolate: minGap,
+          now: now,
+        ),
+        isTrue,
+      );
+    });
+  });
 }

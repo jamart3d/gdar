@@ -217,6 +217,7 @@ mixin _GaplessPlayerWebApi on _GaplessPlayerBase, _GaplessPlayerWebEngine {
   Future<void> dispose() async {
     _staleTickTimer?.cancel();
     _staleTickTimer = null;
+    _stopInterpolationTimer();
     if (!_useJsEngine) {
       return _fallbackPlayer?.dispose();
     }

@@ -274,9 +274,12 @@ class _GaplessPlayerBase {
   int? _handoffAttemptCount;
   int? _lastHandoffPollCount;
   Timer? _staleTickTimer;
+  Timer? _interpolationTimer;
 
   static const _staleTickThreshold = Duration(seconds: 2);
   static const _staleTickPollInterval = Duration(seconds: 1);
+  static const _interpolationInterval = Duration(milliseconds: 250);
+  static const _interpolationMinGap = Duration(milliseconds: 250);
 
   final bool _useJsEngine;
   final AudioPlayer? _fallbackPlayer;

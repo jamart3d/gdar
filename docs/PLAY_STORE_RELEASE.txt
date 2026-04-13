@@ -1,4 +1,20 @@
 <en-US>
+What's new in v1.3.94+304
+• Added Dart-side interpolation guard `WebTickStallPolicy.shouldInterpolate(...)` for web tick-gap handling.
+• Added `shouldInterpolate` unit coverage in `packages/shakedown_core/test/services/web_tick_stall_policy_test.dart`
+• overdue tick => true
+• not playing => false
+• null last tick => false
+• under min gap => false
+• exact min-gap boundary => true
+• Added interpolation timer support to `_GaplessPlayerBase`
+• `_interpolationTimer`
+• `_interpolationInterval` (250ms)
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.93+303
 • Web/PWA
 • Web/PWA MediaSession action handlers

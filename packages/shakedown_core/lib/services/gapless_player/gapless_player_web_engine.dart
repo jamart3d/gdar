@@ -348,6 +348,46 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
 
   void _emitPlayerState() {
     _playerStateController.add(PlayerState(_playing, _processingState));
+    if (_playing) {
+      _startInterpolationTimer();
+    } else {
+      _stopInterpolationTimer();
+    }
+  }
+
+  void _emitInterpolatedPosition() {
+    if (!_playing || _lastTickAt == null) {
+      return;
+    }
+    final now = DateTime.now();
+    if (!WebTickStallPolicy.shouldInterpolate(
+      playing: _playing,
+      lastTickAt: _lastTickAt,
+      minGapBeforeInterpolate: _GaplessPlayerBase._interpolationMinGap,
+      now: now,
+    )) {
+      return;
+    }
+    final elapsedSec = now.difference(_lastTickAt!).inMicroseconds / 1e6;
+    final interpolated = (_positionSec + elapsedSec).clamp(0.0, _durationSec);
+    _positionController.add(
+      Duration(milliseconds: (interpolated * 1000).round()),
+    );
+  }
+
+  void _startInterpolationTimer() {
+    if (_interpolationTimer != null) {
+      return;
+    }
+    _interpolationTimer = Timer.periodic(
+      _GaplessPlayerBase._interpolationInterval,
+      (_) => _emitInterpolatedPosition(),
+    );
+  }
+
+  void _stopInterpolationTimer() {
+    _interpolationTimer?.cancel();
+    _interpolationTimer = null;
   }
 
   void _emitSequenceState() {

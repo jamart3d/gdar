@@ -11,4 +11,16 @@ class WebTickStallPolicy {
     }
     return now.difference(lastTickAt) >= stallThreshold;
   }
+
+  static bool shouldInterpolate({
+    required bool playing,
+    required DateTime? lastTickAt,
+    required Duration minGapBeforeInterpolate,
+    required DateTime now,
+  }) {
+    if (!playing || lastTickAt == null) {
+      return false;
+    }
+    return now.difference(lastTickAt) >= minGapBeforeInterpolate;
+  }
 }
