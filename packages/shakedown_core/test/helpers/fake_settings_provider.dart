@@ -49,6 +49,8 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   bool get uiScale => false;
   @override
+  bool get settingsScreenUiScale => false;
+  @override
   double get oilBeatImpact => 1.0;
   @override
   Future<void> setOilBeatImpact(double value) async {}

@@ -26,6 +26,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
 import 'package:shakedown_core/ui/screens/tv_settings_screen.dart';
+import 'package:gdar_android/android_theme.dart';
+import 'package:gdar_fruit/fruit_theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   final String? highlightSetting;
@@ -181,9 +183,12 @@ class _SettingsScreenState extends State<SettingsScreen>
     final audioProvider = context.watch<AudioProvider>();
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
+    final bool enableBonusScale =
+        settingsProvider.uiScale || settingsProvider.settingsScreenUiScale;
     final scaleFactor = FontLayoutConfig.getEffectiveScale(
       context,
       settingsProvider,
+      overrideUiScale: enableBonusScale,
     );
 
     final updateProvider = context.watch<UpdateProvider>();
@@ -211,15 +216,40 @@ class _SettingsScreenState extends State<SettingsScreen>
     final effectiveBackgroundColor =
         backgroundColor ?? baseTheme.scaffoldBackgroundColor;
 
-    final effectiveTheme = baseTheme.copyWith(
+    ThemeData generatedTheme;
+    if (isFruit) {
+      if (isDarkMode) {
+        generatedTheme = GDARFruitTheme.dark(
+          uiScale: enableBonusScale,
+          colorOption: themeProvider.fruitColorOption,
+        );
+      } else {
+        generatedTheme = GDARFruitTheme.light(
+          uiScale: enableBonusScale,
+          colorOption: themeProvider.fruitColorOption,
+        );
+      }
+    } else {
+      if (isDarkMode) {
+        generatedTheme = GDARAndroidTheme.dark(
+          appFont: settingsProvider.activeAppFont,
+          uiScale: enableBonusScale,
+          useTrueBlack: isTrueBlackMode,
+        );
+      } else {
+        generatedTheme = GDARAndroidTheme.light(
+          appFont: settingsProvider.activeAppFont,
+          uiScale: enableBonusScale,
+        );
+      }
+    }
+
+    final effectiveTheme = generatedTheme.copyWith(
       scaffoldBackgroundColor: effectiveBackgroundColor,
-      appBarTheme: baseTheme.appBarTheme.copyWith(
+      appBarTheme: generatedTheme.appBarTheme.copyWith(
         backgroundColor: effectiveBackgroundColor,
         surfaceTintColor: Colors.transparent,
       ),
-      textTheme: isFruit
-          ? baseTheme.textTheme.apply(fontFamily: 'Inter')
-          : baseTheme.textTheme,
     );
 
     final List<Widget> slivers = [
@@ -307,7 +337,7 @@ class _SettingsScreenState extends State<SettingsScreen>
       curve: Curves.easeInOut,
       child: MediaQuery(
         data: MediaQuery.of(context).copyWith(
-          textScaler: settingsProvider.uiScale
+          textScaler: enableBonusScale
               ? TextScaler.linear(
                   settingsProvider.appFont == 'rock_salt' ? 1.0 : 1.2,
                 )

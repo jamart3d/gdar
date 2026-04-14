@@ -19,12 +19,12 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="play grateful dead archive org mp3">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Shakedown">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
@@ -245,7 +245,7 @@
         // Update iOS status bar
         let appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
         if (appleMeta) {
-          appleMeta.setAttribute('content', (themeColor === '#000000' || themeColor === 'black') ? 'black' : 'default');
+          appleMeta.setAttribute('content', (themeColor === '#000000' || themeColor === 'black') ? 'black-translucent' : 'default');
         }
 
         // Apply background color to body to prevent flashes

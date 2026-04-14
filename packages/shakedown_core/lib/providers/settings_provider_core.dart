@@ -19,6 +19,7 @@ const String _fruitEnableLiquidGlassKey = 'fruit_enable_liquid_glass';
 const String _neumorphicStyleKey = 'neumorphic_style';
 const String _performanceModeKey = 'performance_mode';
 const String _uiScaleKey = 'ui_scale';
+const String _settingsScreenUiScaleKey = 'settings_screen_ui_scale';
 const String _carModeKey = 'car_mode';
 const String _fruitFloatingSpheresKey = 'fruit_floating_spheres';
 const String _seedColorKey = 'seed_color';
@@ -78,6 +79,7 @@ mixin _SettingsProviderCoreFields {
   late bool _useDynamicColor;
   late bool _useTrueBlack;
   late bool _uiScale;
+  late bool _settingsScreenUiScale;
   late bool _carMode;
   late bool _fruitFloatingSpheres;
   late int _glowMode;
@@ -148,6 +150,7 @@ mixin _SettingsProviderCoreExtension
   bool get useSliverAppBar => true;
   bool get useSharedAxisTransition => true;
   bool get uiScale => _uiScale;
+  bool get settingsScreenUiScale => _settingsScreenUiScale;
   bool get carMode => _carMode;
   bool get fruitFloatingSpheres => _fruitFloatingSpheres;
   int get glowMode => _glowMode;
@@ -363,8 +366,10 @@ mixin _SettingsProviderCoreExtension
     if (_carMode) {
       _showDayOfWeek = false;
       _abbreviateMonth = true;
+      _settingsScreenUiScale = true;
       _prefs.setBool(_showDayOfWeekKey, false);
       _prefs.setBool(_abbreviateMonthKey, true);
+      _prefs.setBool(_settingsScreenUiScaleKey, true);
 
       if (_uiScale) {
         _uiScale = false;
@@ -372,6 +377,9 @@ mixin _SettingsProviderCoreExtension
         _prefs.setBool(_uiScaleKey, false);
         _prefs.setBool(_abbreviateDayOfWeekKey, false);
       }
+    } else {
+      _settingsScreenUiScale = false;
+      _prefs.setBool(_settingsScreenUiScaleKey, false);
     }
 
     notifyListeners();

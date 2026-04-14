@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../scripts/code_hygiene_audit.dart';
 
 void main() {
-
   group('sanitizeForIdentifierScan', () {
     test('removes private-like identifiers inside string literals', () {
       const content = '''
@@ -101,10 +100,7 @@ external void _jsUpdatePlaybackState(bool playing);
     });
 
     test('does not match `external` substring inside an identifier', () {
-      expect(
-        isInteropExternalDeclaration('void _externalize() {'),
-        isFalse,
-      );
+      expect(isInteropExternalDeclaration('void _externalize() {'), isFalse);
     });
   });
 }

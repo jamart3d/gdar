@@ -1,4 +1,12 @@
 <en-US>
+What's new in v1.3.96+306
+• Independent `settingsScreenUiScale` variable decoupled from global UI scale states, allowing isolated Settings screen sizing when dynamically triggered by Car Mode.
+• Fixed visual scaling discrepancies when toggling 'Car Mode' in the Settings screen. Replacing `TextTheme.apply` with exact root theme instantiations (`GDARFruitTheme` / `GDARAndroidTheme`) guarantees pixel-perfect parity with global UI scale toggles across web targets.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.95+305
 • Web: tightened the Dart-side position interpolation guard in `GaplessPlayer`
 • Tests: added web interpolation guard coverage in

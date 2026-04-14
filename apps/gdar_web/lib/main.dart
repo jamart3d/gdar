@@ -200,6 +200,9 @@ class _GdarWebAppState extends State<GdarWebApp> {
             child: MaterialApp(
               navigatorKey: _navigatorKey,
               title: 'Shakedown.',
+              color: themeProvider.currentThemeMode == ThemeMode.light
+                  ? lightTheme.scaffoldBackgroundColor
+                  : darkTheme.scaffoldBackgroundColor,
               debugShowCheckedModeBanner: false,
               theme: lightTheme,
               darkTheme: darkTheme,
