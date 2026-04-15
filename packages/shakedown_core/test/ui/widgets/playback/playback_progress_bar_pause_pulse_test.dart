@@ -68,13 +68,10 @@ void main() {
         ChangeNotifierProvider<AudioProvider>.value(value: audioProvider),
         ChangeNotifierProvider<SettingsProvider>.value(value: settingsProvider),
       ],
-      child: MaterialApp(
+      child: const MaterialApp(
         home: Scaffold(
           body: Center(
-            child: SizedBox(
-              width: 420,
-              child: const PlaybackProgressBar(),
-            ),
+            child: SizedBox(width: 420, child: PlaybackProgressBar()),
           ),
         ),
       ),
@@ -85,7 +82,7 @@ void main() {
     (widget) => widget is TweenAnimationBuilder<double>,
   );
 
-  Future<void> _pumpForState(
+  Future<void> pumpForState(
     WidgetTester tester, {
     required ProcessingState processingState,
   }) async {
@@ -126,27 +123,19 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets(
-    'PlaybackProgressBar pulses while loading before buffering',
-    (tester) async {
-      await _pumpForState(
-        tester,
-        processingState: ProcessingState.loading,
-      );
+  testWidgets('PlaybackProgressBar pulses while loading before buffering', (
+    tester,
+  ) async {
+    await pumpForState(tester, processingState: ProcessingState.loading);
 
-      expect(pulseFinder(), findsOneWidget);
-    },
-  );
+    expect(pulseFinder(), findsOneWidget);
+  });
 
-  testWidgets(
-    'PlaybackProgressBar does not pulse once buffering starts',
-    (tester) async {
-      await _pumpForState(
-        tester,
-        processingState: ProcessingState.buffering,
-      );
+  testWidgets('PlaybackProgressBar does not pulse once buffering starts', (
+    tester,
+  ) async {
+    await pumpForState(tester, processingState: ProcessingState.buffering);
 
-      expect(pulseFinder(), findsNothing);
-    },
-  );
+    expect(pulseFinder(), findsNothing);
+  });
 }
