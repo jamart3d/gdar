@@ -35,7 +35,7 @@
   <title>Shakedown</title>
   <link rel="manifest" href="manifest.json">
   <style>
-    body {
+    html, body {
       background-color: var(--splash-bg);
       margin: 0;
       padding: 0;
@@ -249,6 +249,7 @@
         }
 
         // Apply background color to body to prevent flashes
+        document.documentElement.style.backgroundColor = bgColor;
         document.body.style.backgroundColor = bgColor;
 
         // Keep the --splash-bg CSS var in sync so flt-glass-pane (which reads
@@ -256,6 +257,15 @@
         // boot-time value. Affects anything transparent in the Flutter canvas,
         // including the region below the FruitTabBar's blurred glass.
         document.documentElement.style.setProperty('--splash-bg', bgColor);
+
+        // Force-refresh host layers used by Flutter web renderers so areas
+        // outside/under translucent UI (e.g. below FruitTabBar) match theme.
+        const hostLayers = document.querySelectorAll(
+          'flt-glass-pane, flt-scene-host, flutter-view'
+        );
+        hostLayers.forEach((el) => {
+          el.style.backgroundColor = bgColor;
+        });
       };
     })();
   </script>
@@ -293,4 +303,3 @@
 </body>
 
 </html>
-

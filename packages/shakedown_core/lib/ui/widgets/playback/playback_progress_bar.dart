@@ -117,9 +117,11 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                           builder: (context, stateSnapshot) {
                             final processingState =
                                 stateSnapshot.data?.processingState;
-                            final isBuffering =
-                                processingState == ProcessingState.buffering ||
+                            final isLoading =
                                 processingState == ProcessingState.loading;
+                            final isBuffering =
+                                processingState == ProcessingState.buffering;
+                            final shouldAnimateBuffering = isLoading;
                             final bufferingPercentage =
                                 (hasKnownDuration
                                         ? bufferedPosition.inSeconds /
@@ -151,7 +153,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                   ),
                                 ),
                                 // Shimmer / pulse across full track
-                                if (isBuffering)
+                                if (shouldAnimateBuffering)
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(
                                       6 * scaleFactor,
@@ -207,7 +209,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                                   );
                                                 },
                                             onEnd: () {
-                                              if (isBuffering &&
+                                              if (shouldAnimateBuffering &&
                                                   context.mounted) {
                                                 setState(() {
                                                   _sweepToggle = !_sweepToggle;
@@ -239,7 +241,7 @@ class _PlaybackProgressBarState extends State<PlaybackProgressBar>
                                               );
                                             },
                                             onEnd: () {
-                                              if (isBuffering &&
+                                              if (shouldAnimateBuffering &&
                                                   context.mounted) {
                                                 _pulseReverse = !_pulseReverse;
                                                 (context as Element)

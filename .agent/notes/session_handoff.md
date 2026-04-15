@@ -1,3 +1,76 @@
+# Session Handoff — 2026-04-15 (Web host background sync + Fruit car-mode progress pulse contract)
+
+## State at Handoff
+
+Two user-reported web/PWA UI issues were addressed end-to-end:
+
+1. Web Fruit bottom area (below tab bar) not updating on dark/light toggle.
+2. Fruit car mode playback progress pulse behavior clarified and enforced:
+   pulse only during pre-buffer/loading URL resolution, not during buffering.
+
+Both fixes were implemented and verified with targeted Flutter tests.
+
+## What Changed
+
+### `apps/gdar_web/web/index.html` — runtime host-layer background sync
+
+`updateThemeBranding(themeColor, bgColor)` now updates all relevant page/host
+layers, not only `<body>`, so runtime theme toggles repaint under translucent
+Fruit UI regions.
+
+- CSS update: `html, body { background-color: var(--splash-bg); ... }`
+- JS update in `updateThemeBranding`:
+  - `document.documentElement.style.backgroundColor = bgColor`
+  - `document.body.style.backgroundColor = bgColor`
+  - keep `--splash-bg` CSS var in sync
+  - additionally apply `backgroundColor` to:
+    `flt-glass-pane`, `flt-scene-host`, `flutter-view`
+
+Result: area below/behind Fruit tab bar now tracks dark/light switching.
+
+### `packages/shakedown_core/lib/ui/widgets/playback/playback_progress_bar.dart`
+### `packages/shakedown_core/test/ui/widgets/playback/playback_progress_bar_pause_pulse_test.dart`
+
+Progress bar pulse contract was adjusted after user clarification:
+
+- **Pulse ON** only in `ProcessingState.loading`
+  (trying to resolve/start playback URL, pre-buffer stage).
+- **Pulse OFF** in `ProcessingState.buffering`
+  (buffered segment still grows normally to show cached track amount).
+
+Implementation detail:
+
+- `processingState` is split into `isLoading` and `isBuffering`.
+- `shouldAnimateBuffering` now maps to `isLoading` only.
+- Existing unknown-duration spinner remains tied to `isBuffering`.
+
+Regression tests added/updated:
+
+- `PlaybackProgressBar pulses while loading before buffering`
+- `PlaybackProgressBar does not pulse once buffering starts`
+
+## Verification Evidence
+
+Commands run and passing in this session:
+
+- `flutter test packages/shakedown_core/test/ui/widgets/fruit/fruit_tab_bar_platform_contract_test.dart`
+- `flutter test packages/shakedown_core/test/ui/widgets/playback/playback_progress_bar_pause_pulse_test.dart`
+- `flutter test packages/shakedown_core/test/screens/playback_screen_test.dart --plain-name "PlaybackScreen freezes Fruit car mode stat chips while paused"`
+
+## Files Touched This Session
+
+- `apps/gdar_web/web/index.html`
+- `packages/shakedown_core/lib/ui/widgets/playback/playback_progress_bar.dart`
+- `packages/shakedown_core/test/ui/widgets/playback/playback_progress_bar_pause_pulse_test.dart` (new)
+
+## Notes
+
+- Worktree had unrelated pre-existing changes:
+  - `apps/gdar_mobile/linux/flutter/generated_plugins.cmake`
+  - `apps/gdar_mobile/windows/flutter/generated_plugins.cmake`
+  - `Screenshot_20260415-151106.png` (untracked)
+- These were not modified/reverted as part of this work.
+
 # Session Handoff — 2026-04-12 (Web PWA theme-sync + MediaSession diagnosis)
 
 ## State at Handoff
