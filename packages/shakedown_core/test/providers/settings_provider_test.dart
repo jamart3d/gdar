@@ -250,6 +250,7 @@ void main() {
     test('turning Car Mode on forces UI Scale off', () async {
       settingsProvider.toggleUiScale();
       expect(settingsProvider.uiScale, true);
+      expect(settingsProvider.abbreviateDayOfWeek, true);
 
       settingsProvider.toggleCarMode();
 
@@ -257,11 +258,15 @@ void main() {
       expect(settingsProvider.carMode, true);
       expect(settingsProvider.uiScale, false);
       expect(settingsProvider.showDayOfWeek, false);
-      expect(settingsProvider.abbreviateDayOfWeek, false);
+      expect(
+        settingsProvider.abbreviateDayOfWeek,
+        true,
+      ); // Should remain true via car mode
       expect(settingsProvider.abbreviateMonth, true);
       expect(prefs.getBool('car_mode'), true);
       expect(prefs.getBool('ui_scale'), false);
       expect(prefs.getBool('show_day_of_week'), false);
+      expect(prefs.getBool('abbreviate_day_of_week'), true);
       expect(prefs.getBool('abbreviate_month'), true);
     });
 
@@ -272,9 +277,13 @@ void main() {
       if (settingsProvider.abbreviateMonth) {
         settingsProvider.toggleAbbreviateMonth();
       }
+      if (settingsProvider.abbreviateDayOfWeek) {
+        settingsProvider.toggleAbbreviateDayOfWeek();
+      }
 
       expect(settingsProvider.showDayOfWeek, true);
       expect(settingsProvider.abbreviateMonth, false);
+      expect(settingsProvider.abbreviateDayOfWeek, false);
 
       settingsProvider.toggleCarMode();
 
@@ -282,8 +291,10 @@ void main() {
       expect(settingsProvider.carMode, true);
       expect(settingsProvider.showDayOfWeek, false);
       expect(settingsProvider.abbreviateMonth, true);
+      expect(settingsProvider.abbreviateDayOfWeek, true);
       expect(prefs.getBool('show_day_of_week'), false);
       expect(prefs.getBool('abbreviate_month'), true);
+      expect(prefs.getBool('abbreviate_day_of_week'), true);
     });
 
     test(
@@ -293,7 +304,8 @@ void main() {
           'first_run_check_done': true,
           'car_mode': true,
           'show_day_of_week': true,
-          'abbreviate_month': false,
+          'abbreviate_month': true,
+          'abbreviate_day_of_week': true,
         });
         final prefs = await SharedPreferences.getInstance();
         final provider = SettingsProvider(prefs);
@@ -301,8 +313,10 @@ void main() {
         expect(provider.carMode, true);
         expect(provider.showDayOfWeek, false);
         expect(provider.abbreviateMonth, true);
+        expect(provider.abbreviateDayOfWeek, true);
         expect(prefs.getBool('show_day_of_week'), false);
         expect(prefs.getBool('abbreviate_month'), true);
+        expect(prefs.getBool('abbreviate_day_of_week'), true);
       },
     );
 

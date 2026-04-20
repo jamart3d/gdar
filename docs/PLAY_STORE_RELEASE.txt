@@ -1,4 +1,14 @@
 <en-US>
+What's new in v1.3.98+308
+• Car Mode UI Scaling Synchronization: Aligned the Settings screen scaling behavior in Car Mode with the standard UI Scale toggle.
+• Removed redundant `TextScaler` in `SettingsScreen` to prevent over-scaling when Car Mode or UI Scale is active.
+• Standardized `SettingsProvider.toggleCarMode` to include all UI scale side effects (e.g., enabling `abbreviateDayOfWeek` and `abbreviateMonth`).
+• Ensured consistent 1.35x theme-based scaling across all high-legibility modes.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.97+307
 • [Web PWA] Integrated MediaSession transport handlers (play, pause, next, previous, seek) for all JS audio engines, fixing dead notification controls on mobile/PWA.
 • [Web Fruit] Fixed runtime theme-sync for translucent host layers; dark/light toggles now immediately update regions behind the tab bar and splash underlay.

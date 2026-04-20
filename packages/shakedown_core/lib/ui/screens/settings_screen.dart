@@ -336,13 +336,9 @@ class _SettingsScreenState extends State<SettingsScreen>
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
       child: MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          textScaler: enableBonusScale
-              ? TextScaler.linear(
-                  settingsProvider.appFont == 'rock_salt' ? 1.0 : 1.2,
-                )
-              : const TextScaler.linear(1.0),
-        ),
+        data: MediaQuery.of(
+          context,
+        ).copyWith(textScaler: const TextScaler.linear(1.0)),
         child: Scaffold(
           body: Stack(
             children: [

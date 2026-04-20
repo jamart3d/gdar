@@ -366,16 +366,16 @@ mixin _SettingsProviderCoreExtension
     if (_carMode) {
       _showDayOfWeek = false;
       _abbreviateMonth = true;
+      _abbreviateDayOfWeek = true; // Match UI Scale behavior
       _settingsScreenUiScale = true;
       _prefs.setBool(_showDayOfWeekKey, false);
       _prefs.setBool(_abbreviateMonthKey, true);
+      _prefs.setBool(_abbreviateDayOfWeekKey, true);
       _prefs.setBool(_settingsScreenUiScaleKey, true);
 
       if (_uiScale) {
         _uiScale = false;
-        _abbreviateDayOfWeek = false;
         _prefs.setBool(_uiScaleKey, false);
-        _prefs.setBool(_abbreviateDayOfWeekKey, false);
       }
     } else {
       _settingsScreenUiScale = false;

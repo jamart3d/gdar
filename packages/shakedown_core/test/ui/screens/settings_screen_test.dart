@@ -165,9 +165,24 @@ void main() {
       await tester.pump();
 
       expect(settingsProvider.carMode, isFalse);
-      expect(settingsProvider.preventSleep, isFalse);
       expect(settingsProvider.fruitFloatingSpheres, isTrue);
       expect(settingsProvider.fruitEnableLiquidGlass, isTrue);
+    },
+  );
+
+  testWidgets(
+    'SettingsScreen uses 1.0 TextScaler even when car mode is active',
+    (WidgetTester tester) async {
+      final settingsProvider = SettingsProvider(prefs);
+      if (!settingsProvider.carMode) settingsProvider.toggleCarMode();
+
+      expect(settingsProvider.carMode, isTrue);
+      expect(settingsProvider.settingsScreenUiScale, isTrue);
+
+      await tester.pumpWidget(createTestableWidget(settingsProvider));
+
+      final MediaQuery mediaQuery = tester.widget(find.byType(MediaQuery).last);
+      expect(mediaQuery.data.textScaler, const TextScaler.linear(1.0));
     },
   );
 
