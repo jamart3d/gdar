@@ -17,7 +17,7 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
     return _hudSnapshotController!.stream;
   }
 
-  HudSnapshot get currentHudSnapshot => _createHudSnapshot();
+  HudSnapshot get currentHudSnapshot => createHudSnapshot();
 
   void clearLastIssue() {
     _issueTimeoutTimer?.cancel();
@@ -81,11 +81,11 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
     _diagnosticsTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
       if (_diagnosticsController != null &&
           _diagnosticsController!.hasListener) {
-        _diagnosticsController!.add(_createSnapshot());
+        _diagnosticsController!.add(createSnapshot());
       }
       if (_hudSnapshotController != null &&
           _hudSnapshotController!.hasListener) {
-        _hudSnapshotController!.add(_createHudSnapshot());
+        _hudSnapshotController!.add(createHudSnapshot());
       }
     });
   }
@@ -95,7 +95,7 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
     _diagnosticsTimer = null;
   }
 
-  DngSnapshot _createSnapshot() {
+  DngSnapshot createSnapshot() {
     return DngSnapshot(
       position: _audioPlayer.position,
       buffered: _audioPlayer.bufferedPosition,
@@ -131,8 +131,8 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
     );
   }
 
-  HudSnapshot _createHudSnapshot() {
-    final dng = _createSnapshot();
+  HudSnapshot createHudSnapshot() {
+    final dng = createSnapshot();
     final settings = _settingsProvider;
     if (settings == null) return HudSnapshot.empty();
 

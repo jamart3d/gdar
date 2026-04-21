@@ -16,6 +16,7 @@ import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
 import 'package:shakedown_core/models/track.dart';
 import 'package:shakedown_core/models/hud_snapshot.dart';
+import 'package:shakedown_core/models/dng_snapshot.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';

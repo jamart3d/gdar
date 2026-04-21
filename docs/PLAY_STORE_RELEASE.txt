@@ -1,4 +1,11 @@
 <en-US>
+What's new in v1.4.2+312
+• Bug Fix (Fruit Car Mode): Resolved a transient state where "Picking show..." was visible on the playback screen despite a show already being selected. The UI now correctly falls back to the first track title while the audio engine initializes.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.100+310
 • Bug Fix (Fruit Car Mode): Resolved a transient state where "Picking show..." was visible on the playback screen despite a show already being selected. The UI now correctly falls back to the first track title while the audio engine initializes.
 • UI (Fruit Car Mode): Improved tracklist consistency during initial playback loading by ensuring the upcoming tracks list synchronizes correctly with the current track fallback.

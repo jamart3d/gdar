@@ -171,6 +171,16 @@ mixin _AudioProviderLifecycle
   }
 
   void _listenForPlaybackProgress() {
+    _positionSubscription = _audioPlayer.positionStream.listen((_) {
+      final now = DateTime.now();
+      if (now.difference(_lastPositionNotify) <
+          const Duration(milliseconds: 250)) {
+        return;
+      }
+      _lastPositionNotify = now;
+      notifyListeners();
+    });
+
     _indexSubscription = _audioPlayer.currentIndexStream.listen((index) async {
       final sequence = _audioPlayer.sequence;
       if (index == null || sequence.isEmpty) return;

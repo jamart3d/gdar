@@ -6,89 +6,66 @@ extension _PlaybackScreenFruitCarModeProgress on PlaybackScreenState {
     required AudioProvider audioProvider,
     required double scaleFactor,
   }) {
-    return StreamBuilder<Duration>(
-      stream: audioProvider.positionStream,
-      initialData: audioProvider.audioPlayer.position,
-      builder: (context, positionSnapshot) {
-        final position = positionSnapshot.data ?? Duration.zero;
+    return StreamBuilder<DngSnapshot>(
+      stream: audioProvider.diagnosticsStream,
+      initialData: audioProvider.createSnapshot(),
+      builder: (context, snapshot) {
+        final dng = snapshot.data ?? audioProvider.createSnapshot();
+        final position = dng.position;
+        final buffered = dng.buffered;
+        final playerState = dng.playerState ?? audioProvider.audioPlayer.playerState;
+        final processingState = playerState.processingState;
+        final total = audioProvider.audioPlayer.duration ?? Duration.zero;
 
-        return StreamBuilder<Duration?>(
-          stream: audioProvider.durationStream,
-          initialData: audioProvider.audioPlayer.duration,
-          builder: (context, durationSnapshot) {
-            final total = durationSnapshot.data ?? Duration.zero;
+        final metrics = computeFruitCarModeProgressMetrics(
+          position: position,
+          buffered: buffered,
+          total: total,
+        );
 
-            return StreamBuilder<Duration>(
-              stream: audioProvider.bufferedPositionStream,
-              initialData: audioProvider.audioPlayer.bufferedPosition,
-              builder: (context, bufferedSnapshot) {
-                final buffered = bufferedSnapshot.data ?? Duration.zero;
-                final metrics = computeFruitCarModeProgressMetrics(
-                  position: position,
-                  buffered: buffered,
-                  total: total,
-                );
+        final isLoading = processingState == ProcessingState.loading;
+        final isBuffering = processingState == ProcessingState.buffering;
 
-                return StreamBuilder<PlayerState>(
-                  stream: audioProvider.playerStateStream,
-                  initialData: audioProvider.audioPlayer.playerState,
-                  builder: (context, stateSnapshot) {
-                    final playerState =
-                        stateSnapshot.data ??
-                        audioProvider.audioPlayer.playerState;
-                    final processingState = playerState.processingState;
-                    final isLoading =
-                        processingState == ProcessingState.loading;
-                    final isBuffering =
-                        processingState == ProcessingState.buffering;
-                    final showPendingState = computeFruitCarModePendingCue(
-                      isLoading: isLoading,
-                      isBuffering: isBuffering,
-                      bufferedPositionMs: metrics.bufferedMs,
-                      positionMs: metrics.positionMs,
-                      durationMs: metrics.totalMs,
-                    );
+        final showPendingState = computeFruitCarModePendingCue(
+          isLoading: isLoading,
+          isBuffering: isBuffering,
+          bufferedPositionMs: metrics.bufferedMs,
+          positionMs: metrics.positionMs,
+          durationMs: metrics.totalMs,
+        );
 
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _buildFruitCarModeProgressTrack(
-                          context: context,
-                          audioProvider: audioProvider,
-                          scaleFactor: scaleFactor,
-                          metrics: metrics,
-                          showPendingState: showPendingState,
-                          isLoading: isLoading,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 4 * scaleFactor,
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildFruitCarModeDurationText(
-                                context,
-                                formatDuration(position),
-                                scaleFactor,
-                              ),
-                              _buildFruitCarModeDurationText(
-                                context,
-                                metrics.totalMs <= 0
-                                    ? '--:--'
-                                    : formatDuration(total),
-                                scaleFactor,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-            );
-          },
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildFruitCarModeProgressTrack(
+              context: context,
+              audioProvider: audioProvider,
+              scaleFactor: scaleFactor,
+              metrics: metrics,
+              showPendingState: showPendingState,
+              isLoading: isLoading,
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 4 * scaleFactor,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildFruitCarModeDurationText(
+                    context,
+                    formatDuration(position),
+                    scaleFactor,
+                  ),
+                  _buildFruitCarModeDurationText(
+                    context,
+                    metrics.totalMs <= 0 ? '--:--' : formatDuration(total),
+                    scaleFactor,
+                  ),
+                ],
+              ),
+            ),
+          ],
         );
       },
     );

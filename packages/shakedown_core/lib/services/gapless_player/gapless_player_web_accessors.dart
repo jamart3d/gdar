@@ -4,9 +4,18 @@ mixin _GaplessPlayerWebAccessors
     on _GaplessPlayerBase, _GaplessPlayerWebEngine {
   bool get playing => _useJsEngine ? _playing : _fallbackPlayer!.playing;
 
-  Duration get position => _useJsEngine
-      ? Duration(milliseconds: (_positionSec * 1000).round())
-      : _fallbackPlayer!.position;
+  Duration get position {
+    if (!_useJsEngine) return _fallbackPlayer!.position;
+
+    double displaySec = _positionSec;
+    if (_playing && _lastTickAt != null && _durationSec > 0) {
+      final now = DateTime.now();
+      final elapsedSec = now.difference(_lastTickAt!).inMicroseconds / 1e6;
+      displaySec = (_positionSec + elapsedSec).clamp(0.0, _durationSec);
+    }
+
+    return Duration(milliseconds: (displaySec * 1000).round());
+  }
 
   Duration get bufferedPosition => _useJsEngine
       ? Duration(milliseconds: (_currentTrackBufferedSec * 1000).round())

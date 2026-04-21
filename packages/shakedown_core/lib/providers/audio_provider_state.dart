@@ -59,6 +59,7 @@ mixin _AudioProviderState {
   late final WakelockService _wakelockService;
   StreamSubscription<Duration>? _bufferedPositionSubscription;
   DateTime _lastBufferedNotify = DateTime.fromMillisecondsSinceEpoch(0);
+  DateTime _lastPositionNotify = DateTime.fromMillisecondsSinceEpoch(0);
 
   String? _error;
   DateTime _lastErrorNotifyAt = DateTime.fromMillisecondsSinceEpoch(0);
