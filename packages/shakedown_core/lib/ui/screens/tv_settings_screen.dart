@@ -95,11 +95,11 @@ class _TvSettingsScreenState extends State<TvSettingsScreen> {
         activeSection = const CollectionStatistics(
           initiallyExpanded: initiallyExpanded,
           showCategoryDetails: false,
-          scaleFactorOverride: scaleFactor,
+          scaleFactor: scaleFactor,
         );
         break;
       case 5:
-        activeSection = const SourceFilterSettings();
+        activeSection = const SourceFilterSettings(scaleFactor: scaleFactor);
         break;
       case 6:
         activeSection = const RatedShowsBody(

@@ -67,8 +67,10 @@ class FontLayoutConfig {
     // - If UI Scale is OFF: Use system scale (clamped). No modifications.
     // - If UI Scale is ON: Apply 1.35x boost for noticeable size increase.
     final double effectiveScale = isUiScaleActive
-        ? (textScale * 1.35) // Changed from 1.4 to match app_themes
-              .clamp(config.textScaleClampMin, config.textScaleClampMax)
+        ? (textScale * 1.35).clamp(
+            config.textScaleClampMin,
+            config.textScaleClampMax,
+          )
         : textScale.clamp(config.textScaleClampMin, config.textScaleClampMax);
 
     return effectiveScale;

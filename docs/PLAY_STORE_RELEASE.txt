@@ -1,4 +1,13 @@
 <en-US>
+What's new in v1.3.99+309
+• Car Mode UI Scaling Synchronization: Achieved perfect parity between `Car Mode` and the standard `UI Scale` toggle for the Settings screen.
+• Synchronized date and month abbreviations to trigger automatically when Car Mode is enabled.
+• Refactored `SourceFilterSettings` and `CollectionStatistics` to correctly inherit the parent screen's `scaleFactor`, fixing a bug where these sub-sections remained small in Car Mode.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.98+308
 • Car Mode UI Scaling Synchronization: Aligned the Settings screen scaling behavior in Car Mode with the standard UI Scale toggle.
 • Removed redundant `TextScaler` in `SettingsScreen` to prevent over-scaling when Car Mode or UI Scale is active.

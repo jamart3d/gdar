@@ -171,18 +171,20 @@ void main() {
   );
 
   testWidgets(
-    'SettingsScreen uses 1.0 TextScaler even when car mode is active',
+    'SettingsScreen uses 1.2 TextScaler when car mode is active (default font)',
     (WidgetTester tester) async {
       final settingsProvider = SettingsProvider(prefs);
+      settingsProvider.setAppFont('default'); // Ensure we aren't on rock_salt
       if (!settingsProvider.carMode) settingsProvider.toggleCarMode();
 
       expect(settingsProvider.carMode, isTrue);
       expect(settingsProvider.settingsScreenUiScale, isTrue);
+      expect(settingsProvider.appFont, 'default');
 
       await tester.pumpWidget(createTestableWidget(settingsProvider));
 
       final MediaQuery mediaQuery = tester.widget(find.byType(MediaQuery).last);
-      expect(mediaQuery.data.textScaler, const TextScaler.linear(1.0));
+      expect(mediaQuery.data.textScaler, const TextScaler.linear(1.2));
     },
   );
 

@@ -379,7 +379,11 @@ mixin _SettingsProviderCoreExtension
       }
     } else {
       _settingsScreenUiScale = false;
+      _abbreviateMonth = false;
+      _abbreviateDayOfWeek = false;
       _prefs.setBool(_settingsScreenUiScaleKey, false);
+      _prefs.setBool(_abbreviateMonthKey, false);
+      _prefs.setBool(_abbreviateDayOfWeekKey, false);
     }
 
     notifyListeners();

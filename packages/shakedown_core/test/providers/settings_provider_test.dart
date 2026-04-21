@@ -244,7 +244,11 @@ void main() {
 
       settingsProvider.toggleCarMode();
       expect(settingsProvider.carMode, false);
+      expect(settingsProvider.abbreviateMonth, false);
+      expect(settingsProvider.abbreviateDayOfWeek, false);
       expect(prefs.getBool('car_mode'), false);
+      expect(prefs.getBool('abbreviate_month'), false);
+      expect(prefs.getBool('abbreviate_day_of_week'), false);
     });
 
     test('turning Car Mode on forces UI Scale off', () async {

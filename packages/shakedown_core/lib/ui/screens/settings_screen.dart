@@ -291,7 +291,10 @@ class _SettingsScreenState extends State<SettingsScreen>
             scaleFactor: scaleFactor,
             initiallyExpanded: widget.highlightSetting == 'interface',
           ),
-          const SourceFilterSettings(key: ValueKey('source_filter_section')),
+          SourceFilterSettings(
+            key: const ValueKey('source_filter_section'),
+            scaleFactor: scaleFactor,
+          ),
           PlaybackSection(
             scaleFactor: scaleFactor,
             initiallyExpanded:
@@ -320,6 +323,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                 child: CollectionStatistics(
                   initiallyExpanded:
                       widget.highlightSetting == 'collection_statistics',
+                  scaleFactor: scaleFactor,
                 ),
               );
             },
@@ -336,9 +340,13 @@ class _SettingsScreenState extends State<SettingsScreen>
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
       child: MediaQuery(
-        data: MediaQuery.of(
-          context,
-        ).copyWith(textScaler: const TextScaler.linear(1.0)),
+        data: MediaQuery.of(context).copyWith(
+          textScaler: enableBonusScale
+              ? TextScaler.linear(
+                  settingsProvider.appFont == 'rock_salt' ? 1.0 : 1.2,
+                )
+              : const TextScaler.linear(1.0),
+        ),
         child: Scaffold(
           body: Stack(
             children: [

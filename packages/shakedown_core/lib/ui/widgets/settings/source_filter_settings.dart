@@ -12,19 +12,20 @@ import 'package:shakedown_core/ui/widgets/animated_gradient_border.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
 
 class SourceFilterSettings extends StatelessWidget {
-  const SourceFilterSettings({super.key});
+  final double? scaleFactor;
+
+  const SourceFilterSettings({super.key, this.scaleFactor});
 
   @override
   Widget build(BuildContext context) {
     final settingsProvider = context.watch<SettingsProvider>();
     final showListProvider = context.watch<ShowListProvider>();
-    final scaleFactor = FontLayoutConfig.getEffectiveScale(
-      context,
-      settingsProvider,
-    );
+    final effectiveScaleFactor =
+        scaleFactor ??
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     return SectionCard(
-      scaleFactor: scaleFactor,
+      scaleFactor: effectiveScaleFactor,
       title: 'Source Filtering',
       icon: Icons.filter_alt_outlined,
       children: [
@@ -36,7 +37,7 @@ class SourceFilterSettings extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               'Highest SHNID Only',
-              style: TextStyle(fontSize: 10 * scaleFactor),
+              style: TextStyle(fontSize: 10 * effectiveScaleFactor),
             ),
           ),
           subtitle: FittedBox(
@@ -44,7 +45,7 @@ class SourceFilterSettings extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               'Only show the latest source for each show',
-              style: TextStyle(fontSize: 8.5 * scaleFactor),
+              style: TextStyle(fontSize: 8.5 * effectiveScaleFactor),
             ),
           ),
           value: settingsProvider.filterHighestShnid,
@@ -62,7 +63,7 @@ class SourceFilterSettings extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               'Source Categories',
-              style: TextStyle(fontSize: 10 * scaleFactor),
+              style: TextStyle(fontSize: 10 * effectiveScaleFactor),
             ),
           ),
           subtitle: FittedBox(
@@ -70,7 +71,7 @@ class SourceFilterSettings extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               'Tap to toggle, Long press to solo',
-              style: TextStyle(fontSize: 8.5 * scaleFactor),
+              style: TextStyle(fontSize: 8.5 * effectiveScaleFactor),
             ),
           ),
           leading: const Icon(Icons.category_rounded),
@@ -78,7 +79,10 @@ class SourceFilterSettings extends StatelessWidget {
             onPressed: () {
               context.read<SettingsProvider>().enableAllSourceCategories();
             },
-            child: Text('All', style: TextStyle(fontSize: 10 * scaleFactor)),
+            child: Text(
+              'All',
+              style: TextStyle(fontSize: 10 * effectiveScaleFactor),
+            ),
           ),
         ),
         Padding(
@@ -98,6 +102,7 @@ class SourceFilterSettings extends StatelessWidget {
                   ),
                   onLongPress: () =>
                       settingsProvider.setSoloSourceCategoryFilter('betty'),
+                  scaleFactor: effectiveScaleFactor,
                 ),
               if (showListProvider.availableCategories.contains('ultra'))
                 _buildFilterBadge(
@@ -110,6 +115,7 @@ class SourceFilterSettings extends StatelessWidget {
                   ),
                   onLongPress: () =>
                       settingsProvider.setSoloSourceCategoryFilter('ultra'),
+                  scaleFactor: effectiveScaleFactor,
                 ),
               if (showListProvider.availableCategories.contains('matrix'))
                 _buildFilterBadge(
@@ -122,6 +128,7 @@ class SourceFilterSettings extends StatelessWidget {
                   ),
                   onLongPress: () =>
                       settingsProvider.setSoloSourceCategoryFilter('matrix'),
+                  scaleFactor: effectiveScaleFactor,
                 ),
               if (showListProvider.availableCategories.contains('dsbd'))
                 _buildFilterBadge(
@@ -134,6 +141,7 @@ class SourceFilterSettings extends StatelessWidget {
                   ),
                   onLongPress: () =>
                       settingsProvider.setSoloSourceCategoryFilter('dsbd'),
+                  scaleFactor: effectiveScaleFactor,
                 ),
               if (showListProvider.availableCategories.contains('fm'))
                 _buildFilterBadge(
@@ -146,6 +154,7 @@ class SourceFilterSettings extends StatelessWidget {
                   ),
                   onLongPress: () =>
                       settingsProvider.setSoloSourceCategoryFilter('fm'),
+                  scaleFactor: effectiveScaleFactor,
                 ),
               if (showListProvider.availableCategories.contains('sbd'))
                 _buildFilterBadge(
@@ -158,6 +167,7 @@ class SourceFilterSettings extends StatelessWidget {
                   ),
                   onLongPress: () =>
                       settingsProvider.setSoloSourceCategoryFilter('sbd'),
+                  scaleFactor: effectiveScaleFactor,
                 ),
               // Special case for 'unk' (Unknown) to ensure it's displayed if present
               if (showListProvider.availableCategories.contains('unk'))
@@ -174,6 +184,7 @@ class SourceFilterSettings extends StatelessWidget {
                   },
                   onLongPress: () =>
                       settingsProvider.setSoloSourceCategoryFilter('unk'),
+                  scaleFactor: effectiveScaleFactor,
                 ),
             ],
           ),
@@ -188,11 +199,16 @@ class SourceFilterSettings extends StatelessWidget {
     bool isActive,
     VoidCallback onTap, {
     VoidCallback? onLongPress,
+    required double scaleFactor,
   }) {
     final isTv = context.read<DeviceService>().isTv;
 
     if (isTv) {
-      Widget badge = _TvSourceFilterChip(label: label, isActive: isActive);
+      Widget badge = _TvSourceFilterChip(
+        label: label,
+        isActive: isActive,
+        scaleFactor: scaleFactor,
+      );
       if (isActive) {
         badge = AnimatedGradientBorder(
           borderRadius: 24,
@@ -219,6 +235,7 @@ class SourceFilterSettings extends StatelessWidget {
       isActive: isActive,
       onTap: onTap,
       onLongPress: onLongPress,
+      scaleFactor: scaleFactor,
     );
   }
 }
@@ -226,8 +243,13 @@ class SourceFilterSettings extends StatelessWidget {
 class _TvSourceFilterChip extends StatelessWidget {
   final String label;
   final bool isActive;
+  final double scaleFactor;
 
-  const _TvSourceFilterChip({required this.label, required this.isActive});
+  const _TvSourceFilterChip({
+    required this.label,
+    required this.isActive,
+    required this.scaleFactor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -239,7 +261,10 @@ class _TvSourceFilterChip extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOutCubic,
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: 18 * scaleFactor,
+        vertical: 12 * scaleFactor,
+      ),
       decoration: BoxDecoration(
         color: isActive
             ? theme.colorScheme.primary.withValues(alpha: 0.14)
@@ -250,7 +275,7 @@ class _TvSourceFilterChip extends StatelessWidget {
             ? [
                 BoxShadow(
                   color: theme.colorScheme.primary.withValues(alpha: 0.12),
-                  blurRadius: 16,
+                  blurRadius: 16 * scaleFactor,
                   spreadRadius: 1,
                 ),
               ]
@@ -259,7 +284,7 @@ class _TvSourceFilterChip extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: theme.textTheme.titleMedium?.copyWith(
-          fontSize: 15,
+          fontSize: 15 * scaleFactor,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.8,
           color: isActive
@@ -276,12 +301,14 @@ class _TactileBadge extends StatefulWidget {
   final bool isActive;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
+  final double scaleFactor;
 
   const _TactileBadge({
     required this.label,
     required this.isActive,
     required this.onTap,
     this.onLongPress,
+    required this.scaleFactor,
   });
 
   @override
@@ -333,11 +360,6 @@ class _TactileBadgeState extends State<_TactileBadge>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final settingsProvider = context.watch<SettingsProvider>();
-    final scaleFactor = FontLayoutConfig.getEffectiveScale(
-      context,
-      settingsProvider,
-    );
 
     return Semantics(
       button: true,
@@ -375,9 +397,9 @@ class _TactileBadgeState extends State<_TactileBadge>
               scale: _scaleAnimation,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 10 * widget.scaleFactor,
+                  vertical: 6 * widget.scaleFactor,
                 ),
                 decoration: BoxDecoration(
                   color: widget.isActive
@@ -400,7 +422,7 @@ class _TactileBadgeState extends State<_TactileBadge>
                           ? colorScheme.onSurface
                           : colorScheme.onSurface.withValues(alpha: 0.7),
                       fontWeight: FontWeight.w700,
-                      fontSize: 9 * scaleFactor,
+                      fontSize: 9 * widget.scaleFactor,
                       letterSpacing: 0.5,
                     ),
                   ),

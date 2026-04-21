@@ -16,13 +16,13 @@ class CollectionStatistics extends StatelessWidget {
   /// no ExpansionTile, no expand/collapse chrome.
   /// When true (mobile) the existing collapsible ExpansionTile is shown.
   final bool showCategoryDetails;
-  final double scaleFactorOverride;
+  final double? scaleFactor;
 
   const CollectionStatistics({
     super.key,
     this.initiallyExpanded = false,
     this.showCategoryDetails = true,
-    this.scaleFactorOverride = 1.0,
+    this.scaleFactor,
   });
 
   @override
@@ -32,9 +32,9 @@ class CollectionStatistics extends StatelessWidget {
     final themeProvider = context.watch<ThemeProvider>();
     final isFruit = themeProvider.themeStyle == ThemeStyle.fruit;
 
-    final scaleFactor = scaleFactorOverride != 1.0
-        ? scaleFactorOverride
-        : FontLayoutConfig.getEffectiveScale(context, settingsProvider);
+    final effectiveScaleFactor =
+        scaleFactor ??
+        FontLayoutConfig.getEffectiveScale(context, settingsProvider);
 
     final colorScheme = Theme.of(context).colorScheme;
     final allShows = showListProvider.allShows;
@@ -154,7 +154,7 @@ class CollectionStatistics extends StatelessWidget {
               child: Text(
                 label,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontSize: 14 * scaleFactor,
+                  fontSize: 14 * effectiveScaleFactor,
                   color: colorScheme.onSurface,
                 ),
               ),
@@ -163,7 +163,7 @@ class CollectionStatistics extends StatelessWidget {
             Text(
               '$showCount Shows / $sourceCount Sources',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontSize: 12 * scaleFactor,
+                fontSize: 12 * effectiveScaleFactor,
                 color: colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.right,
@@ -177,21 +177,21 @@ class CollectionStatistics extends StatelessWidget {
       if (catBettySources > 0)
         catRow('Betty Boards', catBettyShows.length, catBettySources),
       if (catUltraSources > 0)
-        catRow('Ultra Matrix', catUltraShows.length, catUltraSources),
+        catRow('Ultra Matrix', catBettyShows.length, catBettySources),
       if (catMatrixSources > 0)
-        catRow('Matrix', catMatrixShows.length, catMatrixSources),
+        catRow('Matrix', catBettyShows.length, catBettySources),
       if (catDsbdSources > 0)
-        catRow('Digital SBD', catDsbdShows.length, catDsbdSources),
+        catRow('Digital SBD', catBettyShows.length, catBettySources),
       if (catFmSources > 0)
-        catRow('FM Broadcast', catFmShows.length, catFmSources),
+        catRow('FM Broadcast', catBettyShows.length, catBettySources),
       if (catSbdSources > 0)
-        catRow('Soundboard', catSbdShows.length, catSbdSources),
+        catRow('Soundboard', catBettyShows.length, catBettySources),
     ];
 
     final isTv = !showCategoryDetails;
 
     return SectionCard(
-      scaleFactor: scaleFactor,
+      scaleFactor: effectiveScaleFactor,
       title: 'Collection Statistics',
       initiallyExpanded: initiallyExpanded,
       icon: Icons.bar_chart,
@@ -219,13 +219,13 @@ class CollectionStatistics extends StatelessWidget {
                   icon: Icons.library_music,
                   title: showsText,
                   subtitle: sourcesText,
-                  scaleFactor: scaleFactor,
+                  scaleFactor: effectiveScaleFactor,
                 ),
                 _TvStatBlock(
                   icon: Icons.timer,
                   title: runtimeText,
                   subtitle: songsText,
-                  scaleFactor: scaleFactor,
+                  scaleFactor: effectiveScaleFactor,
                 ),
               ],
             ),
@@ -236,7 +236,7 @@ class CollectionStatistics extends StatelessWidget {
             visualDensity: VisualDensity.compact,
             leading: Icon(
               isFruit ? LucideIcons.library : Icons.library_music,
-              size: 24 * scaleFactor,
+              size: 24 * effectiveScaleFactor,
               color: colorScheme.primary,
             ),
             title: FittedBox(
@@ -245,7 +245,7 @@ class CollectionStatistics extends StatelessWidget {
               child: Text(
                 showsText,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 16 * scaleFactor,
+                  fontSize: 16 * effectiveScaleFactor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -253,7 +253,7 @@ class CollectionStatistics extends StatelessWidget {
             subtitle: Padding(
               padding: EdgeInsets.only(
                 top: settingsProvider.appFont == 'rock_salt'
-                    ? 4.0 * scaleFactor
+                    ? 4.0 * effectiveScaleFactor
                     : 0,
               ),
               child: FittedBox(
@@ -261,9 +261,9 @@ class CollectionStatistics extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   sourcesText,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 12 * effectiveScaleFactor,
+                  ),
                 ),
               ),
             ),
@@ -273,7 +273,7 @@ class CollectionStatistics extends StatelessWidget {
             visualDensity: VisualDensity.compact,
             leading: Icon(
               isFruit ? LucideIcons.clock : Icons.timer,
-              size: 24 * scaleFactor,
+              size: 24 * effectiveScaleFactor,
               color: colorScheme.primary,
             ),
             title: FittedBox(
@@ -282,7 +282,7 @@ class CollectionStatistics extends StatelessWidget {
               child: Text(
                 runtimeText,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 16 * scaleFactor,
+                  fontSize: 16 * effectiveScaleFactor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -290,7 +290,7 @@ class CollectionStatistics extends StatelessWidget {
             subtitle: Padding(
               padding: EdgeInsets.only(
                 top: settingsProvider.appFont == 'rock_salt'
-                    ? 4.0 * scaleFactor
+                    ? 4.0 * effectiveScaleFactor
                     : 0,
               ),
               child: FittedBox(
@@ -298,9 +298,9 @@ class CollectionStatistics extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   songsText,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(fontSize: 12 * scaleFactor),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 12 * effectiveScaleFactor,
+                  ),
                 ),
               ),
             ),
@@ -313,7 +313,7 @@ class CollectionStatistics extends StatelessWidget {
             child: Text(
               'Source Categories',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontSize: 14 * scaleFactor,
+                fontSize: 14 * effectiveScaleFactor,
                 fontWeight: FontWeight.w700,
                 color: colorScheme.onSurface,
               ),
@@ -330,13 +330,13 @@ class CollectionStatistics extends StatelessWidget {
             title: Text(
               'Source Categories Details',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontSize: (isFruit ? 16 : 14) * scaleFactor,
+                fontSize: (isFruit ? 16 : 14) * effectiveScaleFactor,
                 fontWeight: FontWeight.w500,
               ),
             ),
             leading: Icon(
               isFruit ? LucideIcons.list : Icons.list_alt,
-              size: 20 * scaleFactor,
+              size: 20 * effectiveScaleFactor,
             ),
             shape: const Border(),
             children: [
@@ -353,7 +353,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       'Betty Boards',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                        fontSize: (isFruit ? 12 : 10) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -363,7 +363,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       '${catBettyShows.length} Shows / $catBettySources Sources',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                        fontSize: (isFruit ? 10.5 : 8.5) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -381,7 +381,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       'Ultra Matrix',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                        fontSize: (isFruit ? 12 : 10) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -391,7 +391,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       '${catUltraShows.length} Shows / $catUltraSources Sources',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                        fontSize: (isFruit ? 10.5 : 8.5) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -409,7 +409,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       'Matrix',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                        fontSize: (isFruit ? 12 : 10) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -419,7 +419,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       '${catMatrixShows.length} Shows / $catMatrixSources Sources',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                        fontSize: (isFruit ? 10.5 : 8.5) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -437,7 +437,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       'Digital SBD',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                        fontSize: (isFruit ? 12 : 10) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -447,7 +447,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       '${catDsbdShows.length} Shows / $catDsbdSources Sources',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                        fontSize: (isFruit ? 10.5 : 8.5) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -465,7 +465,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       'FM Broadcast',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                        fontSize: (isFruit ? 12 : 10) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -475,7 +475,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       '${catFmShows.length} Shows / $catFmSources Sources',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                        fontSize: (isFruit ? 10.5 : 8.5) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -493,7 +493,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       'Soundboard',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontSize: (isFruit ? 12 : 10) * scaleFactor,
+                        fontSize: (isFruit ? 12 : 10) * effectiveScaleFactor,
                       ),
                     ),
                   ),
@@ -503,7 +503,7 @@ class CollectionStatistics extends StatelessWidget {
                     child: Text(
                       '${catSbdShows.length} Shows / $catSbdSources Sources',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: (isFruit ? 10.5 : 8.5) * scaleFactor,
+                        fontSize: (isFruit ? 10.5 : 8.5) * effectiveScaleFactor,
                       ),
                     ),
                   ),
