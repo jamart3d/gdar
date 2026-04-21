@@ -1,7 +1,7 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 /// Tier of sphere density for [FloatingSpheresBackground].
 ///
@@ -64,18 +64,22 @@ class FloatingSpheresBackground extends StatefulWidget {
       _FloatingSpheresBackgroundState();
 }
 
-class _FloatingSpheresBackgroundState extends State<FloatingSpheresBackground> {
-  static const Duration _frameStep = Duration(milliseconds: 48);
-  static const double _wrapMargin = 0.28;
+class _FloatingSpheresBackgroundState extends State<FloatingSpheresBackground>
+    with SingleTickerProviderStateMixin {
+  static const Duration _logicFrameDuration = Duration(milliseconds: 48);
+  static const double _wrapMargin = 0.08;
 
-  Timer? _timer;
+  Ticker? _ticker;
+  Duration _lastElapsed = Duration.zero;
   late List<SphereNode> _spheres;
+  double _fractionalTicks = 0.0;
   int _tickCount = 0;
 
   @override
   void initState() {
     super.initState();
     _spheres = SphereNode.generate(widget.sphereCount.count);
+    _ticker = createTicker(_onTick);
     _syncAnimationState();
   }
 
@@ -92,29 +96,54 @@ class _FloatingSpheresBackgroundState extends State<FloatingSpheresBackground> {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _ticker?.dispose();
     super.dispose();
   }
 
   void _syncAnimationState() {
-    _timer?.cancel();
-    if (!widget.animate) return;
+    if (widget.animate && !(_ticker?.isActive ?? false)) {
+      _lastElapsed = Duration.zero;
+      _ticker?.start();
+    } else if (!widget.animate && (_ticker?.isActive ?? false)) {
+      _ticker?.stop();
+    }
+  }
 
-    _timer = Timer.periodic(_frameStep, (_) {
-      if (!mounted) return;
-      setState(() {
-        _tickCount++;
-        _spheres = _spheres.map(_advance).toList(growable: false);
-      });
+  void _onTick(Duration elapsed) {
+    if (_lastElapsed == Duration.zero) {
+      _lastElapsed = elapsed;
+      return;
+    }
+
+    final Duration delta = elapsed - _lastElapsed;
+    _lastElapsed = elapsed;
+
+    // Convert elapsed time into "logic ticks" (48ms increments)
+    final double deltaTicks =
+        delta.inMicroseconds / _logicFrameDuration.inMicroseconds;
+
+    setState(() {
+      _fractionalTicks += deltaTicks;
+      // We only update _tickCount for the breathing variance when we cross a full tick boundary
+      // but we use the continuous delta for smooth motion.
+      if (_fractionalTicks >= 1.0) {
+        _tickCount += _fractionalTicks.floor();
+        _fractionalTicks -= _fractionalTicks.floor();
+      }
+
+      _spheres = _spheres
+          .map((s) => _advance(s, deltaTicks))
+          .toList(growable: false);
     });
   }
 
-  SphereNode _advance(SphereNode s) {
+  SphereNode _advance(SphereNode s, double deltaTicks) {
     // Create an organic breathing variance in the speed (cycles roughly every 15 seconds)
     // Offset by paletteIndex so different color tiers accelerate/decelerate at different times.
     final double breathingVariance =
         1.0 + 0.3 * math.sin((_tickCount * 0.02) + s.paletteIndex);
-    final double currentSpeed = widget.speedMultiplier * breathingVariance;
+    final double currentSpeed =
+        widget.speedMultiplier * breathingVariance * deltaTicks;
 
     double x = s.x + (s.vx * currentSpeed);
     double y = s.y + (s.vy * currentSpeed);
@@ -136,7 +165,8 @@ class _FloatingSpheresBackgroundState extends State<FloatingSpheresBackground> {
       y = y.clamp(-_wrapMargin, 1 + _wrapMargin);
     }
 
-    if (_tickCount % 18 == 0) {
+    // Only apply acceleration adjustments occasionally (every ~18 logic ticks)
+    if (_tickCount % 18 == 0 && _fractionalTicks < deltaTicks) {
       vx = (vx + (ax * 0.0009)).clamp(-0.0036, 0.0036);
       vy = (vy + (ay * 0.0009)).clamp(-0.0036, 0.0036);
     }

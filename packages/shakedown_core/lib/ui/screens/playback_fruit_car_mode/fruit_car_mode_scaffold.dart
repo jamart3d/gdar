@@ -185,7 +185,11 @@ extension _PlaybackScreenFruitCarModeScaffold on PlaybackScreenState {
           height: 52 * scaleFactor,
           child: ConditionalMarquee(
             key: ValueKey(audioProvider.currentTrack?.url ?? currentShow.key),
-            text: audioProvider.currentTrack?.title ?? 'Picking show...',
+            text:
+                audioProvider.currentTrack?.title ??
+                (currentSource.tracks.isNotEmpty
+                    ? currentSource.tracks.first.title
+                    : 'Picking show...'),
             enableAnimation: settingsProvider.marqueeEnabled,
             velocity: 48.0,
             blankSpace: 72.0,

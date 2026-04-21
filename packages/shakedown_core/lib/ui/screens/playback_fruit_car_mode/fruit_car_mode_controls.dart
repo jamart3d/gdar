@@ -95,8 +95,10 @@ extension _PlaybackScreenFruitCarModeControls on PlaybackScreenState {
       stream: audioProvider.currentIndexStream,
       initialData: audioProvider.audioPlayer.currentIndex,
       builder: (context, snapshot) {
-        final currentIndex = snapshot.data ?? 0;
-        final nextTracks = currentSource.tracks.skip(currentIndex + 1).toList();
+        final currentIndex = snapshot.data;
+        final nextTracks = currentSource.tracks
+            .skip((currentIndex ?? 0) + 1)
+            .toList();
 
         if (nextTracks.isEmpty) {
           return const SizedBox.shrink();

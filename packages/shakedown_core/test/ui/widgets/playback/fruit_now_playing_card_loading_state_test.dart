@@ -82,6 +82,11 @@ class _TestAudioProvider extends ChangeNotifier implements AudioProvider {
 
   _TestAudioProvider(this.audioPlayer);
 
+  Source? _currentSource;
+  @override
+  Source? get currentSource => _currentSource;
+  set currentSource(Source? value) => _currentSource = value;
+
   @override
   Stream<PlayerState> get playerStateStream => audioPlayer.playerStateStream;
 
@@ -613,6 +618,72 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Slipknot!'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Fruit now playing card title falls back to first track title when track is null but source is present',
+    (tester) async {
+      final player = _MockGaplessPlayer();
+      stubPlayerState(
+        player,
+        PlayerState(false, ProcessingState.loading),
+        duration: const Duration(minutes: 8),
+      );
+
+      // Create a specific audio provider that has currentSource but not currentTrack
+      final audio = _TestAudioProvider(player);
+      audio.currentSource = source; // 'source' is defined at the top of main()
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider<AudioProvider>.value(value: audio),
+            ChangeNotifierProvider<SettingsProvider>.value(
+              value: _TestSettingsProvider(
+                glassEnabled: true,
+                performanceMode: false,
+                highlightPlayingWithRgb: false,
+                showDevAudioHud: false,
+                showPlaybackMessages: false,
+              ),
+            ),
+            ChangeNotifierProvider<ThemeProvider>.value(
+              value: _TestThemeProvider(),
+            ),
+            ChangeNotifierProvider<DeviceService>.value(
+              value: _TestDeviceService(),
+            ),
+          ],
+          child: MaterialApp(
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFFFF6B35),
+                brightness: Brightness.dark,
+              ),
+            ),
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 360,
+                  child: FruitNowPlayingCard(
+                    trackShow: show,
+                    track: null, // Force fallback to currentSource
+                    index: 1,
+                    scaleFactor: 1.0,
+                    showNext: false,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Verify fallback to first track title of currentSource ('Slipknot!')
+      expect(find.text('Slipknot!'), findsOneWidget);
+      expect(find.text('Picking show...'), findsNothing);
     },
   );
 }

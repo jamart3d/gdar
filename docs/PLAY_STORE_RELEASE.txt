@@ -1,4 +1,12 @@
 <en-US>
+What's new in v1.3.100+310
+• Bug Fix (Fruit Car Mode): Resolved a transient state where "Picking show..." was visible on the playback screen despite a show already being selected. The UI now correctly falls back to the first track title while the audio engine initializes.
+• UI (Fruit Car Mode): Improved tracklist consistency during initial playback loading by ensuring the upcoming tracks list synchronizes correctly with the current track fallback.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.3.99+309
 • Car Mode UI Scaling Synchronization: Achieved perfect parity between `Car Mode` and the standard `UI Scale` toggle for the Settings screen.
 • Synchronized date and month abbreviations to trigger automatically when Car Mode is enabled.

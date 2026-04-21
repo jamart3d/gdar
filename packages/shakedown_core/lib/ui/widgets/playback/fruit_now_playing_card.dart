@@ -118,7 +118,19 @@ class FruitNowPlayingCard extends StatelessWidget {
                         child: SizedBox(
                           height: 20 * scaleFactor,
                           child: ConditionalMarquee(
-                            text: track?.title ?? 'Picking show...',
+                            text:
+                                track?.title ??
+                                (audioProvider
+                                            .currentSource
+                                            ?.tracks
+                                            .isNotEmpty ==
+                                        true
+                                    ? audioProvider
+                                          .currentSource!
+                                          .tracks
+                                          .first
+                                          .title
+                                    : 'Picking show...'),
                             style: TextStyle(
                               fontFamily: FontConfig.resolve('Inter'),
                               fontSize: 15 * scaleFactor,

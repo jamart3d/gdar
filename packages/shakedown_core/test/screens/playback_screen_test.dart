@@ -811,6 +811,68 @@ void main() {
   );
 
   testWidgets(
+    'PlaybackScreen Fruit car mode hero track title falls back to first track title when currentTrack is null',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      final tracks = [
+        Track(
+          trackNumber: 1,
+          title: 'First Track Title',
+          duration: 300,
+          url: 'track-1',
+          setName: 'Set 1',
+        ),
+        Track(
+          trackNumber: 2,
+          title: 'Second Track Title',
+          duration: 300,
+          url: 'track-2',
+          setName: 'Set 1',
+        ),
+      ];
+      final source = Source(
+        id: 'test_source',
+        src: 'sbd',
+        tracks: tracks,
+        location: 'Test City, TS',
+      );
+      final show = Show(
+        name: 'Test Venue on 1989-12-31',
+        artist: 'Grateful Dead',
+        date: '1989-12-31',
+        venue: 'Test Venue',
+        sources: [source],
+      );
+
+      // Simulate transient state: show/source set but currentTrack is still null
+      when(mockAudioProvider.currentShow).thenReturn(show);
+      when(mockAudioProvider.currentSource).thenReturn(source);
+      when(mockAudioProvider.currentTrack).thenReturn(null);
+      when(mockAudioPlayer.currentIndex).thenReturn(null);
+      mockSettingsProvider.setCarMode(true);
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+
+      // Verify fallback to first track title
+      expect(find.text('First Track Title'), findsOneWidget);
+      expect(find.text('Picking show...'), findsNothing);
+
+      // Transition to actual track
+      when(mockAudioProvider.currentTrack).thenReturn(tracks.first);
+      when(mockAudioPlayer.currentIndex).thenReturn(0);
+      await tester.pump();
+
+      expect(find.text('First Track Title'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
     'PlaybackScreen Fruit car mode top-row toggle does not shift lower layout',
     (WidgetTester tester) async {
       setLargeCarModeViewport(tester);
