@@ -170,60 +170,65 @@ extension _PlaybackScreenFruitCarModeHud on PlaybackScreenState {
         initialData: audioProvider.currentHudSnapshot,
         builder: (context, snapshot) {
           final liveHud = snapshot.data ?? HudSnapshot.empty();
+          final hud = _resolveFruitCarModeHudSnapshot(
+            liveHud: liveHud,
+            isPlaying: liveHud.isPlaying,
+          );
+          final headroomDuration =
+              parseFruitCarModeDurationText(hud.headroom) ?? Duration.zero;
+          final headroomFill = computeFruitCarModeHeadroomFill(
+            headroom: headroomDuration,
+          );
+          final nextBufferedDuration =
+              parseFruitCarModeDurationText(hud.nextBuffered) ?? Duration.zero;
+          final nextTrackTotal = audioProvider.audioPlayer.nextTrackTotal;
+          final nextTrackFill = computeFruitCarModeNextTrackFill(
+            nextBuffered: nextBufferedDuration,
+            nextTotal: nextTrackTotal,
+          );
 
-          return StreamBuilder<PlayerState>(
-            stream: audioProvider.playerStateStream,
-            initialData: audioProvider.audioPlayer.playerState,
-            builder: (context, playerSnapshot) {
-              final playerState =
-                  playerSnapshot.data ?? audioProvider.audioPlayer.playerState;
-              final hud = _resolveFruitCarModeHudSnapshot(
-                liveHud: liveHud,
-                isPlaying: playerState.playing,
-              );
-
-              return Row(
-                children: [
-                  Expanded(
-                    child: _FruitCarModeStatCard(
-                      label: 'DFT',
-                      value: hud.drift,
-                      accentColor: colorScheme.primary,
-                      scaleFactor: scaleFactor,
-                    ),
-                  ),
-                  SizedBox(width: 6 * scaleFactor),
-                  Expanded(
-                    child: _FruitCarModeStatCard(
-                      label: 'HD',
-                      value: hud.headroom,
-                      accentColor: colorScheme.secondary,
-                      scaleFactor: scaleFactor,
-                    ),
-                  ),
-                  SizedBox(width: 6 * scaleFactor),
-                  Expanded(
-                    child: _FruitCarModeStatCard(
-                      label: 'NXT',
-                      value: hud.nextBuffered,
-                      accentColor: colorScheme.tertiary,
-                      scaleFactor: scaleFactor,
-                    ),
-                  ),
-                  SizedBox(width: 6 * scaleFactor),
-                  Expanded(
-                    child: _FruitCarModeStatCard(
-                      label: 'LG',
-                      value: hud.lastGapMs == null
-                          ? '--'
-                          : '${hud.lastGapMs!.toStringAsFixed(0)}ms',
-                      accentColor: colorScheme.onSurface,
-                      scaleFactor: scaleFactor,
-                    ),
-                  ),
-                ],
-              );
-            },
+          return Row(
+            children: [
+              Expanded(
+                child: _FruitCarModeStatCard(
+                  label: 'DFT',
+                  value: hud.drift,
+                  accentColor: colorScheme.primary,
+                  scaleFactor: scaleFactor,
+                ),
+              ),
+              SizedBox(width: 6 * scaleFactor),
+              Expanded(
+                child: _FruitCarModeStatCard(
+                  label: 'HD',
+                  value: hud.headroom,
+                  accentColor: colorScheme.secondary,
+                  scaleFactor: scaleFactor,
+                  fillFraction: headroomFill,
+                ),
+              ),
+              SizedBox(width: 6 * scaleFactor),
+              Expanded(
+                child: _FruitCarModeStatCard(
+                  label: 'NXT',
+                  value: hud.nextBuffered,
+                  accentColor: colorScheme.tertiary,
+                  scaleFactor: scaleFactor,
+                  fillFraction: nextTrackFill,
+                ),
+              ),
+              SizedBox(width: 6 * scaleFactor),
+              Expanded(
+                child: _FruitCarModeStatCard(
+                  label: 'LG',
+                  value: hud.lastGapMs == null
+                      ? '--'
+                      : '${hud.lastGapMs!.toStringAsFixed(0)}ms',
+                  accentColor: colorScheme.onSurface,
+                  scaleFactor: scaleFactor,
+                ),
+              ),
+            ],
           );
         },
       ),

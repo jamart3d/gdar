@@ -135,6 +135,8 @@ class MockSettingsProvider extends Mock implements SettingsProvider {
   @override
   AudioEngineMode get audioEngineMode => AudioEngineMode.auto;
   @override
+  int get webPrefetchSeconds => 30;
+  @override
   bool get useSliverAppBar => false;
   @override
   bool get useSharedAxisTransition => false;
@@ -466,8 +468,16 @@ class _TestAudioProvider extends ChangeNotifier implements AudioProvider {
 
   @override
   Stream<HudSnapshot> get hudSnapshotStream =>
-      _hudSnapshotController?.stream ?? Stream.value(currentHudSnapshot);
+      (_hudSnapshotController ??= StreamController<HudSnapshot>.broadcast())
+          .stream;
   StreamController<HudSnapshot>? _hudSnapshotController;
+  void emitHudSnapshot(HudSnapshot snapshot) {
+    _currentHudSnapshot = snapshot;
+    (_hudSnapshotController ??= StreamController<HudSnapshot>.broadcast()).add(
+      snapshot,
+    );
+    notifyListeners();
+  }
 
   @override
   DngSnapshot createSnapshot() => DngSnapshot(
@@ -609,6 +619,7 @@ void main() {
     ).thenAnswer((_) => const Stream.empty());
     when(mockAudioPlayer.sequence).thenReturn([]);
     when(mockAudioPlayer.nextTrackBuffered).thenReturn(null);
+    when(mockAudioPlayer.nextTrackTotal).thenReturn(null);
     when(
       mockAudioPlayer.nextTrackBufferedStream,
     ).thenAnswer((_) => Stream.value(null));
@@ -1131,8 +1142,78 @@ void main() {
       final Text gapValueText = tester.widget<Text>(find.text('1200'));
       expect(gapValueText.style?.fontSize, lessThan(24.0));
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens')),
-        findsNWidgets(4),
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_DFT')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HD')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_NXT')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_HD')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_NXT')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_edge_HD')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_edge_NXT')),
+        findsNothing,
+      );
+      final DecoratedBox hdTrack = tester.widget<DecoratedBox>(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_HD')),
+      );
+      final BoxDecoration hdTrackDecoration =
+          hdTrack.decoration as BoxDecoration;
+      final LinearGradient hdTrackGradient =
+          hdTrackDecoration.gradient! as LinearGradient;
+      expect(hdTrackGradient.colors.first, hdTrackGradient.colors.last);
+      expect(hdTrackDecoration.borderRadius, isNull);
+      final DecoratedBox hdFill = tester.widget<DecoratedBox>(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HD')),
+      );
+      final BoxDecoration hdFillDecoration = hdFill.decoration as BoxDecoration;
+      final LinearGradient hdFillGradient =
+          hdFillDecoration.gradient! as LinearGradient;
+      expect(hdFillGradient.colors.first, hdFillGradient.colors.last);
+      expect(hdFillGradient.colors.first, isNot(hdTrackGradient.colors.first));
+      expect(hdFillDecoration.borderRadius, isNull);
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_DFT')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_LG')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_LG')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_DFT')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_NXT')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_HD')),
+        findsNothing,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_NXT')),
+        findsNothing,
       );
       expect(tester.takeException(), isNull);
     },
@@ -1153,19 +1234,17 @@ void main() {
       headroom: '+12s',
       nextBuffered: '00:34',
       lastGapMs: 47,
+      isPlaying: true,
     );
     final pausedHud = HudSnapshot.empty().copyWith(
       drift: '8500ms',
       headroom: '+1s',
       nextBuffered: '00:02',
       lastGapMs: 212,
+      isPlaying: false,
     );
 
     mockAudioProvider.currentHudSnapshot = playingHud;
-    when(
-      mockAudioPlayer.playerState,
-    ).thenReturn(PlayerState(true, ProcessingState.ready));
-
     await tester.pumpWidget(
       createTestableWidget(
         child: const PlaybackScreen(showFruitTabBar: false),
@@ -1181,10 +1260,6 @@ void main() {
     expect(find.text('s'), findsOneWidget);
     expect(find.text('ms'), findsNWidgets(2));
 
-    when(
-      mockAudioPlayer.playerState,
-    ).thenReturn(PlayerState(false, ProcessingState.ready));
-    // playerStateController.add(PlayerState(false, ProcessingState.ready));
     mockAudioProvider.currentHudSnapshot = pausedHud;
     await tester.pump();
 
@@ -1197,6 +1272,129 @@ void main() {
     expect(find.text('00:02'), findsNothing);
     expect(find.text('212'), findsNothing);
   });
+
+  testWidgets(
+    'PlaybackScreen Fruit car mode stat chips keep updating while playing without a player-state event',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      mockAudioProvider.currentShow = dummyShow;
+      mockAudioProvider.currentSource = dummySource;
+      mockAudioProvider.currentTrack = dummyTrack1;
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      mockAudioProvider.currentHudSnapshot = HudSnapshot.empty().copyWith(
+        headroom: '+12s',
+        nextBuffered: '00:10',
+        isPlaying: true,
+      );
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('+12'), findsOneWidget);
+      expect(find.text('00:10'), findsOneWidget);
+
+      mockAudioProvider.emitHudSnapshot(
+        HudSnapshot.empty().copyWith(
+          headroom: '+18s',
+          nextBuffered: '00:25',
+          isPlaying: true,
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('+18'), findsOneWidget);
+      expect(find.text('00:25'), findsOneWidget);
+      expect(find.text('+12'), findsNothing);
+      expect(find.text('00:10'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'PlaybackScreen Fruit car mode HD background fill scales with headroom',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      mockAudioProvider.currentShow = dummyShow;
+      mockAudioProvider.currentSource = dummySource;
+      mockAudioProvider.currentTrack = dummyTrack1;
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      mockAudioProvider.currentHudSnapshot = HudSnapshot.empty().copyWith(
+        headroom: '+15s',
+        nextBuffered: '00:10',
+      );
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+
+      final Rect hdCardRect = tester.getRect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_card_HD')),
+      );
+      final Rect hdFillRect = tester.getRect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HD')),
+      );
+
+      expect(hdFillRect.width, closeTo(hdCardRect.width * 0.5, 2.0));
+    },
+  );
+
+  testWidgets(
+    'PlaybackScreen Fruit car mode keeps HD and NXT background gauges visible at zero fill',
+    (WidgetTester tester) async {
+      setLargeCarModeViewport(tester);
+      mockAudioProvider.currentShow = dummyShow;
+      mockAudioProvider.currentSource = dummySource;
+      mockAudioProvider.currentTrack = dummyTrack1;
+      mockSettingsProvider.setCarMode(true);
+      mockSettingsProvider.setShowDevAudioHud(false);
+
+      mockAudioProvider.currentHudSnapshot = HudSnapshot.empty().copyWith(
+        headroom: '+372ms',
+        nextBuffered: '00:00',
+      );
+
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const PlaybackScreen(showFruitTabBar: false),
+          themeProvider: MockFruitThemeProvider(),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HD')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_NXT')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_HD')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_NXT')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_HD')),
+        findsNothing,
+      );
+    },
+  );
 
   testWidgets(
     'PlaybackScreen Fruit car mode progress text refreshes after delayed stream resume',

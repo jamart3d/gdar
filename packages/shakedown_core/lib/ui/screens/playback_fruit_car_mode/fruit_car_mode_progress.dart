@@ -23,6 +23,12 @@ extension _PlaybackScreenFruitCarModeProgress on PlaybackScreenState {
           buffered: buffered,
           total: total,
         );
+        _recordFruitCarModeRenderedProgress(
+          renderedPosition: position,
+          renderedTotal: total,
+          renderedProgress: metrics.progress,
+          playerState: playerState,
+        );
 
         final isLoading = processingState == ProcessingState.loading;
         final isBuffering = processingState == ProcessingState.buffering;

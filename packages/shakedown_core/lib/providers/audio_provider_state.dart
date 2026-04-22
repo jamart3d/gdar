@@ -44,6 +44,7 @@ mixin _AudioProviderState {
   DateTime? _lastIssueAt;
   Timer? _notificationTimeoutTimer;
   Timer? _issueTimeoutTimer;
+  Timer? _webLifecycleResyncTimer;
   StreamController<DngSnapshot>? _diagnosticsController;
   Timer? _diagnosticsTimer;
   StreamController<HudSnapshot>? _hudSnapshotController;

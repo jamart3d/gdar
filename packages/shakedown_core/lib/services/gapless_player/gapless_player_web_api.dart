@@ -81,19 +81,43 @@ mixin _GaplessPlayerWebApi on _GaplessPlayerBase, _GaplessPlayerWebEngine {
       _lastTickAt = DateTime.now();
       _startInterpolationTimer();
       _callEngine((engine) => engine.play());
+      _schedulePostPlayResyncs(reason: 'play');
     }
   }
 
   Future<void> pause() async {
+    _cancelPostPlayResyncs();
     _stopInterpolationTimer();
     if (!_useJsEngine) {
       await _fallbackPlayer?.pause();
     } else {
+      double pausedPositionSec = _positionSec;
+      if (_playing && _lastTickAt != null && _durationSec > 0) {
+        final now = DateTime.now();
+        final elapsedSec = now.difference(_lastTickAt!).inMicroseconds / 1e6;
+        pausedPositionSec = (_positionSec + elapsedSec).clamp(
+          0.0,
+          _durationSec,
+        );
+      }
+      final pausedPosition = Duration(
+        milliseconds: (pausedPositionSec * 1000).round(),
+      );
+      final wasPlaying = _playing;
+      _positionSec = pausedPosition.inMilliseconds / 1000.0;
+      _lastTickAt = null;
+      _playing = false;
+      if (wasPlaying) {
+        _playingController.add(false);
+      }
+      _positionController.add(pausedPosition);
+      _emitPlayerState();
       _callEngine((engine) => engine.pause());
     }
   }
 
   Future<void> stop() async {
+    _cancelPostPlayResyncs();
     _stopInterpolationTimer();
     if (!_useJsEngine) {
       await _fallbackPlayer?.stop();
@@ -224,6 +248,7 @@ mixin _GaplessPlayerWebApi on _GaplessPlayerBase, _GaplessPlayerWebEngine {
   Future<void> dispose() async {
     _staleTickTimer?.cancel();
     _staleTickTimer = null;
+    _cancelPostPlayResyncs();
     _stopInterpolationTimer();
     if (!_useJsEngine) {
       return _fallbackPlayer?.dispose();

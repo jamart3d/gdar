@@ -224,7 +224,10 @@
                         this.webAudioPausedDuration += this.audioContext.currentTime - this.webAudioPausedAt;
                         this.webAudioPausedAt = 0; // Fix ordering bug here
                     }
-                    if (this.currentTime !== 0) this.seek(this.currentTime);
+                    if (this.currentTime !== 0) {
+                        this.seek(this.currentTime);
+                        this.webAudioPausedAt = 0;
+                    }
 
                     // Track gap for automatic transitions (gapless handoff)
                     if (_trackEndedAtMs > 0) {

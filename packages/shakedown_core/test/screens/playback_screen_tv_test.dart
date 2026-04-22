@@ -22,11 +22,10 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown_core/models/hud_snapshot.dart';
 
-import 'playback_screen_test.mocks.dart';
+import 'playback_screen_tv_test.mocks.dart';
 import '../helpers/fake_settings_provider.dart';
 
-// Reuse mocks from playback_screen_test.mocks.dart
-// But we need a custom MockTvDeviceService to return isTv = true
+// Use TV-specific generated mocks and a custom device service that reports TV.
 
 class MockTvDeviceService extends ChangeNotifier implements DeviceService {
   @override

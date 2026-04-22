@@ -51,6 +51,18 @@ extension _PlaybackScreenFruitCarModeControls on PlaybackScreenState {
                   isPlaying: isPlaying,
                   onPressed: () {
                     AppHaptics.heavyImpact(context.read<DeviceService>());
+                    final trigger = isPlaying ? 'pause_tap' : 'play_tap';
+                    _startFruitCarModeSyncProbe(
+                      trigger: trigger,
+                      audioProvider: audioProvider,
+                    );
+                    logger.i(
+                      'FruitCarModeControl[$trigger]: '
+                      'tap isPlaying=$isPlaying '
+                      'processing=${processingState.name} '
+                      'position=${formatDuration(audioProvider.audioPlayer.position)} '
+                      'duration=${audioProvider.audioPlayer.duration != null ? formatDuration(audioProvider.audioPlayer.duration!) : '--:--'}',
+                    );
                     if (isPlaying) {
                       audioProvider.pause();
                     } else {

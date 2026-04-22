@@ -150,6 +150,34 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
     );
   }
 
+  void _cancelPostPlayResyncs() {
+    _postPlayResyncGeneration++;
+  }
+
+  void _schedulePostPlayResyncs({required String reason}) {
+    _cancelPostPlayResyncs();
+    final generation = _postPlayResyncGeneration;
+    final pulses = <({Duration delay, String label})>[
+      (delay: const Duration(milliseconds: 75), label: 'pulse1'),
+      (delay: const Duration(milliseconds: 250), label: 'pulse2'),
+      (delay: const Duration(seconds: 1), label: 'pulse3'),
+    ];
+
+    for (final pulse in pulses) {
+      Future<void>.delayed(pulse.delay, () {
+        if (!_useJsEngine || generation != _postPlayResyncGeneration) {
+          return;
+        }
+        if (!_playing &&
+            _processingState != ProcessingState.loading &&
+            _processingState != ProcessingState.buffering) {
+          return;
+        }
+        _resyncFromJsState(reason: '${reason}_${pulse.label}');
+      });
+    }
+  }
+
   ProcessingState _mapProcessingState(String jsState) {
     switch (jsState) {
       case 'loading':
@@ -344,6 +372,18 @@ mixin _GaplessPlayerWebEngine on _GaplessPlayerBase {
         currentIndex: _currentIndex,
       ),
     );
+
+    if (syncDebugProbeActive) {
+      logger.i(
+        'GaplessPlayerWebSync[${syncDebugProbeTag ?? 'unknown'}]: '
+        'jsPlaying=$_playing '
+        'jsProcessing=${_processingState.name} '
+        'position=${formatDuration(Duration(milliseconds: (_positionSec * 1000).round()))} '
+        'duration=${_durationSec > 0 ? formatDuration(Duration(milliseconds: (_durationSec * 1000).round())) : '--:--'} '
+        'buffered=${formatDuration(Duration(milliseconds: (_currentTrackBufferedSec * 1000).round()))} '
+        'lastJsState=${_lastJsState ?? 'null'}',
+      );
+    }
   }
 
   void _emitPlayerState() {

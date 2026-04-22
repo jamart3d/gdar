@@ -6,6 +6,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/services/gapless_player/web_tick_stall_policy.dart';
 import 'package:shakedown_core/utils/logger.dart';
+import 'package:shakedown_core/utils/utils.dart';
 
 part 'gapless_player_web_engine.dart';
 part 'gapless_player_web_accessors.dart';
@@ -273,8 +274,11 @@ class _GaplessPlayerBase {
   String? _handoffState;
   int? _handoffAttemptCount;
   int? _lastHandoffPollCount;
+  DateTime? _syncDebugProbeUntil;
+  String? _syncDebugProbeTag;
   Timer? _staleTickTimer;
   Timer? _interpolationTimer;
+  int _postPlayResyncGeneration = 0;
 
   static const _staleTickThreshold = Duration(seconds: 2);
   static const _staleTickPollInterval = Duration(seconds: 1);
@@ -290,6 +294,30 @@ class _GaplessPlayerBase {
     }
     _playBlockedController.add(null);
   }
+
+  void startSyncDebugProbe(
+    String tag, {
+    Duration window = const Duration(seconds: 6),
+  }) {
+    _syncDebugProbeTag = tag;
+    _syncDebugProbeUntil = DateTime.now().add(window);
+  }
+
+  bool get syncDebugProbeActive {
+    final until = _syncDebugProbeUntil;
+    if (until == null) {
+      return false;
+    }
+    if (DateTime.now().isAfter(until)) {
+      _syncDebugProbeUntil = null;
+      _syncDebugProbeTag = null;
+      return false;
+    }
+    return true;
+  }
+
+  String? get syncDebugProbeTag =>
+      syncDebugProbeActive ? _syncDebugProbeTag : null;
 
   _GaplessPlayerBase({
     AudioPlayer? audioPlayer,

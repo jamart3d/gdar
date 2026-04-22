@@ -5,12 +5,14 @@ class _FruitCarModeStatCard extends StatelessWidget {
   final String value;
   final Color accentColor;
   final double scaleFactor;
+  final double? fillFraction;
 
   const _FruitCarModeStatCard({
     required this.label,
     required this.value,
     required this.accentColor,
     required this.scaleFactor,
+    this.fillFraction,
   });
 
   @override
@@ -26,6 +28,47 @@ class _FruitCarModeStatCard extends StatelessWidget {
     final unitRightInset = 6 * scaleFactor;
     final unitBottomInset = 5 * scaleFactor;
     final valueUnitReserve = displayUnit == null ? 0.0 : 18 * scaleFactor;
+    final chipRadius = BorderRadius.circular(18 * scaleFactor);
+    final double normalizedFill = (fillFraction ?? 0.0).clamp(0.0, 1.0);
+    final bool isGaugeChip = fillFraction != null;
+    final Color baseChipColor = colorScheme.surfaceContainerLow;
+    final bool isHeadroomChip = label == 'HD';
+    final Color headroomBaseTone = accentColor;
+    final Color gaugeTrackColor = isHeadroomChip
+        ? Color.alphaBlend(
+            Colors.white.withValues(alpha: 0.36),
+            headroomBaseTone.withValues(alpha: 0.42),
+          )
+        : Color.alphaBlend(Colors.black.withValues(alpha: 0.18), baseChipColor);
+    final Gradient gaugeTrackGradient = isHeadroomChip
+        ? LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [gaugeTrackColor, gaugeTrackColor],
+          )
+        : LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [gaugeTrackColor, gaugeTrackColor.withValues(alpha: 0.94)],
+          );
+    final Color gaugeFillColor = isHeadroomChip
+        ? Color.alphaBlend(
+            Colors.black.withValues(alpha: 0.66),
+            headroomBaseTone.withValues(alpha: 0.54),
+          )
+        : Color.alphaBlend(
+            Colors.black.withValues(alpha: 0.34),
+            accentColor.withValues(alpha: 0.30),
+          );
+    final Gradient gaugeFillGradient = LinearGradient(
+      begin: Alignment.centerLeft,
+      end: Alignment.centerRight,
+      colors: isHeadroomChip
+          ? [gaugeFillColor, gaugeFillColor]
+          : [gaugeFillColor, gaugeFillColor.withValues(alpha: 0.92)],
+    );
+    final bool showGaugeEdge =
+        isGaugeChip && normalizedFill > 0.0 && normalizedFill < 1.0;
 
     final valueText = Text(
       displayValue,
@@ -55,7 +98,7 @@ class _FruitCarModeStatCard extends StatelessWidget {
             ),
           );
 
-    final valueContent = glassEnabled
+    final valueContent = glassEnabled && !isGaugeChip
         ? SizedBox(
             height: 34 * scaleFactor,
             child: Stack(
@@ -67,7 +110,9 @@ class _FruitCarModeStatCard extends StatelessWidget {
                       widthFactor: displayUnit == null ? 0.9 : 0.74,
                       child: IgnorePointer(
                         child: DecoratedBox(
-                          key: const ValueKey('fruit_car_mode_stat_value_lens'),
+                          key: ValueKey(
+                            'fruit_car_mode_stat_value_lens_$label',
+                          ),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
                               999 * scaleFactor,
@@ -141,12 +186,81 @@ class _FruitCarModeStatCard extends StatelessWidget {
         height: _fruitCarModeChipCardHeight(scaleFactor),
         child: Container(
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(18 * scaleFactor),
+            color: baseChipColor,
+            borderRadius: chipRadius,
             border: Border.all(color: accentColor.withValues(alpha: 0.16)),
           ),
           child: Stack(
             children: [
+              if (isGaugeChip)
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: chipRadius,
+                    child: Stack(
+                      children: [
+                        IgnorePointer(
+                          child: DecoratedBox(
+                            key: ValueKey(
+                              'fruit_car_mode_stat_fill_track_$label',
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: gaugeTrackGradient,
+                            ),
+                          ),
+                        ),
+                        IgnorePointer(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: FractionallySizedBox(
+                              alignment: Alignment.centerLeft,
+                              widthFactor: normalizedFill,
+                              child: DecoratedBox(
+                                key: ValueKey(
+                                  'fruit_car_mode_stat_fill_background_$label',
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: gaugeFillGradient,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        if (showGaugeEdge)
+                          IgnorePointer(
+                            child: Align(
+                              alignment: Alignment(
+                                (normalizedFill * 2.0) - 1.0,
+                                0,
+                              ),
+                              child: Container(
+                                key: ValueKey(
+                                  'fruit_car_mode_stat_fill_edge_$label',
+                                ),
+                                width: 2 * scaleFactor,
+                                margin: EdgeInsets.symmetric(
+                                  vertical: 3 * scaleFactor,
+                                ),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(
+                                    999 * scaleFactor,
+                                  ),
+                                  color: Colors.white.withValues(alpha: 0.56),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.42,
+                                      ),
+                                      blurRadius: 6 * scaleFactor,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: chipHorizontalPadding,

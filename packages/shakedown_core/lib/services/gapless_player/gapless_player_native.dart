@@ -59,6 +59,18 @@ class GaplessPlayer {
   /// Forces a state resync on web engines. No-op on native.
   void resync({String reason = 'manual'}) {}
 
+  /// Enables a short-lived sync debug probe. No-op on native.
+  void startSyncDebugProbe(
+    String tag, {
+    Duration window = const Duration(seconds: 6),
+  }) {}
+
+  /// Whether a short-lived sync debug probe is active.
+  bool get syncDebugProbeActive => false;
+
+  /// Current sync debug probe label, if any.
+  String? get syncDebugProbeTag => null;
+
   /// Returns the buffered duration of the next track.
   /// Only applicable to web gapless engine; returns null natively.
   Duration? get nextTrackBuffered => null;

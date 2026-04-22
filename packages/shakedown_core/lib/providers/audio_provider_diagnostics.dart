@@ -100,7 +100,7 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
   }
 
   DngSnapshot createSnapshot() {
-    return DngSnapshot(
+    final snapshot = DngSnapshot(
       position: _audioPlayer.position,
       buffered: _audioPlayer.bufferedPosition,
       nextBuffered: _audioPlayer.nextTrackBuffered ?? Duration.zero,
@@ -133,6 +133,21 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
       handoffAttemptCount: _audioPlayer.handoffAttemptCount,
       lastHandoffPollCount: _audioPlayer.lastHandoffPollCount,
     );
+
+    if (_audioPlayer.syncDebugProbeActive) {
+      final playerState = snapshot.playerState;
+      logger.i(
+        'AudioProviderSync[${_audioPlayer.syncDebugProbeTag ?? 'unknown'}]: '
+        'snapshotPos=${formatDuration(snapshot.position)} '
+        'snapshotBuf=${formatDuration(snapshot.buffered)} '
+        'snapshotNext=${formatDuration(snapshot.nextBuffered)} '
+        'snapshotPlaying=${playerState?.playing ?? false} '
+        'snapshotProcessing=${playerState?.processingState.name ?? 'unknown'} '
+        'engineState=${snapshot.engineState ?? 'null'}',
+      );
+    }
+
+    return snapshot;
   }
 
   HudSnapshot createHudSnapshot() {

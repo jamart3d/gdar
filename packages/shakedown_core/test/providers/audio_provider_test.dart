@@ -939,6 +939,34 @@ void main() {
         });
       });
 
+      testWidgets('resumed lifecycle resyncs the web engine while playing', (
+        WidgetTester tester,
+      ) async {
+        await tester.runAsync(() async {
+          audioProvider.dispose();
+          audioProvider = AudioProvider(
+            audioPlayer: mockAudioPlayer,
+            catalogService: mockCatalogService,
+            audioCacheService: mockAudioCacheService,
+            wakelockService: mockWakelockService,
+            isWeb: true,
+          );
+          audioProvider.update(
+            mockShowListProvider,
+            mockSettingsProvider,
+            mockAudioCacheService,
+          );
+          when(mockAudioPlayer.playing).thenReturn(true);
+
+          audioProvider.didChangeAppLifecycleState(AppLifecycleState.resumed);
+          await Future<void>.delayed(const Duration(milliseconds: 80));
+
+          verify(
+            mockAudioPlayer.resync(reason: 'app_lifecycle_resumed'),
+          ).called(1);
+        });
+      });
+
       testWidgets(
         'playRandomShow clears a fresh undo checkpoint when no selection exists',
         (WidgetTester tester) async {

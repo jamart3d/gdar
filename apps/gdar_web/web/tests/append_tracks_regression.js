@@ -127,3 +127,4 @@ assert(
 
 hybrid.stop();
 console.log('\n--- appendTracks regression: ALL PASSED ---\n');
+process.exit(0);

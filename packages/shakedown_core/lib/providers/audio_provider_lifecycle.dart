@@ -241,6 +241,22 @@ mixin _AudioProviderLifecycle
   }
 
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_isWeb && state == AppLifecycleState.resumed) {
+      _webLifecycleResyncTimer?.cancel();
+      _webLifecycleResyncTimer = Timer(const Duration(milliseconds: 60), () {
+        _webLifecycleResyncTimer = null;
+        final processingState = _audioPlayer.processingState;
+        final shouldResync =
+            _audioPlayer.playing ||
+            processingState == ProcessingState.loading ||
+            processingState == ProcessingState.buffering ||
+            processingState == ProcessingState.ready;
+        if (shouldResync) {
+          _audioPlayer.resync(reason: 'app_lifecycle_resumed');
+        }
+      });
+    }
+
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden ||
         state == AppLifecycleState.detached) {
@@ -267,6 +283,7 @@ mixin _AudioProviderLifecycle
     _hudSnapshotController?.close();
     _notificationTimeoutTimer?.cancel();
     _issueTimeoutTimer?.cancel();
+    _webLifecycleResyncTimer?.cancel();
     _undoCheckpointTimer?.cancel();
     _audioPlayer.dispose();
     _wakelockService.disable();

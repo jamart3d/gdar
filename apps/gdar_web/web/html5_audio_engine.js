@@ -236,7 +236,10 @@
                         this.webAudioPausedDuration += this.audioContext.currentTime - this.webAudioPausedAt;
                         this.webAudioPausedAt = 0;
                     }
-                    if (this.currentTime !== 0) this.seek(this.currentTime);
+                    if (this.currentTime !== 0) {
+                        this.seek(this.currentTime);
+                        this.webAudioPausedAt = 0;
+                    }
                     this.connectGainNode();
                     this.bufferSourceNode.playbackRate.value = 1;
                     if (!this.bufferSourceNode.onended) {

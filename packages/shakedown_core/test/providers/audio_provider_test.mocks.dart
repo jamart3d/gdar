@@ -183,6 +183,15 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i5.GaplessPlayer {
           as _i5.AudioEngineMode);
 
   @override
+  bool get syncDebugProbeActive =>
+      (super.noSuchMethod(
+            Invocation.getter(#syncDebugProbeActive),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   double get drift =>
       (super.noSuchMethod(
             Invocation.getter(#drift),
@@ -531,6 +540,21 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i5.GaplessPlayer {
   );
 
   @override
+  void resync({String? reason = 'manual'}) => super.noSuchMethod(
+    Invocation.method(#resync, [], {#reason: reason}),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void startSyncDebugProbe(
+    String? tag, {
+    Duration? window = const Duration(seconds: 6),
+  }) => super.noSuchMethod(
+    Invocation.method(#startSyncDebugProbe, [tag], {#window: window}),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   _i7.Future<Duration?> setAudioSources(
     List<_i2.AudioSource>? children, {
     int? initialIndex = 0,
@@ -768,6 +792,15 @@ class MockShowListProvider extends _i1.Mock implements _i8.ShowListProvider {
           as bool);
 
   @override
+  bool get isRandomShowSelected =>
+      (super.noSuchMethod(
+            Invocation.getter(#isRandomShowSelected),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
   int get totalShnids =>
       (super.noSuchMethod(
             Invocation.getter(#totalShnids),
@@ -824,6 +857,12 @@ class MockShowListProvider extends _i1.Mock implements _i8.ShowListProvider {
   @override
   void setIsChoosingRandomShow(bool? value) => super.noSuchMethod(
     Invocation.method(#setIsChoosingRandomShow, [value]),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void setIsRandomShowSelected(bool? value) => super.noSuchMethod(
+    Invocation.method(#setIsRandomShowSelected, [value]),
     returnValueForMissingStub: null,
   );
 
@@ -1228,6 +1267,15 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   bool get uiScale =>
       (super.noSuchMethod(
             Invocation.getter(#uiScale),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get settingsScreenUiScale =>
+      (super.noSuchMethod(
+            Invocation.getter(#settingsScreenUiScale),
             returnValue: false,
             returnValueForMissingStub: false,
           )
@@ -2116,6 +2164,36 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as String);
 
   @override
+  String get oilAutocorrBeatVariant =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilAutocorrBeatVariant),
+            returnValue: _i6.dummyValue<String>(
+              this,
+              Invocation.getter(#oilAutocorrBeatVariant),
+            ),
+            returnValueForMissingStub: _i6.dummyValue<String>(
+              this,
+              Invocation.getter(#oilAutocorrBeatVariant),
+            ),
+          )
+          as String);
+
+  @override
+  String get oilAutocorrLogoVariant =>
+      (super.noSuchMethod(
+            Invocation.getter(#oilAutocorrLogoVariant),
+            returnValue: _i6.dummyValue<String>(
+              this,
+              Invocation.getter(#oilAutocorrLogoVariant),
+            ),
+            returnValueForMissingStub: _i6.dummyValue<String>(
+              this,
+              Invocation.getter(#oilAutocorrLogoVariant),
+            ),
+          )
+          as String);
+
+  @override
   double get oilBeatSensitivity =>
       (super.noSuchMethod(
             Invocation.getter(#oilBeatSensitivity),
@@ -2398,6 +2476,24 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   bool get showScreensaverCountdown =>
       (super.noSuchMethod(
             Invocation.getter(#showScreensaverCountdown),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get beatAutocorrSecondPass =>
+      (super.noSuchMethod(
+            Invocation.getter(#beatAutocorrSecondPass),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
+
+  @override
+  bool get beatAutocorrSecondPassHq =>
+      (super.noSuchMethod(
+            Invocation.getter(#beatAutocorrSecondPassHq),
             returnValue: false,
             returnValueForMissingStub: false,
           )
@@ -3239,6 +3335,24 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as _i7.Future<void>);
 
   @override
+  _i7.Future<void> setOilAutocorrBeatVariant(String? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setOilAutocorrBeatVariant, [value]),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
+          )
+          as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> setOilAutocorrLogoVariant(String? value) =>
+      (super.noSuchMethod(
+            Invocation.method(#setOilAutocorrLogoVariant, [value]),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
+          )
+          as _i7.Future<void>);
+
+  @override
   _i7.Future<void> setOilBeatSensitivity(double? value) =>
       (super.noSuchMethod(
             Invocation.method(#setOilBeatSensitivity, [value]),
@@ -3251,6 +3365,24 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   _i7.Future<void> setOilBeatImpact(double? value) =>
       (super.noSuchMethod(
             Invocation.method(#setOilBeatImpact, [value]),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
+          )
+          as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> toggleBeatAutocorrSecondPass() =>
+      (super.noSuchMethod(
+            Invocation.method(#toggleBeatAutocorrSecondPass, []),
+            returnValue: _i7.Future<void>.value(),
+            returnValueForMissingStub: _i7.Future<void>.value(),
+          )
+          as _i7.Future<void>);
+
+  @override
+  _i7.Future<void> toggleBeatAutocorrSecondPassHq() =>
+      (super.noSuchMethod(
+            Invocation.method(#toggleBeatAutocorrSecondPassHq, []),
             returnValue: _i7.Future<void>.value(),
             returnValueForMissingStub: _i7.Future<void>.value(),
           )

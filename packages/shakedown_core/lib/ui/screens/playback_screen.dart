@@ -44,6 +44,7 @@ import 'package:shakedown_core/ui/widgets/tv/tv_scrollbar.dart';
 import 'package:shakedown_core/utils/app_haptics.dart';
 import 'package:shakedown_core/utils/color_generator.dart';
 import 'package:shakedown_core/utils/font_layout_config.dart';
+import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/utils.dart';
 import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
 import 'package:sliding_up_panel2/sliding_up_panel2.dart';
@@ -138,6 +139,71 @@ class FruitCarModeProgressMetrics {
   final double bufferedProgress;
 }
 
+@visibleForTesting
+double computeFruitCarModeHeadroomFill({
+  required Duration headroom,
+  double fullScaleSeconds = 30.0,
+}) {
+  final double headroomSeconds = headroom.inMilliseconds / 1000.0;
+  if (headroomSeconds <= 0) {
+    return 0.0;
+  }
+  if (fullScaleSeconds <= 0) {
+    return 1.0;
+  }
+  return (headroomSeconds / fullScaleSeconds).clamp(0.0, 1.0);
+}
+
+@visibleForTesting
+double computeFruitCarModeNextTrackFill({
+  required Duration nextBuffered,
+  required Duration? nextTotal,
+}) {
+  final total = nextTotal;
+  if (total == null || total <= Duration.zero) {
+    return nextBuffered > Duration.zero ? 1.0 : 0.0;
+  }
+  return (nextBuffered.inMilliseconds / total.inMilliseconds).clamp(0.0, 1.0);
+}
+
+@visibleForTesting
+Duration? parseFruitCarModeDurationText(String raw) {
+  final String trimmed = raw.trim();
+  if (trimmed.isEmpty || trimmed == '--') {
+    return null;
+  }
+
+  final unitMatch = RegExp(r'^([+-]?\d+(?:\.\d+)?)(ms|s)$').firstMatch(trimmed);
+  if (unitMatch != null) {
+    final double? amount = double.tryParse(unitMatch.group(1)!);
+    final String unit = unitMatch.group(2)!;
+    if (amount == null) {
+      return null;
+    }
+    final double magnitude = amount.abs();
+    final int millis = unit == 's'
+        ? (magnitude * 1000).round()
+        : magnitude.round();
+    return Duration(milliseconds: millis);
+  }
+
+  final parts = trimmed.split(':');
+  if (parts.length < 2 || parts.length > 3) {
+    return null;
+  }
+
+  final values = parts.map(int.tryParse).toList(growable: false);
+  if (values.any((value) => value == null)) {
+    return null;
+  }
+
+  if (values.length == 2) {
+    return Duration(minutes: values[0]!, seconds: values[1]!);
+  }
+
+  return Duration(hours: values[0]!, minutes: values[1]!, seconds: values[2]!);
+}
+
 class PlaybackScreen extends StatefulWidget {
   final bool initiallyOpen;
   final bool isPane;
@@ -188,6 +254,14 @@ class PlaybackScreenState extends State<PlaybackScreen>
   bool _fruitCarModeEntryResyncTriggered = false;
   HudSnapshot? _fruitCarModeFrozenHud;
   double? _fruitCarModeLastMeasuredGapMs;
+  Duration _fruitCarModeRenderedPosition = Duration.zero;
+  Duration _fruitCarModeRenderedTotal = Duration.zero;
+  double _fruitCarModeRenderedProgress = 0.0;
+  DateTime? _fruitCarModeRenderedAt;
+  PlayerState? _fruitCarModeRenderedPlayerState;
+  Timer? _fruitCarModeSyncProbeTimer;
+  DateTime? _fruitCarModeSyncProbeUntil;
+  String? _fruitCarModeSyncProbeTrigger;
   final Map<int, FocusNode> _trackFocusNodes = {};
   final FocusNode _trackListFocusNode = FocusNode(canRequestFocus: false);
 
@@ -227,6 +301,7 @@ class PlaybackScreenState extends State<PlaybackScreen>
     _pulseController.dispose();
     _panelPositionNotifier.dispose();
     _errorSubscription?.cancel();
+    _fruitCarModeSyncProbeTimer?.cancel();
     for (final node in _trackFocusNodes.values) {
       node.dispose();
     }

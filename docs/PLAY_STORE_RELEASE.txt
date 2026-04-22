@@ -1,4 +1,16 @@
 <en-US>
+What's new in v1.4.4+314
+• Fruit car mode top-row telemetry chips (`HD` and `NXT`) now render as
+• `HD` chip now uses a fixed 30-second full-scale gauge for car-distance
+• `NXT` chip now normalizes against the next file's total duration so the bar
+• Fruit car mode stat chips now continue updating during live playback without
+• Web/PWA pause handling now snapshots the live interpolated playback position
+• Added a focused web-player regression guard covering the local pause snapshot
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.4.3+313
 • Car mode progress bar freezes when HUD toggles stats↔meta
 • Car mode progress bar stays frozen after pressing play

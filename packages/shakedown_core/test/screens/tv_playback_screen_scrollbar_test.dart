@@ -20,7 +20,7 @@ import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/ui/screens/tv_playback_screen.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_scrollbar.dart';
 
-import 'playback_screen_test.mocks.dart';
+import 'playback_screen_tv_test.mocks.dart';
 import '../helpers/fake_settings_provider.dart';
 
 class _MockTvDeviceService extends ChangeNotifier implements DeviceService {

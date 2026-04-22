@@ -126,6 +126,14 @@ class MockGaplessPlayer extends _i1.Mock implements _i3.GaplessPlayer {
           as _i3.AudioEngineMode);
 
   @override
+  bool get syncDebugProbeActive =>
+      (super.noSuchMethod(
+            Invocation.getter(#syncDebugProbeActive),
+            returnValue: false,
+          )
+          as bool);
+
+  @override
   double get drift =>
       (super.noSuchMethod(Invocation.getter(#drift), returnValue: 0.0)
           as double);
@@ -419,6 +427,21 @@ class MockGaplessPlayer extends _i1.Mock implements _i3.GaplessPlayer {
   @override
   void reload() => super.noSuchMethod(
     Invocation.method(#reload, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void resync({String? reason = 'manual'}) => super.noSuchMethod(
+    Invocation.method(#resync, [], {#reason: reason}),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void startSyncDebugProbe(
+    String? tag, {
+    Duration? window = const Duration(seconds: 6),
+  }) => super.noSuchMethod(
+    Invocation.method(#startSyncDebugProbe, [tag], {#window: window}),
     returnValueForMissingStub: null,
   );
 
