@@ -10,17 +10,21 @@ import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 // VM tests run gapless_player_native.dart.
 
 void main() {
-  test('GaplessPlayer (Native) position does not need manual interpolation in getter', () {
-    final player = GaplessPlayer();
-    // Native player relies on just_audio which handles its own timing.
-    expect(player.position, Duration.zero);
-  });
+  TestWidgetsFlutterBinding.ensureInitialized();
+  test(
+    'GaplessPlayer (Native) position does not need manual interpolation in getter',
+    () {
+      final player = GaplessPlayer();
+      // Native player relies on just_audio which handles its own timing.
+      expect(player.position, Duration.zero);
+    },
+  );
 
   group('GaplessPlayer Position Logic (Conceptual verification)', () {
     // The bug was that the web 'position' getter was just returning _positionSec
     // which only updates on JS ticks (every 250ms or when state changes).
     // Between ticks, the getter stayed stale, even if the stream was interpolating.
-    
+
     // Since we fixed it in gapless_player_web_accessors.dart, we've unified the
     // source of truth.
   });

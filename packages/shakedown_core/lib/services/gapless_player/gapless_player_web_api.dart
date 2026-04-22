@@ -75,6 +75,11 @@ mixin _GaplessPlayerWebApi on _GaplessPlayerBase, _GaplessPlayerWebEngine {
     if (!_useJsEngine) {
       await _fallbackPlayer?.play();
     } else {
+      // Optimistically mark as playing so dead-reckoning resumes immediately.
+      // The JS onStateChange confirmation overwrites these when it arrives.
+      _playing = true;
+      _lastTickAt = DateTime.now();
+      _startInterpolationTimer();
       _callEngine((engine) => engine.play());
     }
   }

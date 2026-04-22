@@ -1,4 +1,13 @@
 <en-US>
+What's new in v1.4.3+313
+• Car mode progress bar freezes when HUD toggles stats↔meta
+• Car mode progress bar stays frozen after pressing play
+• Car mode DFT chip now shows drift in milliseconds
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.4.2+312
 • Bug Fix (Fruit Car Mode): Resolved a transient state where "Picking show..." was visible on the playback screen despite a show already being selected. The UI now correctly falls back to the first track title while the audio engine initializes.
 </en-US>

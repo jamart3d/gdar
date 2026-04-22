@@ -13,7 +13,8 @@ extension _PlaybackScreenFruitCarModeProgress on PlaybackScreenState {
         final dng = snapshot.data ?? audioProvider.createSnapshot();
         final position = dng.position;
         final buffered = dng.buffered;
-        final playerState = dng.playerState ?? audioProvider.audioPlayer.playerState;
+        final playerState =
+            dng.playerState ?? audioProvider.audioPlayer.playerState;
         final processingState = playerState.processingState;
         final total = audioProvider.audioPlayer.duration ?? Duration.zero;
 
@@ -46,9 +47,7 @@ extension _PlaybackScreenFruitCarModeProgress on PlaybackScreenState {
               isLoading: isLoading,
             ),
             Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: 4 * scaleFactor,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 4 * scaleFactor),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

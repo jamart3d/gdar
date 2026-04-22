@@ -1,0 +1,167 @@
+﻿Resolving dependencies in `C:\Users\jeff\StudioProjects\gdar`...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (99.0.0 available)
+  analyzer 10.0.1 (12.1.0 available)
+  cli_util 0.4.2 (0.5.0 available)
+  connectivity_plus 7.1.0 (7.1.1 available)
+  dart_style 3.1.7 (3.1.8 available)
+  device_info_plus 12.4.0 (13.1.0 available)
+  device_info_plus_platform_interface 7.0.3 (8.1.0 available)
+  flame 1.36.0 (1.37.0 available)
+  flame_test 2.2.3 (2.2.4 available)
+  hooks 1.0.2 (1.0.3 available)
+  meta 1.17.0 (1.18.2 available)
+  mocktail 1.0.4 (1.0.5 available)
+  native_toolchain_c 0.17.6 (0.18.0 available)
+  package_info_plus 9.0.1 (10.1.0 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  synchronized 3.4.0 (3.4.0+1 available)
+  test 1.30.0 (1.31.0 available)
+  test_api 0.7.10 (0.7.11 available)
+  test_core 0.6.16 (0.6.17 available)
+  vector_math 2.2.0 (2.3.0 available)
+  vm_service 15.0.2 (15.1.0 available)
+  wakelock_plus 1.5.1 (1.6.0 available)
+  wakelock_plus_platform_interface 1.4.0 (1.5.0 available)
+  win32 5.15.0 (6.0.1 available)
+  win32_registry 2.1.0 (3.0.3 available)
+Got dependencies in `C:\Users\jeff\StudioProjects\gdar`!
+25 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/jeff/StudioProjects/gdar/packages/shakedown_core/test/screens/playback_screen_test.dart
+00:00 +0: PlaybackScreen shows "No show selected" when currentShow is null
+00:00 +1: PlaybackScreen displays show and track information
+00:00 +2: Tapping a non-playing track seeks to it
+00:01 +3: PlaybackScreen displays rating control
+00:01 +4: PlaybackScreen uses Fruit car mode layout when enabled
+00:01 +5: PlaybackScreen Fruit car mode shows all remaining upcoming tracks
+00:01 +6: PlaybackScreen Fruit car mode hero track title falls back to first track title when currentTrack is null
+00:01 +7: PlaybackScreen Fruit car mode top-row toggle does not shift lower layout
+00:01 +8: PlaybackScreen stacks src over shnid in Fruit car mode meta hud without chip badges
+00:01 +9: PlaybackScreen opens rating dialog from Fruit car mode rating zone
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following MissingStubError was thrown building AnimatedGradientBorder(dirty, dependencies:
+[_InheritedProviderScope<AudioProvider?>, _InheritedProviderScope<SettingsProvider?>], state:
+_AnimatedGradientBorderState#79037(ticker active)):
+'playing'
+No stub was found which matches the arguments of this method call:
+playing
+
+Add a stub for this method using Mockito's 'when' API, or generate the MockGaplessPlayer mock with
+the @GenerateNiceMocks annotation (see
+https://pub.dev/documentation/mockito/latest/annotations/MockSpec-class.html).
+
+The relevant error-causing widget was:
+  AnimatedGradientBorder
+  AnimatedGradientBorder:file:///C:/Users/jeff/StudioProjects/gdar/packages/shakedown_core/lib/ui/widgets/tv/tv_focus_wrapper.dart:235:15
+
+When the exception was thrown, this was the stack:
+#0      Mock._noSuchMethod (package:mockito/src/mock.dart:200:7)
+#1      Mock.noSuchMethod (package:mockito/src/mock.dart:194:47)
+#2      MockGaplessPlayer.playing (file:///C:/Users/jeff/StudioProjects/gdar/packages/shakedown_core/test/screens/playback_screen_test.mocks.dart:517:14)
+#3      _TestAudioProvider.isPlaying (file:///C:/Users/jeff/StudioProjects/gdar/packages/shakedown_core/test/screens/playback_screen_test.dart:445:37)
+#4      _AnimatedGradientBorderState.build (package:shakedown_core/ui/widgets/animated_gradient_border.dart:138:54)
+#5      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#6      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#7      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#8      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#9      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5799:5)
+#10     StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5973:11)
+#11     ComponentElement.mount (package:flutter/src/widgets/framework.dart:5793:5)
+...     Normal element mounting (77 frames)
+#88     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#89     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#90     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (7 frames)
+#97     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#98     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#99     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7279:32)
+...     Normal element mounting (302 frames)
+#401    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#402    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7264:36)
+#403    Element.updateChild (package:flutter/src/widgets/framework.dart:4059:18)
+#404    Element.updateChildren (package:flutter/src/widgets/framework.dart:4255:32)
+#405    MultiChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7295:17)
+#406    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#407    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#408    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#409    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#410    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#411    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#412    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#413    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#414    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#415    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#416    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#417    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#418    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#419    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#420    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#421    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#422    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#423    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#424    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#425    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#426    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#427    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#428    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#429    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+#430    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#431    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#432    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#433    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#434    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#435    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#436    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#437    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#438    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#439    StatefulElement.update (package:flutter/src/widgets/framework.dart:6007:5)
+#440    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#441    SingleChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7122:14)
+#442    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#443    SingleChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7122:14)
+#444    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#445    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#446    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#447    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#448    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#449    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#450    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#451    ProxyElement.update (package:flutter/src/widgets/framework.dart:6149:5)
+#452    Element.updateChild (package:flutter/src/widgets/framework.dart:4037:15)
+#453    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5841:16)
+#454    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#455    Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#456    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2750:15)
+#457    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2807:11)
+#458    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3111:18)
+#459    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2131:19)
+#460    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+#461    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#462    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#463    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:1960:9)
+#466    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#467    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:1949:27)
+#468    WidgetTester.pump.<anonymous closure> (package:flutter_test/src/widget_tester.dart:652:53)
+#471    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#472    WidgetTester.pump (package:flutter_test/src/widget_tester.dart:652:27)
+#473    main.<anonymous closure> (file:///C:/Users/jeff/StudioProjects/gdar/packages/shakedown_core/test/screens/playback_screen_test.dart:1038:20)
+<asynchronous suspension>
+#474    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#475    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1682:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +9 -1: PlaybackScreen opens rating dialog from Fruit car mode rating zone [E]
+  Test failed. See exception logs above.
+  The test description was: PlaybackScreen opens rating dialog from Fruit car mode rating zone
+  
+00:01 +9 -1: PlaybackScreen shows floating spheres in Fruit car mode when enabled
+00:02 +10 -1: PlaybackScreen Fruit car mode splits trailing units into compact chip markers when glass is enabled
+00:02 +11 -1: PlaybackScreen freezes Fruit car mode stat chips while paused
+00:02 +12 -1: PlaybackScreen Fruit car mode progress text refreshes after delayed stream resume
+00:02 +13 -1: PlaybackScreen Fruit car mode long press clears loading playback and returns to show list
+00:02 +14 -1: Some tests failed.

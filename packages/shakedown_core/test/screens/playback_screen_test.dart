@@ -457,14 +457,16 @@ class _TestAudioProvider extends ChangeNotifier implements AudioProvider {
   Stream<Duration?> get durationStream => audioPlayer.durationStream;
 
   @override
-  Stream<DngSnapshot> get diagnosticsStream => _diagnosticsController?.stream ?? Stream.value(createSnapshot());
+  Stream<DngSnapshot> get diagnosticsStream =>
+      _diagnosticsController?.stream ?? Stream.value(createSnapshot());
   StreamController<DngSnapshot>? _diagnosticsController;
   void setDiagnosticsStream(Stream<DngSnapshot> s) {
     // Conceptual for tests that need to push custom snapshots
   }
 
   @override
-  Stream<HudSnapshot> get hudSnapshotStream => _hudSnapshotController?.stream ?? Stream.value(currentHudSnapshot);
+  Stream<HudSnapshot> get hudSnapshotStream =>
+      _hudSnapshotController?.stream ?? Stream.value(currentHudSnapshot);
   StreamController<HudSnapshot>? _hudSnapshotController;
 
   @override
@@ -480,7 +482,8 @@ class _TestAudioProvider extends ChangeNotifier implements AudioProvider {
   );
 
   @override
-  HudSnapshot get currentHudSnapshot => _currentHudSnapshot ?? HudSnapshot.empty();
+  HudSnapshot get currentHudSnapshot =>
+      _currentHudSnapshot ?? HudSnapshot.empty();
   HudSnapshot? _currentHudSnapshot;
   set currentHudSnapshot(HudSnapshot v) {
     _currentHudSnapshot = v;
@@ -582,14 +585,13 @@ void main() {
     when(
       mockAudioPlayer.playerState,
     ).thenReturn(PlayerState(false, ProcessingState.idle));
+    when(mockAudioPlayer.playing).thenReturn(false);
 
     // Stub default return values for streams to avoid null errors
     when(
       mockAudioPlayer.playerStateStream,
     ).thenAnswer((_) => Stream.value(PlayerState(false, ProcessingState.idle)));
-    when(
-      mockAudioPlayer.currentIndexStream,
-    ).thenAnswer((_) => Stream.value(0));
+    when(mockAudioPlayer.currentIndexStream).thenAnswer((_) => Stream.value(0));
     when(
       mockAudioPlayer.durationStream,
     ).thenAnswer((_) => Stream.value(const Duration(seconds: 100)));
@@ -607,15 +609,31 @@ void main() {
     ).thenAnswer((_) => const Stream.empty());
     when(mockAudioPlayer.sequence).thenReturn([]);
     when(mockAudioPlayer.nextTrackBuffered).thenReturn(null);
-    when(mockAudioPlayer.nextTrackBufferedStream).thenAnswer((_) => Stream.value(null));
-    when(mockAudioPlayer.nextTrackTotalStream).thenAnswer((_) => Stream.value(null));
-    when(mockAudioPlayer.heartbeatActiveStream).thenAnswer((_) => Stream.value(false));
-    when(mockAudioPlayer.heartbeatNeededStream).thenAnswer((_) => Stream.value(false));
-    when(mockAudioPlayer.engineStateStringStream).thenAnswer((_) => Stream.value('idle'));
-    when(mockAudioPlayer.engineContextStateStream).thenAnswer((_) => Stream.value('none'));
+    when(
+      mockAudioPlayer.nextTrackBufferedStream,
+    ).thenAnswer((_) => Stream.value(null));
+    when(
+      mockAudioPlayer.nextTrackTotalStream,
+    ).thenAnswer((_) => Stream.value(null));
+    when(
+      mockAudioPlayer.heartbeatActiveStream,
+    ).thenAnswer((_) => Stream.value(false));
+    when(
+      mockAudioPlayer.heartbeatNeededStream,
+    ).thenAnswer((_) => Stream.value(false));
+    when(
+      mockAudioPlayer.engineStateStringStream,
+    ).thenAnswer((_) => Stream.value('idle'));
+    when(
+      mockAudioPlayer.engineContextStateStream,
+    ).thenAnswer((_) => Stream.value('none'));
     when(mockAudioPlayer.driftStream).thenAnswer((_) => Stream.value(0.0));
-    when(mockAudioPlayer.visibilityStream).thenAnswer((_) => Stream.value('VIS'));
-    when(mockAudioPlayer.playBlockedStream).thenAnswer((_) => const Stream.empty());
+    when(
+      mockAudioPlayer.visibilityStream,
+    ).thenAnswer((_) => Stream.value('VIS'));
+    when(
+      mockAudioPlayer.playBlockedStream,
+    ).thenAnswer((_) => const Stream.empty());
     when(mockAudioPlayer.playingStream).thenAnswer((_) => Stream.value(false));
 
     mockAudioProvider.currentShow = dummyShow;
@@ -1061,7 +1079,7 @@ void main() {
       mockSettingsProvider.setShowDevAudioHud(false);
 
       final hud = HudSnapshot.empty().copyWith(
-        drift: '1.25s',
+        drift: '1250ms',
         headroom: '+12s',
         nextBuffered: '00:34',
         lastGapMs: 1200,
@@ -1077,15 +1095,15 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('1.25s'), findsNothing);
+      expect(find.text('1250ms'), findsNothing);
       expect(find.text('+12s'), findsNothing);
       expect(find.text('00:34'), findsOneWidget);
       expect(find.text('1200ms'), findsNothing);
-      expect(find.text('1.25'), findsOneWidget);
+      expect(find.text('1250'), findsOneWidget);
       expect(find.text('+12'), findsOneWidget);
       expect(find.text('1200'), findsOneWidget);
-      expect(find.text('s'), findsNWidgets(2));
-      expect(find.text('ms'), findsOneWidget);
+      expect(find.text('s'), findsOneWidget);
+      expect(find.text('ms'), findsNWidgets(2));
 
       final dftCard = find.byKey(
         const ValueKey('fruit_car_mode_stat_card_DFT'),
@@ -1131,13 +1149,13 @@ void main() {
     mockSettingsProvider.setShowDevAudioHud(false);
 
     final playingHud = HudSnapshot.empty().copyWith(
-      drift: '1.25s',
+      drift: '1250ms',
       headroom: '+12s',
       nextBuffered: '00:34',
       lastGapMs: 47,
     );
     final pausedHud = HudSnapshot.empty().copyWith(
-      drift: '8.50s',
+      drift: '8500ms',
       headroom: '+1s',
       nextBuffered: '00:02',
       lastGapMs: 212,
@@ -1156,12 +1174,12 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('1.25'), findsOneWidget);
+    expect(find.text('1250'), findsOneWidget);
     expect(find.text('+12'), findsOneWidget);
     expect(find.text('00:34'), findsOneWidget);
     expect(find.text('47'), findsOneWidget);
-    expect(find.text('s'), findsNWidgets(2));
-    expect(find.text('ms'), findsOneWidget);
+    expect(find.text('s'), findsOneWidget);
+    expect(find.text('ms'), findsNWidgets(2));
 
     when(
       mockAudioPlayer.playerState,
@@ -1170,11 +1188,11 @@ void main() {
     mockAudioProvider.currentHudSnapshot = pausedHud;
     await tester.pump();
 
-    expect(find.text('1.25'), findsOneWidget);
+    expect(find.text('1250'), findsOneWidget);
     expect(find.text('+12'), findsOneWidget);
     expect(find.text('00:34'), findsOneWidget);
     expect(find.text('47'), findsOneWidget);
-    expect(find.text('8.50'), findsNothing);
+    expect(find.text('8500'), findsNothing);
     expect(find.text('+1'), findsNothing);
     expect(find.text('00:02'), findsNothing);
     expect(find.text('212'), findsNothing);
@@ -1235,7 +1253,7 @@ void main() {
       mockAudioProvider.currentTrack = dummyTrack1;
       mockSettingsProvider.setCarMode(true);
       mockSettingsProvider.setShowDevAudioHud(false);
-      
+
       when(
         mockAudioPlayer.playerState,
       ).thenReturn(PlayerState(false, ProcessingState.loading));

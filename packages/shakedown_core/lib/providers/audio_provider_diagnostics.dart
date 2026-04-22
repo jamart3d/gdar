@@ -91,8 +91,12 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
   }
 
   void _stopDiagnosticsTimer() {
-    _diagnosticsTimer?.cancel();
-    _diagnosticsTimer = null;
+    final diagHasListeners = _diagnosticsController?.hasListener ?? false;
+    final hudHasListeners = _hudSnapshotController?.hasListener ?? false;
+    if (!diagHasListeners && !hudHasListeners) {
+      _diagnosticsTimer?.cancel();
+      _diagnosticsTimer = null;
+    }
   }
 
   DngSnapshot createSnapshot() {
@@ -194,7 +198,7 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
       ),
       heartbeat: dng.hbActive ? 'ON' : (dng.hbNeeded ? 'ND' : 'OFF'),
       visibility: dng.visibility,
-      drift: dng.drift == 0.0 ? '--' : '${dng.drift.toStringAsFixed(2)}s',
+      drift: dng.drift == 0.0 ? '--' : '${(dng.drift * 1000).round()}ms',
       prefetch: settings.webPrefetchSeconds < 0
           ? 'G'
           : '${settings.webPrefetchSeconds}s',

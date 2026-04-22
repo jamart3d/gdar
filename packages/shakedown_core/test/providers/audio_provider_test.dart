@@ -1087,6 +1087,84 @@ void main() {
     });
   });
 
+  group('diagnostics timer lifecycle', () {
+    test(
+      'diagnosticsStream keeps emitting after hudSnapshotStream loses all listeners',
+      () async {
+        await Future(() async {
+          final received = <Object>[];
+
+          final diagSub = audioProvider.diagnosticsStream.listen(received.add);
+          final hudSub = audioProvider.hudSnapshotStream.listen((_) {});
+
+          // Cancel hud subscription — this was the bug trigger
+          await hudSub.cancel();
+
+          await Future.delayed(const Duration(milliseconds: 400));
+
+          expect(
+            received,
+            isNotEmpty,
+            reason:
+                'diagnosticsStream must keep emitting when hudSnapshotStream '
+                'has no listeners',
+          );
+
+          await diagSub.cancel();
+        });
+      },
+    );
+
+    test(
+      'hudSnapshotStream keeps emitting after diagnosticsStream loses all listeners',
+      () async {
+        await Future(() async {
+          final received = <Object>[];
+
+          final diagSub = audioProvider.diagnosticsStream.listen((_) {});
+          final hudSub = audioProvider.hudSnapshotStream.listen(received.add);
+
+          await diagSub.cancel();
+
+          await Future.delayed(const Duration(milliseconds: 400));
+
+          expect(
+            received,
+            isNotEmpty,
+            reason:
+                'hudSnapshotStream must keep emitting when diagnosticsStream '
+                'has no listeners',
+          );
+
+          await hudSub.cancel();
+        });
+      },
+    );
+
+    test('timer stops when both streams lose all listeners', () async {
+      await Future(() async {
+        final diagSub = audioProvider.diagnosticsStream.listen((_) {});
+        final hudSub = audioProvider.hudSnapshotStream.listen((_) {});
+
+        await diagSub.cancel();
+        await hudSub.cancel();
+
+        // Re-subscribe fresh after cancellation to verify timer restarts
+        final received = <Object>[];
+        final newDiagSub = audioProvider.diagnosticsStream.listen(received.add);
+        await Future.delayed(const Duration(milliseconds: 400));
+
+        expect(
+          received,
+          isNotEmpty,
+          reason: 'timer must restart when a new listener subscribes',
+        );
+
+        await newDiagSub.cancel();
+      });
+    });
+  });
+
   group('Wake Lock', () {
     testWidgets(
       'releases wake lock when preventSleep toggled off during active playback',
