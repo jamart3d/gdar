@@ -1,4 +1,11 @@
 <en-US>
+What's new in v1.4.7+317
+• Maintenance: General maintenance and version synchronization.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.4.6+316
 • Maintenance: General maintenance and version synchronization.
 </en-US>
