@@ -326,7 +326,7 @@ extension _DevAudioHudFields on _DevAudioHudState {
         }
       } else if (key == 'NX' && value != '00:00' && value != '--') {
         finalBaseTextColor = Colors.green;
-      } else if (key == 'DFT') {
+      } else if (key == 'DRIFT') {
         final drift = _parseDriftValue(value) ?? 0.0;
         if (drift.abs() > 0.1) {
           finalBaseTextColor = Colors.redAccent;

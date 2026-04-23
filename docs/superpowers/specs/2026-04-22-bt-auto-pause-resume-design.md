@@ -8,13 +8,15 @@ When a Bluetooth or wired audio device disconnects mid-playback on the PWA, audi
 
 ## Design Decisions
 
-- **Detection Strategy:** Use the `navigator.mediaDevices.ondevicechange` event to monitor the number of `audiooutput` devices.
+- **Detection Strategy:** Use the `navigator.mediaDevices.ondevicechange` event to monitor the number of `audiooutput` devices via `enumerateDevices()`. Filter strictly on `kind === 'audiooutput'` — do not use total device count, as `devicechange` fires for all device types (microphone, camera, etc.).
+- **iOS Safari:** `ondevicechange` support is unreliable on iOS Safari. The monitor degrades gracefully — feature is silently inactive; no error is thrown. This is not considered a defect.
 - **Pause-on-Disconnect:** 
-    - If the count of output devices **decreases** while the engine is `playing`, call `engine.pause()`.
+    - If the count of `audiooutput` devices **decreases** while the engine is `playing`, debounce **400ms** then call `engine.pause()`.
     - Stamp the time of pause as `_autoPausedAt`.
+    - The 400ms debounce prevents false pauses during Bluetooth A2DP codec renegotiation (e.g. AAC → aptX handoff), which briefly drops and re-adds the output device.
 - **Resume-on-Reconnect:** 
     - If the count **increases** within **3 minutes** of an auto-pause, call `engine.play()`.
-    - **Override:** If the user manually taps Play or Pause in the interim, the auto-resume window is discarded.
+    - **Override:** If the user manually taps Play or Pause (or presses the headset Play button) in the interim, the auto-resume window is discarded and the monitor transitions to `idle`.
 - **Settings Gate:** 
     - Key: `pause_on_output_disconnect` (Default: `true` for Web/PWA, `false` for TV/Native).
     - Location: **Settings > Playback Section**.
@@ -28,13 +30,14 @@ When a Bluetooth or wired audio device disconnects mid-playback on the PWA, audi
 A standalone JS sidecar loaded in `index.html`. 
 - **API:** `window._gdarRouteMonitor.attach(engine, strategy)` called by `hybrid_init.js`.
 - **State Machine:**
-    - `idle`: No playback or manual pause.
-    - `armed`: Playback active; snapshotting device count.
-    - `auto-paused`: Disconnect detected; waiting for reconnect or 3m expiry.
+    - `idle`: No active playback (initial state, manual pause, or auto-resume window expired/discarded). On entry, clear `_autoPausedAt`.
+    - `armed`: Playback active; snapshotting `audiooutput` device count.
+    - `auto-paused`: Disconnect detected; waiting for reconnect within 3 minutes or for window expiry.
+    - **Transitions:** `armed` → `idle` on manual pause (do not leave a stale `_autoPausedAt`); `armed` → `auto-paused` on disconnect debounce; `auto-paused` → `idle` on manual Play/Pause or headset Play; `auto-paused` → `armed` on reconnect + auto-resume.
 
 ### 2. Dart Integration
 - **SettingsProvider:** Add `pauseOnOutputDisconnect` bool.
-- **UI:** Add a toggle in `PlaybackSection` (specifically within the `_buildWebGaplessSection` extension).
+- **UI:** Add a toggle in `PlaybackSection` in the general Web section — **not** inside `_buildWebGaplessSection`. The monitor is engine-agnostic and must be visible regardless of which web engine is active.
 
 ## Implementation Plan
 
@@ -46,7 +49,7 @@ Modify `hybrid_init.js` temporarily to log:
 
 ### Phase 2: Core Logic
 1.  Create `apps/gdar_web/web/audio_route_monitor.js`.
-2.  Insert `<script>` tag in `apps/gdar_web/web/index.html`.
+2.  Insert `<script>` tag in `apps/gdar_web/web/index.html`. **Load order:** after `audio_utils.js`, before `hybrid_init.js` (monitor must be defined before init attaches it).
 3.  Inject monitor attachment in `apps/gdar_web/web/hybrid_init.js`.
 
 ### Phase 3: Dart UI
@@ -55,7 +58,7 @@ Modify `hybrid_init.js` temporarily to log:
 
 ## Verification Criteria
 1.  **Disconnect:** Play audio → Unplug/Disconnect → Audio pauses within 1s.
-2.  **Reconnect:** Disconnect → Reconnect within 120s → Audio resumes automatically.
+2.  **Reconnect:** Disconnect → Reconnect within 120s → Audio resumes automatically. (Window is 3 minutes; 120s is the test threshold.)
 3.  **Expiry:** Disconnect → Wait 4 minutes → Reconnect → Audio stays paused.
 4.  **Manual Override:** Disconnect → Tap Pause on phone → Reconnect → Audio stays paused.
 5.  **Settings Toggle:** Disable in settings → Disconnect → Audio continues through speaker (verify opt-out works).

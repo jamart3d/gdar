@@ -1117,13 +1117,13 @@ void main() {
       expect(find.text('ms'), findsNWidgets(2));
 
       final dftCard = find.byKey(
-        const ValueKey('fruit_car_mode_stat_card_DFT'),
+        const ValueKey('fruit_car_mode_stat_card_DRIFT'),
       );
       final dftLabel = find.byKey(
-        const ValueKey('fruit_car_mode_stat_label_text_DFT'),
+        const ValueKey('fruit_car_mode_stat_label_text_DRIFT'),
       );
       final dftUnit = find.byKey(
-        const ValueKey('fruit_car_mode_stat_unit_text_DFT'),
+        const ValueKey('fruit_car_mode_stat_unit_text_DRIFT'),
       );
 
       expect(dftCard, findsOneWidget);
@@ -1142,35 +1142,35 @@ void main() {
       final Text gapValueText = tester.widget<Text>(find.text('1200'));
       expect(gapValueText.style?.fontSize, lessThan(24.0));
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_DFT')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_DRIFT')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_NXT')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_NEXT')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_HEADROOM')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_NXT')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_NEXT')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_edge_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_edge_HEADROOM')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_edge_NXT')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_edge_NEXT')),
         findsNothing,
       );
       final DecoratedBox hdTrack = tester.widget<DecoratedBox>(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_HEADROOM')),
       );
       final BoxDecoration hdTrackDecoration =
           hdTrack.decoration as BoxDecoration;
@@ -1179,7 +1179,7 @@ void main() {
       expect(hdTrackGradient.colors.first, hdTrackGradient.colors.last);
       expect(hdTrackDecoration.borderRadius, isNull);
       final DecoratedBox hdFill = tester.widget<DecoratedBox>(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM')),
       );
       final BoxDecoration hdFillDecoration = hdFill.decoration as BoxDecoration;
       final LinearGradient hdFillGradient =
@@ -1188,31 +1188,31 @@ void main() {
       expect(hdFillGradient.colors.first, isNot(hdTrackGradient.colors.first));
       expect(hdFillDecoration.borderRadius, isNull);
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_DFT')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_DRIFT')),
         findsNothing,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_LG')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_LAST GAP')),
         findsNothing,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_LG')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_LAST GAP')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_DFT')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_DRIFT')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_NXT')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_NEXT')),
         findsNothing,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_HEADROOM')),
         findsNothing,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_NXT')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_NEXT')),
         findsNothing,
       );
       expect(tester.takeException(), isNull);
@@ -1340,10 +1340,10 @@ void main() {
       await tester.pump();
 
       final Rect hdCardRect = tester.getRect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_card_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_card_HEADROOM')),
       );
       final Rect hdFillRect = tester.getRect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM')),
       );
 
       expect(hdFillRect.width, closeTo(hdCardRect.width * 0.5, 2.0));
@@ -1374,23 +1374,23 @@ void main() {
       await tester.pump();
 
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_NXT')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_NEXT')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_HEADROOM')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_NXT')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_fill_track_NEXT')),
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_HD')),
+        find.byKey(const ValueKey('fruit_car_mode_stat_value_lens_HEADROOM')),
         findsNothing,
       );
     },

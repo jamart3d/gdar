@@ -191,7 +191,7 @@ extension _PlaybackScreenFruitCarModeHud on PlaybackScreenState {
             children: [
               Expanded(
                 child: _FruitCarModeStatCard(
-                  label: 'DFT',
+                  label: 'DRIFT',
                   value: hud.drift,
                   accentColor: colorScheme.primary,
                   scaleFactor: scaleFactor,
@@ -200,7 +200,7 @@ extension _PlaybackScreenFruitCarModeHud on PlaybackScreenState {
               SizedBox(width: 6 * scaleFactor),
               Expanded(
                 child: _FruitCarModeStatCard(
-                  label: 'HD',
+                  label: 'HEADROOM',
                   value: hud.headroom,
                   accentColor: colorScheme.secondary,
                   scaleFactor: scaleFactor,
@@ -210,7 +210,7 @@ extension _PlaybackScreenFruitCarModeHud on PlaybackScreenState {
               SizedBox(width: 6 * scaleFactor),
               Expanded(
                 child: _FruitCarModeStatCard(
-                  label: 'NXT',
+                  label: 'NEXT',
                   value: hud.nextBuffered,
                   accentColor: colorScheme.tertiary,
                   scaleFactor: scaleFactor,
@@ -220,7 +220,7 @@ extension _PlaybackScreenFruitCarModeHud on PlaybackScreenState {
               SizedBox(width: 6 * scaleFactor),
               Expanded(
                 child: _FruitCarModeStatCard(
-                  label: 'LG',
+                  label: 'LAST GAP',
                   value: hud.lastGapMs == null
                       ? '--'
                       : '${hud.lastGapMs!.toStringAsFixed(0)}ms',

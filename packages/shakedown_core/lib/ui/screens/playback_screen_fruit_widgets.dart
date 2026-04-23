@@ -32,7 +32,7 @@ class _FruitCarModeStatCard extends StatelessWidget {
     final double normalizedFill = (fillFraction ?? 0.0).clamp(0.0, 1.0);
     final bool isGaugeChip = fillFraction != null;
     final Color baseChipColor = colorScheme.surfaceContainerLow;
-    final bool isHeadroomChip = label == 'HD';
+    final bool isHeadroomChip = label == 'HEADROOM';
     final Color headroomBaseTone = accentColor;
     final Color gaugeTrackColor = isHeadroomChip
         ? Color.alphaBlend(

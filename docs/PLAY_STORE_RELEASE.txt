@@ -1,4 +1,11 @@
 <en-US>
+What's new in v1.4.5+315
+• Maintenance: General maintenance and version synchronization.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.4.4+314
 • Fruit car mode top-row telemetry chips (`HD` and `NXT`) now render as
 • `HD` chip now uses a fixed 30-second full-scale gauge for car-distance
