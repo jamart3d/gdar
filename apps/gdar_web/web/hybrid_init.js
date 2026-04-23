@@ -218,13 +218,14 @@
             _log.log(`[Shakedown] MediaSession action handlers installed for strategy: ${strategy}`);
         }
 
-        // --- DIAGNOSTIC PROBE (Temporary — replaced in Task 3) ---
+        // --- DIAGNOSTIC PROBE (Temporary) ---
         if ('mediaDevices' in navigator && navigator.mediaDevices.addEventListener) {
             navigator.mediaDevices.addEventListener('devicechange', async () => {
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const outputs = devices.filter(d => d.kind === 'audiooutput');
-                console.log(`%c[GDAR-PROBE] devicechange fired. Total outputs: ${outputs.length}`, 'color: #00ff00; font-weight: bold;');
-                outputs.forEach(d => console.log(` - Device: ${d.label || 'unlabeled'} (${d.deviceId})`));
+                const msg = `[GDAR-PROBE]\ndevicechange fired.\nTotal outputs: ${outputs.length}\n${outputs.map(d => ` - ${d.label || 'unlabeled'}`).join('\n')}`;
+                console.log(msg);
+                alert(msg);
             });
             console.log('[GDAR-PROBE] Monitor initialized.');
         }

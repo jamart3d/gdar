@@ -1146,7 +1146,9 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM')),
+        find.byKey(
+          const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM'),
+        ),
         findsOneWidget,
       );
       expect(
@@ -1179,7 +1181,9 @@ void main() {
       expect(hdTrackGradient.colors.first, hdTrackGradient.colors.last);
       expect(hdTrackDecoration.borderRadius, isNull);
       final DecoratedBox hdFill = tester.widget<DecoratedBox>(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM')),
+        find.byKey(
+          const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM'),
+        ),
       );
       final BoxDecoration hdFillDecoration = hdFill.decoration as BoxDecoration;
       final LinearGradient hdFillGradient =
@@ -1192,7 +1196,9 @@ void main() {
         findsNothing,
       );
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_LAST GAP')),
+        find.byKey(
+          const ValueKey('fruit_car_mode_stat_fill_background_LAST GAP'),
+        ),
         findsNothing,
       );
       expect(
@@ -1343,7 +1349,9 @@ void main() {
         find.byKey(const ValueKey('fruit_car_mode_stat_card_HEADROOM')),
       );
       final Rect hdFillRect = tester.getRect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM')),
+        find.byKey(
+          const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM'),
+        ),
       );
 
       expect(hdFillRect.width, closeTo(hdCardRect.width * 0.5, 2.0));
@@ -1374,7 +1382,9 @@ void main() {
       await tester.pump();
 
       expect(
-        find.byKey(const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM')),
+        find.byKey(
+          const ValueKey('fruit_car_mode_stat_fill_background_HEADROOM'),
+        ),
         findsOneWidget,
       );
       expect(
