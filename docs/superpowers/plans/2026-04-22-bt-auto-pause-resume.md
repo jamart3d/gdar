@@ -1,3 +1,7 @@
+# ~~Web/PWA Bluetooth Route Monitor Implementation Plan~~ — CANCELLED
+
+> **Status:** Cancelled 2026-04-22. `navigator.mediaDevices.devicechange` does not fire for Bluetooth audio output on Android Chrome or iOS Safari. Desktop-only scope was not worth pursuing. All changes reverted.
+
 # Web/PWA Bluetooth Route Monitor Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` to execute this plan. Dispatch one subagent per task, in order. Do NOT skip the HUMAN GATE checkpoints between phases — stop and ask the user before continuing.

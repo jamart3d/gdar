@@ -12,7 +12,6 @@ const String _handoffCrossfadeMsKey = 'handoff_crossfade_ms';
 const String _hiddenSessionPresetKey = 'hidden_session_preset';
 const String _webEngineProfileInitKey = 'web_engine_profile_init_v1';
 const String _webEngineProfileChoiceKey = 'web_engine_profile_choice';
-const String _pauseOnOutputDisconnectKey = 'pause_on_output_disconnect';
 
 mixin _SettingsProviderWebFields {
   late AudioEngineMode _audioEngineMode;
@@ -26,7 +25,6 @@ mixin _SettingsProviderWebFields {
   late int _handoffCrossfadeMs;
   late HiddenSessionPreset _hiddenSessionPreset;
   late WebEngineProfile _webEngineProfile;
-  late bool _pauseOnOutputDisconnect;
 }
 
 mixin _SettingsProviderWebExtension
@@ -54,7 +52,6 @@ mixin _SettingsProviderWebExtension
   int get handoffCrossfadeMs => _handoffCrossfadeMs;
   HiddenSessionPreset get hiddenSessionPreset => _hiddenSessionPreset;
   WebEngineProfile get webEngineProfile => _webEngineProfile;
-  bool get pauseOnOutputDisconnect => _pauseOnOutputDisconnect;
 
   void setTrackTransitionMode(String mode) {
     final normalized = mode == 'gap' ? 'gap' : 'gapless';
@@ -84,11 +81,6 @@ mixin _SettingsProviderWebExtension
   void togglePlayPauseFade() {
     _usePlayPauseFade = !_usePlayPauseFade;
     _updatePreference(_usePlayPauseFadeKey, _usePlayPauseFade);
-  }
-
-  void togglePauseOnOutputDisconnect() {
-    _pauseOnOutputDisconnect = !_pauseOnOutputDisconnect;
-    _updatePreference(_pauseOnOutputDisconnectKey, _pauseOnOutputDisconnect);
   }
 
   void setHandoffCrossfadeMs(int ms) {

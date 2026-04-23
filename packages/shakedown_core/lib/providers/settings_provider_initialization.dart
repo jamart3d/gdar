@@ -474,8 +474,6 @@ mixin _SettingsProviderInitializationExtension
     _handoffCrossfadeMs =
         _prefs.getInt(_handoffCrossfadeMsKey) ??
         DefaultSettings.handoffCrossfadeMs;
-    _pauseOnOutputDisconnect =
-        _prefs.getBool(_pauseOnOutputDisconnectKey) ?? kIsWeb;
   }
 
   AudioEngineMode _loadAudioEngineModePreference() {
