@@ -217,6 +217,17 @@
             });
             _log.log(`[Shakedown] MediaSession action handlers installed for strategy: ${strategy}`);
         }
+
+        // --- DIAGNOSTIC PROBE (Temporary — replaced in Task 3) ---
+        if ('mediaDevices' in navigator && navigator.mediaDevices.addEventListener) {
+            navigator.mediaDevices.addEventListener('devicechange', async () => {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const outputs = devices.filter(d => d.kind === 'audiooutput');
+                console.log(`%c[GDAR-PROBE] devicechange fired. Total outputs: ${outputs.length}`, 'color: #00ff00; font-weight: bold;');
+                outputs.forEach(d => console.log(` - Device: ${d.label || 'unlabeled'} (${d.deviceId})`));
+            });
+            console.log('[GDAR-PROBE] Monitor initialized.');
+        }
     } else {
         _log.error(`[Shakedown] FATAL: No audio engine scripts loaded successfully or strict selection failed. Strategy: ${strategy}, Override: ${override}`);
     }
