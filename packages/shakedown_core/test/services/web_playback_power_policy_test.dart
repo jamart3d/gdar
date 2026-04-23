@@ -3,6 +3,29 @@ import 'package:shakedown_core/services/audio/web_playback_power_policy.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 
 void main() {
+  group('WebPlaybackPowerProfile.fromString', () {
+    test('defaults null to auto', () {
+      expect(
+        WebPlaybackPowerProfile.fromString(null),
+        WebPlaybackPowerProfile.auto,
+      );
+    });
+
+    test('defaults unknown values to auto', () {
+      expect(
+        WebPlaybackPowerProfile.fromString('not-a-profile'),
+        WebPlaybackPowerProfile.auto,
+      );
+    });
+
+    test('parses a known value', () {
+      expect(
+        WebPlaybackPowerProfile.fromString('chargingGapless'),
+        WebPlaybackPowerProfile.chargingGapless,
+      );
+    });
+  });
+
   group('resolveWebPlaybackPowerPolicy', () {
     test('auto falls back to battery-safe when charging state is unknown',
         () {
