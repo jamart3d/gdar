@@ -24,6 +24,26 @@
 (function () {
     'use strict';
 
+    // --- DIAGNOSTIC PROBE (Temporary) ---
+    const hasMD = 'mediaDevices' in navigator;
+    const isSecure = window.isSecureContext;
+    alert(`[GDAR-PROBE] Global Start\nSecure: ${isSecure}\nMD: ${hasMD}`);
+
+    if (hasMD && navigator.mediaDevices.addEventListener) {
+        navigator.mediaDevices.addEventListener('devicechange', async () => {
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const outputs = devices.filter(d => d.kind === 'audiooutput');
+                const msg = `[GDAR-PROBE]\ndevicechange fired.\nTotal outputs: ${outputs.length}\n${outputs.map(d => ` - ${d.label || 'unlabeled'}`).join('\n')}`;
+                console.log(msg);
+                alert(msg);
+            } catch (e) {
+                alert(`[GDAR-PROBE] Error: ${e.message}`);
+            }
+        });
+        console.log('[GDAR-PROBE] Monitor initialized.');
+    }
+
     // Safe Logger Utility
     const _log = (window._gdarLogger || console);
 
@@ -216,28 +236,6 @@
                 },
             });
             _log.log(`[Shakedown] MediaSession action handlers installed for strategy: ${strategy}`);
-        }
-
-        // --- DIAGNOSTIC PROBE (Temporary) ---
-        const hasMD = 'mediaDevices' in navigator;
-        const isSecure = window.isSecureContext;
-        alert(`[GDAR-PROBE] Startup\nSecure: ${isSecure}\nMediaDevices: ${hasMD}`);
-
-        if (hasMD && navigator.mediaDevices.addEventListener) {
-            navigator.mediaDevices.addEventListener('devicechange', async () => {
-                try {
-                    const devices = await navigator.mediaDevices.enumerateDevices();
-                    const outputs = devices.filter(d => d.kind === 'audiooutput');
-                    const msg = `[GDAR-PROBE]\ndevicechange fired.\nTotal outputs: ${outputs.length}\n${outputs.map(d => ` - ${d.label || 'unlabeled'}`).join('\n')}`;
-                    console.log(msg);
-                    alert(msg);
-                } catch (e) {
-                    alert(`[GDAR-PROBE] Error: ${e.message}`);
-                }
-            });
-            console.log('[GDAR-PROBE] Monitor initialized.');
-        } else {
-            alert('[GDAR-PROBE] FAILED: navigator.mediaDevices not supported.');
         }
     } else {
         _log.error(`[Shakedown] FATAL: No audio engine scripts loaded successfully or strict selection failed. Strategy: ${strategy}, Override: ${override}`);
