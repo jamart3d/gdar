@@ -33,12 +33,12 @@ class WebPlaybackPowerPolicyConfig {
   });
 
   final ResolvedWebPlaybackPowerSource resolvedSource;
-  final AudioEngineMode audioEngineMode;
-  final HybridHandoffMode handoffMode;
-  final HybridBackgroundMode backgroundMode;
-  final bool allowHiddenWebAudio;
-  final bool preventSleep;
-  final int webPrefetchSeconds;
+  final AudioEngineMode? audioEngineMode;
+  final HybridHandoffMode? handoffMode;
+  final HybridBackgroundMode? backgroundMode;
+  final bool? allowHiddenWebAudio;
+  final bool? preventSleep;
+  final int? webPrefetchSeconds;
   final bool applyEngineSettings;
 }
 
@@ -50,12 +50,12 @@ WebPlaybackPowerPolicyConfig resolveWebPlaybackPowerPolicy({
     case WebPlaybackPowerProfile.custom:
       return const WebPlaybackPowerPolicyConfig(
         resolvedSource: ResolvedWebPlaybackPowerSource.custom,
-        audioEngineMode: AudioEngineMode.hybrid,
-        handoffMode: HybridHandoffMode.buffered,
-        backgroundMode: HybridBackgroundMode.heartbeat,
-        allowHiddenWebAudio: false,
-        preventSleep: false,
-        webPrefetchSeconds: 30,
+        audioEngineMode: null,
+        handoffMode: null,
+        backgroundMode: null,
+        allowHiddenWebAudio: null,
+        preventSleep: null,
+        webPrefetchSeconds: null,
         applyEngineSettings: false,
       );
     case WebPlaybackPowerProfile.chargingGapless:

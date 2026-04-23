@@ -95,6 +95,12 @@ void main() {
       );
 
       expect(config.resolvedSource, ResolvedWebPlaybackPowerSource.custom);
+      expect(config.audioEngineMode, isNull);
+      expect(config.handoffMode, isNull);
+      expect(config.backgroundMode, isNull);
+      expect(config.allowHiddenWebAudio, isNull);
+      expect(config.preventSleep, isNull);
+      expect(config.webPrefetchSeconds, isNull);
       expect(config.applyEngineSettings, isFalse);
     });
   });
