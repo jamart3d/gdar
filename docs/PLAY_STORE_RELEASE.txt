@@ -1,4 +1,11 @@
 <en-US>
+What's new in v1.4.10+320
+• Maintenance: General maintenance and version synchronization.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.4.9+319
 • Web/PWA Bluetooth Route Monitor (Phase 1): Implemented an aggressive diagnostic probe in `hybrid_init.js` to verify hardware event reliability on Android Chrome.
 • Auto-Pause Setting: Added `pauseOnOutputDisconnect` to `SettingsProvider` (enabled by default on Web/PWA) to prepare for intelligent Bluetooth route management.

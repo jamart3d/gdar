@@ -7,23 +7,25 @@ import 'dart:async' as _i7;
 import 'dart:ui' as _i12;
 
 import 'package:flutter/foundation.dart' as _i4;
-import 'package:hive_ce_flutter/hive_flutter.dart' as _i16;
+import 'package:hive_ce_flutter/hive_flutter.dart' as _i17;
 import 'package:just_audio/just_audio.dart' as _i2;
-import 'package:just_audio_background/just_audio_background.dart' as _i20;
+import 'package:just_audio_background/just_audio_background.dart' as _i21;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i6;
-import 'package:shakedown_core/models/rating.dart' as _i17;
-import 'package:shakedown_core/models/session_entry.dart' as _i18;
+import 'package:shakedown_core/models/rating.dart' as _i18;
+import 'package:shakedown_core/models/session_entry.dart' as _i19;
 import 'package:shakedown_core/models/show.dart' as _i9;
 import 'package:shakedown_core/models/source.dart' as _i11;
 import 'package:shakedown_core/providers/settings_provider.dart' as _i10;
 import 'package:shakedown_core/providers/show_list_provider.dart' as _i8;
 import 'package:shakedown_core/providers/theme_provider.dart' as _i13;
-import 'package:shakedown_core/services/audio_cache_service_io.dart' as _i19;
-import 'package:shakedown_core/services/catalog_service.dart' as _i15;
+import 'package:shakedown_core/services/audio/web_playback_power_policy.dart'
+    as _i15;
+import 'package:shakedown_core/services/audio_cache_service_io.dart' as _i20;
+import 'package:shakedown_core/services/catalog_service.dart' as _i16;
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart'
     as _i5;
-import 'package:shakedown_core/services/wakelock_service.dart' as _i21;
+import 'package:shakedown_core/services/wakelock_service.dart' as _i22;
 import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart'
     as _i14;
 import 'package:shared_preferences/shared_preferences.dart' as _i3;
@@ -262,6 +264,51 @@ class MockAudioPlayerRelaxed extends _i1.Mock implements _i5.GaplessPlayer {
             returnValueForMissingStub: false,
           )
           as bool);
+
+  @override
+  ({int count, String lastReason}) get heartbeatBlockedDiagnostics =>
+      (super.noSuchMethod(
+            Invocation.getter(#heartbeatBlockedDiagnostics),
+            returnValue: (
+              count: 0,
+              lastReason: _i6.dummyValue<String>(
+                this,
+                Invocation.getter(#heartbeatBlockedDiagnostics),
+              ),
+            ),
+            returnValueForMissingStub: (
+              count: 0,
+              lastReason: _i6.dummyValue<String>(
+                this,
+                Invocation.getter(#heartbeatBlockedDiagnostics),
+              ),
+            ),
+          )
+          as ({int count, String lastReason}));
+
+  @override
+  int get heartbeatBlockedCount =>
+      (super.noSuchMethod(
+            Invocation.getter(#heartbeatBlockedCount),
+            returnValue: 0,
+            returnValueForMissingStub: 0,
+          )
+          as int);
+
+  @override
+  String get heartbeatLastBlockedReason =>
+      (super.noSuchMethod(
+            Invocation.getter(#heartbeatLastBlockedReason),
+            returnValue: _i6.dummyValue<String>(
+              this,
+              Invocation.getter(#heartbeatLastBlockedReason),
+            ),
+            returnValueForMissingStub: _i6.dummyValue<String>(
+              this,
+              Invocation.getter(#heartbeatLastBlockedReason),
+            ),
+          )
+          as String);
 
   @override
   bool get fetchInFlight =>
@@ -1771,6 +1818,25 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as _i10.WebEngineProfile);
 
   @override
+  _i15.WebPlaybackPowerProfile get webPlaybackPowerProfile =>
+      (super.noSuchMethod(
+            Invocation.getter(#webPlaybackPowerProfile),
+            returnValue: _i15.WebPlaybackPowerProfile.auto,
+            returnValueForMissingStub: _i15.WebPlaybackPowerProfile.auto,
+          )
+          as _i15.WebPlaybackPowerProfile);
+
+  @override
+  _i15.ResolvedWebPlaybackPowerSource get resolvedWebPlaybackPowerSource =>
+      (super.noSuchMethod(
+            Invocation.getter(#resolvedWebPlaybackPowerSource),
+            returnValue: _i15.ResolvedWebPlaybackPowerSource.battery,
+            returnValueForMissingStub:
+                _i15.ResolvedWebPlaybackPowerSource.battery,
+          )
+          as _i15.ResolvedWebPlaybackPowerSource);
+
+  @override
   bool get useOilScreensaver =>
       (super.noSuchMethod(
             Invocation.getter(#useOilScreensaver),
@@ -2545,6 +2611,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as Map<String, bool>);
 
   @override
+  void dispose() => super.noSuchMethod(
+    Invocation.method(#dispose, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void addListener(_i12.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#addListener, [listener]),
     returnValueForMissingStub: null,
@@ -2553,12 +2625,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   void removeListener(_i12.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#removeListener, [listener]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  void dispose() => super.noSuchMethod(
-    Invocation.method(#dispose, []),
     returnValueForMissingStub: null,
   );
 
@@ -3016,8 +3082,8 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
 
   @override
   void setHiddenSessionPreset(
-    _i5.HiddenSessionPreset preset, {
-    bool markPowerProfileCustom = true,
+    _i5.HiddenSessionPreset? preset, {
+    bool? markPowerProfileCustom = true,
   }) => super.noSuchMethod(
     Invocation.method(
       #setHiddenSessionPreset,
@@ -3045,6 +3111,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
     Invocation.method(#setWebPrefetchSeconds, [seconds]),
     returnValueForMissingStub: null,
   );
+
+  @override
+  void setWebPlaybackPowerProfile(_i15.WebPlaybackPowerProfile? profile) =>
+      super.noSuchMethod(
+        Invocation.method(#setWebPlaybackPowerProfile, [profile]),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void toggleUseOilScreensaver() => super.noSuchMethod(
@@ -3755,7 +3828,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
 /// A class which mocks [CatalogService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCatalogService extends _i1.Mock implements _i15.CatalogService {
+class MockCatalogService extends _i1.Mock implements _i16.CatalogService {
   @override
   bool get isInitialized =>
       (super.noSuchMethod(
@@ -3775,56 +3848,56 @@ class MockCatalogService extends _i1.Mock implements _i15.CatalogService {
           as List<_i9.Show>);
 
   @override
-  _i4.ValueListenable<_i16.Box<int>> get playCountsListenable =>
+  _i4.ValueListenable<_i17.Box<int>> get playCountsListenable =>
       (super.noSuchMethod(
             Invocation.getter(#playCountsListenable),
-            returnValue: _FakeValueListenable_3<_i16.Box<int>>(
+            returnValue: _FakeValueListenable_3<_i17.Box<int>>(
               this,
               Invocation.getter(#playCountsListenable),
             ),
-            returnValueForMissingStub: _FakeValueListenable_3<_i16.Box<int>>(
+            returnValueForMissingStub: _FakeValueListenable_3<_i17.Box<int>>(
               this,
               Invocation.getter(#playCountsListenable),
             ),
           )
-          as _i4.ValueListenable<_i16.Box<int>>);
+          as _i4.ValueListenable<_i17.Box<int>>);
 
   @override
-  _i4.ValueListenable<_i16.Box<bool>> get historyListenable =>
+  _i4.ValueListenable<_i17.Box<bool>> get historyListenable =>
       (super.noSuchMethod(
             Invocation.getter(#historyListenable),
-            returnValue: _FakeValueListenable_3<_i16.Box<bool>>(
+            returnValue: _FakeValueListenable_3<_i17.Box<bool>>(
               this,
               Invocation.getter(#historyListenable),
             ),
-            returnValueForMissingStub: _FakeValueListenable_3<_i16.Box<bool>>(
+            returnValueForMissingStub: _FakeValueListenable_3<_i17.Box<bool>>(
               this,
               Invocation.getter(#historyListenable),
             ),
           )
-          as _i4.ValueListenable<_i16.Box<bool>>);
+          as _i4.ValueListenable<_i17.Box<bool>>);
 
   @override
-  _i4.ValueListenable<_i16.Box<_i17.Rating>> get ratingsListenable =>
+  _i4.ValueListenable<_i17.Box<_i18.Rating>> get ratingsListenable =>
       (super.noSuchMethod(
             Invocation.getter(#ratingsListenable),
-            returnValue: _FakeValueListenable_3<_i16.Box<_i17.Rating>>(
+            returnValue: _FakeValueListenable_3<_i17.Box<_i18.Rating>>(
               this,
               Invocation.getter(#ratingsListenable),
             ),
             returnValueForMissingStub:
-                _FakeValueListenable_3<_i16.Box<_i17.Rating>>(
+                _FakeValueListenable_3<_i17.Box<_i18.Rating>>(
                   this,
                   Invocation.getter(#ratingsListenable),
                 ),
           )
-          as _i4.ValueListenable<_i16.Box<_i17.Rating>>);
+          as _i4.ValueListenable<_i17.Box<_i18.Rating>>);
 
   @override
   _i7.Future<void> initialize({
     required _i3.SharedPreferences? prefs,
-    _i15.CatalogLoadingStrategy? strategy =
-        _i15.CatalogLoadingStrategy.inMemory,
+    _i16.CatalogLoadingStrategy? strategy =
+        _i16.CatalogLoadingStrategy.inMemory,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#initialize, [], {
@@ -3837,7 +3910,7 @@ class MockCatalogService extends _i1.Mock implements _i15.CatalogService {
           as _i7.Future<void>);
 
   @override
-  _i7.Future<void> switchStrategy(_i15.CatalogLoadingStrategy? newStrategy) =>
+  _i7.Future<void> switchStrategy(_i16.CatalogLoadingStrategy? newStrategy) =>
       (super.noSuchMethod(
             Invocation.method(#switchStrategy, [newStrategy]),
             returnValue: _i7.Future<void>.value(),
@@ -3916,13 +3989,13 @@ class MockCatalogService extends _i1.Mock implements _i15.CatalogService {
           as _i7.Future<void>);
 
   @override
-  List<_i18.SessionEntry> getSessionHistory() =>
+  List<_i19.SessionEntry> getSessionHistory() =>
       (super.noSuchMethod(
             Invocation.method(#getSessionHistory, []),
-            returnValue: <_i18.SessionEntry>[],
-            returnValueForMissingStub: <_i18.SessionEntry>[],
+            returnValue: <_i19.SessionEntry>[],
+            returnValueForMissingStub: <_i19.SessionEntry>[],
           )
-          as List<_i18.SessionEntry>);
+          as List<_i19.SessionEntry>);
 
   @override
   _i7.Future<void> togglePlayed(String? sourceId) =>
@@ -3964,7 +4037,7 @@ class MockCatalogService extends _i1.Mock implements _i15.CatalogService {
 /// A class which mocks [AudioCacheService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAudioCacheService extends _i1.Mock implements _i19.AudioCacheService {
+class MockAudioCacheService extends _i1.Mock implements _i20.AudioCacheService {
   @override
   int get cachedTrackCount =>
       (super.noSuchMethod(
@@ -4001,7 +4074,7 @@ class MockAudioCacheService extends _i1.Mock implements _i19.AudioCacheService {
   @override
   _i2.AudioSource createAudioSource({
     required Uri? uri,
-    required _i20.MediaItem? tag,
+    required _i21.MediaItem? tag,
     required bool? useCache,
   }) =>
       (super.noSuchMethod(
@@ -4106,7 +4179,7 @@ class MockAudioCacheService extends _i1.Mock implements _i19.AudioCacheService {
 /// A class which mocks [WakelockService].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockWakelockService extends _i1.Mock implements _i21.WakelockService {
+class MockWakelockService extends _i1.Mock implements _i22.WakelockService {
   @override
   _i7.Future<bool> get enabled =>
       (super.noSuchMethod(

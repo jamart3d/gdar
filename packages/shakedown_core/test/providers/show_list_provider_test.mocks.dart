@@ -4,7 +4,7 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i8;
-import 'dart:ui' as _i15;
+import 'dart:ui' as _i16;
 
 import 'package:flutter/foundation.dart' as _i2;
 import 'package:hive_ce_flutter/hive_flutter.dart' as _i6;
@@ -15,6 +15,8 @@ import 'package:shakedown_core/models/session_entry.dart' as _i9;
 import 'package:shakedown_core/models/show.dart' as _i5;
 import 'package:shakedown_core/providers/settings_provider.dart' as _i10;
 import 'package:shakedown_core/providers/theme_provider.dart' as _i12;
+import 'package:shakedown_core/services/audio/web_playback_power_policy.dart'
+    as _i15;
 import 'package:shakedown_core/services/catalog_service.dart' as _i4;
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart'
     as _i14;
@@ -991,6 +993,25 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as _i10.WebEngineProfile);
 
   @override
+  _i15.WebPlaybackPowerProfile get webPlaybackPowerProfile =>
+      (super.noSuchMethod(
+            Invocation.getter(#webPlaybackPowerProfile),
+            returnValue: _i15.WebPlaybackPowerProfile.auto,
+            returnValueForMissingStub: _i15.WebPlaybackPowerProfile.auto,
+          )
+          as _i15.WebPlaybackPowerProfile);
+
+  @override
+  _i15.ResolvedWebPlaybackPowerSource get resolvedWebPlaybackPowerSource =>
+      (super.noSuchMethod(
+            Invocation.getter(#resolvedWebPlaybackPowerSource),
+            returnValue: _i15.ResolvedWebPlaybackPowerSource.battery,
+            returnValueForMissingStub:
+                _i15.ResolvedWebPlaybackPowerSource.battery,
+          )
+          as _i15.ResolvedWebPlaybackPowerSource);
+
+  @override
   bool get useOilScreensaver =>
       (super.noSuchMethod(
             Invocation.getter(#useOilScreensaver),
@@ -1765,20 +1786,20 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as Map<String, bool>);
 
   @override
-  void addListener(_i15.VoidCallback? listener) => super.noSuchMethod(
+  void dispose() => super.noSuchMethod(
+    Invocation.method(#dispose, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
+  void addListener(_i16.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#addListener, [listener]),
     returnValueForMissingStub: null,
   );
 
   @override
-  void removeListener(_i15.VoidCallback? listener) => super.noSuchMethod(
+  void removeListener(_i16.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#removeListener, [listener]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  void dispose() => super.noSuchMethod(
-    Invocation.method(#dispose, []),
     returnValueForMissingStub: null,
   );
 
@@ -2168,7 +2189,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   );
 
   @override
-  _i8.Future<void> setSeedColor(_i15.Color? color) =>
+  _i8.Future<void> setSeedColor(_i16.Color? color) =>
       (super.noSuchMethod(
             Invocation.method(#setSeedColor, [color]),
             returnValue: _i8.Future<void>.value(),
@@ -2236,8 +2257,8 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
 
   @override
   void setHiddenSessionPreset(
-    _i14.HiddenSessionPreset preset, {
-    bool markPowerProfileCustom = true,
+    _i14.HiddenSessionPreset? preset, {
+    bool? markPowerProfileCustom = true,
   }) => super.noSuchMethod(
     Invocation.method(
       #setHiddenSessionPreset,
@@ -2265,6 +2286,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
     Invocation.method(#setWebPrefetchSeconds, [seconds]),
     returnValueForMissingStub: null,
   );
+
+  @override
+  void setWebPlaybackPowerProfile(_i15.WebPlaybackPowerProfile? profile) =>
+      super.noSuchMethod(
+        Invocation.method(#setWebPlaybackPowerProfile, [profile]),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void toggleUseOilScreensaver() => super.noSuchMethod(

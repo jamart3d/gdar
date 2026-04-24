@@ -6,19 +6,21 @@
 import 'dart:async' as _i7;
 import 'dart:ui' as _i12;
 
-import 'package:just_audio/just_audio.dart' as _i16;
+import 'package:just_audio/just_audio.dart' as _i17;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i8;
 import 'package:shakedown_core/models/dng_snapshot.dart' as _i5;
 import 'package:shakedown_core/models/hud_snapshot.dart' as _i4;
 import 'package:shakedown_core/models/show.dart' as _i9;
 import 'package:shakedown_core/models/source.dart' as _i11;
-import 'package:shakedown_core/providers/audio_provider.dart' as _i15;
+import 'package:shakedown_core/providers/audio_provider.dart' as _i16;
 import 'package:shakedown_core/providers/settings_provider.dart' as _i10;
 import 'package:shakedown_core/providers/show_list_provider.dart' as _i6;
 import 'package:shakedown_core/providers/theme_provider.dart' as _i13;
-import 'package:shakedown_core/providers/update_provider.dart' as _i18;
-import 'package:shakedown_core/services/audio_cache_service.dart' as _i17;
+import 'package:shakedown_core/providers/update_provider.dart' as _i19;
+import 'package:shakedown_core/services/audio/web_playback_power_policy.dart'
+    as _i15;
+import 'package:shakedown_core/services/audio_cache_service.dart' as _i18;
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart'
     as _i3;
 import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart'
@@ -1132,6 +1134,25 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as _i10.WebEngineProfile);
 
   @override
+  _i15.WebPlaybackPowerProfile get webPlaybackPowerProfile =>
+      (super.noSuchMethod(
+            Invocation.getter(#webPlaybackPowerProfile),
+            returnValue: _i15.WebPlaybackPowerProfile.auto,
+            returnValueForMissingStub: _i15.WebPlaybackPowerProfile.auto,
+          )
+          as _i15.WebPlaybackPowerProfile);
+
+  @override
+  _i15.ResolvedWebPlaybackPowerSource get resolvedWebPlaybackPowerSource =>
+      (super.noSuchMethod(
+            Invocation.getter(#resolvedWebPlaybackPowerSource),
+            returnValue: _i15.ResolvedWebPlaybackPowerSource.battery,
+            returnValueForMissingStub:
+                _i15.ResolvedWebPlaybackPowerSource.battery,
+          )
+          as _i15.ResolvedWebPlaybackPowerSource);
+
+  @override
   bool get useOilScreensaver =>
       (super.noSuchMethod(
             Invocation.getter(#useOilScreensaver),
@@ -1906,6 +1927,12 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
           as Map<String, bool>);
 
   @override
+  void dispose() => super.noSuchMethod(
+    Invocation.method(#dispose, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void addListener(_i12.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#addListener, [listener]),
     returnValueForMissingStub: null,
@@ -1914,12 +1941,6 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
   @override
   void removeListener(_i12.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#removeListener, [listener]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  void dispose() => super.noSuchMethod(
-    Invocation.method(#dispose, []),
     returnValueForMissingStub: null,
   );
 
@@ -2377,8 +2398,8 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
 
   @override
   void setHiddenSessionPreset(
-    _i3.HiddenSessionPreset preset, {
-    bool markPowerProfileCustom = true,
+    _i3.HiddenSessionPreset? preset, {
+    bool? markPowerProfileCustom = true,
   }) => super.noSuchMethod(
     Invocation.method(
       #setHiddenSessionPreset,
@@ -2406,6 +2427,13 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
     Invocation.method(#setWebPrefetchSeconds, [seconds]),
     returnValueForMissingStub: null,
   );
+
+  @override
+  void setWebPlaybackPowerProfile(_i15.WebPlaybackPowerProfile? profile) =>
+      super.noSuchMethod(
+        Invocation.method(#setWebPlaybackPowerProfile, [profile]),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void toggleUseOilScreensaver() => super.noSuchMethod(
@@ -3116,7 +3144,7 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
 /// A class which mocks [AudioProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAudioProvider extends _i1.Mock implements _i15.AudioProvider {
+class MockAudioProvider extends _i1.Mock implements _i16.AudioProvider {
   @override
   bool get hasListeners =>
       (super.noSuchMethod(
@@ -3166,13 +3194,13 @@ class MockAudioProvider extends _i1.Mock implements _i15.AudioProvider {
           as String);
 
   @override
-  _i7.Stream<_i16.PlayerState> get playerStateStream =>
+  _i7.Stream<_i17.PlayerState> get playerStateStream =>
       (super.noSuchMethod(
             Invocation.getter(#playerStateStream),
-            returnValue: _i7.Stream<_i16.PlayerState>.empty(),
-            returnValueForMissingStub: _i7.Stream<_i16.PlayerState>.empty(),
+            returnValue: _i7.Stream<_i17.PlayerState>.empty(),
+            returnValueForMissingStub: _i7.Stream<_i17.PlayerState>.empty(),
           )
-          as _i7.Stream<_i16.PlayerState>);
+          as _i7.Stream<_i17.PlayerState>);
 
   @override
   _i7.Stream<int?> get currentIndexStream =>
@@ -3571,7 +3599,7 @@ class MockAudioProvider extends _i1.Mock implements _i15.AudioProvider {
   void update(
     _i6.ShowListProvider? showListProvider,
     _i10.SettingsProvider? settingsProvider,
-    _i17.AudioCacheService? audioCacheService,
+    _i18.AudioCacheService? audioCacheService,
   ) => super.noSuchMethod(
     Invocation.method(#update, [
       showListProvider,
@@ -3670,7 +3698,7 @@ class MockAudioProvider extends _i1.Mock implements _i15.AudioProvider {
 /// A class which mocks [UpdateProvider].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockUpdateProvider extends _i1.Mock implements _i18.UpdateProvider {
+class MockUpdateProvider extends _i1.Mock implements _i19.UpdateProvider {
   @override
   bool get isSimulated =>
       (super.noSuchMethod(

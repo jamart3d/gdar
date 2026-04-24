@@ -710,6 +710,39 @@ class MockGaplessPlayer extends _i1.Mock implements _i2.GaplessPlayer {
           as bool);
 
   @override
+  ({int count, String lastReason}) get heartbeatBlockedDiagnostics =>
+      (super.noSuchMethod(
+            Invocation.getter(#heartbeatBlockedDiagnostics),
+            returnValue: (
+              count: 0,
+              lastReason: _i7.dummyValue<String>(
+                this,
+                Invocation.getter(#heartbeatBlockedDiagnostics),
+              ),
+            ),
+          )
+          as ({int count, String lastReason}));
+
+  @override
+  int get heartbeatBlockedCount =>
+      (super.noSuchMethod(
+            Invocation.getter(#heartbeatBlockedCount),
+            returnValue: 0,
+          )
+          as int);
+
+  @override
+  String get heartbeatLastBlockedReason =>
+      (super.noSuchMethod(
+            Invocation.getter(#heartbeatLastBlockedReason),
+            returnValue: _i7.dummyValue<String>(
+              this,
+              Invocation.getter(#heartbeatLastBlockedReason),
+            ),
+          )
+          as String);
+
+  @override
   bool get fetchInFlight =>
       (super.noSuchMethod(Invocation.getter(#fetchInFlight), returnValue: false)
           as bool);

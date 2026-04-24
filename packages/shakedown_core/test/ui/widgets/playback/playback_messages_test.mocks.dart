@@ -17,6 +17,8 @@ import 'package:shakedown_core/providers/audio_provider.dart' as _i6;
 import 'package:shakedown_core/providers/settings_provider.dart' as _i14;
 import 'package:shakedown_core/providers/show_list_provider.dart' as _i13;
 import 'package:shakedown_core/providers/theme_provider.dart' as _i16;
+import 'package:shakedown_core/services/audio/web_playback_power_policy.dart'
+    as _i18;
 import 'package:shakedown_core/services/audio_cache_service.dart' as _i15;
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart'
     as _i2;
@@ -1158,6 +1160,22 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
           as _i14.WebEngineProfile);
 
   @override
+  _i18.WebPlaybackPowerProfile get webPlaybackPowerProfile =>
+      (super.noSuchMethod(
+            Invocation.getter(#webPlaybackPowerProfile),
+            returnValue: _i18.WebPlaybackPowerProfile.auto,
+          )
+          as _i18.WebPlaybackPowerProfile);
+
+  @override
+  _i18.ResolvedWebPlaybackPowerSource get resolvedWebPlaybackPowerSource =>
+      (super.noSuchMethod(
+            Invocation.getter(#resolvedWebPlaybackPowerSource),
+            returnValue: _i18.ResolvedWebPlaybackPowerSource.battery,
+          )
+          as _i18.ResolvedWebPlaybackPowerSource);
+
+  @override
   bool get useOilScreensaver =>
       (super.noSuchMethod(
             Invocation.getter(#useOilScreensaver),
@@ -1780,6 +1798,12 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
           as Map<String, bool>);
 
   @override
+  void dispose() => super.noSuchMethod(
+    Invocation.method(#dispose, []),
+    returnValueForMissingStub: null,
+  );
+
+  @override
   void addListener(_i12.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#addListener, [listener]),
     returnValueForMissingStub: null,
@@ -1788,12 +1812,6 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
   @override
   void removeListener(_i12.VoidCallback? listener) => super.noSuchMethod(
     Invocation.method(#removeListener, [listener]),
-    returnValueForMissingStub: null,
-  );
-
-  @override
-  void dispose() => super.noSuchMethod(
-    Invocation.method(#dispose, []),
     returnValueForMissingStub: null,
   );
 
@@ -2250,8 +2268,8 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
 
   @override
   void setHiddenSessionPreset(
-    _i2.HiddenSessionPreset preset, {
-    bool markPowerProfileCustom = true,
+    _i2.HiddenSessionPreset? preset, {
+    bool? markPowerProfileCustom = true,
   }) => super.noSuchMethod(
     Invocation.method(
       #setHiddenSessionPreset,
@@ -2279,6 +2297,13 @@ class MockSettingsProvider extends _i1.Mock implements _i14.SettingsProvider {
     Invocation.method(#setWebPrefetchSeconds, [seconds]),
     returnValueForMissingStub: null,
   );
+
+  @override
+  void setWebPlaybackPowerProfile(_i18.WebPlaybackPowerProfile? profile) =>
+      super.noSuchMethod(
+        Invocation.method(#setWebPlaybackPowerProfile, [profile]),
+        returnValueForMissingStub: null,
+      );
 
   @override
   void toggleUseOilScreensaver() => super.noSuchMethod(
