@@ -28,6 +28,7 @@ Read-only and diagnostic commands MUST always run under the Zero-Friction Mandat
 
 ### 0.5. Process Hygiene
 Follow `.agent/rules/process_hygiene.md` to detect and handle any hung `flutter`, `dart`, or `melos` processes before proceeding. Re-run `git status --porcelain` after killing any processes.
+Before any mutating Git workflow, fail fast unless `touch .git/codex_write_test && rm .git/codex_write_test` succeeds from the repo root.
 
 ### Approved Commands (Bash/Linux/ChromeOS/PowerShell):
 - **General**: `ls`, `pwd`, `cat`, `head`, `tail`, `wc`, `stat`, `find`, `dir`.
