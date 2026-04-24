@@ -14,11 +14,7 @@ enum WebPlaybackPowerProfile {
   }
 }
 
-enum ResolvedWebPlaybackPowerSource {
-  battery,
-  charging,
-  custom,
-}
+enum ResolvedWebPlaybackPowerSource { battery, charging, custom }
 
 class WebPlaybackPowerPolicyConfig {
   const WebPlaybackPowerPolicyConfig({

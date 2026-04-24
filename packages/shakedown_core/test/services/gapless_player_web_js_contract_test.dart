@@ -60,6 +60,82 @@ void main() {
       );
     }
   });
+
+  test('web power state bridge exposes charging getter and change event', () {
+    final repoRoot = _findRepoRoot();
+    final script = File(
+      p.join(repoRoot, 'apps', 'gdar_web', 'web', 'web_power_state.js'),
+    ).readAsStringSync();
+
+    expect(script, contains('window._gdarPowerState'));
+    expect(script, contains('getCharging'));
+    expect(script, contains('whenReady'));
+    expect(script, contains('gdar-power-state-change'));
+    expect(script, contains('navigator.getBattery'));
+    expect(script, contains('try {'));
+    expect(script, contains('catch (err)'));
+  });
+
+  test('web power state bridge loads before hybrid init', () {
+    final repoRoot = _findRepoRoot();
+    final indexHtml = File(
+      p.join(repoRoot, 'apps', 'gdar_web', 'web', 'index.html'),
+    ).readAsStringSync();
+
+    final bridgeIndex = indexHtml.indexOf('web_power_state.js');
+    final hybridIndex = indexHtml.indexOf('hybrid_init.js');
+
+    expect(bridgeIndex, greaterThanOrEqualTo(0));
+    expect(hybridIndex, greaterThanOrEqualTo(0));
+    expect(
+      bridgeIndex,
+      lessThan(hybridIndex),
+      reason:
+          'web_power_state.js must load before hybrid_init.js so launch-time '
+          'charging state is available before engine selection.',
+    );
+  });
+
+  test('heartbeat exposes blocked diagnostics', () {
+    final repoRoot = _findRepoRoot();
+    final script = File(
+      p.join(repoRoot, 'apps', 'gdar_web', 'web', 'audio_heartbeat.js'),
+    ).readAsStringSync();
+    final webPlayer = File(
+      p.join(
+        repoRoot,
+        'packages',
+        'shakedown_core',
+        'lib',
+        'services',
+        'gapless_player',
+        'gapless_player_web.dart',
+      ),
+    ).readAsStringSync();
+    final webAccessors = File(
+      p.join(
+        repoRoot,
+        'packages',
+        'shakedown_core',
+        'lib',
+        'services',
+        'gapless_player',
+        'gapless_player_web_accessors.dart',
+      ),
+    ).readAsStringSync();
+
+    expect(script, contains('getBlockedDiagnostics'));
+    expect(script, contains('lastReason'));
+    expect(script, contains('blockedCount'));
+    expect(webPlayer, contains("@JS('_gdarHeartbeat')"));
+    expect(webPlayer, contains('getBlockedDiagnostics()'));
+    expect(webPlayer, contains('JSNumber? get blockedCountJS'));
+    expect(webPlayer, contains('JSString? get lastReasonJS'));
+    expect(webAccessors, contains('heartbeatBlockedDiagnostics'));
+    expect(webAccessors, contains('heartbeatBlockedCount'));
+    expect(webAccessors, contains('heartbeatLastBlockedReason'));
+    expect(webAccessors, contains("return (count: 0, lastReason: '')"));
+  });
 }
 
 String _findRepoRoot() {

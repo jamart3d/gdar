@@ -3015,11 +3015,17 @@ class MockSettingsProvider extends _i1.Mock implements _i10.SettingsProvider {
       );
 
   @override
-  void setHiddenSessionPreset(_i5.HiddenSessionPreset? preset) =>
-      super.noSuchMethod(
-        Invocation.method(#setHiddenSessionPreset, [preset]),
-        returnValueForMissingStub: null,
-      );
+  void setHiddenSessionPreset(
+    _i5.HiddenSessionPreset preset, {
+    bool markPowerProfileCustom = true,
+  }) => super.noSuchMethod(
+    Invocation.method(
+      #setHiddenSessionPreset,
+      [preset],
+      {#markPowerProfileCustom: markPowerProfileCustom},
+    ),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void setWebEngineProfile(_i10.WebEngineProfile? profile) =>

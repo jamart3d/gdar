@@ -36,6 +36,8 @@ class DngSnapshot {
   final String? handoffState;
   final int? handoffAttemptCount;
   final int? lastHandoffPollCount;
+  final int heartbeatBlockedCount;
+  final String heartbeatLastBlockedReason;
 
   DngSnapshot({
     required this.position,
@@ -68,6 +70,8 @@ class DngSnapshot {
     this.handoffState,
     this.handoffAttemptCount,
     this.lastHandoffPollCount,
+    this.heartbeatBlockedCount = 0,
+    this.heartbeatLastBlockedReason = '',
     this.error,
     DateTime? timestamp,
   }) : timestamp = timestamp ?? DateTime.now();

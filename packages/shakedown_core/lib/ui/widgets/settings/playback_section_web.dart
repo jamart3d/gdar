@@ -70,6 +70,106 @@ extension _PlaybackSectionWeb on PlaybackSection {
             const SizedBox(height: 16),
             Padding(
               padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+              child: Text(
+                'Power Playback',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontSize: 14 * scaleFactor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: _SegmentedWrap<WebPlaybackPowerProfile>(
+                  isFruit: isFruit,
+                  scaleFactor: scaleFactor,
+                  segments: [
+                    const _Segment(
+                      value: WebPlaybackPowerProfile.auto,
+                      label: 'Auto',
+                      tooltip:
+                          'Choose battery saver or charging gapless automatically',
+                      icon: LucideIcons.sparkles,
+                    ),
+                    const _Segment(
+                      value: WebPlaybackPowerProfile.batterySaver,
+                      label: 'Battery',
+                      tooltip: 'Prefer lower power use while on battery',
+                      icon: LucideIcons.battery,
+                    ),
+                    const _Segment(
+                      value: WebPlaybackPowerProfile.chargingGapless,
+                      label: 'Charging',
+                      tooltip: 'Prefer gapless playback while charging',
+                      icon: LucideIcons.plugZap,
+                    ),
+                    const _Segment(
+                      value: WebPlaybackPowerProfile.custom,
+                      label: 'Custom',
+                      tooltip:
+                          'Keep the current engine settings manually tuned',
+                      icon: LucideIcons.slidersHorizontal,
+                    ),
+                  ],
+                  selectedValue: settingsProvider.webPlaybackPowerProfile,
+                  onSelectionChanged: (WebPlaybackPowerProfile profile) {
+                    AppHaptics.lightImpact(context.read<DeviceService>());
+                    settingsProvider.setWebPlaybackPowerProfile(profile);
+                    showRestartMessage(
+                      context,
+                      profile == WebPlaybackPowerProfile.custom
+                          ? 'Custom keeps your manual audio settings.'
+                          : 'Power playback profile applied.',
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: EdgeInsets.only(left: 40.0 * scaleFactor),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 12 * scaleFactor,
+                  vertical: 8 * scaleFactor,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(10 * scaleFactor),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.08),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Resolved Source: ${_webPowerSourceLabel(settingsProvider.resolvedWebPlaybackPowerSource)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 12 * scaleFactor,
+                      ),
+                    ),
+                    SizedBox(height: 4 * scaleFactor),
+                    Text(
+                      'Charging Detected: ${_webChargingLabel(settingsProvider.detectedWebCharging)}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 12 * scaleFactor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: EdgeInsets.only(left: 40.0 * scaleFactor),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: _SegmentedWrap<AudioEngineMode>(
@@ -356,6 +456,23 @@ extension _PlaybackSectionWeb on PlaybackSection {
       ),
     ];
   }
+}
+
+String _webPowerSourceLabel(ResolvedWebPlaybackPowerSource source) {
+  switch (source) {
+    case ResolvedWebPlaybackPowerSource.battery:
+      return 'Battery';
+    case ResolvedWebPlaybackPowerSource.charging:
+      return 'Charging';
+    case ResolvedWebPlaybackPowerSource.custom:
+      return 'Custom';
+  }
+}
+
+String _webChargingLabel(bool? charging) {
+  if (charging == true) return 'Charging';
+  if (charging == false) return 'Battery';
+  return 'Unknown';
 }
 
 class _SegmentedWrap<T> extends StatelessWidget {

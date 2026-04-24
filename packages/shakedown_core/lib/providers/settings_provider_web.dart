@@ -12,6 +12,7 @@ const String _handoffCrossfadeMsKey = 'handoff_crossfade_ms';
 const String _hiddenSessionPresetKey = 'hidden_session_preset';
 const String _webEngineProfileInitKey = 'web_engine_profile_init_v1';
 const String _webEngineProfileChoiceKey = 'web_engine_profile_choice';
+const String _webPlaybackPowerProfileKey = 'web_playback_power_profile';
 
 mixin _SettingsProviderWebFields {
   late AudioEngineMode _audioEngineMode;
@@ -25,16 +26,26 @@ mixin _SettingsProviderWebFields {
   late int _handoffCrossfadeMs;
   late HiddenSessionPreset _hiddenSessionPreset;
   late WebEngineProfile _webEngineProfile;
+  late WebPlaybackPowerProfile _webPlaybackPowerProfile;
+  late ResolvedWebPlaybackPowerSource _resolvedWebPlaybackPowerSource;
+  bool? _detectedWebCharging;
+  StreamSubscription<bool?>? _webChargingSubscription;
+  bool _applyingWebPowerPolicy = false;
+  bool _webPowerStateDisposed = false;
 }
 
 mixin _SettingsProviderWebExtension
-    on ChangeNotifier, _SettingsProviderWebFields {
+    on
+        ChangeNotifier,
+        _SettingsProviderWebFields,
+        _SettingsProviderScreensaverFields {
   SharedPreferences get _prefs;
   Future<void> _updatePreference(String key, bool value);
 
   AudioEngineMode get audioEngineMode => _audioEngineMode;
 
   void setAudioEngineMode(AudioEngineMode mode) {
+    _markWebPlaybackPowerProfileCustom();
     _audioEngineMode = mode;
     _prefs.setString(_audioEngineModeKey, mode.name);
     notifyListeners();
@@ -52,6 +63,11 @@ mixin _SettingsProviderWebExtension
   int get handoffCrossfadeMs => _handoffCrossfadeMs;
   HiddenSessionPreset get hiddenSessionPreset => _hiddenSessionPreset;
   WebEngineProfile get webEngineProfile => _webEngineProfile;
+  WebPlaybackPowerProfile get webPlaybackPowerProfile =>
+      _webPlaybackPowerProfile;
+  ResolvedWebPlaybackPowerSource get resolvedWebPlaybackPowerSource =>
+      _resolvedWebPlaybackPowerSource;
+  bool? get detectedWebCharging => _detectedWebCharging;
 
   void setTrackTransitionMode(String mode) {
     final normalized = mode == 'gap' ? 'gap' : 'gapless';
@@ -67,12 +83,14 @@ mixin _SettingsProviderWebExtension
   }
 
   void setHybridHandoffMode(HybridHandoffMode mode) {
+    _markWebPlaybackPowerProfileCustom();
     _hybridHandoffMode = mode;
     _prefs.setString(_hybridHandoffModeKey, mode.name);
     notifyListeners();
   }
 
   void setAllowHiddenWebAudio(bool value) {
+    _markWebPlaybackPowerProfileCustom();
     _allowHiddenWebAudio = value;
     _prefs.setBool(_allowHiddenWebAudioKey, value);
     notifyListeners();
@@ -90,13 +108,21 @@ mixin _SettingsProviderWebExtension
   }
 
   void setHybridBackgroundMode(HybridBackgroundMode mode) {
+    _markWebPlaybackPowerProfileCustom();
     _hybridBackgroundMode = mode;
     _prefs.setString(_hybridBackgroundModeKey, mode.name);
     notifyListeners();
   }
 
-  void setHiddenSessionPreset(HiddenSessionPreset preset) {
+  void setHiddenSessionPreset(
+    HiddenSessionPreset preset, {
+    bool markPowerProfileCustom = true,
+  }) {
     _hiddenSessionPreset = preset;
+    if (markPowerProfileCustom) {
+      _webPlaybackPowerProfile = WebPlaybackPowerProfile.custom;
+      _resolvedWebPlaybackPowerSource = ResolvedWebPlaybackPowerSource.custom;
+    }
 
     switch (preset) {
       case HiddenSessionPreset.stability:
@@ -120,6 +146,12 @@ mixin _SettingsProviderWebExtension
     }
 
     _prefs.setString(_hiddenSessionPresetKey, _hiddenSessionPreset.name);
+    if (markPowerProfileCustom) {
+      _prefs.setString(
+        _webPlaybackPowerProfileKey,
+        _webPlaybackPowerProfile.name,
+      );
+    }
     _prefs.setString(_audioEngineModeKey, _audioEngineMode.name);
     _prefs.setString(_hybridHandoffModeKey, _hybridHandoffMode.name);
     _prefs.setString(_hybridBackgroundModeKey, _hybridBackgroundMode.name);
@@ -173,8 +205,72 @@ mixin _SettingsProviderWebExtension
   }
 
   void setWebPrefetchSeconds(int seconds) {
+    _markWebPlaybackPowerProfileCustom();
     _webPrefetchSeconds = seconds;
     _prefs.setInt(_webPrefetchSecondsKey, seconds);
     notifyListeners();
+  }
+
+  void setWebPlaybackPowerProfile(WebPlaybackPowerProfile profile) {
+    _webPlaybackPowerProfile = profile;
+    _prefs.setString(_webPlaybackPowerProfileKey, profile.name);
+    _applyWebPlaybackPowerPolicy(persistPrefs: true);
+    notifyListeners();
+  }
+
+  void _markWebPlaybackPowerProfileCustom() {
+    if (_applyingWebPowerPolicy ||
+        _webPlaybackPowerProfile == WebPlaybackPowerProfile.custom) {
+      return;
+    }
+
+    _webPlaybackPowerProfile = WebPlaybackPowerProfile.custom;
+    _resolvedWebPlaybackPowerSource = ResolvedWebPlaybackPowerSource.custom;
+    _prefs.setString(
+      _webPlaybackPowerProfileKey,
+      WebPlaybackPowerProfile.custom.name,
+    );
+  }
+
+  void _applyWebPlaybackPowerPolicy({required bool persistPrefs}) {
+    final config = resolveWebPlaybackPowerPolicy(
+      profile: _webPlaybackPowerProfile,
+      detectedCharging: _detectedWebCharging,
+    );
+    _resolvedWebPlaybackPowerSource = config.resolvedSource;
+
+    if (!config.applyEngineSettings) {
+      return;
+    }
+
+    _applyingWebPowerPolicy = true;
+    try {
+      final audioEngineMode = config.audioEngineMode!;
+      final handoffMode = config.handoffMode!;
+      final backgroundMode = config.backgroundMode!;
+      final allowHiddenWebAudio = config.allowHiddenWebAudio!;
+      final webPrefetchSeconds = config.webPrefetchSeconds!;
+      final preventSleep = config.preventSleep!;
+
+      _audioEngineMode = audioEngineMode;
+      _hybridHandoffMode = handoffMode;
+      _hybridBackgroundMode = backgroundMode;
+      _allowHiddenWebAudio = allowHiddenWebAudio;
+      _webPrefetchSeconds = webPrefetchSeconds;
+      _preventSleep = preventSleep;
+
+      if (!persistPrefs) {
+        return;
+      }
+
+      _prefs.setString(_audioEngineModeKey, _audioEngineMode.name);
+      _prefs.setString(_hybridHandoffModeKey, _hybridHandoffMode.name);
+      _prefs.setString(_hybridBackgroundModeKey, _hybridBackgroundMode.name);
+      _prefs.setBool(_allowHiddenWebAudioKey, _allowHiddenWebAudio);
+      _prefs.setInt(_webPrefetchSecondsKey, _webPrefetchSeconds);
+      _prefs.setBool(_preventSleepKey, _preventSleep);
+    } finally {
+      _applyingWebPowerPolicy = false;
+    }
   }
 }

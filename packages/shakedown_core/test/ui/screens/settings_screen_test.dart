@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -296,4 +297,40 @@ void main() {
     expect(find.byType(RatedShowsBody), findsOneWidget);
     expect(find.text('Rated Shows Library'), findsOneWidget);
   });
+
+  testWidgets(
+    'web playback settings expose power playback profile labels',
+    skip: !kIsWeb,
+    (WidgetTester tester) async {
+      final settingsProvider = SettingsProvider(prefs);
+
+      await tester.pumpWidget(createTestableWidget(settingsProvider));
+      await tester.pump(const Duration(seconds: 1));
+
+      final playbackTitle = find.text('Playback');
+      expect(playbackTitle, findsOneWidget);
+
+      if (find.text('Web Audio Engine').evaluate().isEmpty &&
+          find.text('Power Playback').evaluate().isEmpty) {
+        await tester.tap(playbackTitle);
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+
+      final powerPlaybackFinder = find.text('Power Playback');
+      if (powerPlaybackFinder.evaluate().isEmpty) {
+        await tester.scrollUntilVisible(
+          powerPlaybackFinder,
+          400,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+
+      expect(find.text('Power Playback'), findsOneWidget);
+      expect(find.text('Auto'), findsOneWidget);
+      expect(find.text('Battery'), findsOneWidget);
+      expect(find.text('Charging'), findsOneWidget);
+      expect(find.text('Custom'), findsOneWidget);
+    },
+  );
 }

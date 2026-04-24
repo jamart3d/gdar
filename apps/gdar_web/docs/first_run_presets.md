@@ -11,7 +11,7 @@ Defined in `gapless_player.dart`.
 
 | Value | Description |
 | :--- | :--- |
-| `auto` | Platform-adaptive: resolves to `hybrid` on web (via profile detection), `standard` on native |
+| `auto` | Platform-adaptive: resolves to `hybrid` on modern web, `html5` on low-power/mobile web, and `standard` on native |
 | `webAudio` | Pure Web Audio API — best gapless, requires AudioContext to survive tab-hide |
 | `html5` | HTML5 `<audio>` only — most compatible, no gapless, survives background reliably |
 | `standard` | Native platform player (Android/TV) |
@@ -43,9 +43,9 @@ Bundles `audioEngineMode + handoffMode + backgroundMode + allowHiddenWebAudio` i
 
 | Preset | `audioEngineMode` | `handoffMode` | `backgroundMode` | `allowHiddenWebAudio` | Use case |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `stability` | `hybrid` | `buffered` | `video` | `false` | Mobile/unreliable browsers; max survival, no WA in background |
+| `stability` | `hybrid` | `none` | `html5` | `false` | Mobile/unreliable browsers; max survival, no WA handoff |
 | `balanced` | `hybrid` | `buffered` | `heartbeat` | `false` | Desktop browser default; good longevity without video trick |
-| `maxGapless` | `webAudio` | `immediate` | `heartbeat` | `true` | Power-user / PWA installed; full gapless, allows WA hidden |
+| `maxGapless` | `hybrid` | `buffered` | `none` | `true` | Power-user preset; allows hidden WA and disables survival tricks |
 
 ### `WebEngineProfile`
 One-time adaptive selection stored in `_webEngineProfileChoiceKey`.
@@ -82,13 +82,13 @@ Applied via `_dStr` / `_dBool` helpers whenever the pref key is absent.
 | `hybridBackgroundMode` | `heartbeat` | — | — |
 | `hiddenSessionPreset` | `balanced` | — | — |
 | `allowHiddenWebAudio` | `false` | — | — |
-| `webPrefetchSeconds` | `30s` (or `-1` if WebAudio mode) | — | — |
+| `webPrefetchSeconds` | `30s` (or `60s` when charging gapless is active) | — | — |
 | `preventSleep` | `false` | `true` | `false` |
 | `playRandomOnCompletion` | `true` | `true` | `true` |
 | `playRandomOnStartup` | `false` | `false` | `false` |
 | `offlineBuffering` | `false` | `false` | `false` |
 | `enableBufferAgent` | `true` | `true` | `true` |
-| `showPlaybackMessages` | `true` | TV default | `true` |
+| `showPlaybackMessages` | `true` | `false` (TV default) | `true` |
 | `showDevAudioHud` | `true` | `true` | `true` |
 
 > These defaults apply when no adaptive profile is triggered (§2). In practice, new web users will have these overwritten by the profile selection.
@@ -108,12 +108,26 @@ Device classification via `isLikelyLowPowerWebDevice()` (`web_perf_hint.dart`):
 | Setting | Value | Meaning |
 | :--- | :--- | :--- |
 | `audioEngineMode` | `hybrid` | WebAudio foreground + HTML5 background handoff |
-| `hybridHandoffMode` | `boundary` | Defers WA restore to next track boundary — no mid-track swap |
+| `hybridHandoffMode` | `buffered` | Waits for WebAudio to buffer before swapping back from HTML5 |
 | `hybridBackgroundMode` | `heartbeat` | Silent WA tick keeps AudioContext alive when hidden; escalates to `video` after 60s on mobile |
-| `hiddenSessionPreset` | `balanced` | Closest preset label (note: handoff is `boundary`, not `buffered` as the preset normally implies) |
+| `hiddenSessionPreset` | `balanced` | Closest preset label |
 | `allowHiddenWebAudio` | `false` | WA does not play while tab is hidden (handoff to HTML5) |
 
-> **PWA override:** if `isPwa()` is true on a modern-profile device, `maxGapless` is applied on top (`webAudio + immediate + allowHiddenWebAudio=true`). See §6.
+> **Power profile policy:** `auto` resolves to `chargingGapless` when charging is detected and to `batterySaver` when the battery is active or the Battery Status API is unavailable. `custom` leaves manual engine settings untouched.
+
+### `WebPlaybackPowerProfile`
+
+Power profiles are persisted separately from `HiddenSessionPreset`. They control
+the runtime Hybrid knobs used by installed Android/iOS PWA sessions.
+
+| User Profile | Resolved Source | Engine | Handoff | Background | Hidden Web Audio | Prevent Sleep | Prefetch |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `auto` + charging detected | `charging` | `hybrid` | `immediate` | `video` | `true` | `true` | `60s` |
+| `auto` + battery detected | `battery` | `hybrid` | `none` | `video` | `false` | `false` | `30s` |
+| `auto` + Battery Status API unavailable | `battery` | `hybrid` | `none` | `video` | `false` | `false` | `30s` |
+| `batterySaver` | `battery` | `hybrid` | `none` | `video` | `false` | `false` | `30s` |
+| `chargingGapless` | `charging` | `hybrid` | `immediate` | `video` | `true` | `true` | `60s` |
+| `custom` | `custom` | unchanged | unchanged | unchanged | unchanged | unchanged | unchanged |
 
 ### `WebEngineProfile.legacy` — low-power / mobile web
 
@@ -156,12 +170,11 @@ Runs every launch (not just first run):
 
 ```
 webPrefetchSeconds =
-  audioEngineMode == WebAudio  → -1 (greedy)
-  hybridHandoffMode == boundary → 60s
-  otherwise                    → 30s
+  powerProfile == chargingGapless → 60s
+  otherwise                       → 30s
 ```
 
-If the stored pref disagrees with this calculation, it is silently corrected. The 60s window for `boundary` mode ensures the next track is fully buffered before the track boundary arrives.
+The 60s charging window gives WebAudio more time to prepare gapless handoff while plugged in. Battery and unknown-power sessions keep the shorter 30s window.
 
 ---
 
@@ -186,14 +199,15 @@ New web user
         ├── YES → WebEngineProfile.legacy (html5 + video BG)
         │         + preset: stability (Compatible)
         │         + performanceMode = true  → liquidGlass = false
-        │         + HUD: DET=L
-        └── NO  → WebEngineProfile.modern (hybrid + boundary handoff + heartbeat BG)
+        │         + HUD: DET=L, PWR=BAT
+        └── NO  → WebEngineProfile.modern (hybrid + power profile auto + heartbeat BG)
                   + preset label: balanced
                   + performanceMode = false → liquidGlass = false (user opt-in)
-                    └── isPwa()?
-                          ├── YES → maxGapless override (webAudio + immediate + allowHiddenWebAudio=true)
-                          │         HUD: DET=P
-                          └── NO  → HUD: DET=D (desktop) or DET=W (browser)
+                    └── power status?
+                          ├── charging → chargingGapless
+                          │             HUD: DET=P, PWR=CHG
+                          └── battery/unknown → batterySaver
+                                        HUD: DET=P, PWR=BAT
 ```
 
 Returning user with prefs stored: adaptive profile, low-power detection, and liquid glass defaults are all skipped — stored values win.
@@ -208,11 +222,11 @@ How well each engine/config keeps playing when the tab is hidden on a lower/mobi
 
 | Rank | Config | Why |
 | :---: | :--- | :--- |
-| 1 | `hybrid` + `backgroundMode=video` | Silent `<video>` loop is the strongest keepalive signal to Chrome Android. Belt-and-suspenders with HTML5 `<audio>` still active. |
-| 2 | `html5` (pure) | `<audio>` element alone. Browser designed to keep media audio alive. Lowest resource cost — no extra tricks, no extra failure modes. |
-| 3 | `hybrid` + `backgroundMode=heartbeat` | Silent Web Audio tick can itself be suspended by mobile browser. Less reliable than video on Android. Auto-escalates to video at 60s (S5). |
-| 4 | `hybrid` + `backgroundMode=html5` | Same survival as pure HTML5 but carries full hybrid engine overhead for no gain in background. |
-| 5 | `webAudio` hidden (`allowHiddenWebAudio=true`) | AudioContext almost always suspended within seconds on mobile when hidden. Worst longevity. |
+| 1 | `hybrid` + `chargingGapless` + `video` | Best background survival and fastest gapless restore when the app is visible again. |
+| 2 | `hybrid` + `batterySaver` + `video` | Strong background survival with the battery-safe hybrid path. |
+| 3 | `hybrid` + `heartbeat` | Heartbeat keeps the AudioContext warm, but mobile browsers can still suspend it. |
+| 4 | `webAudio` + no survival | Gapless while visible, but no hidden playback survival path. |
+| 5 | `webAudio` hidden (`allowHiddenWebAudio=true`) | No hidden playback survival path on mobile. |
 
 > On desktop browsers ranks 1–4 are roughly equivalent — desktop doesn't throttle hidden tabs aggressively. The ranking matters most on Android Chrome and mobile Safari.
 
@@ -232,11 +246,16 @@ How well each engine/config keeps playing when the tab is hidden on a lower/mobi
 
 ### Current state
 
-The Settings → Playback "Hidden Session Preset" picker exposes three named bundles (`stability`, `balanced`, `maxGapless`) directly. The names are developer-oriented and don't communicate longevity vs gapless tradeoffs to a user.
+The Settings → Playback "Hidden Session Preset" picker still exposes the three
+named bundles (`stability`, `balanced`, `maxGapless`) directly. The names are
+developer-oriented and do not clearly communicate the battery-safe versus
+charging-gapless split.
 
 ### Should it change?
 
-The adaptive profile (§2) now picks a sensible default for every user type (low-power, PWA, desktop). The preset exists for power-user override. The question is whether the current options and names are the right framing.
+The adaptive profile (§2) now picks a sensible default for every user type
+(low-power, installed PWA, desktop). The preset exists for power-user override.
+The question is whether the current options and names are the right framing.
 
 **Option A — Reframe as a longevity/compatibility scale:**
 
@@ -244,9 +263,9 @@ Replace the three abstract names with a ranked scale that matches the survival r
 
 | New label | Maps to | Engine + config |
 | :--- | :--- | :--- |
-| Compatible | `stability` | `hybrid` + `video` BG — best longevity, gapless only when visible |
-| Balanced | `balanced` | `hybrid` + `heartbeat` BG + 60s video escalation — good longevity + gapless |
-| Gapless | `maxGapless` | `webAudio` + `allowHiddenWebAudio=true` — best gapless, needs strong browser |
+| Compatible | `batterySaver` | `hybrid` + `video` BG — battery-safe and survival-first |
+| Charging Gapless | `chargingGapless` | `hybrid` + `video` BG + immediate handoff — best gapless while charging |
+| Custom | `custom` | Manual engine values are preserved |
 
 The setting stays as three options, just renamed and reordered from most compatible → most gapless. No code changes to the preset bundles themselves — only UI label strings change.
 
@@ -266,26 +285,39 @@ If the adaptive profile (§2) is trusted to pick correctly, the only users who n
 
 ## 9. Suggestions for Improving Defaults
 
-### S1 — Upgrade PWA installs to `maxGapless` on first run
-**Current:** PWA installs land on `modern` profile (`balanced` preset, `allowHiddenWebAudio = false`).
-**Problem:** Installed PWAs have much better background audio longevity than tab browsers. The `balanced` preset's conservative `allowHiddenWebAudio = false` forces an HTML5 handoff on every tab-hide, breaking gapless.
-**Suggestion:** In the adaptive profile selection, check `isPwa()` after the low-power test and apply `HiddenSessionPreset.maxGapless` (`webAudio` + `immediate` handoff + `allowHiddenWebAudio = true`) for PWA installs on non-low-power devices.
+### S1 — Keep PWA installs on power profile auto
+**Current:** Installed PWA launches start in Hybrid on non-low-power devices, then
+resolve to `batterySaver` or `chargingGapless` based on power state.
+**Problem:** The remaining question is not whether PWA should force `webAudio`,
+but how visibly the power profile choice should be surfaced in the UI.
+**Suggestion:** Keep the adaptive selection on `auto` and document the `BAT` /
+`CHG` HUD chips clearly so users understand why playback behavior changes
+without a relaunch.
 
-### S2 — Use `boundary` handoff mode for `modern` profile
-**Current:** `modern` → `HybridHandoffMode.buffered` — waits for WA buffer, then mid-track swaps back to WA.
-**Problem:** Mid-track swaps create a noticeable artifact (brief silence or pop at swap point) even with crossfade.
-**Suggestion:** Change `modern` default to `HybridHandoffMode.boundary` — defer the WA restore until the next track boundary. Pure gapless is preserved and no mid-track interruption occurs. Only trade-off: WA resumes at next track, not immediately on tab-show.
+### S2 — Consider `boundary` handoff mode for custom/manual profiles
+**Current:** `batterySaver` disables handoff and `chargingGapless` uses
+`immediate`. Manual users can still choose `boundary`.
+**Problem:** `boundary` can reduce mid-track handoff risk, but it is not the
+current default for power profiles.
+**Suggestion:** Keep `batterySaver` and `chargingGapless` simple. If users need
+more control, expose `boundary` as a documented custom/manual option.
 
 ### S3 — `performanceMode` should not force `stability` preset on Fruit first-run
 **Current:** Fruit first-run sets `performanceMode = true`, but does not touch the audio preset. On a `modern`-profile device this leaves them on `balanced` (heartbeat), which is fine. But the combo is invisible in the HUD.
 **Suggestion:** No code change needed — but document that `performanceMode` and `hiddenSessionPreset` are orthogonal. A `PM` chip in the HUD (showing `ON`/`OFF` for `performanceMode`) would make this visible to developers debugging Fruit sessions.
 
-### S4 — Prefetch window should scale with handoff mode
-**Current:** `webPrefetchSeconds = 30` for all non-WebAudio modes regardless of `handoffMode`.
-**Problem:** With `boundary` handoff, the app needs to buffer the *next* track ahead of the current one to guarantee gapless at boundary. 30s may not be enough on slow connections.
-**Suggestion:** When `handoffMode == boundary`, increase default to 45s or expose it as a separate `boundaryPrefetchSeconds` preference, defaulting higher.
+### S4 — Prefetch window should scale with power profile
+**Current:** `webPrefetchSeconds = 30` for `batterySaver` and `60` for
+`chargingGapless`.
+**Problem:** The current split is intentionally simple, but it still hides the
+reason behind the longer charging window from users.
+**Suggestion:** If this needs more granularity later, expose the value as a
+profile-specific setting rather than tying it to a generic prefetch slider.
 
-### S5 — `video` background mode fallback for `modern` on mobile browsers
-**Current:** `modern` profile uses `heartbeat` BG mode. On Chrome for Android (non-low-power flagship), heartbeat may not keep the AudioContext alive past ~60s.
-**Problem:** Flagship phones with 8 cores and DPR ≥ 2.0 pass the `isLikelyLowPowerWebDevice()` test and get `modern`, but Chrome Android is still aggressive about suspending hidden AudioContexts.
-**Suggestion:** In `_applyWebEngineProfile`, check `DeviceService.isMobile` (or UA mobile flag). If `modern` + mobile browser, set `backgroundMode = video` instead of `heartbeat`. This is what `stability` does and it's more reliable on Android Chrome.
+### S5 — `video` background mode fallback for `batterySaver` on mobile browsers
+**Current:** `batterySaver` uses `video` background survival, but some mobile
+browsers still throttle hidden playback if the tab is starved of resources.
+**Problem:** Even the strongest keepalive signal can lose against RAM pressure
+or aggressive vendor battery policy.
+**Suggestion:** If this becomes a support issue, document the kill conditions
+more prominently instead of changing the default profile.

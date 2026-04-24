@@ -51,8 +51,16 @@
     const hasTouch = navigator.maxTouchPoints > 1;
     const isNarrow = window.innerWidth < 1024;
     const isChromebook = /CrOS/i.test(ua);
+    let isStandalonePwa = false;
+    try {
+        isStandalonePwa =
+            typeof window.matchMedia === 'function' &&
+            window.matchMedia('(display-mode: standalone)').matches;
+    } catch (_) { }
+    try {
+        isStandalonePwa = isStandalonePwa || navigator.standalone === true;
+    } catch (_) { }
 
-    // Detection logic: PWA/Mobile = HTML5, Desktop = Hybrid
     // Check for user override from SettingsProvider (persisted in localStorage)
     const PREF_KEY = 'flutter.audio_engine_mode';
     const RAW_KEY = 'audio_engine_mode';
@@ -68,6 +76,12 @@
 
     let strategy = 'hybrid'; // Desktop Default
     let reason = 'Defaulting to Hybrid mode (HTML5 start + Web Audio handoff).';
+    const lpDpr = window.devicePixelRatio || 1;
+    const lpCores = navigator.hardwareConcurrency || 0;
+    const isMobileLike = isMobiUA || isIPadOS || (hasTouch && isNarrow);
+    const isLowCoreCount =
+        lpCores > 0 && (lpCores <= 2 || (lpCores <= 4 && lpDpr < 2.0));
+    const isLowPowerMobile = isMobileLike && isLowCoreCount;
 
     if (override && override !== 'auto' && override !== 'standard') {
         strategy = override;
@@ -78,10 +92,17 @@
     } else if (isChromebook) {
         strategy = 'webAudio';
         reason = `Chromebook detected (CrOS) -> Web Audio API enabled.`;
-    } else if (isMobiUA || isIPadOS || (hasTouch && isNarrow)) {
-        // Mobile/PWA "Fresh Start" should always be HTML5
+    } else if (isStandalonePwa) {
+        if (isLowPowerMobile) {
+            strategy = 'html5';
+            reason = 'Installed low-power PWA detected -> HTML5 streaming engine.';
+        } else {
+            strategy = 'hybrid';
+            reason = 'Installed PWA detected -> Hybrid orchestrator.';
+        }
+    } else if (isMobileLike) {
         strategy = 'html5';
-        reason = `Mobile/Tablet/PWA environment detected -> HTML5 streaming engine (Fresh Start).`;
+        reason = `Mobile/Tablet browser tab detected -> HTML5 streaming engine.`;
     }
     console.log(`[Shakedown] Strategy decision BEFORE fallback: ${strategy}. Reason: ${reason}`);
 
@@ -129,6 +150,9 @@
 
     if (selectedEngine) {
         window._gdarAudio = selectedEngine;
+        if (strategy === 'hybrid' && selectedEngine === window._hybridAudio) {
+            selectedEngine.engineType = 'hybrid';
+        }
         _log.log(`[Shakedown] FINAL STRATEGY: ${strategy}. (Selected: ${selectedEngine.engineType || 'Unknown'}). Override: ${override}`);
 
         // Advanced Hybrid Settings Sync - Universal across all JS engines
@@ -223,10 +247,7 @@
 
     // Expose detection results for diagnostics and Dart-side alignment.
     window._gdarIsMobile = (isMobiUA || isIPadOS || (hasTouch && isNarrow));
-    const _lpDpr = window.devicePixelRatio || 1;
-    const _lpCores = navigator.hardwareConcurrency || 0;
-    const _lpIsLowCores = _lpCores > 0 && (_lpCores <= 2 || (_lpCores <= 4 && _lpDpr < 2.0));
-    window._gdarDetectedAsLowPower = (isMobiUA || isIPadOS) && _lpIsLowCores;
+    window._gdarDetectedAsLowPower = isLowPowerMobile;
 
     // Diagnostic: Log all localStorage keys related to audio for debugging
     try {
@@ -241,5 +262,3 @@
     window._shakedownAudioReason = reason;
 
 })();
-
-

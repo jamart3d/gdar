@@ -19,6 +19,8 @@ class HudSnapshot {
   final String engineState; // ST
   final String signal; // SIG
   final String message; // MSG
+  final String heartbeatBlocked; // HBB
+  final String powerSource; // PWR
 
   // UI State Flags
   final bool hbActive;
@@ -69,6 +71,8 @@ class HudSnapshot {
     required this.engineState,
     required this.signal,
     required this.message,
+    required this.heartbeatBlocked,
+    required this.powerSource,
     required this.hbActive,
     required this.hbNeeded,
     required this.heartbeatEnabledBySettings,
@@ -113,6 +117,8 @@ class HudSnapshot {
     engineState: '--',
     signal: '--',
     message: '--',
+    heartbeatBlocked: '--',
+    powerSource: '--',
     hbActive: false,
     hbNeeded: false,
     heartbeatEnabledBySettings: false,
@@ -157,6 +163,8 @@ class HudSnapshot {
       'ST': engineState,
       'SIG': signal,
       'MSG': message,
+      'HBB': heartbeatBlocked,
+      'PWR': powerSource,
     };
   }
 
@@ -180,6 +188,8 @@ class HudSnapshot {
     String? engineState,
     String? signal,
     String? message,
+    String? heartbeatBlocked,
+    String? powerSource,
     bool? hbActive,
     bool? hbNeeded,
     bool? heartbeatEnabledBySettings,
@@ -222,6 +232,8 @@ class HudSnapshot {
       engineState: engineState ?? this.engineState,
       signal: signal ?? this.signal,
       message: message ?? this.message,
+      heartbeatBlocked: heartbeatBlocked ?? this.heartbeatBlocked,
+      powerSource: powerSource ?? this.powerSource,
       hbActive: hbActive ?? this.hbActive,
       hbNeeded: hbNeeded ?? this.hbNeeded,
       heartbeatEnabledBySettings:

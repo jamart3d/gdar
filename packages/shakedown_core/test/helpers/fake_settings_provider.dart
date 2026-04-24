@@ -466,7 +466,10 @@ class FakeSettingsProvider extends ChangeNotifier implements SettingsProvider {
   @override
   HiddenSessionPreset get hiddenSessionPreset => HiddenSessionPreset.balanced;
   @override
-  void setHiddenSessionPreset(HiddenSessionPreset value) {}
+  void setHiddenSessionPreset(
+    HiddenSessionPreset value, {
+    bool markPowerProfileCustom = true,
+  }) {}
 
   @override
   Future<void> resetToDefaults() async {}

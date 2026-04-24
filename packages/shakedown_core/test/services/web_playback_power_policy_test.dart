@@ -27,8 +27,7 @@ void main() {
   });
 
   group('resolveWebPlaybackPowerPolicy', () {
-    test('auto falls back to battery-safe when charging state is unknown',
-        () {
+    test('auto falls back to battery-safe when charging state is unknown', () {
       final config = resolveWebPlaybackPowerPolicy(
         profile: WebPlaybackPowerProfile.auto,
         detectedCharging: null,

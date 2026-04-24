@@ -17,6 +17,7 @@ import 'package:shakedown_core/models/undo_checkpoint.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/services/audio_cache_service.dart';
+import 'package:shakedown_core/services/audio/web_playback_power_policy.dart';
 import 'package:shakedown_core/services/buffer_agent.dart';
 import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';

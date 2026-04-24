@@ -111,6 +111,7 @@ async function main() {
     runStandalone('visible_stalled_progress_regression.js');
     runStandalone('webaudio_resume_position_regression.js');
     runStandalone('append_tracks_regression.js');
+    runStandalone('pwa_strategy_regression.js');
 
     console.log('\n--- Running Hybrid Engine Regression Tests ---\n');
 

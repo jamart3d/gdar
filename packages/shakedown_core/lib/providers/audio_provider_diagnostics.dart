@@ -100,6 +100,8 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
   }
 
   DngSnapshot createSnapshot() {
+    final heartbeatBlockedDiagnostics =
+        _audioPlayer.heartbeatBlockedDiagnostics;
     final snapshot = DngSnapshot(
       position: _audioPlayer.position,
       buffered: _audioPlayer.bufferedPosition,
@@ -132,6 +134,8 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
       handoffState: _audioPlayer.handoffState,
       handoffAttemptCount: _audioPlayer.handoffAttemptCount,
       lastHandoffPollCount: _audioPlayer.lastHandoffPollCount,
+      heartbeatBlockedCount: heartbeatBlockedDiagnostics.count,
+      heartbeatLastBlockedReason: heartbeatBlockedDiagnostics.lastReason,
     );
 
     if (_audioPlayer.syncDebugProbeActive) {
@@ -225,6 +229,12 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
       engineState: _shortEngineState(dng.engineState),
       signal: signal,
       message: message,
+      heartbeatBlocked: dng.heartbeatBlockedCount > 0
+          ? '${dng.heartbeatBlockedCount}'
+          : '--',
+      powerSource: kIsWeb
+          ? _shortPowerSource(settings.resolvedWebPlaybackPowerSource)
+          : '--',
       hbActive: dng.hbActive,
       hbNeeded: dng.hbNeeded,
       heartbeatEnabledBySettings:
@@ -323,6 +333,17 @@ mixin _AudioProviderDiagnostics on ChangeNotifier, _AudioProviderState {
         return 'H5';
       case HybridBackgroundMode.none:
         return 'OFF';
+    }
+  }
+
+  String _shortPowerSource(ResolvedWebPlaybackPowerSource source) {
+    switch (source) {
+      case ResolvedWebPlaybackPowerSource.battery:
+        return 'BAT';
+      case ResolvedWebPlaybackPowerSource.charging:
+        return 'CHG';
+      case ResolvedWebPlaybackPowerSource.custom:
+        return 'CUS';
     }
   }
 

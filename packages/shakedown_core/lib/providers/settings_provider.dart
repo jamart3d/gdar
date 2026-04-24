@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -9,10 +10,12 @@ import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/providers/settings_init/settings_migrations.dart';
 import 'package:shakedown_core/providers/settings_init/settings_pref_readers.dart';
 import 'package:shakedown_core/providers/settings_init/settings_screensaver_pref_readers.dart';
+import 'package:shakedown_core/services/audio/web_playback_power_policy.dart';
 import 'package:shakedown_core/services/gapless_player/gapless_player.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/pwa_detection.dart';
 import 'package:shakedown_core/utils/web_perf_hint.dart';
+import 'package:shakedown_core/utils/web_power_state.dart';
 import 'package:shakedown_core/utils/web_runtime.dart';
 import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_background.dart';
 
@@ -71,4 +74,12 @@ class SettingsProvider extends ChangeNotifier
   final bool isTv;
 
   bool showExpandIcon = false;
+
+  @override
+  void dispose() {
+    _webPowerStateDisposed = true;
+    _webChargingSubscription?.cancel();
+    _webChargingSubscription = null;
+    super.dispose();
+  }
 }

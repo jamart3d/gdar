@@ -100,6 +100,17 @@ class GaplessPlayer {
   /// Heartbeat needed state (not applicable natively).
   bool get heartbeatNeeded => false;
 
+  /// Heartbeat blocked diagnostics (not applicable natively).
+  ({int count, String lastReason}) get heartbeatBlockedDiagnostics {
+    return (count: 0, lastReason: '');
+  }
+
+  /// Heartbeat blocked count (not applicable natively).
+  int get heartbeatBlockedCount => 0;
+
+  /// Heartbeat blocked reason (not applicable natively).
+  String get heartbeatLastBlockedReason => '';
+
   /// Fetch TTFB (not applicable natively).
   double? get fetchTtfbMs => null;
 

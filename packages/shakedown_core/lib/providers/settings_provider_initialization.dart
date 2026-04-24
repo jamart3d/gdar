@@ -9,9 +9,13 @@ mixin _SettingsProviderInitializationExtension
         _SettingsProviderSourceFiltersFields {
   SharedPreferences get _prefs;
   bool get isTv;
-  void setHiddenSessionPreset(HiddenSessionPreset preset);
+  void setHiddenSessionPreset(
+    HiddenSessionPreset preset, {
+    bool markPowerProfileCustom = true,
+  });
   void setGlowMode(int mode);
   void setHighlightPlayingWithRgb(bool value);
+  void _applyWebPlaybackPowerPolicy({required bool persistPrefs});
 
   void resetAndroidFirstTimeSettings() {
     _appFont = 'rock_salt';
@@ -63,16 +67,23 @@ mixin _SettingsProviderInitializationExtension
 
     switch (profile) {
       case WebRuntimeProfile.low:
-        setHiddenSessionPreset(HiddenSessionPreset.stability);
+        setHiddenSessionPreset(
+          HiddenSessionPreset.stability,
+          markPowerProfileCustom: false,
+        );
         break;
       case WebRuntimeProfile.pwa:
-        setHiddenSessionPreset(HiddenSessionPreset.balanced);
+        setHiddenSessionPreset(
+          HiddenSessionPreset.balanced,
+          markPowerProfileCustom: false,
+        );
         break;
       case WebRuntimeProfile.web:
         setHiddenSessionPreset(
           isSafari
               ? HiddenSessionPreset.stability
               : HiddenSessionPreset.balanced,
+          markPowerProfileCustom: false,
         );
         break;
       case WebRuntimeProfile.desk:
@@ -80,6 +91,7 @@ mixin _SettingsProviderInitializationExtension
           isSafari
               ? HiddenSessionPreset.balanced
               : HiddenSessionPreset.maxGapless,
+          markPowerProfileCustom: false,
         );
         break;
     }
@@ -474,6 +486,17 @@ mixin _SettingsProviderInitializationExtension
     _handoffCrossfadeMs =
         _prefs.getInt(_handoffCrossfadeMsKey) ??
         DefaultSettings.handoffCrossfadeMs;
+    _webPlaybackPowerProfile = WebPlaybackPowerProfile.fromString(
+      _prefs.getString(_webPlaybackPowerProfileKey),
+    );
+    _resolvedWebPlaybackPowerSource = resolveWebPlaybackPowerPolicy(
+      profile: _webPlaybackPowerProfile,
+      detectedCharging: _detectedWebCharging,
+    ).resolvedSource;
+    if (kIsWeb) {
+      _applyWebPlaybackPowerPolicy(persistPrefs: true);
+      _startWebPowerStateListener();
+    }
   }
 
   AudioEngineMode _loadAudioEngineModePreference() {
@@ -519,6 +542,36 @@ mixin _SettingsProviderInitializationExtension
     logger.i(
       'SettingsProvider: Adaptive web engine profile applied (Decision Tree Logic).',
     );
+  }
+
+  void _startWebPowerStateListener() {
+    if (!kIsWeb || _webChargingSubscription != null) {
+      return;
+    }
+
+    getInitialWebChargingState().then((charging) {
+      _handleWebChargingState(charging);
+    });
+
+    _webChargingSubscription = onWebChargingStateChanged.listen(
+      _handleWebChargingState,
+    );
+  }
+
+  void _handleWebChargingState(bool? charging) {
+    if (_webPowerStateDisposed) {
+      return;
+    }
+
+    if (_detectedWebCharging == charging) {
+      return;
+    }
+
+    _detectedWebCharging = charging;
+    if (_webPlaybackPowerProfile == WebPlaybackPowerProfile.auto) {
+      _applyWebPlaybackPowerPolicy(persistPrefs: true);
+      notifyListeners();
+    }
   }
 
   void _loadScreensaverPreferences() {

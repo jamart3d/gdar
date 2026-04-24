@@ -15,6 +15,7 @@
     const _log = (window._gdarLogger || console);
 
     let _heartbeatBlockedCount = 0;
+    let _lastBlockedReason = '';
 
     // A tiny 0.1s silent WAV file encoded to base64
     const SILENT_WAV_BASE64 = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
@@ -27,6 +28,7 @@
 
     function _dispatchBlocked(type, reason) {
         _heartbeatBlockedCount++;
+        _lastBlockedReason = reason || '';
         _log.warn('[gdar heartbeat] ' + type + ' heartbeat blocked:', reason || '(no reason)');
         try {
             window.dispatchEvent(new CustomEvent('gdar-heartbeat-blocked', {
@@ -121,6 +123,13 @@
 
         blockedCount: function () {
             return _heartbeatBlockedCount;
+        },
+
+        getBlockedDiagnostics: function () {
+            return {
+                blockedCount: _heartbeatBlockedCount,
+                lastReason: _lastBlockedReason,
+            };
         }
     };
 

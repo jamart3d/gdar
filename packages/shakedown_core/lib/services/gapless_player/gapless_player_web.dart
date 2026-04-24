@@ -21,6 +21,9 @@ external JSString? get _strategyVal;
 @JS('_shakedownAudioReason')
 external JSString? get _reasonVal;
 
+@JS('_gdarHeartbeat')
+external _GdarHeartbeat? get _heartbeat;
+
 String? get _strategy => _strategyVal?.toDart;
 String? get _reason => _reasonVal?.toDart;
 
@@ -55,6 +58,25 @@ extension type _GdarAudioEngine(JSObject _) {
   external void setHybridHandoffMode(JSString mode);
   external void setHybridAllowHiddenWebAudio(JSBoolean enabled);
   external void setVolume(JSNumber volume);
+}
+
+@JS()
+@anonymous
+extension type _GdarHeartbeat(JSObject _) implements JSObject {
+  external _HeartbeatBlockedDiagnostics getBlockedDiagnostics();
+  external JSNumber blockedCount();
+}
+
+@JS()
+@anonymous
+extension type _HeartbeatBlockedDiagnostics(JSObject _) implements JSObject {
+  @JS('blockedCount')
+  external JSNumber? get blockedCountJS;
+  int get blockedCount => blockedCountJS?.toDartInt ?? 0;
+
+  @JS('lastReason')
+  external JSString? get lastReasonJS;
+  String get lastReason => lastReasonJS?.toDart ?? '';
 }
 
 @JS()

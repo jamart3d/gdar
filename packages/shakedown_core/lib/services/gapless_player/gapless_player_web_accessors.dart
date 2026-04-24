@@ -99,6 +99,31 @@ mixin _GaplessPlayerWebAccessors
 
   int? get lastHandoffPollCount => _useJsEngine ? _lastHandoffPollCount : null;
 
+  ({int count, String lastReason}) get heartbeatBlockedDiagnostics {
+    if (!_useJsEngine) return (count: 0, lastReason: '');
+
+    try {
+      final diagnostics = _heartbeat?.getBlockedDiagnostics();
+      return (
+        count:
+            diagnostics?.blockedCount ??
+            _heartbeat?.blockedCount().toDartInt ??
+            0,
+        lastReason: diagnostics?.lastReason ?? '',
+      );
+    } catch (_) {
+      return (count: 0, lastReason: '');
+    }
+  }
+
+  int get heartbeatBlockedCount {
+    return heartbeatBlockedDiagnostics.count;
+  }
+
+  String get heartbeatLastBlockedReason {
+    return heartbeatBlockedDiagnostics.lastReason;
+  }
+
   String get engineName {
     if (!_useJsEngine) {
       return 'Standard Engine (just_audio)';
