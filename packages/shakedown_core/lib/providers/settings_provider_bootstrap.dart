@@ -11,7 +11,6 @@ mixin _SettingsProviderBootstrapExtension
         _SettingsProviderWebExtension,
         _SettingsProviderScreensaverExtension,
         _SettingsProviderSourceFiltersExtension,
-        _SettingsProviderInitializationExtension,
         _SettingsProviderThemePresetsExtension,
         _SettingsProviderCoreLoaderExtension,
         _SettingsProviderScreensaverLoaderExtension,

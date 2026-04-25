@@ -240,6 +240,12 @@ mixin _SettingsProviderScreensaverLoaderExtension
     _oilInnerRingSpacingMultiplier =
         _prefs.getDouble(_oilInnerRingSpacingMultiplierKey) ??
         DefaultSettings.oilInnerRingSpacingMultiplier;
+    _oilMiddleRingSpacingMultiplier =
+        _prefs.getDouble(_oilMiddleRingSpacingMultiplierKey) ??
+        DefaultSettings.oilMiddleRingSpacingMultiplier;
+    _oilOuterRingSpacingMultiplier =
+        _prefs.getDouble(_oilOuterRingSpacingMultiplierKey) ??
+        DefaultSettings.oilOuterRingSpacingMultiplier;
     _oilTvPremiumHighlight =
         _prefs.getBool(_oilTvPremiumHighlightKey) ??
         (isTv
