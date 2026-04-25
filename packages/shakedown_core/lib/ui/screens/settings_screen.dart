@@ -330,7 +330,11 @@ class _SettingsScreenState extends State<SettingsScreen>
           ),
           DataSection(scaleFactor: scaleFactor),
           AboutSection(scaleFactor: scaleFactor),
-          const SizedBox(height: 50),
+          SizedBox(
+            height: isFruit
+                ? (settingsProvider.carMode ? 220 : 180)
+                : (audioProvider.currentTrack != null ? 160 : 50),
+          ),
         ]),
       ),
     ];

@@ -1,6 +1,6 @@
 name: gdar_mobile
 publish_to: none
-version: 1.4.10+320
+version: 1.4.11+321
 environment:
   sdk: '^3.11.0'
 resolution: workspace

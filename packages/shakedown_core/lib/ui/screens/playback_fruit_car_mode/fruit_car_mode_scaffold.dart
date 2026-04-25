@@ -73,7 +73,7 @@ extension _PlaybackScreenFruitCarModeScaffold on PlaybackScreenState {
                                 'fruit_car_mode_upcoming_scroll',
                               ),
                               padding: EdgeInsets.only(
-                                bottom: 20 * scaleFactor,
+                                bottom: 220 * scaleFactor,
                               ),
                               child: _buildFruitCarModeUpcomingTracks(
                                 context: context,

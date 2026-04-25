@@ -14,6 +14,7 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:shakedown_core/models/rating.dart';
 import 'package:shakedown_core/models/show.dart';
 import 'package:shakedown_core/models/source.dart';
+import 'package:shakedown_core/models/track.dart';
 import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:shakedown_core/providers/update_provider.dart';
@@ -33,6 +34,8 @@ class MockAudioProvider extends ChangeNotifier implements AudioProvider {
   Show? get currentShow => null;
   @override
   bool get isPlaying => false;
+  @override
+  Track? get currentTrack => null;
 
   // Implement other necessary overrides or leave blank if not used by SettingsScreen
   // Using dynamic to bypass strict typing for methods we don't implement fully mock
