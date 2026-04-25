@@ -3,16 +3,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gdar_android/android_theme.dart';
+import 'package:shakedown_core/app/gdar_app_provider_overrides.dart';
+import 'package:shakedown_core/app/gdar_app_providers.dart';
 import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
-import 'package:shakedown_core/providers/update_provider.dart';
 import 'package:shakedown_core/services/audio_cache_service.dart';
-import 'package:shakedown_core/services/catalog_service.dart';
-import 'package:shakedown_core/services/device_service.dart';
-import 'package:shakedown_core/services/wakelock_service.dart';
+import 'package:shakedown_core/services/automation/automation_executor.dart';
+import 'package:shakedown_core/services/automation/automation_step_parser.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
+import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/inactivity_service.dart';
 import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
 import 'package:shakedown_core/ui/navigation/app_route_observer.dart';
@@ -251,12 +252,11 @@ class _GdarTvAppState extends State<GdarTvApp> {
     });
   }
 
-  Future<void> _handleAutomation(List<String> steps) async {
+  Future<void> _handleAutomation(List<String> rawSteps) async {
     final context = _navigatorKey.currentState?.context;
     if (context == null) {
-      // Wait a bit and try again if the navigator isn't ready
       Future.delayed(const Duration(milliseconds: 500), () {
-        _handleAutomation(steps);
+        _handleAutomation(rawSteps);
       });
       return;
     }
@@ -267,21 +267,10 @@ class _GdarTvAppState extends State<GdarTvApp> {
       listen: false,
     );
 
-    for (final step in steps) {
-      final trimmedStep = step.trim();
-      if (trimmedStep == 'dice') {
-        await audioProvider.playRandomShow();
-      } else if (trimmedStep.startsWith('sleep:')) {
-        final seconds = int.tryParse(trimmedStep.split(':')[1]) ?? 0;
-        await Future.delayed(Duration(seconds: seconds));
-      } else if (trimmedStep.startsWith('settings:')) {
-        final parts = trimmedStep.split(':');
-        if (parts.length < 2) continue;
-        final keyValue = parts[1].split('=');
-        if (keyValue.length < 2) continue;
-        final key = keyValue[0];
-        final value = keyValue[1];
-
+    final executor = AutomationExecutor(
+      playRandomShow: audioProvider.playRandomShow,
+      delay: (duration) => Future.delayed(duration),
+      applySetting: (key, value) async {
         if (key == 'oil_enable_audio_reactivity') {
           final target = value == 'true';
           if (settingsProvider.oilEnableAudioReactivity != target) {
@@ -294,57 +283,27 @@ class _GdarTvAppState extends State<GdarTvApp> {
         } else if (key == 'oil_screensaver_mode') {
           await settingsProvider.setOilScreensaverMode(value);
         }
-      } else if (trimmedStep == 'screensaver') {
-        await _launchScreensaver(
-          allowPermissionPrompts: true,
-          source: 'automation',
-        );
-      }
-    }
+      },
+      launchScreensaver: () => _launchScreensaver(
+        allowPermissionPrompts: true,
+        source: 'automation',
+      ),
+    );
+
+    final steps = parseAutomationSteps(rawSteps);
+    await executor.execute(steps);
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider(isTv: widget.isTv)),
-        Provider<CatalogService>(create: (_) => CatalogService()),
-        Provider<WakelockService>(create: (_) => WakelockService()),
-        ChangeNotifierProvider.value(value: _settingsProvider),
-        ChangeNotifierProvider(
-          create: (_) =>
-              widget.audioCacheService ?? (AudioCacheService()..init()),
-        ),
-        ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
-          create: (_) => _showListProvider,
-          update: (_, settingsProvider, showListProvider) =>
-              showListProvider!..update(settingsProvider),
-        ),
-        ChangeNotifierProxyProvider3<
-          ShowListProvider,
-          SettingsProvider,
-          AudioCacheService,
-          AudioProvider
-        >(
-          create: (_) => widget.audioProvider ?? AudioProvider(),
-          update:
-              (
-                _,
-                showListProvider,
-                settingsProvider,
-                audioCacheService,
-                audioProvider,
-              ) => audioProvider!
-                ..update(showListProvider, settingsProvider, audioCacheService),
-        ),
-        ChangeNotifierProvider(create: (_) => UpdateProvider()),
-        ChangeNotifierProvider(
-          create: (_) =>
-              widget.deviceService ??
-              DeviceService(initialIsTv: widget.isTv, lockIsTv: widget.isTv),
-        ),
-        Provider<ScreensaverLaunchDelegate>.value(
-          value: ScreensaverLaunchDelegate(({
+      providers: buildGdarAppProviders(
+        prefs: widget.prefs,
+        isTv: widget.isTv,
+        overrides: GdarAppProviderOverrides(
+          settingsProvider: _settingsProvider,
+          showListProvider: _showListProvider,
+          screensaverLaunchDelegate: ScreensaverLaunchDelegate(({
             bool allowPermissionPrompts = true,
           }) {
             return _launchScreensaver(
@@ -353,7 +312,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
             );
           }),
         ),
-      ],
+      ),
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
           _syncInactivityService(settingsProvider);
