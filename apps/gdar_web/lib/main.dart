@@ -2,15 +2,11 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:shakedown_core/providers/audio_provider.dart';
+import 'package:shakedown_core/app/gdar_app_provider_overrides.dart';
+import 'package:shakedown_core/app/gdar_app_providers.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
-import 'package:shakedown_core/providers/update_provider.dart';
-import 'package:shakedown_core/services/audio_cache_service.dart';
-import 'package:shakedown_core/services/catalog_service.dart';
-import 'package:shakedown_core/services/device_service.dart';
-import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
@@ -137,39 +133,14 @@ class _GdarWebAppState extends State<GdarWebApp> {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider(isTv: _isTv)),
-        Provider<CatalogService>(create: (_) => CatalogService()),
-        Provider<WakelockService>(create: (_) => WakelockService()),
-        ChangeNotifierProvider.value(value: _settingsProvider),
-        ChangeNotifierProvider(create: (_) => AudioCacheService()..init()),
-        ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
-          create: (_) => _showListProvider,
-          update: (_, settingsProvider, showListProvider) =>
-              showListProvider!..update(settingsProvider),
+      providers: buildGdarAppProviders(
+        prefs: widget.prefs,
+        isTv: _isTv,
+        overrides: GdarAppProviderOverrides(
+          settingsProvider: _settingsProvider,
+          showListProvider: _showListProvider,
         ),
-        ChangeNotifierProxyProvider3<
-          ShowListProvider,
-          SettingsProvider,
-          AudioCacheService,
-          AudioProvider
-        >(
-          create: (_) => AudioProvider(),
-          update:
-              (
-                _,
-                showListProvider,
-                settingsProvider,
-                audioCacheService,
-                audioProvider,
-              ) => audioProvider!
-                ..update(showListProvider, settingsProvider, audioCacheService),
-        ),
-        ChangeNotifierProvider(create: (_) => UpdateProvider()),
-        ChangeNotifierProvider(
-          create: (_) => DeviceService(initialIsTv: _isTv),
-        ),
-      ],
+      ),
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
           final isAndroid = themeProvider.themeStyle == ThemeStyle.android;
