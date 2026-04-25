@@ -1,4 +1,13 @@
 <en-US>
+What's new in v1.4.12+322
+• Improved visibility of "Screen On" and "Car Mode" toggles in the Settings header for Web/PWA; added a dot indicator and stronger background contrast for active states.
+• Fixed a layout issue where the bottom of the Settings screen (e.g., Collection Statistics) could be obscured by the tab bar in Fruit car mode.
+• Increased bottom padding for the upcoming tracks list in Fruit car mode playback for better visibility.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.4.11+321
 • Fixed a layout issue where the bottom of the Settings screen (e.g., Collection Statistics) could be obscured by the tab bar in Fruit car mode.
 • Increased bottom padding for the upcoming tracks list in Fruit car mode playback for better visibility.

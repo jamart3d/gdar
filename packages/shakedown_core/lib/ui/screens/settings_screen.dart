@@ -455,9 +455,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             _buildFruitHeaderButton(
               context,
               icon: LucideIcons.monitor,
-              color: settingsProvider.preventSleep
-                  ? Theme.of(context).colorScheme.primary
-                  : null,
+              isActive: settingsProvider.preventSleep,
               semanticLabel: settingsProvider.preventSleep
                   ? 'Disable Keep Screen On'
                   : 'Enable Keep Screen On',
@@ -466,9 +464,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             _buildFruitHeaderButton(
               context,
               icon: LucideIcons.car,
-              color: settingsProvider.carMode
-                  ? Theme.of(context).colorScheme.primary
-                  : null,
+              isActive: settingsProvider.carMode,
               semanticLabel: settingsProvider.carMode
                   ? 'Disable Car Mode'
                   : 'Enable Car Mode',
@@ -533,27 +529,45 @@ class _SettingsScreenState extends State<SettingsScreen>
     BuildContext context, {
     required IconData icon,
     required VoidCallback onPressed,
-    Color? color,
+    bool isActive = false,
     String? tooltip,
     String? semanticLabel,
   }) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final onSurface = Theme.of(context).colorScheme.onSurface;
+
     return SizedBox(
       width: 44,
       height: 44,
-      child: Center(
-        child: FruitSurface(
-          borderRadius: BorderRadius.circular(100),
-          blur: FruitTokens.blurSoft,
-          opacity: FruitTokens.opacitySoft,
-          padding: const EdgeInsets.all(2),
-          child: FruitIconButton(
-            icon: Icon(icon),
-            color: color,
-            onPressed: onPressed,
-            tooltip: tooltip,
-            semanticLabel: semanticLabel,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          FruitSurface(
+            borderRadius: BorderRadius.circular(100),
+            blur: FruitTokens.blurSoft,
+            opacity: isActive ? 1.0 : FruitTokens.opacitySoft,
+            padding: const EdgeInsets.all(2),
+            child: FruitIconButton(
+              icon: Icon(icon),
+              color: isActive ? primary : onSurface.withValues(alpha: 0.6),
+              onPressed: onPressed,
+              tooltip: tooltip,
+              semanticLabel: semanticLabel,
+            ),
           ),
-        ),
+          if (isActive)
+            Positioned(
+              bottom: 4,
+              child: Container(
+                width: 4,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: primary,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
