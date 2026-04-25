@@ -90,12 +90,6 @@ mixin _SettingsProviderScreensaverLoaderExtension
     _oilTrackWordSpacing =
         _prefs.getDouble(_oilTrackWordSpacingKey) ??
         DefaultSettings.oilTrackWordSpacing;
-    _oilInnerRingSpacingMultiplier =
-        _prefs.getDouble(_oilInnerRingSpacingMultiplierKey) ?? 1.0;
-    _oilMiddleRingSpacingMultiplier =
-        _prefs.getDouble(_oilMiddleRingSpacingMultiplierKey) ?? 1.0;
-    _oilOuterRingSpacingMultiplier =
-        _prefs.getDouble(_oilOuterRingSpacingMultiplierKey) ?? 1.0;
     _oilFlatLineSpacing =
         _prefs.getDouble(_oilFlatLineSpacingKey) ??
         DefaultSettings.oilFlatLineSpacing;
