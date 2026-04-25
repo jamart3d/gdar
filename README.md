@@ -192,6 +192,19 @@ For the current release process and notes, see:
 - `docs/WEB_PLAYBACK_DECISION_TREE.md`
 - `apps/gdar_tv/docs/TV_DEBUGGING.md`
 
+## Permissions and Enhanced Audio (Android)
+
+To support high-fidelity visualizers and screensavers on Android 10+, the app utilizes the **Android AudioPlaybackCapture API**.
+
+### Media Projection
+- **Usage**: Required for "Enhanced" and "PCM" beat detection modes.
+- **Why**: High-precision audio reactivity requires access to the raw digital PCM stream. Android requires the user to grant "Media Projection" permission (the same used for screen recording) to access this system-level audio data.
+- **Privacy**: The app **only** captures audio data for real-time visualization analysis; it does not record, store, or transmit any video or audio content.
+
+### Foreground Services
+- **Usage**: `FOREGROUND_SERVICE_MEDIA_PROJECTION`
+- **Why**: Maintains audio processing and visualizer reactivity while the app is in the "Screensaver" state or when the device is docked, ensuring compliance with Android 14+ background execution requirements.
+
 ## Development Notes
 
 - Prefer package imports across package boundaries
