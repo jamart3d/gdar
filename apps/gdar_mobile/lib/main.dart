@@ -7,11 +7,13 @@ import 'package:shakedown_core/providers/audio_provider.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
-import 'package:shakedown_core/providers/update_provider.dart';
+import 'package:shakedown_core/app/gdar_app_provider_overrides.dart';
+import 'package:shakedown_core/app/gdar_app_providers.dart';
+import 'package:shakedown_core/services/automation/automation_executor.dart';
+import 'package:shakedown_core/services/automation/automation_step.dart';
+import 'package:shakedown_core/services/automation/automation_step_parser.dart';
 import 'package:shakedown_core/services/audio_cache_service.dart';
-import 'package:shakedown_core/services/catalog_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
-import 'package:shakedown_core/services/wakelock_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/services/inactivity_service.dart';
 import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
@@ -218,8 +220,8 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
 
       if (uri.scheme == 'shakedown') {
         if (uri.path == 'automate' || uri.host == 'automate') {
-          final steps = uri.queryParameters['steps']?.split(',') ?? [];
-          await _handleAutomation(steps);
+          final rawSteps = uri.queryParameters['steps']?.split(',') ?? <String>[];
+          await _handleAutomation(parseAutomationSteps(rawSteps));
         } else if (uri.host == 'settings') {
           final key = uri.queryParameters['key'];
           final value = uri.queryParameters['value'];
@@ -240,7 +242,7 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
     });
   }
 
-  Future<void> _handleAutomation(List<String> steps) async {
+  Future<void> _handleAutomation(List<AutomationStep> steps) async {
     // Wait for navigator to be ready
     final state = _navigatorKey.currentState;
     if (state == null) {
@@ -258,34 +260,16 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
       listen: false,
     );
 
-    for (final step in steps) {
-      final trimmedStep = step.trim();
-      if (trimmedStep == 'dice') {
-        await audioProvider.playRandomShow();
-      } else if (trimmedStep.startsWith('sleep:')) {
-        final seconds = int.tryParse(trimmedStep.split(':')[1]) ?? 0;
-        await Future.delayed(Duration(seconds: seconds));
-      } else if (trimmedStep.startsWith('settings:')) {
-        final parts = trimmedStep.split(':');
-        if (parts.length < 2) continue;
-        final keyValue = parts[1].split('=');
-        if (keyValue.length < 2) continue;
-        final key = keyValue[0];
-        final value = keyValue[1];
-
-        if (key == 'oil_enable_audio_reactivity') {
-          final target = value == 'true';
-          if (settingsProvider.oilEnableAudioReactivity != target) {
-            await settingsProvider.toggleOilEnableAudioReactivity();
-          }
-        } else if (key == 'oil_audio_graph_mode') {
-          await settingsProvider.setOilAudioGraphMode(value);
-        } else if (key == 'force_tv') {
-          await settingsProvider.setForceTv(value == 'true');
-        } else if (key == 'oil_screensaver_mode') {
-          await settingsProvider.setOilScreensaverMode(value);
-        }
-      } else if (trimmedStep == 'screensaver') {
+    final executor = AutomationExecutor(
+      playRandomShow: audioProvider.playRandomShow,
+      delay: Future<void>.delayed,
+      applySetting:
+          (key, value) => _applyAutomationSetting(
+            settingsProvider: settingsProvider,
+            key: key,
+            value: value,
+          ),
+      launchScreensaver: () async {
         if (widget.isTv) {
           await _launchScreensaver(
             allowPermissionPrompts: true,
@@ -294,61 +278,65 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
         } else if (context.mounted) {
           await ScreensaverScreen.show(context);
         }
+      },
+    );
+
+    await executor.execute(steps);
+  }
+
+  Future<void> _applyAutomationSetting({
+    required SettingsProvider settingsProvider,
+    required String key,
+    required String value,
+  }) async {
+    if (key == 'oil_enable_audio_reactivity') {
+      final target = value == 'true';
+      if (settingsProvider.oilEnableAudioReactivity != target) {
+        await settingsProvider.toggleOilEnableAudioReactivity();
       }
+      return;
+    }
+
+    if (key == 'oil_audio_graph_mode') {
+      await settingsProvider.setOilAudioGraphMode(value);
+      return;
+    }
+
+    if (key == 'force_tv') {
+      await settingsProvider.setForceTv(value == 'true');
+      return;
+    }
+
+    if (key == 'oil_screensaver_mode') {
+      await settingsProvider.setOilScreensaverMode(value);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider(isTv: widget.isTv)),
-        Provider<CatalogService>(create: (_) => CatalogService()),
-        Provider<WakelockService>(create: (_) => WakelockService()),
-        ChangeNotifierProvider.value(value: _settingsProvider),
-        ChangeNotifierProvider(
-          create: (_) =>
-              widget.audioCacheService ?? (AudioCacheService()..init()),
+      providers: buildGdarAppProviders(
+        prefs: widget.prefs,
+        isTv: widget.isTv,
+        overrides: GdarAppProviderOverrides(
+          settingsProvider: _settingsProvider,
+          showListProvider: _showListProvider,
+          audioProvider: widget.audioProvider,
+          audioCacheService: widget.audioCacheService,
+          deviceService: widget.deviceService,
+          screensaverLaunchDelegate:
+              widget.isTv
+                  ? ScreensaverLaunchDelegate(({
+                    bool allowPermissionPrompts = true,
+                  }) {
+                    return _launchScreensaver(
+                      allowPermissionPrompts: allowPermissionPrompts,
+                      source: 'manual',
+                    );
+                  })
+                  : null,
         ),
-        ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
-          create: (_) => _showListProvider,
-          update: (_, settingsProvider, showListProvider) =>
-              showListProvider!..update(settingsProvider),
-        ),
-        ChangeNotifierProxyProvider3<
-          ShowListProvider,
-          SettingsProvider,
-          AudioCacheService,
-          AudioProvider
-        >(
-          create: (_) => widget.audioProvider ?? AudioProvider(),
-          update:
-              (
-                _,
-                showListProvider,
-                settingsProvider,
-                audioCacheService,
-                audioProvider,
-              ) => audioProvider!
-                ..update(showListProvider, settingsProvider, audioCacheService),
-        ),
-        ChangeNotifierProvider(create: (_) => UpdateProvider()),
-        ChangeNotifierProvider(
-          create: (_) =>
-              widget.deviceService ?? DeviceService(initialIsTv: widget.isTv),
-        ),
-        if (widget.isTv)
-          Provider<ScreensaverLaunchDelegate>.value(
-            value: ScreensaverLaunchDelegate(({
-              bool allowPermissionPrompts = true,
-            }) {
-              return _launchScreensaver(
-                allowPermissionPrompts: allowPermissionPrompts,
-                source: 'manual',
-              );
-            }),
-          ),
-      ],
+      ),
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
           _syncInactivityService(settingsProvider);
