@@ -6,7 +6,13 @@ mixin _SettingsProviderInitializationExtension
         _SettingsProviderCoreFields,
         _SettingsProviderWebFields,
         _SettingsProviderScreensaverFields,
-        _SettingsProviderSourceFiltersFields {
+        _SettingsProviderSourceFiltersFields,
+        _SettingsProviderCoreExtension,
+        _SettingsProviderWebExtension,
+        _SettingsProviderScreensaverExtension,
+        _SettingsProviderSourceFiltersExtension,
+        _SettingsProviderPlatformDefaultsExtension,
+        _SettingsProviderThemePresetsExtension {
   SharedPreferences get _prefs;
   bool get isTv;
   void setHiddenSessionPreset(
@@ -16,153 +22,6 @@ mixin _SettingsProviderInitializationExtension
   void setGlowMode(int mode);
   void setHighlightPlayingWithRgb(bool value);
   void _applyWebPlaybackPowerPolicy({required bool persistPrefs});
-
-  void resetAndroidFirstTimeSettings() {
-    _appFont = 'rock_salt';
-    _prefs.setString(_appFontKey, 'rock_salt');
-
-    final lowPower = kIsWeb && isLikelyLowPowerWebDevice();
-    if (lowPower) {
-      _performanceMode = true;
-      _prefs.setBool(_performanceModeKey, true);
-    } else {
-      _performanceMode = false;
-      _prefs.setBool(_performanceModeKey, false);
-      setGlowMode(25);
-      setHighlightPlayingWithRgb(true);
-    }
-
-    _resetWebPlaybackSettings();
-    notifyListeners();
-  }
-
-  void resetFruitFirstTimeSettings() {
-    _fruitDenseList = false;
-    _prefs.setBool(_fruitDenseListKey, false);
-    _fruitFloatingSpheres = false;
-    _prefs.setBool(_fruitFloatingSpheresKey, false);
-    _simpleRandomIcon = false;
-    _prefs.setBool(_simpleRandomIconKey, false);
-    _performanceMode = true;
-    _prefs.setBool(_performanceModeKey, true);
-    _oilBannerGlow = false;
-    _prefs.setBool(_oilBannerGlowKey, false);
-    setGlowMode(0);
-    setHighlightPlayingWithRgb(false);
-
-    if (kIsWeb && isLikelyLowPowerWebDevice()) {
-      _fruitEnableLiquidGlass = false;
-      _prefs.setBool(_fruitEnableLiquidGlassKey, false);
-    }
-
-    _resetWebPlaybackSettings();
-    notifyListeners();
-  }
-
-  void _resetWebPlaybackSettings() {
-    if (!kIsWeb) return;
-
-    final profile = detectWebRuntimeProfile();
-    final isSafari = isSafariWeb();
-
-    switch (profile) {
-      case WebRuntimeProfile.low:
-        setHiddenSessionPreset(
-          HiddenSessionPreset.stability,
-          markPowerProfileCustom: false,
-        );
-        break;
-      case WebRuntimeProfile.pwa:
-        setHiddenSessionPreset(
-          HiddenSessionPreset.balanced,
-          markPowerProfileCustom: false,
-        );
-        break;
-      case WebRuntimeProfile.web:
-        setHiddenSessionPreset(
-          isSafari
-              ? HiddenSessionPreset.stability
-              : HiddenSessionPreset.balanced,
-          markPowerProfileCustom: false,
-        );
-        break;
-      case WebRuntimeProfile.desk:
-        setHiddenSessionPreset(
-          isSafari
-              ? HiddenSessionPreset.balanced
-              : HiddenSessionPreset.maxGapless,
-          markPowerProfileCustom: false,
-        );
-        break;
-    }
-  }
-
-  bool _dBool(bool webVal, bool tvVal, bool phoneVal) {
-    if (isTv) return tvVal;
-    if (kIsWeb) return webVal;
-    return phoneVal;
-  }
-
-  String _dStr(String webVal, String tvVal, String phoneVal) {
-    if (isTv) return tvVal;
-    if (kIsWeb) return webVal;
-    return phoneVal;
-  }
-
-  void _setupUiScaleChannel() {
-    _uiScaleChannel.setMethodCallHandler((call) async {
-      if (call.method != 'setUiScale') return;
-
-      final enabled = call.arguments as bool;
-      if (enabled == _uiScale) return;
-
-      await _setUiScale(enabled);
-      logger.i('SettingsProvider: UI Scale set to $enabled via ADB');
-    });
-  }
-
-  Future<void> _setUiScale(bool enabled) async {
-    _uiScale = enabled;
-    _abbreviateDayOfWeek = enabled;
-    _abbreviateMonth = enabled;
-
-    await _prefs.setBool(_uiScaleKey, enabled);
-    await _prefs.setBool(_abbreviateDayOfWeekKey, _abbreviateDayOfWeek);
-    await _prefs.setBool(_abbreviateMonthKey, _abbreviateMonth);
-    notifyListeners();
-  }
-
-  void _init() {
-    _initializeFirstRunState();
-    _loadCorePreferences();
-    _loadWebPlaybackPreferences();
-    _loadScreensaverPreferences();
-    _loadSourceFilterPreferences();
-  }
-
-  void _initializeFirstRunState() {
-    final firstRunCheckDone = _prefs.getBool('first_run_check_done') ?? false;
-    _uiScale =
-        _prefs.getBool(_uiScaleKey) ?? DefaultSettings.uiScaleDesktopDefault;
-
-    if (firstRunCheckDone) return;
-
-    final views = WidgetsBinding.instance.platformDispatcher.views;
-    if (views.isNotEmpty) {
-      final view = views.first;
-      final physicalWidth = view.physicalSize.width;
-      if (isTv) {
-        _uiScale = false;
-        _prefs.setBool(_uiScaleKey, false);
-      } else if (physicalWidth <= 720) {
-        _uiScale = DefaultSettings.uiScaleMobileDefault;
-        _prefs.setBool(_uiScaleKey, DefaultSettings.uiScaleMobileDefault);
-      }
-    }
-
-    _isFirstRun = true;
-    _prefs.setBool('first_run_check_done', true);
-  }
 
   void _loadCorePreferences() {
     _onboardingCompletedVersion =

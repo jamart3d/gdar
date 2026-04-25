@@ -21,6 +21,10 @@ import 'package:shakedown_core/ui/widgets/backgrounds/floating_spheres_backgroun
 
 part 'settings_provider_core.dart';
 part 'settings_provider_initialization.dart';
+part 'settings_provider_bootstrap.dart';
+part 'settings_provider_theme_presets.dart';
+part 'settings_provider_platform_defaults.dart';
+part 'settings_provider_ui_scale_channel.dart';
 part 'settings_provider_screensaver.dart';
 part 'settings_provider_source_filters.dart';
 part 'settings_provider_web.dart';
@@ -60,7 +64,11 @@ class SettingsProvider extends ChangeNotifier
         _SettingsProviderWebExtension,
         _SettingsProviderScreensaverExtension,
         _SettingsProviderSourceFiltersExtension,
-        _SettingsProviderInitializationExtension {
+        _SettingsProviderPlatformDefaultsExtension,
+        _SettingsProviderThemePresetsExtension,
+        _SettingsProviderInitializationExtension,
+        _SettingsProviderBootstrapExtension,
+        _SettingsProviderUiScaleChannelExtension {
   SettingsProvider(this._prefs, {this.isTv = false}) {
     _init();
     _setupUiScaleChannel();
