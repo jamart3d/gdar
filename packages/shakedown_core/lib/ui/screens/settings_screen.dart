@@ -454,7 +454,9 @@ class _SettingsScreenState extends State<SettingsScreen>
             ),
             _buildFruitHeaderButton(
               context,
-              icon: LucideIcons.monitor,
+              icon: settingsProvider.preventSleep
+                  ? Icons.monitor
+                  : LucideIcons.monitor,
               isActive: settingsProvider.preventSleep,
               semanticLabel: settingsProvider.preventSleep
                   ? 'Disable Keep Screen On'
@@ -463,7 +465,9 @@ class _SettingsScreenState extends State<SettingsScreen>
             ),
             _buildFruitHeaderButton(
               context,
-              icon: LucideIcons.car,
+              icon: settingsProvider.carMode
+                  ? Icons.directions_car_rounded
+                  : LucideIcons.car,
               isActive: settingsProvider.carMode,
               semanticLabel: settingsProvider.carMode
                   ? 'Disable Car Mode'
@@ -539,35 +543,18 @@ class _SettingsScreenState extends State<SettingsScreen>
     return SizedBox(
       width: 44,
       height: 44,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          FruitSurface(
-            borderRadius: BorderRadius.circular(100),
-            blur: FruitTokens.blurSoft,
-            opacity: isActive ? 1.0 : FruitTokens.opacitySoft,
-            padding: const EdgeInsets.all(2),
-            child: FruitIconButton(
-              icon: Icon(icon),
-              color: isActive ? primary : onSurface.withValues(alpha: 0.6),
-              onPressed: onPressed,
-              tooltip: tooltip,
-              semanticLabel: semanticLabel,
-            ),
-          ),
-          if (isActive)
-            Positioned(
-              bottom: 4,
-              child: Container(
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: primary,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-        ],
+      child: FruitSurface(
+        borderRadius: BorderRadius.circular(100),
+        blur: FruitTokens.blurSoft,
+        opacity: isActive ? 1.0 : FruitTokens.opacitySoft,
+        padding: const EdgeInsets.all(2),
+        child: FruitIconButton(
+          icon: Icon(icon),
+          color: isActive ? primary : onSurface.withValues(alpha: 0.6),
+          onPressed: onPressed,
+          tooltip: tooltip,
+          semanticLabel: semanticLabel,
+        ),
       ),
     );
   }
