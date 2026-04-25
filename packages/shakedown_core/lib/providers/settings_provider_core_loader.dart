@@ -9,6 +9,7 @@ mixin _SettingsProviderCoreLoaderExtension
         _SettingsProviderSourceFiltersFields,
         _SettingsProviderPlatformDefaultsExtension {
   SharedPreferences get _prefs;
+  @override
   bool get isTv;
 
   void _loadCorePreferences() {

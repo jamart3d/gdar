@@ -8,6 +8,7 @@ mixin _SettingsProviderThemePresetsExtension
         _SettingsProviderScreensaverFields,
         _SettingsProviderPlatformDefaultsExtension {
   SharedPreferences get _prefs;
+  @override
   bool get isTv;
   void setHiddenSessionPreset(
     HiddenSessionPreset preset, {

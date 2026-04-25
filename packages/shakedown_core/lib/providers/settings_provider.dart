@@ -28,6 +28,7 @@ part 'settings_provider_ui_scale_channel.dart';
 part 'settings_provider_core_loader.dart';
 part 'settings_provider_screensaver_loader.dart';
 part 'settings_provider_source_filter_loader.dart';
+part 'settings_provider_web_loader.dart';
 part 'settings_provider_fields.dart';
 
 part 'settings_provider_screensaver.dart';
@@ -74,6 +75,7 @@ class SettingsProvider extends ChangeNotifier
         _SettingsProviderCoreLoaderExtension,
         _SettingsProviderScreensaverLoaderExtension,
         _SettingsProviderSourceFilterLoaderExtension,
+        _SettingsProviderWebLoaderExtension,
         _SettingsProviderInitializationExtension,
         _SettingsProviderBootstrapExtension,
         _SettingsProviderUiScaleChannelExtension {

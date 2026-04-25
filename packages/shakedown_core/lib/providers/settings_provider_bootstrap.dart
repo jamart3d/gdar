@@ -12,10 +12,17 @@ mixin _SettingsProviderBootstrapExtension
         _SettingsProviderScreensaverExtension,
         _SettingsProviderSourceFiltersExtension,
         _SettingsProviderInitializationExtension,
-        _SettingsProviderThemePresetsExtension {
+        _SettingsProviderThemePresetsExtension,
+        _SettingsProviderCoreLoaderExtension,
+        _SettingsProviderScreensaverLoaderExtension,
+        _SettingsProviderSourceFilterLoaderExtension,
+        _SettingsProviderWebLoaderExtension {
+  @override
   SharedPreferences get _prefs;
+  @override
   bool get isTv;
 
+  @override
   void _init() {
     _initializeFirstRunState();
     _loadCorePreferences();
