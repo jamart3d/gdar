@@ -1,39 +1,5 @@
 part of 'settings_provider.dart';
 
-const String _audioEngineModeKey = 'audio_engine_mode';
-const String _webPrefetchSecondsKey = 'web_prefetch_seconds';
-const String _trackTransitionModeKey = 'track_transition_mode';
-const String _crossfadeDurationSecondsKey = 'crossfade_duration_seconds';
-const String _hybridHandoffModeKey = 'hybrid_handoff_mode';
-const String _hybridBackgroundModeKey = 'hybrid_background_mode';
-const String _allowHiddenWebAudioKey = 'allow_hidden_web_audio';
-const String _usePlayPauseFadeKey = 'use_play_pause_fade';
-const String _handoffCrossfadeMsKey = 'handoff_crossfade_ms';
-const String _hiddenSessionPresetKey = 'hidden_session_preset';
-const String _webEngineProfileInitKey = 'web_engine_profile_init_v1';
-const String _webEngineProfileChoiceKey = 'web_engine_profile_choice';
-const String _webPlaybackPowerProfileKey = 'web_playback_power_profile';
-
-mixin _SettingsProviderWebFields {
-  late AudioEngineMode _audioEngineMode;
-  late int _webPrefetchSeconds;
-  late String _trackTransitionMode;
-  late double _crossfadeDurationSeconds;
-  late HybridHandoffMode _hybridHandoffMode;
-  late HybridBackgroundMode _hybridBackgroundMode;
-  late bool _allowHiddenWebAudio;
-  late bool _usePlayPauseFade;
-  late int _handoffCrossfadeMs;
-  late HiddenSessionPreset _hiddenSessionPreset;
-  late WebEngineProfile _webEngineProfile;
-  late WebPlaybackPowerProfile _webPlaybackPowerProfile;
-  late ResolvedWebPlaybackPowerSource _resolvedWebPlaybackPowerSource;
-  bool? _detectedWebCharging;
-  StreamSubscription<bool?>? _webChargingSubscription;
-  bool _applyingWebPowerPolicy = false;
-  bool _webPowerStateDisposed = false;
-}
-
 mixin _SettingsProviderWebExtension
     on
         ChangeNotifier,

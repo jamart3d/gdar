@@ -1,0 +1,338 @@
+part of 'settings_provider.dart';
+
+const String _trackNumberKey = 'show_track_numbers';
+const String _playOnTapKey = 'play_on_tap';
+const String _showSingleShnidKey = 'show_single_shnid';
+const String _hideTrackDurationKey = 'hide_track_duration';
+const String _playRandomOnCompletionKey = 'play_random_on_completion';
+const String _nonRandomKey = 'non_random';
+const String _playRandomOnStartupKey = 'play_random_on_startup';
+const String _dateFirstInShowCardKey = 'date_first_in_show_card';
+const String _useDynamicColorKey = 'use_dynamic_color';
+const String _useTrueBlackKey = 'use_true_black';
+const String _appFontKey = 'app_font';
+const String _showDayOfWeekKey = 'show_day_of_week';
+const String _abbreviateDayOfWeekKey = 'abbreviate_day_of_week';
+const String _abbreviateMonthKey = 'abbreviate_month';
+const String _useNeumorphismKey = 'use_neumorphism';
+const String _fruitEnableLiquidGlassKey = 'fruit_enable_liquid_glass';
+const String _neumorphicStyleKey = 'neumorphic_style';
+const String _performanceModeKey = 'performance_mode';
+const String _uiScaleKey = 'ui_scale';
+const String _settingsScreenUiScaleKey = 'settings_screen_ui_scale';
+const String _carModeKey = 'car_mode';
+const String _fruitFloatingSpheresKey = 'fruit_floating_spheres';
+const String _seedColorKey = 'seed_color';
+const String _glowModeKey = 'glow_mode';
+const String _showGlowBorderKey = 'show_glow_border';
+const String _halfGlowDynamicKey = 'half_glow_dynamic';
+const String _highlightPlayingWithRgbKey = 'highlight_playing_with_rgb';
+const String _showPlaybackMessagesKey = 'show_playback_messages';
+const String _showDevAudioHudKey = 'show_dev_audio_hud';
+const String _devHudModeKey = 'dev_hud_mode';
+const String _devAudioHudSnapshotKey = 'dev_audio_hud_snapshot';
+const String _sortOldestFirstKey = 'sort_oldest_first';
+const String _useStrictSrcCategorizationKey = 'use_strict_src_categorization';
+const String _offlineBufferingKey = 'offline_buffering';
+const String _enableBufferAgentKey = 'enable_buffer_agent';
+const String _preventSleepKey = 'prevent_sleep';
+const String _simpleRandomIconKey = 'simple_random_icon';
+const String _fruitDenseListKey = 'fruit_dense_list';
+const String _fruitStickyNowPlayingKey = 'fruit_sticky_now_playing';
+const String _markPlayedOnStartKey = 'mark_played_on_start';
+const String _hideTvScrollbarsKey = 'hide_tv_scrollbars';
+const String _marqueeEnabledKey = 'marquee_enabled';
+const String _enableSwipeToBlockKey = 'enable_swipe_to_block';
+const String _hideTabTextKey = 'hide_tab_text';
+const String _omitHttpPathInCopyKey = 'omit_http_path_in_copy';
+const String _showSplashScreenKey = 'show_splash_screen';
+const String _forceTvKey = 'force_tv';
+const String _enableHapticsKey = 'enable_haptics';
+const String _resumeSourceIdKey = 'resume_source_id';
+const String _resumeTrackIndexKey = 'resume_track_index';
+const String _resumePositionMsKey = 'resume_position_ms';
+const String _onboardingCompletedVersionKey = 'onboarding_completed_version';
+const int kCurrentOnboardingVersion = 1;
+const String _showDebugLayoutKey = 'show_debug_layout';
+const String _enableShakedownTweenKey = 'enable_shakedown_tween';
+const String _rgbAnimationSpeedKey = 'rgb_animation_speed';
+const String _enableTvBackgroundSpheresKey = 'enable_tv_background_spheres';
+const String _tvBackgroundSphereAmountKey = 'tv_background_sphere_amount';
+const MethodChannel _uiScaleChannel = MethodChannel(
+  'com.jamart3d.shakedown/ui_scale',
+);
+
+mixin _SettingsProviderCoreFields {
+  String _appFont = 'default';
+  late bool _showSplashScreen;
+  bool _isFirstRun = false;
+  int _onboardingCompletedVersion = 0;
+
+  late bool _showTrackNumbers;
+  late bool _hideTrackDuration;
+  late bool _playOnTap;
+  late bool _showSingleShnid;
+  late bool _playRandomOnCompletion;
+  late bool _nonRandom;
+  late bool _playRandomOnStartup;
+  late bool _dateFirstInShowCard;
+  late bool _useDynamicColor;
+  late bool _useTrueBlack;
+  late bool _uiScale;
+  late bool _settingsScreenUiScale;
+  late bool _carMode;
+  late bool _fruitFloatingSpheres;
+  late int _glowMode;
+  late bool _highlightPlayingWithRgb;
+  late bool _showPlaybackMessages;
+  late bool _showDevAudioHud;
+  late DevHudMode _devHudMode;
+  String _devAudioHudSnapshot = '';
+  late bool _sortOldestFirst;
+  late bool _useStrictSrcCategorization;
+  late bool _offlineBuffering;
+  late bool _enableBufferAgent;
+  late bool _showDayOfWeek;
+  late bool _abbreviateDayOfWeek;
+  late bool _abbreviateMonth;
+  late bool _simpleRandomIcon;
+  late bool _fruitDenseList;
+  late bool _marqueeEnabled;
+  late bool _enableSwipeToBlock;
+  late bool _hideTabText;
+  late bool _omitHttpPathInCopy;
+  late bool _useNeumorphism;
+  late bool _fruitEnableLiquidGlass;
+  late NeumorphicStyle _neumorphicStyle;
+  late bool _performanceMode;
+  late bool _forceTv;
+  late bool _enableHaptics;
+  late bool _fruitStickyNowPlaying;
+  late bool _markPlayedOnStart;
+  late bool _hideTvScrollbars;
+  late bool _enableTvBackgroundSpheres;
+  late String _tvBackgroundSphereAmount;
+
+  Color? _seedColor;
+  bool _hasShownAdvancedCacheSuggestion = false;
+  late bool _showDebugLayout;
+  late bool _enableShakedownTween;
+  bool _debugPaintSizeEnabled = true;
+  double _rgbAnimationSpeed = 1.0;
+}
+
+const String _useOilScreensaverKey = 'use_oil_screensaver';
+const String _oilScreensaverModeKey = 'oil_screensaver_mode';
+const String _oilScreensaverInactivityMinutesKey =
+    'oil_screensaver_inactivity_minutes';
+const String _oilFlowSpeedKey = 'oil_flow_speed';
+const String _oilPulseIntensityKey = 'oil_pulse_intensity';
+const String _oilPaletteKey = 'oil_palette';
+const String _oilFilmGrainKey = 'oil_film_grain';
+const String _oilHeatDriftKey = 'oil_heat_drift';
+const String _oilTranslationSmoothingKey = 'oil_translation_smoothing';
+const String _oilBlurAmountKey = 'oil_blur_amount';
+const String _oilFlatColorKey = 'oil_flat_color';
+const String _oilBannerGlowKey = 'oil_banner_glow';
+const String _oilBannerFlickerKey = 'oil_banner_flicker';
+const String _oilBannerGlowBlurKey = 'oil_banner_glow_blur';
+const String _oilEnableAudioReactivityKey = 'oil_enable_audio_reactivity';
+const String _oilPerformanceLevelKey = 'oil_performance_level';
+const String _oilPaletteCycleKey = 'oil_palette_cycle';
+const String _oilPaletteTransitionSpeedKey = 'oil_palette_transition_speed';
+const String _oilBannerDisplayModeKey = 'oil_banner_display_mode';
+const String _oilBannerFontKey = 'oil_banner_font';
+const String _oilFlatTextProximityKey = 'oil_flat_text_proximity';
+const String _oilFlatTextPlacementKey = 'oil_flat_text_placement';
+const String _oilBannerResolutionKey = 'oil_banner_resolution';
+const String _oilBannerPixelSnapKey = 'oil_banner_pixel_snap';
+const String _oilAutoTextSpacingKey = 'oil_auto_text_spacing';
+const String _oilAutoRingSpacingKey = 'oil_auto_ring_spacing';
+const String _oilLogoTrailIntensityKey = 'oil_logo_trail_intensity';
+const String _oilLogoTrailSlicesKey = 'oil_logo_trail_slices';
+const String _oilLogoTrailLengthKey = 'oil_logo_trail_length';
+const String _oilLogoTrailScaleKey = 'oil_logo_trail_scale';
+const String _oilLogoTrailInitialScaleKey = 'oil_logo_trail_initial_scale';
+const String _oilAudioPeakDecayKey = 'oil_audio_peak_decay';
+const String _oilAudioBassBoostKey = 'oil_audio_bass_boost';
+const String _oilLogoTrailDynamicKey = 'oil_logo_trail_dynamic';
+const String _oilAudioReactivityStrengthKey = 'oil_audio_reactivity_strength';
+const String _oilAudioGraphModeKey = 'oil_audio_graph_mode';
+const String _oilEkgRadiusKey = 'oil_ekg_radius';
+const String _oilEkgReplicationKey = 'oil_ekg_replication';
+const String _oilEkgSpreadKey = 'oil_ekg_spread';
+const String _oilBeatDetectorModeKey = 'oil_beat_detector_mode';
+const String _oilAutocorrBeatVariantKey = 'oil_autocorr_beat_variant';
+const String _oilAutocorrLogoVariantKey = 'oil_autocorr_logo_variant';
+const String _oilBeatSensitivityKey = 'oil_beat_sensitivity';
+const String _oilBeatImpactKey = 'oil_beat_impact';
+const String _oilShowInfoBannerKey = 'oil_show_info_banner';
+const String _oilLogoScaleKey = 'oil_logo_scale';
+const String _oilBannerLetterSpacingKey = 'oil_banner_letter_spacing';
+const String _oilBannerWordSpacingKey = 'oil_banner_word_spacing';
+const String _oilTrackLetterSpacingKey = 'oil_track_letter_spacing';
+const String _oilTrackWordSpacingKey = 'oil_track_word_spacing';
+const String _oilFlatLineSpacingKey = 'oil_flat_line_spacing';
+const String _oilLogoAntiAliasKey = 'oil_logo_anti_alias';
+const String _oilInnerRingScaleKey = 'oil_inner_ring_scale';
+const String _oilInnerToMiddleGapKey = 'oil_inner_to_middle_gap';
+const String _oilMiddleToOuterGapKey = 'oil_middle_to_outer_gap';
+const String _oilOrbitDriftKey = 'oil_orbit_drift';
+const String _oilInnerRingFontScaleKey = 'oil_inner_ring_font_scale';
+const String _oilInnerRingSpacingMultiplierKey =
+    'oil_inner_ring_spacing_multiplier';
+const String _oilMiddleRingSpacingMultiplierKey =
+    'oil_middle_ring_spacing_multiplier';
+const String _oilOuterRingSpacingMultiplierKey =
+    'oil_outer_ring_spacing_multiplier';
+const String _oilMiddleRingFontScaleKey = 'oil_middle_ring_font_scale';
+const String _oilOuterRingFontScaleKey = 'oil_outer_ring_font_scale';
+const String _oilScaleSourceKey = 'oil_scale_source';
+const String _oilScaleMultiplierKey = 'oil_scale_multiplier';
+const String _oilScaleSineEnabledKey = 'oil_scale_sine_enabled';
+const String _oilScaleSineFreqKey = 'oil_scale_sine_freq';
+const String _oilScaleSineAmpKey = 'oil_scale_sine_amp';
+const String _oilColorSourceKey = 'oil_color_source';
+const String _oilColorMultiplierKey = 'oil_color_multiplier';
+const String _oilWoodstockEveryHourKey = 'oil_woodstock_every_hour';
+const String _oilTvPremiumHighlightKey = 'oil_tv_premium_highlight';
+const String _showScreensaverCountdownKey = 'show_screensaver_countdown';
+const String _oilPreviewShowGraphKey = 'oil_preview_show_graph';
+const String _beatAutocorrSecondPassKey = 'beat_autocorr_second_pass';
+const String _beatAutocorrSecondPassHqKey = 'beat_autocorr_second_pass_hq';
+
+mixin _SettingsProviderScreensaverFields {
+  late bool _useOilScreensaver;
+  late String _oilScreensaverMode;
+  late int _oilScreensaverInactivityMinutes;
+  late double _oilFlowSpeed;
+  late double _oilPulseIntensity;
+  late String _oilPalette;
+  late double _oilFilmGrain;
+  late double _oilHeatDrift;
+  late bool _oilEnableAudioReactivity;
+  late bool _preventSleep;
+  late int _oilPerformanceLevel;
+  late bool _oilPaletteCycle;
+  late double _oilPaletteTransitionSpeed;
+  late String _oilBannerDisplayMode;
+  late String _oilBannerFont;
+  late double _oilFlatTextProximity;
+  late String _oilFlatTextPlacement;
+  late double _oilBannerResolution;
+  late bool _oilBannerPixelSnap;
+  late bool _oilAutoTextSpacing;
+  late bool _oilAutoRingSpacing;
+  late double _oilBannerLetterSpacing;
+  late double _oilBannerWordSpacing;
+  late double _oilTrackLetterSpacing;
+  late double _oilTrackWordSpacing;
+  late double _oilFlatLineSpacing;
+  late double _oilLogoTrailIntensity;
+  late int _oilLogoTrailSlices;
+  late bool _oilLogoTrailDynamic;
+  late double _oilLogoTrailLength;
+  late double _oilLogoTrailScale;
+  late double _oilLogoTrailInitialScale;
+  late double _oilAudioPeakDecay;
+  late double _oilAudioBassBoost;
+  late double _oilAudioReactivityStrength;
+  late String _oilAudioGraphMode;
+  late double _oilEkgRadius;
+  late int _oilEkgReplication;
+  late double _oilEkgSpread;
+  late String _oilBeatDetectorMode;
+  late String _oilAutocorrBeatVariant;
+  late String _oilAutocorrLogoVariant;
+  late double _oilBeatSensitivity;
+  late double _oilBeatImpact;
+  late bool _oilShowInfoBanner;
+  late double _oilLogoScale;
+  late double _oilTranslationSmoothing;
+  late double _oilBlurAmount;
+  late bool _oilFlatColor;
+  late bool _oilBannerGlow;
+  late double _oilBannerFlicker;
+  late double _oilBannerGlowBlur;
+  late bool _oilLogoAntiAlias;
+  late bool _oilPreviewShowGraph;
+  late double _oilInnerRingScale;
+  late double _oilInnerToMiddleGap;
+  late double _oilMiddleToOuterGap;
+  late double _oilOrbitDrift;
+  late double _oilInnerRingFontScale;
+  late double _oilMiddleRingFontScale;
+  late double _oilOuterRingFontScale;
+  late double _oilInnerRingSpacingMultiplier;
+  late double _oilMiddleRingSpacingMultiplier;
+  late double _oilOuterRingSpacingMultiplier;
+  late bool _oilTvPremiumHighlight;
+  late int _oilScaleSource;
+  late double _oilScaleMultiplier;
+  late int _oilColorSource;
+  late double _oilColorMultiplier;
+  late bool _oilWoodstockEveryHour;
+  late bool _oilScaleSineEnabled;
+  late double _oilScaleSineFreq;
+  late double _oilScaleSineAmp;
+  late bool _showScreensaverCountdown;
+  late bool _beatAutocorrSecondPass;
+  late bool _beatAutocorrSecondPassHq;
+}
+
+const String _audioEngineModeKey = 'audio_engine_mode';
+const String _webPrefetchSecondsKey = 'web_prefetch_seconds';
+const String _trackTransitionModeKey = 'track_transition_mode';
+const String _crossfadeDurationSecondsKey = 'crossfade_duration_seconds';
+const String _hybridHandoffModeKey = 'hybrid_handoff_mode';
+const String _hybridBackgroundModeKey = 'hybrid_background_mode';
+const String _allowHiddenWebAudioKey = 'allow_hidden_web_audio';
+const String _usePlayPauseFadeKey = 'use_play_pause_fade';
+const String _handoffCrossfadeMsKey = 'handoff_crossfade_ms';
+const String _hiddenSessionPresetKey = 'hidden_session_preset';
+const String _webEngineProfileInitKey = 'web_engine_profile_init_v1';
+const String _webEngineProfileChoiceKey = 'web_engine_profile_choice';
+const String _webPlaybackPowerProfileKey = 'web_playback_power_profile';
+
+mixin _SettingsProviderWebFields {
+  late AudioEngineMode _audioEngineMode;
+  late int _webPrefetchSeconds;
+  late String _trackTransitionMode;
+  late double _crossfadeDurationSeconds;
+  late HybridHandoffMode _hybridHandoffMode;
+  late HybridBackgroundMode _hybridBackgroundMode;
+  late bool _allowHiddenWebAudio;
+  late bool _usePlayPauseFade;
+  late int _handoffCrossfadeMs;
+  late HiddenSessionPreset _hiddenSessionPreset;
+  late WebEngineProfile _webEngineProfile;
+  late WebPlaybackPowerProfile _webPlaybackPowerProfile;
+  late ResolvedWebPlaybackPowerSource _resolvedWebPlaybackPowerSource;
+  bool? _detectedWebCharging;
+  StreamSubscription<bool?>? _webChargingSubscription;
+  bool _applyingWebPowerPolicy = false;
+  bool _webPowerStateDisposed = false;
+}
+
+const String _randomOnlyUnplayedKey = 'random_only_unplayed';
+const String _randomOnlyHighRatedKey = 'random_only_high_rated';
+const String _randomExcludePlayedKey = 'random_exclude_played';
+const String _filterHighestShnidKey = 'filter_highest_shnid';
+const String _sourceCategoryFiltersKey = 'source_category_filters';
+const String _webSourceFiltersInitKey = 'web_source_filters_init_v1';
+
+mixin _SettingsProviderSourceFiltersFields {
+  bool _randomOnlyUnplayed = false;
+  bool _randomOnlyHighRated = false;
+  bool _randomExcludePlayed = false;
+  bool _filterHighestShnid = false;
+  Map<String, bool> _sourceCategoryFilters = {
+    'matrix': true,
+    'ultra': false,
+    'betty': false,
+    'sbd': false,
+    'fm': false,
+    'dsbd': false,
+    'unk': false,
+  };
+}

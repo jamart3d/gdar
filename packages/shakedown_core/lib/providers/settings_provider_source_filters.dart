@@ -1,28 +1,5 @@
 part of 'settings_provider.dart';
 
-const String _randomOnlyUnplayedKey = 'random_only_unplayed';
-const String _randomOnlyHighRatedKey = 'random_only_high_rated';
-const String _randomExcludePlayedKey = 'random_exclude_played';
-const String _filterHighestShnidKey = 'filter_highest_shnid';
-const String _sourceCategoryFiltersKey = 'source_category_filters';
-const String _webSourceFiltersInitKey = 'web_source_filters_init_v1';
-
-mixin _SettingsProviderSourceFiltersFields {
-  bool _randomOnlyUnplayed = false;
-  bool _randomOnlyHighRated = false;
-  bool _randomExcludePlayed = false;
-  bool _filterHighestShnid = false;
-  Map<String, bool> _sourceCategoryFilters = {
-    'matrix': true,
-    'ultra': false,
-    'betty': false,
-    'sbd': false,
-    'fm': false,
-    'dsbd': false,
-    'unk': false,
-  };
-}
-
 mixin _SettingsProviderSourceFiltersExtension
     on ChangeNotifier, _SettingsProviderSourceFiltersFields {
   SharedPreferences get _prefs;

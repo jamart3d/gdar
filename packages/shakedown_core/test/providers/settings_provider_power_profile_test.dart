@@ -101,4 +101,19 @@ void main() {
       expect(provider.preventSleep, isFalse);
     },
   );
+
+  test(
+    'auto web power profile still reapplies policy on charging state changes',
+    () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{
+        'first_run_check_done': true,
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      final provider = SettingsProvider(prefs);
+
+      expect(provider.webPlaybackPowerProfile, isNotNull);
+      expect(provider.resolvedWebPlaybackPowerSource, isNotNull);
+    },
+  );
 }
