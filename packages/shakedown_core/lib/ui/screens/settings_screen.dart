@@ -466,7 +466,7 @@ class _SettingsScreenState extends State<SettingsScreen>
             _buildFruitHeaderButton(
               context,
               icon: settingsProvider.carMode
-                  ? Icons.directions_car_rounded
+                  ? Icons.directions_car_filled
                   : LucideIcons.car,
               isActive: settingsProvider.carMode,
               semanticLabel: settingsProvider.carMode
@@ -551,6 +551,7 @@ class _SettingsScreenState extends State<SettingsScreen>
         child: FruitIconButton(
           icon: Icon(icon),
           color: isActive ? primary : onSurface.withValues(alpha: 0.6),
+          fill: isActive ? 1.0 : 0.0,
           onPressed: onPressed,
           tooltip: tooltip,
           semanticLabel: semanticLabel,

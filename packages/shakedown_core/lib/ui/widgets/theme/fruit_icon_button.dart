@@ -12,6 +12,7 @@ class FruitIconButton extends StatefulWidget {
   final Color? color;
   final double size;
   final double padding;
+  final double? fill;
 
   const FruitIconButton({
     super.key,
@@ -22,6 +23,7 @@ class FruitIconButton extends StatefulWidget {
     this.color,
     this.size = 24.0,
     this.padding = 8.0,
+    this.fill,
   });
 
   @override
@@ -44,7 +46,11 @@ class _FruitIconButtonState extends State<FruitIconButton> {
     Widget content = Padding(
       padding: EdgeInsets.all(widget.padding),
       child: IconTheme(
-        data: IconThemeData(color: effectiveColor, size: widget.size),
+        data: IconThemeData(
+          color: effectiveColor,
+          size: widget.size,
+          fill: widget.fill,
+        ),
         child: widget.icon,
       ),
     );
