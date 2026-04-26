@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:shakedown_core/services/automation/automation_step.dart';
 
 typedef AutomationDelay = Future<void> Function(Duration duration);
-typedef ApplyAutomationSetting = Future<void> Function(String key, String value);
+typedef ApplyAutomationSetting =
+    Future<void> Function(String key, String value);
 typedef LaunchAutomationScreensaver = Future<void> Function();
 
 class AutomationExecutor {

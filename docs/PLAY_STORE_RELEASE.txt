@@ -1,4 +1,13 @@
 <en-US>
+What's new in v1.4.15+325
+• Refactor: Decoupled `SettingsProvider` initialization into granular, domain-specific loaders (Core, Web, Screensaver, Source Filters).
+• Bug Fix: Restored missing ring spacing multiplier initializations in the screensaver loader.
+• Security: Hardened Android Manifest by disabling cleartext traffic.
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.4.14+324
 • Maintenance: General maintenance and version synchronization.
 </en-US>

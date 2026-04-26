@@ -1,11 +1,22 @@
 {
   "mcpServers": {
     "sequential-thinking": {
-      "command": "npx",
+      "command": "cmd",
       "args": [
+        "/c",
+        "npx",
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "dart-mcp-server": {
+      "command": "dart",
+      "args": [
+        "mcp-server",
+        "--force-roots-fallback",
+        "C:\\Users\\jeff\\StudioProjects\\gdar"
       ]
     }
   }
 }
+

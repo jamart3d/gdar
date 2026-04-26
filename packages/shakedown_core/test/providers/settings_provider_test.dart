@@ -14,21 +14,24 @@ void main() {
   });
 
   group('Initialization', () {
-    test('car mode still forces dependent settings during initialization', () async {
-      SharedPreferences.setMockInitialValues(<String, Object>{
-        'first_run_check_done': true,
-        'car_mode': true,
-        'ui_scale': true,
-      });
-      final prefs = await SharedPreferences.getInstance();
+    test(
+      'car mode still forces dependent settings during initialization',
+      () async {
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'first_run_check_done': true,
+          'car_mode': true,
+          'ui_scale': true,
+        });
+        final prefs = await SharedPreferences.getInstance();
 
-      final provider = SettingsProvider(prefs);
+        final provider = SettingsProvider(prefs);
 
-      expect(provider.carMode, isTrue);
-      expect(provider.uiScale, isFalse);
-      expect(provider.showDayOfWeek, isFalse);
-      expect(provider.settingsScreenUiScale, isTrue);
-    });
+        expect(provider.carMode, isTrue);
+        expect(provider.uiScale, isFalse);
+        expect(provider.showDayOfWeek, isFalse);
+        expect(provider.settingsScreenUiScale, isTrue);
+      },
+    );
   });
 
   group('SettingsProvider Shakedown Tween', () {

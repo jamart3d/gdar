@@ -12,11 +12,13 @@ export 'providers/settings_provider.dart';
 export 'providers/show_list_provider.dart';
 export 'providers/theme_provider.dart';
 export 'providers/update_provider.dart';
+export 'app/gdar_app_lifecycle_mixin.dart';
 
 // Services
 export 'services/catalog_service.dart';
 export 'services/audio_cache_service.dart';
 export 'services/device_service.dart';
+export 'services/deep_link_service.dart';
 export 'services/song_structure_hint_service.dart';
 
 // UI Screens
@@ -24,6 +26,8 @@ export 'ui/screens/show_list_screen.dart';
 export 'ui/screens/playback_screen.dart';
 export 'ui/screens/onboarding_screen.dart';
 export 'ui/screens/settings_screen.dart';
+export 'ui/screens/splash_screen.dart';
+export 'ui/screens/screensaver_screen.dart';
 
 // UI Widgets
 export 'ui/widgets/show_list/animated_dice_icon.dart';

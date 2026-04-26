@@ -3,23 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gdar_android/android_theme.dart';
+import 'package:shakedown_core/shakedown_core.dart';
 import 'package:shakedown_core/app/gdar_app_provider_overrides.dart';
 import 'package:shakedown_core/app/gdar_app_providers.dart';
-import 'package:shakedown_core/providers/audio_provider.dart';
-import 'package:shakedown_core/providers/settings_provider.dart';
-import 'package:shakedown_core/providers/show_list_provider.dart';
-import 'package:shakedown_core/providers/theme_provider.dart';
-import 'package:shakedown_core/services/audio_cache_service.dart';
-import 'package:shakedown_core/services/automation/automation_executor.dart';
-import 'package:shakedown_core/services/automation/automation_step_parser.dart';
-import 'package:shakedown_core/services/deep_link_service.dart';
-import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/inactivity_service.dart';
 import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
 import 'package:shakedown_core/ui/navigation/app_route_observer.dart';
-import 'package:shakedown_core/ui/navigation/route_names.dart';
-import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
-import 'package:shakedown_core/ui/screens/splash_screen.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/asset_constants.dart';
@@ -88,41 +77,18 @@ class GdarTvApp extends StatefulWidget {
   State<GdarTvApp> createState() => _GdarTvAppState();
 }
 
-class _GdarTvAppState extends State<GdarTvApp> {
+class _GdarTvAppState extends State<GdarTvApp>
+    with GdarAppLifecycleMixin<GdarTvApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
-  late final InactivityService _inactivityService;
-  DeepLinkService? _deepLinkService;
-  StreamSubscription? _linkSubscription;
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  bool get isTv => widget.isTv;
+
+  @override
+  SettingsProvider get settingsProvider => _settingsProvider;
+
   late final _TvNavigationObserver _navigationObserver;
-  bool _isScreensaverActive = false;
-  String? _currentRouteName;
-
-  void _setScreensaverActive(bool active) {
-    if (!mounted) {
-      _isScreensaverActive = active;
-      return;
-    }
-    setState(() {
-      _isScreensaverActive = active;
-    });
-  }
-
-  void _handleRouteChanged(Route<dynamic>? route) {
-    final name = route?.settings.name;
-    // Preserve the last known name so anonymous routes (popups, dialogs)
-    // don't accidentally clear the current screen context.
-    if (name != null && name != _currentRouteName) {
-      debugPrint('GdarTvApp: route changed name=$name');
-      _currentRouteName = name;
-      // Defer setState — NavigatorObserver callbacks fire during the navigation
-      // frame and calling setState directly here triggers a framework assertion.
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() {});
-      });
-    }
-  }
 
   @override
   void initState() {
@@ -131,167 +97,21 @@ class _GdarTvAppState extends State<GdarTvApp> {
         widget.settingsProvider ??
         SettingsProvider(widget.prefs, isTv: widget.isTv);
     _showListProvider = widget.showListProvider ?? ShowListProvider();
-    _inactivityService = InactivityService(
-      onInactivityTimeout: _handleInactivityTimeout,
-      initialDuration: Duration(
-        minutes: _settingsProvider.oilScreensaverInactivityMinutes,
-      ),
-    );
-    _navigationObserver = _TvNavigationObserver(_handleRouteChanged);
-
-    ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
-
     if (widget.showListProvider == null) {
       _showListProvider.init(widget.prefs);
     }
-    if (widget.enableDeepLinks) {
-      _initDeepLinks();
-    }
+
+    _navigationObserver = _TvNavigationObserver(handleRouteChanged);
+
+    ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
+
+    initLifecycle(enableDeepLinks: widget.enableDeepLinks);
   }
 
   @override
   void dispose() {
-    _inactivityService.dispose();
-    _linkSubscription?.cancel();
-    _deepLinkService?.dispose();
+    disposeLifecycle();
     super.dispose();
-  }
-
-  Future<void> _launchScreensaver({
-    required bool allowPermissionPrompts,
-    required String source,
-  }) async {
-    if (!mounted) {
-      return;
-    }
-
-    // Guard: don't double-launch if screensaver is already active.
-    if (_isScreensaverActive) {
-      return;
-    }
-
-    final navigator = _navigatorKey.currentState;
-    if (navigator == null) {
-      return;
-    }
-
-    final settings = _settingsProvider;
-    final enhancedEligible =
-        settings.oilEnableAudioReactivity &&
-        settings.oilBeatDetectorMode == 'pcm';
-    logger.i(
-      'Launching screensaver from $source '
-      '(allowPermissionPrompts=$allowPermissionPrompts, '
-      'audioReactivity=${settings.oilEnableAudioReactivity}, '
-      'beatDetectorMode=${settings.oilBeatDetectorMode}, '
-      'audioGraphMode=${settings.oilAudioGraphMode}, '
-      'enhancedEligible=$enhancedEligible, '
-      'useOilScreensaver=${settings.useOilScreensaver})',
-    );
-    _inactivityService.stop();
-    _setScreensaverActive(true);
-    try {
-      // Yield to the event loop before pushing so we don't hit the navigator
-      // lock assertion when the inactivity timer fires during a route animation.
-      await Future.delayed(Duration.zero);
-      if (!mounted || !_isScreensaverActive) return;
-      await navigator.push(
-        ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
-      );
-    } on Exception catch (e) {
-      logger.e('Screensaver launch failed', error: e);
-    } catch (e) {
-      logger.e('Screensaver launch failed', error: e);
-    } finally {
-      _setScreensaverActive(false);
-      // Restart monitoring after screensaver exits.
-      if (_settingsProvider.useOilScreensaver) {
-        _inactivityService.start();
-      }
-    }
-  }
-
-  Future<void> _handleInactivityTimeout() {
-    return _launchScreensaver(allowPermissionPrompts: false, source: 'timeout');
-  }
-
-  void _syncInactivityService(SettingsProvider settingsProvider) {
-    _inactivityService.updateDuration(
-      Duration(minutes: settingsProvider.oilScreensaverInactivityMinutes),
-    );
-
-    final isOnBlockedRoute =
-        _currentRouteName == ShakedownRouteNames.tvSettings;
-
-    if (settingsProvider.useOilScreensaver &&
-        !_isScreensaverActive &&
-        !isOnBlockedRoute) {
-      _inactivityService.start();
-    } else {
-      _inactivityService.stop();
-    }
-  }
-
-  void _initDeepLinks() {
-    _deepLinkService = widget.deepLinkService ?? DeepLinkService();
-    _deepLinkService!.init();
-
-    _linkSubscription = _deepLinkService!.uriStream.listen((Uri? uri) {
-      if (uri == null) return;
-
-      if (uri.scheme == 'shakedown') {
-        if (uri.path == 'automate') {
-          final steps = uri.queryParameters['steps']?.split(',') ?? [];
-          _handleAutomation(steps);
-        } else if (uri.host == 'automate') {
-          // Handle shakedown://automate?steps=...
-          final steps = uri.queryParameters['steps']?.split(',') ?? [];
-          _handleAutomation(steps);
-        }
-      }
-    });
-  }
-
-  Future<void> _handleAutomation(List<String> rawSteps) async {
-    final context = _navigatorKey.currentState?.context;
-    if (context == null) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        _handleAutomation(rawSteps);
-      });
-      return;
-    }
-
-    final audioProvider = Provider.of<AudioProvider>(context, listen: false);
-    final settingsProvider = Provider.of<SettingsProvider>(
-      context,
-      listen: false,
-    );
-
-    final executor = AutomationExecutor(
-      playRandomShow: audioProvider.playRandomShow,
-      delay: (duration) => Future.delayed(duration),
-      applySetting: (key, value) async {
-        if (key == 'oil_enable_audio_reactivity') {
-          final target = value == 'true';
-          if (settingsProvider.oilEnableAudioReactivity != target) {
-            await settingsProvider.toggleOilEnableAudioReactivity();
-          }
-        } else if (key == 'oil_audio_graph_mode') {
-          await settingsProvider.setOilAudioGraphMode(value);
-        } else if (key == 'force_tv') {
-          await settingsProvider.setForceTv(value == 'true');
-        } else if (key == 'oil_screensaver_mode') {
-          await settingsProvider.setOilScreensaverMode(value);
-        }
-      },
-      launchScreensaver: () => _launchScreensaver(
-        allowPermissionPrompts: true,
-        source: 'automation',
-      ),
-    );
-
-    final steps = parseAutomationSteps(rawSteps);
-    await executor.execute(steps);
   }
 
   @override
@@ -306,7 +126,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
           screensaverLaunchDelegate: ScreensaverLaunchDelegate(({
             bool allowPermissionPrompts = true,
           }) {
-            return _launchScreensaver(
+            return launchScreensaver(
               allowPermissionPrompts: allowPermissionPrompts,
               source: 'manual',
             );
@@ -315,7 +135,7 @@ class _GdarTvAppState extends State<GdarTvApp> {
       ),
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
-          _syncInactivityService(settingsProvider);
+          syncInactivityService(settingsProvider);
           final theme = GDARAndroidTheme.dark(
             appFont: settingsProvider.activeAppFont,
             uiScale: settingsProvider.uiScale,
@@ -326,20 +146,22 @@ class _GdarTvAppState extends State<GdarTvApp> {
           return RgbClockWrapper(
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: MaterialApp(
-              navigatorKey: _navigatorKey,
+              navigatorKey: navigatorKey,
               navigatorObservers: [_navigationObserver, shakedownRouteObserver],
               title: 'GDAR TV',
               debugShowCheckedModeBanner: false,
               theme: theme,
               themeMode: ThemeMode.dark,
-              builder: (context, child) => InactivityDetector(
-                inactivityService: _inactivityService,
-                isScreensaverActive: _isScreensaverActive,
-                child: ColoredBox(
-                  color: theme.scaffoldBackgroundColor,
-                  child: child ?? const SizedBox.shrink(),
-                ),
-              ),
+              builder: (context, child) {
+                return InactivityDetector(
+                  inactivityService: inactivityService,
+                  isScreensaverActive: isScreensaverActive,
+                  child: ColoredBox(
+                    color: theme.scaffoldBackgroundColor,
+                    child: child ?? const SizedBox.shrink(),
+                  ),
+                );
+              },
               home: const SplashScreen(),
             ),
           );

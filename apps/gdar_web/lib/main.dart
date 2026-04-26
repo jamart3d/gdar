@@ -7,10 +7,11 @@ import 'package:shakedown_core/app/gdar_app_providers.dart';
 import 'package:shakedown_core/providers/settings_provider.dart';
 import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
-import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/ui/screens/fruit_tab_host_screen.dart';
 import 'package:shakedown_core/ui/screens/show_list_screen.dart';
+import 'package:shakedown_core/app/gdar_app_lifecycle_mixin.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
+import 'package:shakedown_core/ui/navigation/app_route_observer.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/web_error_logger.dart';
@@ -52,18 +53,22 @@ class GdarWebApp extends StatefulWidget {
   State<GdarWebApp> createState() => _GdarWebAppState();
 }
 
-class _GdarWebAppState extends State<GdarWebApp> {
+class _GdarWebAppState extends State<GdarWebApp>
+    with GdarAppLifecycleMixin<GdarWebApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
-  late final DeepLinkService _deepLinkService;
-  StreamSubscription? _linkSubscription;
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   bool get _isAndroidStyle =>
       Uri.base.queryParameters['ui']?.toLowerCase() == 'android';
 
   bool get _isTv =>
       Uri.base.queryParameters['force_tv']?.toLowerCase() == 'true';
+
+  @override
+  bool get isTv => _isTv;
+
+  @override
+  SettingsProvider get settingsProvider => _settingsProvider;
 
   @override
   void initState() {
@@ -86,7 +91,7 @@ class _GdarWebAppState extends State<GdarWebApp> {
     // reload — only force a style when an explicit URL param is present or
     // on first launch (no saved preference yet).
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final themeProvider = _navigatorKey.currentContext?.read<ThemeProvider>();
+      final themeProvider = navigatorKey.currentContext?.read<ThemeProvider>();
       if (themeProvider == null) return;
 
       if (_isAndroidStyle) {
@@ -107,27 +112,14 @@ class _GdarWebAppState extends State<GdarWebApp> {
     });
 
     _showListProvider.init(widget.prefs);
-    _initDeepLinks();
+
+    initLifecycle();
   }
 
   @override
   void dispose() {
-    _linkSubscription?.cancel();
-    _deepLinkService.dispose();
+    disposeLifecycle();
     super.dispose();
-  }
-
-  void _initDeepLinks() {
-    _deepLinkService = DeepLinkService();
-    _deepLinkService.init();
-
-    _linkSubscription = _deepLinkService.uriStream.listen((uri) {
-      _handleDeepLink(uri);
-    });
-  }
-
-  void _handleDeepLink(Uri uri) {
-    // Basic implementation for now
   }
 
   @override
@@ -169,7 +161,8 @@ class _GdarWebAppState extends State<GdarWebApp> {
           return RgbClockWrapper(
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: MaterialApp(
-              navigatorKey: _navigatorKey,
+              navigatorKey: navigatorKey,
+              navigatorObservers: [shakedownRouteObserver],
               title: 'Shakedown.',
               color: themeProvider.currentThemeMode == ThemeMode.light
                   ? lightTheme.scaffoldBackgroundColor

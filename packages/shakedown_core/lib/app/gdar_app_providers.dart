@@ -28,7 +28,8 @@ List<SingleChildWidget> buildGdarAppProviders({
     Provider<WakelockService>(create: (_) => WakelockService()),
     ChangeNotifierProvider<SettingsProvider>.value(value: settingsProvider),
     ChangeNotifierProvider<AudioCacheService>(
-      create: (_) => overrides.audioCacheService ?? (AudioCacheService()..init()),
+      create: (_) =>
+          overrides.audioCacheService ?? (AudioCacheService()..init()),
     ),
     ChangeNotifierProxyProvider<SettingsProvider, ShowListProvider>(
       create: (_) => showListProvider,
@@ -47,7 +48,8 @@ List<SingleChildWidget> buildGdarAppProviders({
     ),
     ChangeNotifierProvider(create: (_) => UpdateProvider()),
     ChangeNotifierProvider<DeviceService>(
-      create: (_) => overrides.deviceService ?? DeviceService(initialIsTv: isTv),
+      create: (_) =>
+          overrides.deviceService ?? DeviceService(initialIsTv: isTv),
     ),
     if (overrides.screensaverLaunchDelegate != null)
       Provider<ScreensaverLaunchDelegate>.value(

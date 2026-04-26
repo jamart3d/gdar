@@ -15,7 +15,9 @@ import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('buildGdarAppProviders wires shared dependencies', (tester) async {
+  testWidgets('buildGdarAppProviders wires shared dependencies', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final prefs = await SharedPreferences.getInstance();
     final settingsProvider = SettingsProvider(prefs, isTv: true);
@@ -43,7 +45,10 @@ void main() {
             expect(context.read<ShowListProvider>(), same(showListProvider));
             expect(context.read<AudioCacheService>(), same(audioCacheService));
             expect(context.read<DeviceService>(), same(deviceService));
-            expect(context.read<ScreensaverLaunchDelegate>(), screensaverDelegate);
+            expect(
+              context.read<ScreensaverLaunchDelegate>(),
+              screensaverDelegate,
+            );
             expect(context.read<ThemeProvider>().isTv, isTrue);
             expect(context.read<AudioProvider>(), isNotNull);
             return const SizedBox.shrink();

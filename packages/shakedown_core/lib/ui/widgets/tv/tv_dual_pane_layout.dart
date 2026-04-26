@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shakedown_core/ui/screens/tv_playback_screen.dart';
-import 'package:shakedown_core/ui/screens/tv_show_list_screen.dart';
+import 'package:shakedown_core/ui/screens/show_list_screen.dart';
 import 'package:shakedown_core/ui/widgets/tv/tv_header.dart';
 
 import 'package:shakedown_core/ui/widgets/tv/tv_exit_dialog.dart';

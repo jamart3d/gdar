@@ -307,9 +307,17 @@ class ShowListScreenState extends State<ShowListScreen>
               initialIndex: session.trackIndex,
               initialPosition: Duration(milliseconds: session.positionMs),
             );
-            // Navigate to playback screen after resume
+
+            // Platform-specific follow-up after resume
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) openPlaybackScreen();
+              if (mounted) {
+                final settings = context.read<SettingsProvider>();
+                if (settings.isTv) {
+                  audioProvider.requestPlaybackFocus();
+                } else {
+                  openPlaybackScreen();
+                }
+              }
             });
             return;
           }
@@ -343,7 +351,8 @@ class ShowListScreenState extends State<ShowListScreen>
           _randomShowPlayed = true;
         });
         logger.i('Startup setting enabled, playing random show.');
-        audioProvider.playRandomShow();
+        final settings = context.read<SettingsProvider>();
+        audioProvider.playRandomShow(delayPlayback: settings.isTv);
         showListProvider.removeListener(playRandomShowAndRemoveListener);
       } else if (!showListProvider.isLoading) {
         showListProvider.removeListener(playRandomShowAndRemoveListener);
@@ -574,7 +583,10 @@ class ShowListScreenState extends State<ShowListScreen>
       isPane: widget.isPane,
       backgroundColor: widget.isPane
           ? Colors.transparent
-          : (backgroundColor ?? Theme.of(context).scaffoldBackgroundColor),
+          : (settingsProvider.isTv
+                ? Colors.black
+                : (backgroundColor ??
+                      Theme.of(context).scaffoldBackgroundColor)),
       randomPulseAnimation: _randomPulseAnimation,
       searchPulseAnimation: _searchPulseAnimation,
       isRandomShowLoading: isRandomShowLoading,

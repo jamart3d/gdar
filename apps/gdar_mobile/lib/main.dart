@@ -9,16 +9,14 @@ import 'package:shakedown_core/providers/show_list_provider.dart';
 import 'package:shakedown_core/providers/theme_provider.dart';
 import 'package:shakedown_core/app/gdar_app_provider_overrides.dart';
 import 'package:shakedown_core/app/gdar_app_providers.dart';
-import 'package:shakedown_core/services/automation/automation_executor.dart';
-import 'package:shakedown_core/services/automation/automation_step.dart';
-import 'package:shakedown_core/services/automation/automation_step_parser.dart';
 import 'package:shakedown_core/services/audio_cache_service.dart';
 import 'package:shakedown_core/services/device_service.dart';
 import 'package:shakedown_core/services/deep_link_service.dart';
 import 'package:shakedown_core/services/inactivity_service.dart';
 import 'package:shakedown_core/services/screensaver_launch_delegate.dart';
 import 'package:shakedown_core/ui/screens/splash_screen.dart';
-import 'package:shakedown_core/ui/screens/screensaver_screen.dart';
+import 'package:shakedown_core/app/gdar_app_lifecycle_mixin.dart';
+import 'package:shakedown_core/ui/navigation/app_route_observer.dart';
 import 'package:shakedown_core/ui/widgets/rgb_clock_wrapper.dart';
 import 'package:shakedown_core/utils/logger.dart';
 import 'package:shakedown_core/utils/asset_constants.dart';
@@ -108,24 +106,16 @@ class GdarMobileApp extends StatefulWidget {
   State<GdarMobileApp> createState() => _GdarMobileAppState();
 }
 
-class _GdarMobileAppState extends State<GdarMobileApp> {
+class _GdarMobileAppState extends State<GdarMobileApp>
+    with GdarAppLifecycleMixin<GdarMobileApp> {
   late final ShowListProvider _showListProvider;
   late final SettingsProvider _settingsProvider;
-  InactivityService? _inactivityService;
-  DeepLinkService? _deepLinkService;
-  StreamSubscription? _linkSubscription;
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
-  bool _isScreensaverActive = false;
 
-  void _setScreensaverActive(bool active) {
-    if (!mounted) {
-      _isScreensaverActive = active;
-      return;
-    }
-    setState(() {
-      _isScreensaverActive = active;
-    });
-  }
+  @override
+  bool get isTv => widget.isTv;
+
+  @override
+  SettingsProvider get settingsProvider => _settingsProvider;
 
   @override
   void initState() {
@@ -134,182 +124,20 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
         widget.settingsProvider ??
         SettingsProvider(widget.prefs, isTv: widget.isTv);
     _showListProvider = widget.showListProvider ?? ShowListProvider();
-    if (widget.isTv) {
-      _inactivityService = InactivityService(
-        onInactivityTimeout: _handleInactivityTimeout,
-        initialDuration: Duration(
-          minutes: _settingsProvider.oilScreensaverInactivityMinutes,
-        ),
-      );
-    }
 
     ThemeProvider.getInstance?.setSettingsProvider(_settingsProvider);
 
     if (widget.showListProvider == null) {
       _showListProvider.init(widget.prefs);
     }
-    if (widget.enableDeepLinks) {
-      _initDeepLinks();
-    }
+
+    initLifecycle(enableDeepLinks: widget.enableDeepLinks);
   }
 
   @override
   void dispose() {
-    _inactivityService?.dispose();
-    _linkSubscription?.cancel();
-    _deepLinkService?.dispose();
+    disposeLifecycle();
     super.dispose();
-  }
-
-  Future<void> _launchScreensaver({
-    required bool allowPermissionPrompts,
-    required String source,
-  }) async {
-    final navigator = _navigatorKey.currentState;
-    if (navigator == null) {
-      return;
-    }
-
-    logger.i('Launching screensaver from mobile/$source');
-    _inactivityService?.stop();
-    _setScreensaverActive(true);
-    try {
-      await navigator.push(
-        ScreensaverScreen.route(allowPermissionPrompts: allowPermissionPrompts),
-      );
-    } on Exception catch (e) {
-      logger.e('Screensaver launch failed', error: e);
-    } catch (e) {
-      logger.e('Screensaver launch failed', error: e);
-    } finally {
-      _setScreensaverActive(false);
-      _inactivityService?.onUserActivity('screensaver_exit:mobile_$source');
-      if (widget.isTv && _settingsProvider.useOilScreensaver) {
-        _inactivityService?.start();
-      }
-    }
-  }
-
-  Future<void> _handleInactivityTimeout() {
-    return _launchScreensaver(allowPermissionPrompts: false, source: 'timeout');
-  }
-
-  void _syncInactivityService(SettingsProvider settingsProvider) {
-    final inactivityService = _inactivityService;
-    if (!widget.isTv || inactivityService == null) {
-      return;
-    }
-
-    inactivityService.updateDuration(
-      Duration(minutes: settingsProvider.oilScreensaverInactivityMinutes),
-    );
-
-    if (settingsProvider.useOilScreensaver && !_isScreensaverActive) {
-      inactivityService.start();
-    } else {
-      inactivityService.stop();
-    }
-  }
-
-  void _initDeepLinks() {
-    _deepLinkService = widget.deepLinkService ?? DeepLinkService();
-    _deepLinkService!.init();
-
-    _linkSubscription = _deepLinkService!.uriStream.listen((Uri? uri) async {
-      if (uri == null) return;
-
-      if (uri.scheme == 'shakedown') {
-        if (uri.path == 'automate' || uri.host == 'automate') {
-          final rawSteps = uri.queryParameters['steps']?.split(',') ?? <String>[];
-          await _handleAutomation(parseAutomationSteps(rawSteps));
-        } else if (uri.host == 'settings') {
-          final key = uri.queryParameters['key'];
-          final value = uri.queryParameters['value'];
-
-          if (key != null && value != null) {
-            if (value == 'true' || value == 'false') {
-              await widget.prefs.setBool(key, value == 'true');
-              if (key == 'force_tv') {
-                if (mounted) {
-                  // We need to refresh the device service to reflect the change
-                  // But we usually do this via a broadcast or provider update
-                }
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-
-  Future<void> _handleAutomation(List<AutomationStep> steps) async {
-    // Wait for navigator to be ready
-    final state = _navigatorKey.currentState;
-    if (state == null) {
-      Future.delayed(
-        const Duration(milliseconds: 500),
-        () => _handleAutomation(steps),
-      );
-      return;
-    }
-
-    final context = state.context;
-    final audioProvider = Provider.of<AudioProvider>(context, listen: false);
-    final settingsProvider = Provider.of<SettingsProvider>(
-      context,
-      listen: false,
-    );
-
-    final executor = AutomationExecutor(
-      playRandomShow: audioProvider.playRandomShow,
-      delay: Future<void>.delayed,
-      applySetting:
-          (key, value) => _applyAutomationSetting(
-            settingsProvider: settingsProvider,
-            key: key,
-            value: value,
-          ),
-      launchScreensaver: () async {
-        if (widget.isTv) {
-          await _launchScreensaver(
-            allowPermissionPrompts: true,
-            source: 'automation',
-          );
-        } else if (context.mounted) {
-          await ScreensaverScreen.show(context);
-        }
-      },
-    );
-
-    await executor.execute(steps);
-  }
-
-  Future<void> _applyAutomationSetting({
-    required SettingsProvider settingsProvider,
-    required String key,
-    required String value,
-  }) async {
-    if (key == 'oil_enable_audio_reactivity') {
-      final target = value == 'true';
-      if (settingsProvider.oilEnableAudioReactivity != target) {
-        await settingsProvider.toggleOilEnableAudioReactivity();
-      }
-      return;
-    }
-
-    if (key == 'oil_audio_graph_mode') {
-      await settingsProvider.setOilAudioGraphMode(value);
-      return;
-    }
-
-    if (key == 'force_tv') {
-      await settingsProvider.setForceTv(value == 'true');
-      return;
-    }
-
-    if (key == 'oil_screensaver_mode') {
-      await settingsProvider.setOilScreensaverMode(value);
-    }
   }
 
   @override
@@ -324,26 +152,26 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
           audioProvider: widget.audioProvider,
           audioCacheService: widget.audioCacheService,
           deviceService: widget.deviceService,
-          screensaverLaunchDelegate:
-              widget.isTv
-                  ? ScreensaverLaunchDelegate(({
-                    bool allowPermissionPrompts = true,
-                  }) {
-                    return _launchScreensaver(
-                      allowPermissionPrompts: allowPermissionPrompts,
-                      source: 'manual',
-                    );
-                  })
-                  : null,
+          screensaverLaunchDelegate: widget.isTv
+              ? ScreensaverLaunchDelegate(({
+                  bool allowPermissionPrompts = true,
+                }) {
+                  return launchScreensaver(
+                    allowPermissionPrompts: allowPermissionPrompts,
+                    source: 'manual',
+                  );
+                })
+              : null,
         ),
       ),
       child: Consumer2<ThemeProvider, SettingsProvider>(
         builder: (context, themeProvider, settingsProvider, child) {
-          _syncInactivityService(settingsProvider);
+          syncInactivityService(settingsProvider);
           return RgbClockWrapper(
             animationSpeed: settingsProvider.rgbAnimationSpeed,
             child: MaterialApp(
-              navigatorKey: _navigatorKey,
+              navigatorKey: navigatorKey,
+              navigatorObservers: [shakedownRouteObserver],
               title: 'GDAR',
               debugShowCheckedModeBanner: false,
               theme: GDARAndroidTheme.light(
@@ -357,13 +185,13 @@ class _GdarMobileAppState extends State<GdarMobileApp> {
               ),
               themeMode: themeProvider.currentThemeMode,
               builder: (context, child) {
-                if (!widget.isTv || _inactivityService == null) {
+                if (!widget.isTv || inactivityService == null) {
                   return child ?? const SizedBox.shrink();
                 }
 
                 return InactivityDetector(
-                  inactivityService: _inactivityService,
-                  isScreensaverActive: _isScreensaverActive,
+                  inactivityService: inactivityService,
+                  isScreensaverActive: isScreensaverActive,
                   child: ColoredBox(
                     color: Theme.of(context).scaffoldBackgroundColor,
                     child: child ?? const SizedBox.shrink(),

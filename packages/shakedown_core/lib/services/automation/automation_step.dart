@@ -1,9 +1,4 @@
-enum AutomationStepType {
-  playRandomShow,
-  sleep,
-  setSetting,
-  launchScreensaver,
-}
+enum AutomationStepType { playRandomShow, sleep, setSetting, launchScreensaver }
 
 class AutomationStep {
   final AutomationStepType type;
@@ -19,20 +14,16 @@ class AutomationStep {
   });
 
   const AutomationStep.playRandomShow()
-      : this._(type: AutomationStepType.playRandomShow);
+    : this._(type: AutomationStepType.playRandomShow);
 
   const AutomationStep.sleep({required int seconds})
-      : this._(type: AutomationStepType.sleep, seconds: seconds);
+    : this._(type: AutomationStepType.sleep, seconds: seconds);
 
   const AutomationStep.setSetting({required String key, required String value})
-      : this._(
-          type: AutomationStepType.setSetting,
-          key: key,
-          value: value,
-        );
+    : this._(type: AutomationStepType.setSetting, key: key, value: value);
 
   const AutomationStep.launchScreensaver()
-      : this._(type: AutomationStepType.launchScreensaver);
+    : this._(type: AutomationStepType.launchScreensaver);
 
   @override
   bool operator ==(Object other) =>

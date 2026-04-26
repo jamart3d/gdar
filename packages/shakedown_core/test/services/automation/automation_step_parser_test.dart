@@ -11,14 +11,11 @@ void main() {
       'screensaver',
     ]);
 
-    expect(
-      steps,
-      <AutomationStep>[
-        const AutomationStep.playRandomShow(),
-        const AutomationStep.sleep(seconds: 3),
-        const AutomationStep.setSetting(key: 'force_tv', value: 'true'),
-        const AutomationStep.launchScreensaver(),
-      ],
-    );
+    expect(steps, <AutomationStep>[
+      const AutomationStep.playRandomShow(),
+      const AutomationStep.sleep(seconds: 3),
+      const AutomationStep.setSetting(key: 'force_tv', value: 'true'),
+      const AutomationStep.launchScreensaver(),
+    ]);
   });
 }
