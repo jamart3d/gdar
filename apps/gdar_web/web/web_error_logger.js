@@ -79,6 +79,17 @@
   });
 
   window.addEventListener('unhandledrejection', function (event) {
-    recordError(event.reason || 'Unhandled rejection', null, 'unhandledrejection');
+    // Suppress wakelock_plus (no_sleep.js) race condition: concurrent enable()
+    // calls can null _nativeEnabledCompleter before a racing .catch fires.
+    // Cannot patch the built package output; suppress here instead.
+    const reason = event.reason;
+    if (reason instanceof TypeError) {
+      const msg = reason.message || '';
+      const stack = reason.stack || '';
+      if (msg.includes('completeError') && stack.includes('no_sleep.js')) {
+        return;
+      }
+    }
+    recordError(reason || 'Unhandled rejection', null, 'unhandledrejection');
   });
 })();
