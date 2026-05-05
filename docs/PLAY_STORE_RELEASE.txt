@@ -1,4 +1,12 @@
 <en-US>
+What's new in v1.4.16+326
+• PWA / Chrome Android
+• PWA / Chrome Android
+</en-US>
+
+---
+
+<en-US>
 What's new in v1.4.15+325
 • Refactor: Decoupled `SettingsProvider` initialization into granular, domain-specific loaders (Core, Web, Screensaver, Source Filters).
 • Bug Fix: Restored missing ring spacing multiplier initializations in the screensaver loader.
