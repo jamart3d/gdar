@@ -897,7 +897,17 @@
             _fgEngine.init();
             _bgEngine.init();
             if (typeof _fgEngine.onPlayBlocked === 'function') {
-                _fgEngine.onPlayBlocked(_emitPlayBlocked);
+                _fgEngine.onPlayBlocked(function () {
+                    // If a WA handoff poll is running and AudioContext is blocked
+                    // (media notification skip has no user-gesture), abort the
+                    // 5-second poll loop immediately instead of waiting 50 retries.
+                    if (_handoffInProgress) {
+                        _log.log('[hybrid] onPlayBlocked during handoff — aborting poll loop early.');
+                        ++_handoffRunId;
+                        _handoffInProgress = false;
+                    }
+                    _emitPlayBlocked();
+                });
             }
             if (typeof _bgEngine.onPlayBlocked === 'function') {
                 _bgEngine.onPlayBlocked(_emitPlayBlocked);
